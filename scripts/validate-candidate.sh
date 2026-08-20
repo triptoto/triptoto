@@ -15,6 +15,7 @@ node "$TMP_DIR/tests/scenarios/candidate.scenarios.js"
 
 echo '3/5 Candidate UI and recovery contracts'
 grep -q "checksum-verified local file" public/app.js
+grep -q "Missing verified hotel confirmation" public/app.js
 grep -q 'aria-label="Add trip item"' public/app.js
 grep -q 'role="status" aria-live="polite"' public/app.js
 grep -q "Delete this trip" public/app.js

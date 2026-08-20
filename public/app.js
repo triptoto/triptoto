@@ -558,8 +558,16 @@ function offlineReadiness(){
   return rows.map(function(r){var s=cacheStatus(r[1]);return {name:r[0],ok:s.ok,at:s.at};});
 }
 function travelerDocumentCoverage(){
-  if(!state.travelers.length)return '';
-  return state.travelers.map(function(t){var count=state.localDocs.filter(function(d){return d.integrity==='verified'&&Array.isArray(d.travelerIds)&&d.travelerIds.includes(t.id);}).length;return '<div class="offline-row"><div class="offline-check '+(count?'ok':'warn')+'">'+(count?'✓':'!')+'</div><div><strong>'+esc(t.display_name)+' documents</strong><span>'+(count?count+' checksum-verified local file(s) assigned':'No verified traveler-specific local documents assigned')+'</span></div></div>';}).join('');
+  var verified=state.localDocs.filter(function(d){return d.integrity==='verified';});
+  var requirements=[];
+  state.transport.filter(function(t){return !['cancelled','skipped'].includes(t.status)&&(t.transport_type==='flight'||t.transport_type==='train');}).forEach(function(t){
+    var ids=Array.isArray(t.traveler_ids)?t.traveler_ids:String(t.traveler_ids||'').split(',').filter(Boolean);
+    ids.forEach(function(id){if(state.travelers.some(function(x){return x.id===id;})&&!requirements.some(function(r){return r.travelerId===id&&r.kind===t.transport_type;}))requirements.push({travelerId:id,kind:t.transport_type,types:t.transport_type==='flight'?['ticket','boarding_pass']:['ticket']});});
+  });
+  var rows=requirements.map(function(r){var traveler=state.travelers.find(function(t){return t.id===r.travelerId;});var ok=verified.some(function(d){return r.types.includes(d.type)&&Array.isArray(d.travelerIds)&&d.travelerIds.includes(r.travelerId);});var label=r.kind==='flight'?'flight ticket or boarding pass':'train ticket';return '<div class="offline-row"><div class="offline-check '+(ok?'ok':'warn')+'">'+(ok?'✓':'!')+'</div><div><strong>'+esc(traveler?traveler.display_name:'Traveler')+' · '+esc(label)+'</strong><span>'+(ok?'Checksum-verified and assigned':'Missing verified '+esc(label)+' for this traveler')+'</span></div></div>';}).join('');
+  var stayRequired=state.stays.some(function(s){return !['cancelled','skipped'].includes(s.status);});
+  if(stayRequired){var stayOk=verified.some(function(d){return d.type==='hotel_confirmation';});rows+='<div class="offline-row"><div class="offline-check '+(stayOk?'ok':'warn')+'">'+(stayOk?'✓':'!')+'</div><div><strong>Hotel confirmation</strong><span>'+(stayOk?'Checksum-verified trip-level confirmation':'Missing verified hotel confirmation')+'</span></div></div>';}
+  return rows;
 }
 function readyOfflineCard(compact){
   var rows=offlineReadiness(), ok=rows.filter(function(x){return x.ok;}).length, total=rows.length;

@@ -1,4 +1,5 @@
 import type { Confidence, Severity, TripItem } from '../../domain/src/index.ts';
+import { assessConnection } from '../../impact-engine/src/index.ts';
 
 export type HealthCategory = 'timing' | 'timezone' | 'connection' | 'preparation' | 'booking' | 'lifecycle' | 'traveler';
 
@@ -11,6 +12,9 @@ export interface HealthConnection {
   minimumBufferMinutes?: number;
   requiresAirportChange?: boolean;
   requiresBaggageReclaim?: boolean;
+  requiresImmigration?: boolean;
+  requiresSecurity?: boolean;
+  requiresTerminalChange?: boolean;
 }
 
 export interface HealthTrip {
@@ -88,30 +92,26 @@ export function assessTripHealth(input: HealthInput): HealthIssue[] {
   for (const connection of input.connections ?? []) {
     const from = byId.get(connection.fromItemId);
     const to = byId.get(connection.toItemId);
-    if (!from || !to || from.endsAtUtc == null || to.startsAtUtc == null) {
+    if (!from || !to) {
       issues.push(issue('CONNECTION_TIME_UNAVAILABLE', 'info', 80, 'connection', 'unavailable', 'Connection cannot be assessed', 'One or both connection times are unavailable.', 'Confirm both segment times.', [connection.fromItemId, connection.toItemId]));
       continue;
     }
-    const available = Math.floor((to.startsAtUtc - from.endsAtUtc) / 60000);
-    const configuredBuffer = connection.recommendedBufferMinutes ?? connection.minimumBufferMinutes;
-    if (configuredBuffer == null) {
+    const assessment=assessConnection(from,to,{...connection,type:connection.connectionType});
+    if (assessment.explanationCode==='MISSING_TIMES') {
+      issues.push(issue('CONNECTION_TIME_UNAVAILABLE', 'info', 80, 'connection', 'unavailable', 'Connection cannot be assessed', 'One or both connection times are unavailable.', 'Confirm both segment times.', [connection.fromItemId, connection.toItemId]));
+      continue;
+    }
+    if (assessment.explanationCode==='BUFFER_UNKNOWN') {
       issues.push(issue('CONNECTION_BUFFER_UNAVAILABLE', 'medium', 26, 'connection', 'unavailable', 'Connection buffer is unavailable', 'No reliable minimum or recommended connection buffer is recorded.', 'Confirm the connection requirements; no safety assumption was made.', [from.id, to.id]));
       continue;
     }
-    let required = configuredBuffer;
-    if (connection.requiresAirportChange) required += 60;
-    if (connection.requiresBaggageReclaim) required += 30;
-    const margin = available - required;
-    if (margin < 0) {
-      issues.push(issue('CONNECTION_UNLIKELY', 'critical', 1, 'connection', 'estimated', 'Connection is unlikely', `Only ${available} minutes are available; at least ${required} are recommended.`, 'Change the itinerary or add a larger buffer.', [from.id, to.id]));
-    } else if (margin < 30) {
-      issues.push(issue('CONNECTION_TIGHT', 'high', 5, 'connection', 'estimated', 'Connection is tight', `The connection has only ${margin} minutes above the recommended buffer.`, 'Review terminals, baggage and immigration requirements.', [from.id, to.id]));
-    } else if (connection.connectionType === 'self_transfer' && available < 180) {
-      issues.push(issue('SELF_TRANSFER_REVIEW', 'medium', 25, 'connection', 'estimated', 'Self-transfer needs review', `This self-transfer has ${available} minutes between segments.`, 'Confirm baggage reclaim, immigration and check-in deadlines.', [from.id, to.id]));
-    }
-    if (connection.requiresAirportChange && available < 180) {
-      issues.push(issue('AIRPORT_CHANGE_RISK', 'critical', 2, 'connection', 'estimated', 'Airport change may be too tight', `Only ${available} minutes are available for an airport change.`, 'Use a much larger buffer or change the itinerary.', [from.id, to.id]));
-    }
+    const available=assessment.availableMinutes!;
+    const required=assessment.requiredMinutes!;
+    const margin=assessment.bufferMinutes!;
+    if (assessment.explanationCode==='AIRPORT_CHANGE_TOO_TIGHT') issues.push(issue('AIRPORT_CHANGE_RISK', 'critical', 2, 'connection', 'estimated', 'Airport change may be too tight', `Only ${available} minutes are available; at least ${required} are recommended and airport changes under 180 minutes require review.`, 'Use a much larger buffer or change the itinerary.', [from.id, to.id]));
+    else if (assessment.outcome==='unlikely') issues.push(issue('CONNECTION_UNLIKELY', 'critical', 1, 'connection', 'estimated', 'Connection is unlikely', `Only ${available} minutes are available; at least ${required} are recommended.`, 'Change the itinerary or add a larger buffer.', [from.id, to.id]));
+    else if (assessment.explanationCode==='SELF_TRANSFER_REVIEW') issues.push(issue('SELF_TRANSFER_REVIEW', 'medium', 25, 'connection', 'estimated', 'Self-transfer needs review', `This self-transfer has ${available} minutes between segments.`, 'Confirm baggage reclaim, immigration, security and check-in deadlines.', [from.id, to.id]));
+    else if (assessment.outcome==='tight') issues.push(issue('CONNECTION_TIGHT', 'high', 5, 'connection', 'estimated', 'Connection is tight', `The connection has only ${margin} minutes above the recommended buffer.`, 'Review terminals, baggage, security and immigration requirements.', [from.id, to.id]));
   }
 
   const criticalChecklist = (input.checklist ?? []).filter(item => !item.completedAt && item.priority === 'critical');

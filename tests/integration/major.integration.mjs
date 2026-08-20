@@ -14,6 +14,7 @@ const {createTimeMarker,listTimeMarkers}=await load('apps/worker/src/routes/time
 const {expandedTripHealth}=await load('apps/worker/src/routes/intelligence.js');
 const {syncStatus,syncChanges,acknowledgeSync,queueSyncOperation}=await load('apps/worker/src/routes/sync-v2.js');
 const {readiness}=await load('apps/worker/src/routes/readiness.js');
+const {listTransport}=await load('apps/worker/src/routes/transport.js');
 
 class Prepared{constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}bind(...values){return new Prepared(this.db,this.sql,values);}async first(column){const row=this.db.prepare(this.sql).get(...this.values);if(!row)return null;return column?row[column]:row;}async all(){return{success:true,results:this.db.prepare(this.sql).all(...this.values)}}async run(){const info=this.db.prepare(this.sql).run(...this.values);return{success:true,meta:{changes:info.changes}}}}
 class LocalD1{constructor(db){this.db=db;}prepare(q){return new Prepared(this.db,q)}async batch(statements){this.db.exec('BEGIN');try{const out=[];for(const s of statements)out.push(await s.run());this.db.exec('COMMIT');return out;}catch(e){this.db.exec('ROLLBACK');throw e;}}}
@@ -40,6 +41,7 @@ const activity=await body(await createActivity(req('https://test/api/v1/trips/x/
 const activities=await body(await listActivities(req('https://test/api/v1/trips/x/activities'),env,auth,tripId));assert(activities.activities.some(x=>x.id===activity.item.id),'activity listed');
 
 const transportItem=itemRows.find(x=>x.type==='transport')??itemRows[0];
+const listedTransport=await body(await listTransport(req('https://test/api/v1/trips/x/transport'),env,auth,tripId));assert(String(listedTransport.transport.find(x=>x.id===transportItem.id)?.traveler_ids??'').split(',').includes(travelerId),'transport exposes existing traveler assignments for offline document requirements');
 const detail=await body(await upsertBookingDetail(req('https://test/api/v1/trips/x/booking-details','PUT',{tripItemId:transportItem.id,travelerId,seat:'12A',cabinClass:'economy',checkedBags:1,cabinBags:1}),env,auth,tripId));assert(detail.bookingDetail.seat==='12A','booking details stored');
 const details=await body(await listBookingDetails(req('https://test/api/v1/trips/x/booking-details'),env,auth,tripId));assert(details.bookingDetails.some(x=>x.seat==='12A'),'booking details listed');
 

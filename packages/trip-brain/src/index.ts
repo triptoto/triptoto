@@ -36,6 +36,13 @@ export function evaluateTrip(input: TripBrainInput): TripBrainResult {
   }
 
   const maxAge = (input.maxTravelDurationAgeMinutes ?? 360) * 60_000;
+  if (duration.source === 'cached_route' && duration.calculatedAt == null) {
+    return {
+      nextItem,
+      recommendationConfidence: 'unavailable',
+      issues: [{ code: 'TRAVEL_DURATION_TIMESTAMP_MISSING', severity: 'medium', itemId: nextItem.id, message: 'The cached travel-time estimate has no last-updated timestamp and cannot be used.' }],
+    };
+  }
   if (duration.calculatedAt != null && input.nowUtc - duration.calculatedAt > maxAge) {
     return {
       nextItem,

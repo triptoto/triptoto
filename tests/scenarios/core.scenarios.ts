@@ -12,7 +12,7 @@ const base = Date.UTC(2027, 4, 10, 10, 0, 0);
     nowUtc: base,
     leaveBufferMinutes: 10,
     items: [{ id:'museum', tripId:'t1', type:'activity', status:'confirmed', title:'Museum', startsAtUtc: base + hour, confidence:'confirmed' }],
-    travelDurationsByItemId: { museum: { minutes: 30, source:'cached_route' } }
+    travelDurationsByItemId: { museum: { minutes: 30, source:'cached_route', calculatedAt:base } }
   });
   assertEqual(result.recommendedLeaveAtUtc, base + 20 * 60_000, 'time-to-leave');
 }

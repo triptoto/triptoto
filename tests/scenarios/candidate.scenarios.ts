@@ -1,4 +1,4 @@
-import { assessConnection } from '../../packages/impact-engine/src/index.ts';
+import { assessConnection, requiredConnectionMinutes } from '../../packages/impact-engine/src/index.ts';
 import { assessDocumentReadiness } from '../../packages/offline-readiness/src/index.ts';
 import { parseForwardedEmail } from '../../packages/importer/src/index.ts';
 import { validateJourney } from '../../packages/journeys/src/index.ts';
@@ -60,9 +60,9 @@ scenario('changed hotel overlapping another plan is reported', () => {
   const issues=assessTripHealth({nowUtc:now,trip:{id:'trip',lifecycleState:'active'},items:[item('hotel',now,now+4*hour,{type:'stay'}),item('tour',now+3*hour,now+5*hour,{type:'activity'})],travelerCount:1,transportCount:1,stayCount:1});
   assert(issues.some(x=>x.code==='TIMELINE_OVERLAP'),'changed hotel overlap');
 });
-scenario('missing document remains an explicit readiness limitation', () => assert(!assessDocumentReadiness([],[]).ready,'missing document'));
+scenario('flight traveler without a travel document is not Ready Offline', () => assert(!assessDocumentReadiness([],['adult'],[{kind:'flight',travelerIds:['adult']}]).ready,'missing flight document'));
 scenario('missing traveler document remains per-traveler', () => {
-  const readiness=assessDocumentReadiness([{integrity:'verified',travelerIds:['adult']}],['adult','child']);
+  const readiness=assessDocumentReadiness([{integrity:'verified',type:'ticket',travelerIds:['adult']}],['adult','child'],[{kind:'train',travelerIds:['adult','child']}]);
   assert(readiness.missingTravelerIds.join(',')==='child'&&!readiness.ready,'missing traveler document');
 });
 scenario('low-confidence import is never silently confirmed', () => {
@@ -95,6 +95,42 @@ scenario('cancelled segment invalidates connection outcome', () => assert(assess
 scenario('unknown connection buffer stays unavailable in Trip Health', () => {
   const issues=assessTripHealth({nowUtc:now,trip:{id:'trip',lifecycleState:'active'},items:[item('from',now,now+hour),item('to',now+2*hour)],connections:[{id:'c',fromItemId:'from',toItemId:'to',connectionType:'unknown'}],travelerCount:1,transportCount:2,stayCount:1});
   assert(issues.some(x=>x.code==='CONNECTION_BUFFER_UNAVAILABLE'&&x.confidence==='unavailable'),'unknown buffer');
+});
+scenario('connection requirements use additive shared deterministic rules', () => {
+  const baseConnection=connection('protected',{recommendedBufferMinutes:90});
+  assert(requiredConnectionMinutes({...baseConnection,requiresTerminalChange:true})===105,'terminal change buffer');
+  assert(requiredConnectionMinutes({...baseConnection,requiresImmigration:true})===135,'immigration buffer');
+  assert(requiredConnectionMinutes({...baseConnection,requiresSecurity:true})===120,'security buffer');
+  assert(requiredConnectionMinutes({...baseConnection,requiresBaggageReclaim:true})===120,'baggage buffer');
+  assert(requiredConnectionMinutes({...baseConnection,requiresAirportChange:true})===150,'airport buffer');
+  assert(requiredConnectionMinutes({...baseConnection,requiresTerminalChange:true,requiresImmigration:true,requiresSecurity:true,requiresBaggageReclaim:true,requiresAirportChange:true})===270,'combined requirements');
+});
+scenario('Trip Health and Impact Engine share combined connection assessment', () => {
+  const c=connection('protected',{recommendedBufferMinutes:90,requiresTerminalChange:true,requiresImmigration:true,requiresSecurity:true,requiresBaggageReclaim:true,requiresAirportChange:true});
+  const assessment=assessConnection(item('from',now,now+hour),item('to',now+11*hour/2),c);
+  const issues=assessTripHealth({nowUtc:now,trip:{id:'trip',lifecycleState:'active'},items:[item('from',now,now+hour),item('to',now+11*hour/2)],connections:[{...c,connectionType:c.type}],travelerCount:1,transportCount:2,stayCount:1});
+  assert(assessment.requiredMinutes===270&&assessment.outcome==='tight'&&issues.some(x=>x.code==='CONNECTION_TIGHT'),'shared combined assessment');
+});
+scenario('travel-duration source and freshness matrix is enforced', () => {
+  const next=item('next',now+2*hour);
+  const missing=evaluateTrip({nowUtc:now,items:[next],travelDurationsByItemId:{next:{minutes:20,source:'cached_route'}}});
+  const stale=evaluateTrip({nowUtc:now,items:[next],travelDurationsByItemId:{next:{minutes:20,source:'cached_route',calculatedAt:now-7*hour}}});
+  const fresh=evaluateTrip({nowUtc:now,items:[next],travelDurationsByItemId:{next:{minutes:20,source:'cached_route',calculatedAt:now-hour}}});
+  const user=evaluateTrip({nowUtc:now,items:[next],travelDurationsByItemId:{next:{minutes:20,source:'user'}}});
+  const unknown=evaluateTrip({nowUtc:now,items:[next],travelDurationsByItemId:{next:{minutes:20,source:'unknown'}}});
+  assert(!missing.recommendedLeaveAtUtc&&missing.issues.some(x=>x.code==='TRAVEL_DURATION_TIMESTAMP_MISSING'),'missing route timestamp');
+  assert(!stale.recommendedLeaveAtUtc&&stale.issues.some(x=>x.code==='TRAVEL_DURATION_STALE'),'stale route timestamp');
+  assert(fresh.recommendedLeaveAtUtc!=null&&fresh.recommendationConfidence==='estimated','fresh cached route');
+  assert(user.recommendedLeaveAtUtc!=null&&user.recommendationConfidence==='estimated','user duration');
+  assert(!unknown.recommendedLeaveAtUtc&&unknown.recommendationConfidence==='unavailable','unknown duration');
+});
+scenario('Ready Offline requirements are semantic and itinerary-bound', () => {
+  const docs=[{integrity:'verified' as const,type:'ticket' as const,travelerIds:['adult']},{integrity:'verified' as const,type:'hotel_confirmation' as const,travelerIds:[]}];
+  const ready=assessDocumentReadiness(docs,['adult'],[{kind:'flight',travelerIds:['adult']},{kind:'stay'}]);
+  const unsupported=assessDocumentReadiness([],['adult'],[{kind:'other',travelerIds:['adult']}]);
+  const unassigned=assessDocumentReadiness([],['adult'],[{kind:'train',travelerIds:[]}]);
+  assert(ready.ready&&!ready.missingRequirements.length,'semantic document classes');
+  assert(unsupported.ready&&unassigned.ready,'no unsupported or unassigned requirement invented');
 });
 
 console.log(`Beta Candidate 1 scenario suite passed: ${passed} scenarios.`);

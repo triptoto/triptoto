@@ -25,7 +25,7 @@ eq(resolveLocalDateTime('2026-08-20T12:00','Not/AZone').status,'invalid','invali
 
 // Leave-now warning only when cached/user travel duration exists.
 {
- const r=evaluateTrip({nowUtc:base,leaveBufferMinutes:10,items:[{id:'x',tripId:'t',type:'activity',status:'confirmed',title:'Gate',startsAtUtc:base+20*60000,confidence:'confirmed'}],travelDurationsByItemId:{x:{minutes:15,source:'cached_route'}}});
+ const r=evaluateTrip({nowUtc:base,leaveBufferMinutes:10,items:[{id:'x',tripId:'t',type:'activity',status:'confirmed',title:'Gate',startsAtUtc:base+20*60000,confidence:'confirmed'}],travelDurationsByItemId:{x:{minutes:15,source:'cached_route',calculatedAt:base}}});
  ok(r.issues.some(i=>i.code==='LEAVE_NOW'),'leave-now issue');
 }
 
