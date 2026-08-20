@@ -1,0 +1,23 @@
+1/7 Frontend JavaScript
+2/7 TypeScript
+3/7 Scenario suites (compiled; no tsx CLI IPC)
+Extended beta scenario suite passed.
+Milestone 2 scenario suite passed.
+Import parser scenarios passed: flight, stay, mixed booking, ambiguous locale safety and unsupported handling.
+Launch readiness scenarios passed: quotas, feature boundaries, event privacy and request-size guard.
+Major scenario suite passed: journeys, deterministic health and sync version safety.
+4/7 Existing + major local D1 integration
+(node:6365) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Local D1 integration suite passed: auth, migration, sharing, imports, beta metrics, rate limits, ops privacy and data deletion.
+(node:6376) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Major local D1 integration passed: travel management, health, sync and readiness.
+(node:6387) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Major local D1 integration passed: journeys, activities, booking details, contacts, markers, intelligence, sync and readiness.
+5/7 Migrations
+Applied 15 migrations in clean SQLite; major tables verified.
+6/7 Shell scripts
+7/7 Static release files
+Major Beta Milestone 5–8 validation passed.

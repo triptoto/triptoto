@@ -1,17 +1,20 @@
 {
   "name": "tripto-to",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts",
+    "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts",
     "smoke:api": "bash scripts/smoke-api.sh",
-    "check:ui": "node --check public/app.js",
+    "check:ui": "node --check public/app.js && node --check public/major-workspace.js",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",
     "test:integration": "bash scripts/test-local-d1.sh",
     "validate:beta": "npm run check:ui && npm run typecheck && npm run test:scenarios && npm run test:integration",
-    "check:release": "bash scripts/check-release.sh"
+    "check:release": "bash scripts/check-release.sh",
+    "test:major-integration": "bash scripts/test-major-local-d1.sh",
+    "smoke:major": "bash scripts/smoke-major-milestone.sh",
+    "validate:major": "bash scripts/validate-major.sh"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
@@ -19,6 +22,6 @@
     "wrangler": "^4.0.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22 <26"
   }
 }

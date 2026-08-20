@@ -25,6 +25,14 @@ import { opsSummary } from './routes/ops.ts';
 import { deletionPreview, deleteMyData } from './routes/privacy.ts';
 import { enforceActorRateLimit, enforcePublicRateLimit } from './rate-limit.ts';
 import { PRODUCT_LIMITS } from './config.ts';
+import { listJourneys, createJourney, updateJourney, replaceJourneyItems, deleteJourney } from './routes/journeys.ts';
+import { listActivities, createActivity, updateActivity, deleteActivity } from './routes/activities.ts';
+import { listBookingDetails, upsertBookingDetail, deleteBookingDetail } from './routes/booking-details.ts';
+import { listContacts, createContact, updateContact, deleteContact } from './routes/contacts.ts';
+import { listTimeMarkers, createTimeMarker, updateTimeMarker, deleteTimeMarker } from './routes/time-markers.ts';
+import { expandedTripHealth } from './routes/intelligence.ts';
+import { syncStatus, syncChanges, acknowledgeSync, queueSyncOperation, listSyncConflicts } from './routes/sync-v2.ts';
+import { readiness } from './routes/readiness.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -34,14 +42,15 @@ export default {
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
       if (request.method === 'GET' && path === '/health') return health(request, env);
-      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-milestone-4' }, {}, request, env);
+      if (request.method === 'GET' && path === '/api/v1/readiness') return readiness(request, env);
+      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'major-beta-5-8' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {
         await enforcePublicRateLimit(request,env,{action:'guest_session',limit:PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint,windowMs:60*60*1000});
         return createGuestSession(request, env);
       }
 
       const auth = await requireAuth(request, env);
-      if (['POST','PATCH','DELETE'].includes(request.method)) await enforceActorRateLimit(env,auth,{action:'api_write',limit:PRODUCT_LIMITS.actorWritesPerHour,windowMs:60*60*1000});
+      if (['POST','PUT','PATCH','DELETE'].includes(request.method)) await enforceActorRateLimit(env,auth,{action:'api_write',limit:PRODUCT_LIMITS.actorWritesPerHour,windowMs:60*60*1000});
       if (request.method === 'POST' && path === '/api/v1/session/refresh') return refreshSession(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account') return accountStatus(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account/migration-preview') return accountMigrationPreview(request, env, auth);
@@ -137,6 +146,44 @@ export default {
       if (match && request.method==='GET') return getImport(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/([^/]+)\/resolve$/);
       if (match && request.method==='POST') return resolveImportCandidate(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/journeys$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listJourneys(request,env,auth,tripId); if(request.method==='POST') return createJourney(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/journeys\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), journeyId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateJourney(request,env,auth,tripId,journeyId); if(request.method==='DELETE') return deleteJourney(request,env,auth,tripId,journeyId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/journeys\/([^/]+)\/items$/);
+      if (match && request.method==='PUT') return replaceJourneyItems(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/activities$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listActivities(request,env,auth,tripId); if(request.method==='POST') return createActivity(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/activities\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateActivity(request,env,auth,tripId,itemId); if(request.method==='DELETE') return deleteActivity(request,env,auth,tripId,itemId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/booking-details$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listBookingDetails(request,env,auth,tripId); if(request.method==='PUT'||request.method==='POST') return upsertBookingDetail(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/booking-details\/([^/]+)\/([^/]+)$/);
+      if (match && request.method==='DELETE') return deleteBookingDetail(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]),decodeURIComponent(match[3]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/contacts$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listContacts(request,env,auth,tripId); if(request.method==='POST') return createContact(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/contacts\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), contactId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateContact(request,env,auth,tripId,contactId); if(request.method==='DELETE') return deleteContact(request,env,auth,tripId,contactId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/time-markers$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listTimeMarkers(request,env,auth,tripId); if(request.method==='POST') return createTimeMarker(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/time-markers\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), markerId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateTimeMarker(request,env,auth,tripId,markerId); if(request.method==='DELETE') return deleteTimeMarker(request,env,auth,tripId,markerId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/health\/expanded$/);
+      if (match && request.method==='GET') return expandedTripHealth(request,env,auth,decodeURIComponent(match[1]),false);
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/health\/recalculate$/);
+      if (match && request.method==='POST') return expandedTripHealth(request,env,auth,decodeURIComponent(match[1]),true);
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/sync\/status$/);
+      if (match && request.method==='GET') return syncStatus(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/sync\/changes$/);
+      if (match && request.method==='GET') return syncChanges(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/sync\/ack$/);
+      if (match && request.method==='POST') return acknowledgeSync(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/sync\/operations$/);
+      if (match && request.method==='POST') return queueSyncOperation(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/sync\/conflicts$/);
+      if (match && request.method==='GET') return listSyncConflicts(request,env,auth,decodeURIComponent(match[1]));
+
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts$/);
       if (match && request.method==='GET') return listImpacts(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts\/recalculate$/);

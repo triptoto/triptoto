@@ -106,7 +106,7 @@ export function applyCors(headers: Headers, request: Request, env: Env): void {
 export function corsPreflight(request: Request, env: Env): Response {
   const headers = new Headers();
   applyCors(headers, request, env);
-  headers.set('access-control-allow-methods', 'GET,POST,PATCH,DELETE,OPTIONS');
+  headers.set('access-control-allow-methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   headers.set('access-control-allow-headers', 'authorization,content-type,x-api-version,x-tripto-demo-secret,x-tripto-ops-secret,x-request-id');
   headers.set('access-control-max-age', '600');
   return new Response(null, { status: 204, headers });
