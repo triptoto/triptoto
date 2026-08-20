@@ -15,6 +15,10 @@ const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-aut
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
 const { refreshSession }=await load('apps/worker/src/routes/session.js');
 const { previewForwardedEmail, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
+const { betaStatus, recordClientBetaEvent }=await load('apps/worker/src/routes/beta.js');
+const { enforceActorRateLimit, enforcePublicRateLimit }=await load('apps/worker/src/rate-limit.js');
+const { deletionPreview, deleteMyData }=await load('apps/worker/src/routes/privacy.js');
+const { opsSummary }=await load('apps/worker/src/routes/ops.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -35,7 +39,7 @@ function addDevice(db,id,userId=null){const now=Date.now();db.prepare(`INSERT IN
 
 const db=new DatabaseSync(':memory:');
 for(const name of readdirSync('migrations').filter(x=>x.endsWith('.sql')).sort())db.exec(readFileSync(join('migrations',name),'utf8'));
-const env={DB:new LocalD1(db),SESSION_SECRET:'x'.repeat(64),ACCOUNT_AUTH_ENABLED:'false',SHARING_ENABLED:'false',DEMO_TOOLS_ENABLED:'true',DEMO_TOOLS_SECRET:'demo-secret-value-12345',LIVE_FLIGHTS_ENABLED:'false',AI_ENABLED:'false',GMAIL_SYNC_ENABLED:'false',R2_DOCUMENTS_ENABLED:'false',APP_BASE_URL:'https://app.tripto.test'};
+const env={DB:new LocalD1(db),SESSION_SECRET:'x'.repeat(64),ACCOUNT_AUTH_ENABLED:'false',SHARING_ENABLED:'false',DEMO_TOOLS_ENABLED:'true',DEMO_TOOLS_SECRET:'demo-secret-value-12345',LIVE_FLIGHTS_ENABLED:'false',AI_ENABLED:'false',GMAIL_SYNC_ENABLED:'false',R2_DOCUMENTS_ENABLED:'false',APP_BASE_URL:'https://app.tripto.test',BETA_RELEASE:'beta-milestone-4',BETA_METRICS_ENABLED:'true',OPS_ENABLED:'false'};
 addDevice(db,'guest-device');
 const guest={deviceId:'guest-device'};
 
@@ -161,4 +165,61 @@ const importsAfter=await body(await listImports(req('https://test/api/v1/trips/x
 assert(importsAfter.imports.some(x=>x.id===previewImport.import.id&&x.status==='completed'),'import completes after confirmation');
 assert(!Object.keys(db.prepare(`SELECT * FROM import_messages WHERE import_id=?`).get(previewImport.import.id)).some(k=>/body|raw|content/i.test(k)),'import message schema stores no raw body');
 
-console.log('Local D1 integration suite passed: auth bridge, migration, session refresh, export, support, sharing, invites, deterministic imports and all QA scenarios.');
+
+// Milestone 4: privacy-safe beta events and activation status.
+await recordClientBetaEvent(req('https://test/api/v1/beta/events','POST',{eventName:'timeline_opened',tripId}),env,owner);
+await recordClientBetaEvent(req('https://test/api/v1/beta/events','POST',{eventName:'whats_next_opened',tripId}),env,owner);
+const beta=await body(await betaStatus(req('https://test/api/v1/beta/status?tripId='+tripId),env,owner));
+assert(beta.beta.release==='beta-milestone-4','beta release surfaced');
+assert(beta.beta.activation.usedTimeline===true,'timeline activation recorded');
+assert(beta.beta.activation.usedWhatsNext===true,'whats next activation recorded');
+assert(typeof beta.beta.trip.importPreviewsRemaining==='number','import quota remaining surfaced');
+assert(!JSON.stringify(beta).includes('ABC123'),'beta status leaks no confirmation number');
+
+// Fixed-window actor and public abuse guards.
+await enforceActorRateLimit(env,owner,{action:'integration_actor',limit:2,windowMs:3600000});
+await enforceActorRateLimit(env,owner,{action:'integration_actor',limit:2,windowMs:3600000});
+let actorLimited=false;try{await enforceActorRateLimit(env,owner,{action:'integration_actor',limit:2,windowMs:3600000});}catch(e){actorLimited=e.code==='RATE_LIMITED';}
+assert(actorLimited,'actor rate limit enforced');
+const publicReq=new Request('https://test/api/v1/session/guest',{headers:{'cf-connecting-ip':'203.0.113.7','user-agent':'integration-test'}});
+await enforcePublicRateLimit(publicReq,env,{action:'integration_public',limit:1,windowMs:3600000});
+let publicLimited=false;try{await enforcePublicRateLimit(publicReq,env,{action:'integration_public',limit:1,windowMs:3600000});}catch(e){publicLimited=e.code==='RATE_LIMITED';}
+assert(publicLimited,'public fingerprint rate limit enforced');
+
+// Ops endpoint is hidden unless both flag and secret are present.
+let ops=await opsSummary(req('https://test/api/v1/internal/ops/summary'),env,owner);assert(ops.status===404,'ops hidden while disabled');
+env.OPS_ENABLED='true';env.OPS_SECRET='integration-ops-secret-123456789';
+ops=await opsSummary(req('https://test/api/v1/internal/ops/summary','GET',undefined,{'x-tripto-ops-secret':'wrong'}),env,owner);assert(ops.status===404,'ops hides wrong secret');
+ops=await opsSummary(req('https://test/api/v1/internal/ops/summary','GET',undefined,{'x-tripto-ops-secret':'integration-ops-secret-123456789'}),env,owner);assert(ops.status===200,'ops works with enabled secret');
+const opsBody=await body(ops);assert(opsBody.ops.privacy.includes('Aggregate counts only'),'ops privacy boundary');
+env.OPS_ENABLED='false';
+
+// Guest deletion removes server-side device/trips and leaves only anonymous deletion counters.
+addDevice(db,'privacy-guest');
+const privacyGuest={deviceId:'privacy-guest'};
+const pg=await body(await createDemoTrip(req('https://test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,privacyGuest));
+const guestPreview=await body(await deletionPreview(req('https://test/api/v1/account/deletion-preview'),env,privacyGuest));
+assert(guestPreview.deletion.ownedTrips===1,'guest deletion preview counts trip');
+const guestDeleted=await body(await deleteMyData(req('https://test/api/v1/account','DELETE',{confirm:'DELETE'}),env,privacyGuest));
+assert(guestDeleted.deleted===true&&guestDeleted.mode==='guest','guest deletion completed');
+assert(db.prepare(`SELECT COUNT(*) c FROM devices WHERE id='privacy-guest'`).get().c===0,'guest device deleted');
+assert(db.prepare(`SELECT COUNT(*) c FROM trips WHERE id=?`).get(pg.demo.tripId).c===0,'guest trip hard deleted');
+
+// Account deletion removes owned trips, identities and devices, but records only anonymous deletion counts.
+addDevice(db,'privacy-account-device');
+const privacyLogin=await completeVerifiedIdentityLogin(env,'privacy-account-device',{provider:'email',providerSubject:'privacy@example.test',email:'privacy@example.test',emailVerified:true,displayName:'Privacy Test'});
+const privacyAuth={deviceId:'privacy-account-device',userId:privacyLogin.userId};
+db.prepare(`INSERT INTO usage_counters(scope_type,scope_id,period_key,metric,value,updated_at) VALUES ('user',?,'test','requests',1,?)`).run('user:'+privacyLogin.userId,Date.now());
+db.prepare(`INSERT INTO usage_counters(scope_type,scope_id,period_key,metric,value,updated_at) VALUES ('user',?,'test','requests',1,?)`).run('device:privacy-account-device',Date.now());
+const pa=await body(await createDemoTrip(req('https://test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,privacyAuth));
+const accountPreview=await body(await deletionPreview(req('https://test/api/v1/account/deletion-preview'),env,privacyAuth));
+assert(accountPreview.deletion.ownedTrips===1,'account deletion preview counts owned trip');
+const accountDeleted=await body(await deleteMyData(req('https://test/api/v1/account','DELETE',{confirm:'DELETE'}),env,privacyAuth));
+assert(accountDeleted.deleted===true&&accountDeleted.mode==='account','account deletion completed');
+assert(db.prepare(`SELECT COUNT(*) c FROM users WHERE id=?`).get(privacyLogin.userId).c===0,'account user hard deleted');
+assert(db.prepare(`SELECT COUNT(*) c FROM trips WHERE id=?`).get(pa.demo.tripId).c===0,'account owned trip hard deleted');
+assert(db.prepare(`SELECT COUNT(*) c FROM usage_counters WHERE scope_id IN (?,?)`).get('user:'+privacyLogin.userId,'device:privacy-account-device').c===0,'account rate-limit identifiers deleted');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM privacy_deletions`).get().c)>=2,'anonymous privacy deletion counters recorded');
+
+console.log('Local D1 integration suite passed: auth, migration, sharing, imports, beta metrics, rate limits, ops privacy and data deletion.');
+

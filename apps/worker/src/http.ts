@@ -30,17 +30,26 @@ export function json(data: unknown, init: ResponseInit = {}, request?: Request, 
 export function errorResponse(error: unknown, request: Request, env: Env): Response {
   const id = requestId(request);
   if (error instanceof HttpError) {
-    return json({ error: { code: error.code, message: error.message, details: error.details, requestId: id } }, { status: error.status }, request, env);
+    const headers = new Headers();
+    const retry = error.details && typeof error.details === 'object' && 'retryAfterSeconds' in error.details
+      ? Number((error.details as {retryAfterSeconds?:unknown}).retryAfterSeconds)
+      : NaN;
+    if (error.status === 429 && Number.isFinite(retry) && retry > 0) headers.set('retry-after', String(Math.ceil(retry)));
+    return json({ error: { code: error.code, message: error.message, details: error.details, requestId: id } }, { status: error.status, headers }, request, env);
   }
   console.error('Unhandled worker error', { requestId: id, error });
   return json({ error: { code: 'INTERNAL_ERROR', message: 'Unexpected server error.', requestId: id } }, { status: 500 }, request, env);
 }
 
-export async function readJson<T>(request: Request): Promise<T> {
+export async function readJson<T>(request: Request, maxBytes = 64 * 1024): Promise<T> {
   const contentType = request.headers.get('content-type') ?? '';
   if (!contentType.includes('application/json')) throw new HttpError(415, 'JSON_REQUIRED', 'Expected application/json request body.');
+  const declared = Number(request.headers.get('content-length') ?? '0');
+  if (Number.isFinite(declared) && declared > maxBytes) throw new HttpError(413, 'REQUEST_TOO_LARGE', `Request body exceeds the ${maxBytes} byte limit.`);
+  const raw = await request.text();
+  if (new TextEncoder().encode(raw).byteLength > maxBytes) throw new HttpError(413, 'REQUEST_TOO_LARGE', `Request body exceeds the ${maxBytes} byte limit.`);
   try {
-    return await request.json() as T;
+    return JSON.parse(raw) as T;
   } catch {
     throw new HttpError(400, 'INVALID_JSON', 'Request body is not valid JSON.');
   }
@@ -98,7 +107,7 @@ export function corsPreflight(request: Request, env: Env): Response {
   const headers = new Headers();
   applyCors(headers, request, env);
   headers.set('access-control-allow-methods', 'GET,POST,PATCH,DELETE,OPTIONS');
-  headers.set('access-control-allow-headers', 'authorization,content-type,x-api-version,x-tripto-demo-secret,x-request-id');
+  headers.set('access-control-allow-headers', 'authorization,content-type,x-api-version,x-tripto-demo-secret,x-tripto-ops-secret,x-request-id');
   headers.set('access-control-max-age', '600');
   return new Response(null, { status: 204, headers });
 }

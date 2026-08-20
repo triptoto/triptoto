@@ -28,6 +28,8 @@ R2_DOCUMENTS_ENABLED=false
 ACCOUNT_AUTH_ENABLED=false
 SHARING_ENABLED=false
 DEMO_TOOLS_ENABLED=false
+BETA_METRICS_ENABLED=true
+OPS_ENABLED=false
 ```
 
 ## Verification
@@ -45,8 +47,12 @@ After deployment:
 bash scripts/smoke-beta-milestone.sh
 ```
 
-See `docs/BETA_MILESTONE_2.md` for the current milestone and deployment sequence.
+See `docs/BETA_LAUNCH_READINESS.md` and `COPY_BETA_MILESTONE_4.md` for the current milestone and deployment sequence.
 
 ## Beta Milestone 3
 
 The current beta foundation now includes deterministic booking-email preview/confirmation and local-only offline document storage while R2 remains disabled. Raw forwarded-email bodies are not persisted, ambiguous locale dates are not guessed, and imported bookings require explicit confirmation before trip data changes.
+
+## Beta Milestone 4
+
+Launch-readiness hardening adds privacy-safe activation metrics, fixed-window abuse limits, request-size guards, aggregate ops tooling behind a disabled flag/secret, full guest/account deletion contracts, a Beta Readiness panel, and a Node 22/GitHub validation baseline. Metrics are D1-only and intentionally exclude itinerary text, addresses, confirmation numbers, raw email bodies, invite tokens and document bytes.

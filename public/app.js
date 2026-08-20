@@ -33,6 +33,7 @@ var state={
   imports:[],
   localDocs:[],
   importReview:null,
+  betaStatus:null,
   pendingInviteToken:(location.pathname.indexOf('/join/')===0?decodeURIComponent(location.pathname.slice(6)):null)
 };
 var app=document.getElementById('app');
@@ -68,7 +69,7 @@ async function flushPendingMutations(){
         q.status='done';changed=true;
       }
     }catch(e){
-      if(e&&e.status===409){q.status='needs_review';q.error=e.message;q.requestId=e.requestId||null;changed=true;}
+      if(e&&e.status===409){q.status='needs_review';q.error=e.message;q.requestId=e.requestId||null;changed=true;sendBetaEvent('offline_conflict_seen',q.tripId);}
       else{q.error=e&&e.message?e.message:'Sync failed';q.requestId=e&&e.requestId?e.requestId:null;}
     }
   }
@@ -161,6 +162,14 @@ function firstRunSeen(){return localStorage.getItem('tripto_onboarding_seen')===
 function markOnboardingSeen(){localStorage.setItem('tripto_onboarding_seen','1');}
 function persistView(){localStorage.setItem('tripto_view',state.view);}
 
+function betaEventLocalKey(eventName,tripId){return 'tripto_beta_event:'+new Date().toISOString().slice(0,10)+':'+(tripId||'-')+':'+eventName;}
+function sendBetaEvent(eventName,tripId){
+  if(!navigator.onLine||!state.token)return;
+  tripId=tripId||(state.trip&&state.trip.id)||null;
+  var key=betaEventLocalKey(eventName,tripId);try{if(localStorage.getItem(key)==='1')return;localStorage.setItem(key,'1');}catch(_){}
+  fetch(API+'/api/v1/beta/events',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+state.token},body:JSON.stringify({eventName:eventName,tripId:tripId})}).catch(function(){try{localStorage.removeItem(key);}catch(_){}});
+}
+
 function activeIssues(){
   var arr=[];
   if(state.brain&&Array.isArray(state.brain.issues))arr=arr.concat(state.brain.issues);
@@ -199,7 +208,7 @@ async function ensureSession(){
   var r=await fetch(API+'/api/v1/session/guest',{
     method:'POST',
     headers:{'content-type':'application/json'},
-    body:JSON.stringify({platform:'web',appVersion:'beta-milestone-2',apiVersion:'v1'})
+    body:JSON.stringify({platform:'web',appVersion:'beta-milestone-4',apiVersion:'v1'})
   });
   if(!r.ok)throw new Error('Could not start guest session.');
   var d=await r.json();
@@ -248,6 +257,7 @@ async function loadTrips(){
     if(state.trip)localStorage.setItem('tripto_selected_trip',state.trip.id);
     if(navigator.onLine)await flushPendingMutations();
     await loadTripDetails();
+    if(state.trip&&state.view==='home'){sendBetaEvent('whats_next_opened',state.trip.id);if(modeForTrip()==='active')sendBetaEvent('during_trip_home_opened',state.trip.id);}
     if(state.pendingInviteToken)await loadInvitePreview();
     state.lastRefreshAt=Date.now();
   }catch(e){notify(e.message);}
@@ -256,7 +266,7 @@ async function loadTrips(){
 async function loadTripDetails(){
   if(!state.trip){
     state.timeline=[];state.checklist=[];state.brain=null;state.impacts=[];
-    state.transport=[];state.stays=[];state.locations=[];state.travelers=[];state.connections=[];state.imports=[];state.localDocs=[];state.sharing=null;return;
+    state.transport=[];state.stays=[];state.locations=[];state.travelers=[];state.connections=[];state.imports=[];state.localDocs=[];state.sharing=null;state.betaStatus=null;return;
   }
   var id=encodeURIComponent(state.trip.id);
   var paths=[
@@ -270,7 +280,8 @@ async function loadTripDetails(){
     '/api/v1/trips/'+id+'/travelers',
     '/api/v1/trips/'+id+'/connections',
     '/api/v1/trips/'+id+'/sharing',
-    '/api/v1/trips/'+id+'/imports'
+    '/api/v1/trips/'+id+'/imports',
+    '/api/v1/beta/status?tripId='+id
   ];
   var r=await Promise.allSettled(paths.map(apiGet));
   if(r[0].status==='fulfilled')state.timeline=r[0].value.items||[];
@@ -284,6 +295,7 @@ async function loadTripDetails(){
   if(r[8].status==='fulfilled')state.connections=r[8].value.connections||[];
   if(r[9].status==='fulfilled')state.sharing=r[9].value.sharing||null;
   if(r[10].status==='fulfilled')state.imports=r[10].value.imports||[];
+  if(r[11].status==='fulfilled')state.betaStatus=r[11].value.beta||null;
   state.localDocs=await listLocalDocs(state.trip.id);
 }
 
@@ -325,13 +337,19 @@ async function saveLocalDoc(file,type,travelerIds){
   var existing=await listLocalDocs(state.trip.id);if(existing.length>=20)throw new Error('Beta limit is 20 local documents per trip on this device.');
   var db=await openLocalDocDb();var row={id:'doc_'+crypto.randomUUID(),tripId:state.trip.id,name:file.name||'document',mime:file.type||'application/octet-stream',size:file.size,type:type||'other',travelerIds:Array.isArray(travelerIds)?travelerIds:[],savedAt:Date.now(),blob:file};
   await new Promise(function(resolve,reject){var tx=db.transaction('docs','readwrite');tx.objectStore('docs').put(row);tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};});
-  state.localDocs=await listLocalDocs(state.trip.id);return row;
+  state.localDocs=await listLocalDocs(state.trip.id);sendBetaEvent('local_document_saved',state.trip.id);return row;
 }
 async function removeLocalDoc(id){
   try{var db=await openLocalDocDb();await new Promise(function(resolve,reject){var tx=db.transaction('docs','readwrite');tx.objectStore('docs').delete(id);tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};});state.localDocs=await listLocalDocs(state.trip.id);render();notify('Local document removed from this device.');}catch(e){showRecovery('Document was not removed.',e.message,'Your trip data is unchanged.');}
 }
+
+async function clearAllLocalBetaData(){
+  try{await new Promise(function(resolve){if(!('indexedDB' in window)){resolve();return;}var req=indexedDB.deleteDatabase(LOCAL_DOC_DB);req.onsuccess=req.onerror=req.onblocked=function(){resolve();};});}catch(_){}
+  try{if('caches' in window){var keys=await caches.keys();await Promise.all(keys.map(function(k){return caches.delete(k);}));}}catch(_){}
+  try{localStorage.clear();sessionStorage.clear();}catch(_){}
+}
 async function openLocalDoc(id){
-  var row=state.localDocs.find(function(x){return x.id===id;});if(!row||!row.blob){notify('Document is not available on this device.');return;}var url=URL.createObjectURL(row.blob);window.open(url,'_blank','noopener');setTimeout(function(){URL.revokeObjectURL(url);},60000);
+  var row=state.localDocs.find(function(x){return x.id===id;});if(!row||!row.blob){notify('Document is not available on this device.');return;}sendBetaEvent('local_document_opened',state.trip&&state.trip.id);var url=URL.createObjectURL(row.blob);window.open(url,'_blank','noopener');setTimeout(function(){URL.revokeObjectURL(url);},60000);
 }
 function localDocTravelerLabel(d){var ids=Array.isArray(d.travelerIds)?d.travelerIds:[];if(!ids.length)return 'All / unassigned';var names=ids.map(function(id){var t=state.travelers.find(function(x){return x.id===id;});return t?t.display_name:null;}).filter(Boolean);return names.length?names.join(', '):ids.length+' traveler(s)';}
 function localDocRows(){
@@ -366,6 +384,10 @@ function showRecovery(title,message,hint){
 }
 function recoveryForError(title,error,hint){
   var req=error&&error.requestId?' Request ID: '+error.requestId+'.':'';
+  if(error&&error.code==='RATE_LIMITED'){
+    var wait=error.details&&error.details.retryAfterSeconds?Math.ceil(Number(error.details.retryAfterSeconds)/60):null;
+    hint=(wait?'Try again in about '+wait+' minute(s). ':'')+(hint||'Your existing trip data is unchanged.');
+  }
   showRecovery(title,(error&&error.message?error.message:'The request failed.')+req,hint);
 }
 function localToUtc(localValue,timeZone){
@@ -435,6 +457,7 @@ function dialogs(){
   '<dialog id="localDocDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Documents</div><h2>Save on this device</h2></div><button class="icon-btn" data-close="localDocDialog">×</button></div><div class="fact-note">R2 cloud document storage is still disabled. This file stays only in this browser/device and is available offline through IndexedDB.</div><form id="localDocForm" class="form"><div class="field"><label>Document type</label><select name="type"><option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="other" selected>Other</option></select></div><div class="field"><label>File · max 10 MB</label><input type="file" name="file" required></div><div class="field"><label>Traveler assignment (optional)</label>'+travelerChecks()+'</div><button class="btn btn-primary" type="submit">Save locally</button></form></div></dialog>'+
   '<dialog id="recoveryDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Recovery</div><h2 id="recoveryTitle">Something needs attention</h2></div><button class="icon-btn" data-close="recoveryDialog">×</button></div><p class="subtle" id="recoveryBody">Your existing trip data is safe.</p><div class="inline-actions"><button class="btn btn-primary" data-action="recovery-refresh">Refresh trip</button><button class="btn" data-close="recoveryDialog">Close</button></div></div></dialog>'+
   '<dialog id="deleteTripDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Delete trip</div><h2>This removes the trip</h2></div><button class="icon-btn" data-close="deleteTripDialog">×</button></div><div class="danger-box"><strong>Soft-delete from your trip list</strong><span>Current beta data is retained internally through tombstones/change history for sync safety, but the trip will disappear from the app.</span></div><form id="deleteTripForm" class="form"><div class="field"><label>Type DELETE to confirm</label><input name="confirm" autocomplete="off" required placeholder="DELETE"></div><button class="btn btn-danger" type="submit">Delete this trip</button></form></div></dialog>'+
+  '<dialog id="deleteAllDataDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Privacy</div><h2>Delete all beta data</h2></div><button class="icon-btn" data-close="deleteAllDataDialog">×</button></div><div class="danger-box"><strong>This is broader than deleting one trip.</strong><span id="deleteAllDataEffect">Owned trips, account/device access and server-side beta data tied to this identity will be removed according to the current beta deletion policy.</span></div><form id="deleteAllDataForm" class="form"><div class="field"><label>Type DELETE to confirm</label><input name="confirm" autocomplete="off" required placeholder="DELETE"></div><button class="btn btn-danger" type="submit">Delete all my beta data</button></form></div></dialog>'+
   '<dialog id="guestInfoDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Guest beta</div><h2>Your current access</h2></div><button class="icon-btn" data-close="guestInfoDialog">×</button></div><div class="guest-info"><div class="health-line"><div class="health-icon warn">!</div><div><strong>Do not clear browser storage yet</strong><div class="subtle">This beta uses a device-bound guest session. Clearing site data can remove the token used to reopen guest trips.</div></div></div><div class="health-line"><div class="health-icon">✓</div><div><strong>No password required</strong><div class="subtle">Account sign-in and cross-device restore remain intentionally deferred until the auth layer is connected.</div></div></div></div><button class="btn btn-navy" data-close="guestInfoDialog">Got it</button></div></dialog>'+
   '<dialog id="driverDialog" class="dialog driver-dialog"><div class="driver-sheet"><button class="driver-close" data-close="driverDialog">×</button><div class="driver-kicker">SHOW TO DRIVER</div><div class="driver-name">'+esc(driverName)+'</div><div class="driver-address">'+esc(driverAddress)+'</div><div class="driver-note">Saved trip address · available from cached trip data</div></div></dialog>';
 }
@@ -657,6 +680,17 @@ function importsView(){
 function documentsView(){
   return shell('<div class="page-head"><div><div class="eyebrow">Documents</div><h1>Offline documents</h1><div class="subtle">Boarding passes, tickets and confirmations stored locally on this device while R2 remains disabled.</div></div><button class="btn btn-primary" data-open="localDocDialog">Add document</button></div><section class="local-only-banner"><strong>Local-only beta storage</strong><span>These files are not synced to another device and will be lost if this browser site data is removed.</span></section><section class="card card-pad"><div class="section-title"><h2>'+state.localDocs.length+' saved file(s)</h2>'+badge('Device only','badge-yellow')+'</div>'+localDocRows()+'</section>');
 }
+
+function betaLaunchCard(){
+  var b=state.betaStatus||{};var a=b.activation||{};var trip=b.trip||{};
+  var steps=[
+    ['Create a trip',!!a.createdTrip],['Add 2 bookings',!!a.addedSecondBooking],['Open What’s Next',!!a.usedWhatsNext],['Open Timeline',!!a.usedTimeline],['Check Ready Offline',!!a.usedReadyOffline],['Complete a trip',!!a.completedTrip],['Create a second trip',!!a.createdSecondTrip]
+  ];
+  var done=steps.filter(function(x){return x[1];}).length;
+  var rows=steps.map(function(x){return '<div class="launch-step '+(x[1]?'done':'')+'"><span>'+(x[1]?'✓':'•')+'</span><strong>'+esc(x[0])+'</strong></div>';}).join('');
+  var quota=trip.importPreviewsRemaining==null?'—':trip.importPreviewsRemaining;
+  return '<section class="card card-pad launch-card"><div class="section-title"><div><div class="eyebrow">Beta readiness</div><h2>'+done+' of '+steps.length+' signals</h2></div>'+badge(b.release||'Milestone 4','badge-indigo')+'</div><div class="launch-steps">'+rows+'</div><div class="launch-meta"><span>Booking-email previews remaining today</span><strong>'+esc(quota)+'</strong><span>Urgent trip issues</span><strong>'+esc(trip.urgentImpacts==null?'—':trip.urgentImpacts)+'</strong></div><div class="fact-note">These are product-activation signals, not a health score. Metrics store only coarse event names, internal IDs and timestamps — never itinerary text, locations, confirmation numbers, email bodies or document bytes.</div></section>';
+}
 function settingsView(){
   var t=state.trip;
   var installAvailable=!!state.installPrompt;
@@ -666,7 +700,7 @@ function settingsView(){
   var pendingInvite=state.pendingInviteToken?'<div class="invite-notice"><strong>Invite link detected</strong><span>A verified account is required before this invite can be accepted. The token is kept only in this tab.</span></div>':'';
   return shell(
     '<div class="page-head"><div><div class="eyebrow">Trip settings</div><h1>'+esc(t.title)+'</h1><div class="subtle">Trip identity, lifecycle, backup and beta access.</div></div><button class="btn btn-ghost" data-view="trips">Back to trips</button></div>'+pendingInvite+
-    '<div class="settings-grid">'+
+    '<div class="settings-grid">'+betaLaunchCard()+
       '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Trip</div><h2>Basics</h2></div>'+badge(t.lifecycle_state||'draft')+'</div>'+ 
         '<form id="tripSettingsForm" class="form">'+
           '<div class="field"><label>Trip name</label><input name="title" maxlength="120" required value="'+esc(t.title||'')+'"></div>'+ 
@@ -696,6 +730,10 @@ function settingsView(){
       '</section>'+ 
       '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Imports</div><h2>Booking email</h2></div>'+badge(state.imports.length+' import(s)')+'</div><div class="subtle">Forwarded-email parsing is deterministic and always requires confirmation before creating trip data.</div><div class="inline-actions" style="margin-top:12px"><button class="btn btn-ghost" data-open="importDialog">Import email</button><button class="btn btn-ghost" data-view="imports">View history</button></div></section>'+
       '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Documents</div><h2>Local offline files</h2></div>'+badge(state.localDocs.length+' file(s)',state.localDocs.length?'badge-green':'badge-yellow')+'</div><div class="subtle">Cloud document storage remains disabled. Local files are stored in IndexedDB only on this device.</div><button class="btn btn-ghost" style="margin-top:12px" data-view="documents">Manage documents</button></section>'+
+      '<section class="card card-pad data-delete-card"><div class="section-title"><div><div class="eyebrow danger-text">Privacy</div><h2>Delete all beta data</h2></div></div>'+
+        '<div class="subtle">Permanently remove all server-side trips owned by this guest device/account, sessions and identity data. Shared trips owned by someone else are not deleted.</div>'+
+        '<button class="btn btn-danger" style="margin-top:12px" data-action="delete-all-data">Delete all my beta data</button>'+
+      '</section>'+
       '<section class="card card-pad danger-card"><div class="section-title"><div><div class="eyebrow danger-text">Danger zone</div><h2>Delete trip</h2></div></div>'+ 
         '<div class="subtle">Deletion requires the current version and a typed confirmation. This avoids accidental destructive actions.</div>'+ 
         '<button class="btn btn-danger" style="margin-top:12px" data-action="delete-trip">Delete '+esc(t.title)+'</button>'+ 
@@ -825,7 +863,7 @@ function render(){
 }
 
 function bind(){
-  document.querySelectorAll('[data-view]').forEach(function(el){el.addEventListener('click',async function(){state.view=el.dataset.view;persistView();if(state.view==='sharing')await loadSharingManagement();render();});});
+  document.querySelectorAll('[data-view]').forEach(function(el){el.addEventListener('click',async function(){state.view=el.dataset.view;persistView();if(state.view==='timeline')sendBetaEvent('timeline_opened');if(state.view==='ready')sendBetaEvent('ready_offline_opened');if(state.view==='home'){sendBetaEvent('whats_next_opened');if(modeForTrip()==='active')sendBetaEvent('during_trip_home_opened');}if(state.view==='sharing')await loadSharingManagement();render();});});
   document.querySelectorAll('[data-open]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.open);if(d)d.showModal();});});
   document.querySelectorAll('[data-close]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.close);if(d)d.close();});});
   document.querySelectorAll('[data-trip]').forEach(function(el){el.addEventListener('click',async function(){
@@ -905,6 +943,13 @@ function bind(){
     var d=document.getElementById('deleteTripDialog');if(d)d.showModal();
   });});
 
+  document.querySelectorAll('[data-action="delete-all-data"]').forEach(function(el){el.addEventListener('click',async function(){
+    try{
+      var d=await api('/api/v1/account/deletion-preview');var x=d.deletion||{};var effect=document.getElementById('deleteAllDataEffect');
+      if(effect)effect.textContent=(x.effect||'All beta data attached to this identity will be deleted.')+' Owned trips: '+(x.ownedTrips==null?'—':x.ownedTrips)+'. Devices: '+(x.devices==null?'—':x.devices)+'.';
+      var dialog=document.getElementById('deleteAllDataDialog');if(dialog)dialog.showModal();
+    }catch(e){recoveryForError('Deletion preview unavailable.',e,'No data was deleted.');}
+  });});
   document.querySelectorAll('[data-action="recovery-refresh"]').forEach(function(el){el.addEventListener('click',async function(){var d=document.getElementById('recoveryDialog');if(d)d.close();await loadTrips();});});
   document.querySelectorAll('[data-traveler-edit]').forEach(function(el){el.addEventListener('click',function(){startEditTraveler(el.dataset.travelerEdit);});});
   document.querySelectorAll('[data-traveler-delete]').forEach(function(el){el.addEventListener('click',async function(){await removeTraveler(el.dataset.travelerDelete);});});
@@ -1000,6 +1045,16 @@ function bind(){
       else{payload.travelerIds=selectedTravelerIds(hotelForm);await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/stays',{method:'POST',body:JSON.stringify(payload)});notify('Stay added.');}
       document.getElementById('hotelDialog').close();resetStayForm();await loadTripDetails();render();
     }catch(err){recovery(err.message,'The stay was not saved. Existing trip data is unchanged. Review the fields and try again.');}
+  });
+
+  var deleteAllDataForm=document.getElementById('deleteAllDataForm');
+  if(deleteAllDataForm)deleteAllDataForm.addEventListener('submit',async function(e){
+    e.preventDefault();var fd=new FormData(deleteAllDataForm);
+    if(String(fd.get('confirm')||'').trim()!=='DELETE'){notify('Type DELETE exactly to confirm.');return;}
+    try{
+      await api('/api/v1/account',{method:'DELETE',body:JSON.stringify({confirm:'DELETE'})});
+      await clearAllLocalBetaData();location.replace('/');
+    }catch(err){recoveryForError('Your beta data was not deleted.',err,'Nothing is removed unless the server confirms the deletion.');}
   });
 
   var tripSettingsForm=document.getElementById('tripSettingsForm');

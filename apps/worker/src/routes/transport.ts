@@ -2,6 +2,7 @@ import type { AuthContext, Env } from '../types.ts';
 import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
+import { recordBookingMilestones } from '../beta-events.ts';
 
 const transportTypes=['flight','train','bus','ferry','car','transfer','other'] as const;
 const statuses=['planned','confirmed','completed','cancelled','skipped','unknown'] as const;
@@ -28,6 +29,7 @@ export async function createTransport(request:Request,env:Env,auth:AuthContext,t
  if(transportType==='flight') statements.push(env.DB.prepare(`INSERT INTO flights (trip_item_id,marketing_airline_code,marketing_flight_number,operating_airline_code,operating_flight_number,departure_terminal,arrival_terminal,boarding_time_utc,gate_close_time_utc,scheduled_departure_utc,scheduled_arrival_utc,operational_phase,disruption_state,live_data_enabled) VALUES (?,?,?,?,?,?,?,?,?,?,?,'scheduled','none',0)`).bind(id,upper(body.marketingAirlineCode,3),optionalString(body.marketingFlightNumber,'marketingFlightNumber',12),upper(body.operatingAirlineCode,3),optionalString(body.operatingFlightNumber,'operatingFlightNumber',12),optionalString(body.departureTerminal,'departureTerminal',20),optionalString(body.arrivalTerminal,'arrivalTerminal',20),optionalInteger(body.boardingTimeUtc,'boardingTimeUtc'),optionalInteger(body.gateCloseTimeUtc,'gateCloseTimeUtc'),dep,arr));
  const travelerIds=arrayOfIds(body.travelerIds); await ensureTravelers(env,tripId,travelerIds); for(const travelerId of travelerIds) statements.push(env.DB.prepare(`INSERT INTO trip_item_travelers (trip_item_id,traveler_id,role,created_at) VALUES (?,?,'participant',?)`).bind(id,travelerId,now));
  await env.DB.batch(statements); const item=await getTransport(env,tripId,id); await recordChangeEvent(env,tripId,'trip_item',id,'transport_added',null,{item,transportType});
+ await recordBookingMilestones(env,auth,tripId);
  return json({item,transportType},{status:201},request,env);
 }
 

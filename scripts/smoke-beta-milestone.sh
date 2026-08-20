@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 BASE_URL="${1:-https://tripto-api.travelinkme.workers.dev}"
-TMP_DIR="${TMPDIR:-/tmp}/tripto-smoke-m3-$$"
+TMP_DIR="${TMPDIR:-/tmp}/tripto-smoke-m4-$$"
 mkdir -p "$TMP_DIR"
 cleanup(){ rm -rf "$TMP_DIR"; }
 trap cleanup EXIT
@@ -10,11 +10,11 @@ json_field(){ node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{c
 
 printf 'Health... '
 HEALTH=$(curl -fsS "$BASE_URL/health")
-printf '%s' "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const x=JSON.parse(s);if(!x.ok||x.build!=='beta-milestone-3')process.exit(1)})"
+printf '%s' "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const x=JSON.parse(s);if(!x.ok||x.build!=='beta-milestone-4')process.exit(1)})"
 echo OK
 
 printf 'Guest session... '
-SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data '{"platform":"web","appVersion":"smoke-milestone-3","apiVersion":"v1"}')
+SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data '{"platform":"web","appVersion":"smoke-milestone-4","apiVersion":"v1"}')
 TOKEN=$(printf '%s' "$SESSION" | json_field token)
 echo OK
 
@@ -26,7 +26,7 @@ curl -fsS "$BASE_URL/api/v1/account/migration-preview" "${AUTH[@]}" > "$TMP_DIR/
 echo OK
 
 printf 'Create smoke trip... '
-TRIP=$(curl -fsS -X POST "$BASE_URL/api/v1/trips" "${AUTH[@]}" -H 'content-type: application/json' --data '{"title":"Milestone 3 Smoke Trip","lifecycleState":"upcoming"}')
+TRIP=$(curl -fsS -X POST "$BASE_URL/api/v1/trips" "${AUTH[@]}" -H 'content-type: application/json' --data '{"title":"Milestone 4 Smoke Trip","lifecycleState":"upcoming"}')
 TRIP_ID=$(printf '%s' "$TRIP" | json_field trip.id)
 TRIP_VERSION=$(printf '%s' "$TRIP" | json_field trip.version)
 echo "$TRIP_ID"
@@ -53,6 +53,21 @@ echo OK
 printf 'Diagnostics + request id... '
 curl -fsS -D "$TMP_DIR/headers.txt" "$BASE_URL/api/v1/diagnostics" "${AUTH[@]}" > "$TMP_DIR/diagnostics.json"
 grep -qi '^x-request-id:' "$TMP_DIR/headers.txt"
+echo OK
+
+printf 'Beta launch status... '
+curl -fsS "$BASE_URL/api/v1/beta/status?tripId=$TRIP_ID" "${AUTH[@]}" > "$TMP_DIR/beta.json"
+printf '%s' "$(cat "$TMP_DIR/beta.json")" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const x=JSON.parse(s);if(x.beta.release!=='beta-milestone-4'||!x.beta.metricsEnabled)process.exit(1)})"
+echo OK
+
+printf 'Privacy deletion preview... '
+curl -fsS "$BASE_URL/api/v1/account/deletion-preview" "${AUTH[@]}" > "$TMP_DIR/deletion-preview.json"
+grep -q 'requiresConfirmation' "$TMP_DIR/deletion-preview.json"
+echo OK
+
+printf 'Ops endpoint hidden... '
+OPS_STATUS=$(curl -sS -o "$TMP_DIR/ops.json" -w '%{http_code}' "$BASE_URL/api/v1/internal/ops/summary" "${AUTH[@]}")
+if [[ "$OPS_STATUS" != "404" ]]; then echo "expected 404, got $OPS_STATUS"; cat "$TMP_DIR/ops.json"; exit 1; fi
 echo OK
 
 printf 'Demo tools disabled gate... '
@@ -82,4 +97,4 @@ printf 'Cleanup smoke trip... '
 curl -fsS -X DELETE "$BASE_URL/api/v1/trips/$TRIP_ID" "${AUTH[@]}" -H 'content-type: application/json' --data "{\"version\":$TRIP_VERSION}" >/dev/null
 echo OK
 
-echo 'Beta Milestone 3 smoke test completed.'
+echo 'Beta Milestone 4 smoke test completed.'

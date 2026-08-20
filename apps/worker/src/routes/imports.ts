@@ -3,6 +3,8 @@ import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, rea
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
 import { parseForwardedEmail } from '../../../../packages/importer/src/index.ts';
+import { recordBetaEvent, recordBookingMilestones } from '../beta-events.ts';
+import { PRODUCT_LIMITS } from '../config.ts';
 
 interface PreviewBody { sender?:unknown; subject?:unknown; body?:unknown; sourceTimestamp?:unknown; }
 interface ResolveBody { candidateId?:unknown; action?:unknown; payload?:unknown; }
@@ -10,14 +12,14 @@ const actions=['confirm','reject'] as const;
 
 export async function previewForwardedEmail(request:Request,env:Env,auth:AuthContext,tripId:string):Promise<Response>{
   await requireTripAccess(env,auth,tripId,true);
-  const body=await readJson<PreviewBody>(request);
+  const body=await readJson<PreviewBody>(request,128*1024);
   const raw=requireString(body.body,'body',80000);
   const sender=optionalString(body.sender,'sender',320);
   const subject=optionalString(body.subject,'subject',500);
   const sourceTimestamp=optionalInteger(body.sourceTimestamp,'sourceTimestamp');
   const now=nowMs();
   const recent=await env.DB.prepare(`SELECT COUNT(*) AS count FROM imports WHERE trip_id=? AND created_at>?`).bind(tripId,now-86400000).first<{count:number}>();
-  if(Number(recent?.count??0)>=20)throw new HttpError(429,'IMPORT_DAILY_LIMIT','Beta limit of 20 booking-email imports per trip per day reached.');
+  if(Number(recent?.count??0)>=PRODUCT_LIMITS.forwardedImportsPerDay)throw new HttpError(429,'IMPORT_DAILY_LIMIT',`Beta limit of ${PRODUCT_LIMITS.forwardedImportsPerDay} booking-email imports per trip per day reached.`);
   const parsed=parseForwardedEmail({sender,subject,body:raw});
   const fingerprint=await digestHex(`${tripId}\n${sender??''}\n${subject??''}\n${parsed.normalizedText}`);
   const existing=await env.DB.prepare(`SELECT * FROM imports WHERE source_type='forwarded_email' AND source_fingerprint=?`).bind(fingerprint).first<Record<string,unknown>>();
@@ -36,6 +38,7 @@ export async function previewForwardedEmail(request:Request,env:Env,auth:AuthCon
     statements.push(env.DB.prepare(`INSERT INTO import_candidates(id,import_id,candidate_type,payload_json,confidence,validation_status,created_at) VALUES (?,?,?,?,?,'pending',?)`).bind(uuid(),importId,candidate.candidateType,JSON.stringify({...candidate.payload,warnings:candidate.warnings}),candidate.confidence,now));
   }
   await env.DB.batch(statements);
+  await recordBetaEvent(env,auth,'import_previewed',tripId,'always');
   const imported=await env.DB.prepare(`SELECT * FROM imports WHERE id=?`).bind(importId).first();
   const candidates=(await env.DB.prepare(`SELECT id,candidate_type,payload_json,confidence,validation_status,created_at FROM import_candidates WHERE import_id=? ORDER BY created_at`).bind(importId).all<Record<string,unknown>>()).results??[];
   return json({duplicate:false,import:imported,candidates:candidates.map(shapeCandidate),privacy:{rawBodyStored:false,note:'Raw forwarded-email body is parsed in-memory and not persisted.'}},{status:201},request,env);
@@ -77,6 +80,8 @@ export async function resolveImportCandidate(request:Request,env:Env,auth:AuthCo
   else throw new HttpError(400,'UNSUPPORTED_IMPORT_CANDIDATE','This candidate type cannot be confirmed.');
   await env.DB.prepare(`UPDATE import_candidates SET validation_status='confirmed',payload_json=? WHERE id=? AND validation_status='pending'`).bind(JSON.stringify(payload),candidateId).run();
   await updateImportStatus(env,importId);
+  await recordBetaEvent(env,auth,'import_confirmed',tripId);
+  await recordBookingMilestones(env,auth,tripId);
   return json({resolved:'confirmed',entityId,candidateType:candidate.candidate_type},{},request,env);
 }
 

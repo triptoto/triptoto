@@ -1,6 +1,7 @@
 import type { AuthContext, Env } from '../types.ts';
 import { HttpError, enumValue, json, nowMs, optionalString, readJson, requireString, uuid } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
+import { recordBetaEvent } from '../beta-events.ts';
 
 const states = ['draft', 'upcoming', 'active', 'completed', 'cancelled'] as const;
 
@@ -39,6 +40,11 @@ export async function createTrip(request: Request, env: Env, auth: AuthContext):
     await env.DB.prepare(`INSERT OR IGNORE INTO trip_members (trip_id,user_id,role,status,joined_at) VALUES (?,?,'owner','active',?)`).bind(id, auth.userId, now).run();
   }
   const trip = await env.DB.prepare('SELECT * FROM trips WHERE id=?').bind(id).first();
+  await recordBetaEvent(env,auth,'trip_created',id);
+  const totalTrips = auth.userId
+    ? await env.DB.prepare(`SELECT COUNT(DISTINCT t.id) count FROM trips t LEFT JOIN trip_members tm ON tm.trip_id=t.id AND tm.user_id=? AND tm.status='active' WHERE t.deleted_at IS NULL AND (t.owner_user_id=? OR tm.user_id=?)`).bind(auth.userId,auth.userId,auth.userId).first<{count:number}>()
+    : await env.DB.prepare(`SELECT COUNT(*) count FROM trips WHERE created_by_device_id=? AND owner_user_id IS NULL AND deleted_at IS NULL`).bind(auth.deviceId).first<{count:number}>();
+  if(Number(totalTrips?.count??0)>=2)await recordBetaEvent(env,auth,'second_trip_created',null);
   return json({ trip }, { status: 201 }, request, env);
 }
 
@@ -66,6 +72,7 @@ export async function updateTrip(request: Request, env: Env, auth: AuthContext, 
     .bind(title, state, startsOn, endsOn, now, state, now, tripId, body.version).run();
   if (!result.success) throw new HttpError(500, 'UPDATE_FAILED', 'Trip could not be updated.');
   const trip = await env.DB.prepare('SELECT * FROM trips WHERE id=?').bind(tripId).first();
+  if(state==='completed')await recordBetaEvent(env,auth,'trip_completed',tripId);
   return json({ trip }, {}, request, env);
 }
 

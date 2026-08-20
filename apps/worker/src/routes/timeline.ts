@@ -1,6 +1,7 @@
 import type { AuthContext, Env } from '../types.ts';
 import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
+import { recordBookingMilestones } from '../beta-events.ts';
 
 const types = ['transport', 'stay', 'activity', 'reservation', 'custom'] as const;
 const statuses = ['planned', 'confirmed', 'completed', 'cancelled', 'skipped', 'unknown'] as const;
@@ -27,6 +28,7 @@ export async function createTimelineItem(request: Request, env: Env, auth: AuthC
   await env.DB.prepare(`INSERT INTO trip_items (id,trip_id,type,status,title,subtitle,starts_at_utc,ends_at_utc,start_local_datetime,end_local_datetime,start_timezone,end_timezone,source_type,confidence,created_at,updated_at,version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)`)
     .bind(id, tripId, values.type, values.status, values.title, values.subtitle, values.startsAtUtc, values.endsAtUtc, values.startLocalDatetime, values.endLocalDatetime, values.startTimezone, values.endTimezone, values.sourceType, values.confidence, now, now).run();
   const item = await env.DB.prepare('SELECT * FROM trip_items WHERE id=?').bind(id).first();
+  if(['activity','reservation'].includes(values.type))await recordBookingMilestones(env,auth,tripId);
   return json({ item }, { status: 201 }, request, env);
 }
 

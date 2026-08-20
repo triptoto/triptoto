@@ -20,6 +20,11 @@ import { tripSupportBundle } from './routes/support.ts';
 import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
 import { createDemoTrip } from './routes/demo.ts';
 import { previewForwardedEmail, listImports, getImport, resolveImportCandidate } from './routes/imports.ts';
+import { betaStatus, recordClientBetaEvent } from './routes/beta.ts';
+import { opsSummary } from './routes/ops.ts';
+import { deletionPreview, deleteMyData } from './routes/privacy.ts';
+import { enforceActorRateLimit, enforcePublicRateLimit } from './rate-limit.ts';
+import { PRODUCT_LIMITS } from './config.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -29,14 +34,23 @@ export default {
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
       if (request.method === 'GET' && path === '/health') return health(request, env);
-      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: 'beta-milestone-3' }, {}, request, env);
-      if (request.method === 'POST' && path === '/api/v1/session/guest') return createGuestSession(request, env);
+      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-milestone-4' }, {}, request, env);
+      if (request.method === 'POST' && path === '/api/v1/session/guest') {
+        await enforcePublicRateLimit(request,env,{action:'guest_session',limit:PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint,windowMs:60*60*1000});
+        return createGuestSession(request, env);
+      }
 
       const auth = await requireAuth(request, env);
+      if (['POST','PATCH','DELETE'].includes(request.method)) await enforceActorRateLimit(env,auth,{action:'api_write',limit:PRODUCT_LIMITS.actorWritesPerHour,windowMs:60*60*1000});
       if (request.method === 'POST' && path === '/api/v1/session/refresh') return refreshSession(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account') return accountStatus(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account/migration-preview') return accountMigrationPreview(request, env, auth);
+      if (request.method === 'GET' && path === '/api/v1/account/deletion-preview') return deletionPreview(request,env,auth);
+      if (request.method === 'DELETE' && path === '/api/v1/account') return deleteMyData(request,env,auth);
       if (request.method === 'GET' && path === '/api/v1/diagnostics') return diagnostics(request, env, auth);
+      if (request.method === 'GET' && path === '/api/v1/beta/status') return betaStatus(request,env,auth);
+      if (request.method === 'POST' && path === '/api/v1/beta/events') return recordClientBetaEvent(request,env,auth);
+      if (request.method === 'GET' && path === '/api/v1/internal/ops/summary') return opsSummary(request,env,auth);
       if (request.method === 'POST' && path === '/api/v1/invites/preview') return previewInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/invites/accept') return acceptInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/internal/demo-trips') return createDemoTrip(request, env, auth);

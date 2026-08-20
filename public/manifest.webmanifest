@@ -7,6 +7,9 @@
   "display": "standalone",
   "background_color": "#F2F4F7",
   "theme_color": "#141948",
-  "description": "Trips, timeline, travel essentials and offline trip access.",
-  "categories": ["travel", "productivity"]
+  "description": "Trips, offline travel essentials, deterministic booking import and beta readiness.",
+  "categories": [
+    "travel",
+    "productivity"
+  ]
 }

@@ -25,7 +25,10 @@ export async function diagnostics(request:Request,env:Env,auth:AuthContext):Prom
       generativeAI:env.AI_ENABLED==='true',
       gmailSync:env.GMAIL_SYNC_ENABLED==='true',
       r2Documents:env.R2_DOCUMENTS_ENABLED==='true',
+      betaMetrics:env.BETA_METRICS_ENABLED==='true',
+      ops:env.OPS_ENABLED==='true',
     },
+    release:env.BETA_RELEASE||'beta-milestone-4',
     serverTime:Date.now(),
     privacy:'No booking contents, invite tokens, session secrets, or document bytes are included.',
   }},{},request,env);

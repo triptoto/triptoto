@@ -14,7 +14,7 @@ export async function health(request: Request, env: Env): Promise<Response> {
   return json({
     ok: database.ok,
     service: 'tripto-api',
-    build: 'beta-milestone-3',
+    build: env.BETA_RELEASE || 'beta-milestone-4',
     database,
     features: {
       liveFlights: env.LIVE_FLIGHTS_ENABLED === 'true',
@@ -24,6 +24,8 @@ export async function health(request: Request, env: Env): Promise<Response> {
       accountAuth: env.ACCOUNT_AUTH_ENABLED === 'true',
       sharing: env.SHARING_ENABLED === 'true',
       demoTools: env.DEMO_TOOLS_ENABLED === 'true',
+      betaMetrics: env.BETA_METRICS_ENABLED === 'true',
+      ops: env.OPS_ENABLED === 'true',
     },
     timestamp: Date.now(),
   }, { status: database.ok ? 200 : 503 }, request, env);
