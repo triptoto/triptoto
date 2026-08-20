@@ -3,7 +3,6 @@
   "name": "tripto-api",
   "main": "apps/worker/src/index.ts",
   "compatibility_date": "2026-08-20",
-
   "d1_databases": [
     {
       "binding": "DB",
@@ -11,11 +10,18 @@
       "database_id": "6064a780-9b39-4bb7-9af7-c972a33ac7e1"
     }
   ],
-
   "vars": {
     "LIVE_FLIGHTS_ENABLED": "false",
     "AI_ENABLED": "false",
     "GMAIL_SYNC_ENABLED": "false",
     "R2_DOCUMENTS_ENABLED": "false"
+  },
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/health"
+    ]
   }
 }

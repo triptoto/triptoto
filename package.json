@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test:scenarios": "tsx tests/scenarios/core.scenarios.ts",
-    "smoke:api": "bash scripts/smoke-api.sh"
+    "smoke:api": "bash scripts/smoke-api.sh",
+    "check:ui": "node --check public/app.js"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
