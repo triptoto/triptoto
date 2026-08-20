@@ -12,5 +12,5 @@ export async function readiness(request:Request,env:Env):Promise<Response>{
     }
   }catch(error){checks.push({name:'database',ok:false,detail:'query_failed'});}
   const ok=checks.every(check=>check.ok);
-  return json({ready:ok,service:'tripto-api',build:env.BETA_RELEASE||'major-beta-5-8',checks,features:{liveFlights:env.LIVE_FLIGHTS_ENABLED==='true',generativeAI:env.AI_ENABLED==='true',gmailSync:env.GMAIL_SYNC_ENABLED==='true',r2Documents:env.R2_DOCUMENTS_ENABLED==='true'},timestamp:Date.now()},{status:ok?200:503},request,env);
+  return json({ready:ok,service:'tripto-api',build:env.BETA_RELEASE||'beta-candidate-1',checks,features:{liveFlights:env.LIVE_FLIGHTS_ENABLED==='true',generativeAI:env.AI_ENABLED==='true',gmailSync:env.GMAIL_SYNC_ENABLED==='true',r2Documents:env.R2_DOCUMENTS_ENABLED==='true'},timestamp:Date.now()},{status:ok?200:503},request,env);
 }

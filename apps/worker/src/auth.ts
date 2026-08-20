@@ -41,6 +41,10 @@ export async function issueSession(env: Env, payload: Omit<SessionPayload, 'v'>)
   return `${body}.${signature}`;
 }
 
+export function isSessionExpired(expiresAt: number, now = Date.now()): boolean {
+  return !Number.isFinite(expiresAt) || expiresAt <= now;
+}
+
 export async function requireAuth(request: Request, env: Env): Promise<AuthContext> {
   const authorization = request.headers.get('authorization') ?? '';
   if (!authorization.startsWith('Bearer ')) throw new HttpError(401, 'AUTH_REQUIRED', 'A valid session is required.');
@@ -61,7 +65,7 @@ export async function requireAuth(request: Request, env: Env): Promise<AuthConte
   } catch {
     throw new HttpError(401, 'INVALID_SESSION', 'Session token is invalid.');
   }
-  if (payload.v !== 1 || !payload.deviceId || !Number.isFinite(payload.exp) || payload.exp <= Date.now()) {
+  if (payload.v !== 1 || !payload.deviceId || isSessionExpired(payload.exp)) {
     throw new HttpError(401, 'SESSION_EXPIRED', 'Session has expired.');
   }
 

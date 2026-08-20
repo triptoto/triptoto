@@ -43,7 +43,7 @@ export default {
 
       if (request.method === 'GET' && path === '/health') return health(request, env);
       if (request.method === 'GET' && path === '/api/v1/readiness') return readiness(request, env);
-      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'major-beta-5-8' }, {}, request, env);
+      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-candidate-1' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {
         await enforcePublicRateLimit(request,env,{action:'guest_session',limit:PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint,windowMs:60*60*1000});
         return createGuestSession(request, env);

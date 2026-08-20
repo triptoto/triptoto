@@ -28,7 +28,7 @@ export async function diagnostics(request:Request,env:Env,auth:AuthContext):Prom
       betaMetrics:env.BETA_METRICS_ENABLED==='true',
       ops:env.OPS_ENABLED==='true',
     },
-    release:env.BETA_RELEASE||'beta-milestone-4',
+    release:env.BETA_RELEASE||'beta-candidate-1',
     serverTime:Date.now(),
     privacy:'No booking contents, invite tokens, session secrets, or document bytes are included.',
   }},{},request,env);

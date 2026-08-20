@@ -58,6 +58,12 @@ export function assessTripHealth(input: HealthInput): HealthIssue[] {
     .filter(item => !item.deletedAt && !['cancelled', 'skipped'].includes(item.status))
     .sort((a, b) => (a.startsAtUtc ?? Number.MAX_SAFE_INTEGER) - (b.startsAtUtc ?? Number.MAX_SAFE_INTEGER));
 
+  for (const item of input.items) {
+    if (!item.deletedAt && item.status === 'cancelled' && item.startsAtUtc != null && item.startsAtUtc > input.nowUtc) {
+      issues.push(issue('FUTURE_BOOKING_CANCELLED', 'high', 15, 'booking', 'confirmed', 'Upcoming booking is cancelled', `${item.title} is marked cancelled.`, 'Review alternatives and later plans.', [item.id]));
+    }
+  }
+
   for (let i = 1; i < activeItems.length; i++) {
     const previous = activeItems[i - 1];
     const current = activeItems[i];
@@ -76,9 +82,6 @@ export function assessTripHealth(input: HealthInput): HealthIssue[] {
     if (item.confidence === 'low_confidence') {
       issues.push(issue('LOW_CONFIDENCE_BOOKING', 'high', 20, 'booking', 'low_confidence', 'Booking needs confirmation', `${item.title} contains low-confidence data.`, 'Open the booking and confirm every important field.', [item.id]));
     }
-    if (item.status === 'cancelled' && item.startsAtUtc != null && item.startsAtUtc > input.nowUtc) {
-      issues.push(issue('FUTURE_BOOKING_CANCELLED', 'high', 15, 'booking', 'confirmed', 'Upcoming booking is cancelled', `${item.title} is marked cancelled.`, 'Review alternatives and later plans.', [item.id]));
-    }
   }
 
   const byId = new Map(input.items.map(item => [item.id, item]));
@@ -90,7 +93,12 @@ export function assessTripHealth(input: HealthInput): HealthIssue[] {
       continue;
     }
     const available = Math.floor((to.startsAtUtc - from.endsAtUtc) / 60000);
-    let required = connection.recommendedBufferMinutes ?? connection.minimumBufferMinutes ?? 0;
+    const configuredBuffer = connection.recommendedBufferMinutes ?? connection.minimumBufferMinutes;
+    if (configuredBuffer == null) {
+      issues.push(issue('CONNECTION_BUFFER_UNAVAILABLE', 'medium', 26, 'connection', 'unavailable', 'Connection buffer is unavailable', 'No reliable minimum or recommended connection buffer is recorded.', 'Confirm the connection requirements; no safety assumption was made.', [from.id, to.id]));
+      continue;
+    }
+    let required = configuredBuffer;
     if (connection.requiresAirportChange) required += 60;
     if (connection.requiresBaggageReclaim) required += 30;
     const margin = available - required;
@@ -111,10 +119,11 @@ export function assessTripHealth(input: HealthInput): HealthIssue[] {
   if (criticalChecklist.length) issues.push(issue('CRITICAL_ESSENTIALS_OPEN', 'critical', 3, 'preparation', 'confirmed', 'Critical travel essentials remain', `${criticalChecklist.length} critical checklist item(s) are still open.`, 'Complete the critical items before departure.', criticalChecklist.map(i => i.id)));
   if (highChecklist.length) issues.push(issue('HIGH_ESSENTIALS_OPEN', 'high', 18, 'preparation', 'confirmed', 'Important travel essentials remain', `${highChecklist.length} high-priority checklist item(s) are still open.`, 'Complete the important items before departure.', highChecklist.map(i => i.id)));
 
-  if ((input.travelerCount ?? 0) === 0) issues.push(issue('NO_TRAVELERS', 'medium', 40, 'traveler', 'confirmed', 'No travelers added', 'The trip has no traveler records.', 'Add each traveler so documents and bookings can be assigned.'));
+  const preparationRelevant = ['draft', 'upcoming', 'active'].includes(input.trip.lifecycleState);
+  if ((input.travelerCount ?? 0) === 0 && preparationRelevant) issues.push(issue('NO_TRAVELERS', 'medium', 40, 'traveler', 'confirmed', 'No travelers added', 'The trip has no traveler records.', 'Add each traveler so documents and bookings can be assigned.'));
   const tripDays = dateSpan(input.trip.startsOn, input.trip.endsOn);
-  if ((input.transportCount ?? 0) === 0 && ['upcoming', 'active'].includes(input.trip.lifecycleState)) issues.push(issue('NO_TRANSPORT', 'medium', 42, 'preparation', 'confirmed', 'No transport added', 'This trip has no transport booking.', 'Add a flight, train, car, ferry or transfer.'));
-  if (tripDays != null && tripDays >= 1 && (input.stayCount ?? 0) === 0 && ['upcoming', 'active'].includes(input.trip.lifecycleState)) issues.push(issue('NO_STAY', 'medium', 43, 'preparation', 'confirmed', 'No stay added', 'A multi-day trip has no hotel or stay.', 'Add the accommodation or confirm that none is needed.'));
+  if ((input.transportCount ?? 0) === 0 && ['upcoming', 'active'].includes(input.trip.lifecycleState)) issues.push(issue('NO_TRANSPORT', 'medium', 42, 'preparation', 'confirmed', 'No transport added', 'This trip has no active transport booking.', 'Add a flight, train, car, ferry or transfer.'));
+  if (tripDays != null && tripDays >= 1 && (input.stayCount ?? 0) === 0 && ['upcoming', 'active'].includes(input.trip.lifecycleState)) issues.push(issue('NO_STAY', 'medium', 43, 'preparation', 'confirmed', 'No stay added', 'A multi-day trip has no active hotel or stay.', 'Add the accommodation or confirm that none is needed.'));
 
   if (input.trip.startsOn && input.trip.endsOn && input.trip.endsOn < input.trip.startsOn) issues.push(issue('TRIP_DATE_ORDER_INVALID', 'critical', 0, 'lifecycle', 'confirmed', 'Trip dates are invalid', 'The trip end date is before the start date.', 'Correct the trip dates.'));
   if (input.trip.lifecycleState === 'active' && !activeItems.some(item => item.startsAtUtc != null && item.startsAtUtc >= input.nowUtc)) issues.push(issue('ACTIVE_TRIP_NO_NEXT_PLAN', 'medium', 35, 'lifecycle', 'confirmed', 'No upcoming plan', 'The trip is active but has no upcoming timeline item.', 'Add the next plan or mark the trip completed.'));

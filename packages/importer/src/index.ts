@@ -109,7 +109,7 @@ function parseStay(text: string, subject: string): ParsedImportCandidate | null 
 }
 
 function normalize(value: string): string {
-  return value.replace(/\r\n/g,'\n').replace(/[\t ]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  return value.replace(/\r\n?/g,'\n').replace(/[\t ]+/g,' ').replace(/ *\n */g,'\n').replace(/\n{2,}/g,'\n').trim();
 }
 
 function extractRoute(text: string): { from: string; to: string } | null {

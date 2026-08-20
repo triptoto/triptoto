@@ -5,6 +5,7 @@ export interface TripBrainInput {
   items: TripItem[];
   travelDurationsByItemId?: Record<string, TravelDuration | undefined>;
   leaveBufferMinutes?: number;
+  maxTravelDurationAgeMinutes?: number;
 }
 
 export interface TripBrainIssue {
@@ -26,12 +27,26 @@ export function evaluateTrip(input: TripBrainInput): TripBrainResult {
     .filter(i => !i.deletedAt && !['cancelled', 'skipped'].includes(i.status) && i.startsAtUtc != null)
     .sort((a, b) => (a.startsAtUtc! - b.startsAtUtc!));
 
-  const nextItem = active.find(i => i.startsAtUtc! >= input.nowUtc) ?? active.at(-1);
+  const nextItem = active.find(i => i.startsAtUtc! >= input.nowUtc);
   if (!nextItem) return { recommendationConfidence: 'unavailable', issues: [] };
 
   const duration = input.travelDurationsByItemId?.[nextItem.id];
   if (!duration || duration.source === 'unknown' || nextItem.startsAtUtc == null) {
     return { nextItem, recommendationConfidence: 'unavailable', issues: [] };
+  }
+
+  const maxAge = (input.maxTravelDurationAgeMinutes ?? 360) * 60_000;
+  if (duration.calculatedAt != null && input.nowUtc - duration.calculatedAt > maxAge) {
+    return {
+      nextItem,
+      recommendationConfidence: 'unavailable',
+      issues: [{
+        code: 'TRAVEL_DURATION_STALE',
+        severity: 'medium',
+        itemId: nextItem.id,
+        message: 'The saved travel-time estimate is stale. Its last-updated time must be shown before using it.',
+      }],
+    };
   }
 
   const buffer = input.leaveBufferMinutes ?? 10;

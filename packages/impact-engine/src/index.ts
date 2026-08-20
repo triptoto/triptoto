@@ -9,6 +9,9 @@ export interface ConnectionAssessment {
 }
 
 export function assessConnection(from: TripItem, to: TripItem, connection: Connection): ConnectionAssessment {
+  if (from.status === 'cancelled' || to.status === 'cancelled') {
+    return { connectionId: connection.id, severity: 'high', outcome: 'unknown', explanationCode: 'CANCELLED_SEGMENT' };
+  }
   if (from.endsAtUtc == null || to.startsAtUtc == null) {
     return { connectionId: connection.id, severity: 'info', outcome: 'unknown', explanationCode: 'MISSING_TIMES' };
   }

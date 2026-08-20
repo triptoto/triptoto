@@ -1,7 +1,7 @@
 import type { AuthContext, Env } from './types.ts';
 import { nowMs, uuid } from './http.ts';
 
-export const BETA_RELEASE = 'beta-milestone-4';
+export const BETA_RELEASE = 'beta-candidate-1';
 export const betaEventNames = [
   'trip_created','second_trip_created','booking_added','second_booking_added','timeline_opened','whats_next_opened',
   'during_trip_home_opened','ready_offline_opened','local_document_saved','local_document_opened','import_previewed',

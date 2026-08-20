@@ -52,7 +52,7 @@ function updatePendingCount(){state.pendingSyncCount=pendingMutations().filter(f
 function queueChecklistToggle(item,completed){
   var rows=pendingMutations();
   rows=rows.filter(function(x){return !(x.type==='checklist-toggle'&&x.tripId===state.trip.id&&x.itemId===item.id&&x.status==='pending');});
-  rows.push({id:'q_'+Date.now()+'_'+Math.random().toString(36).slice(2),type:'checklist-toggle',tripId:state.trip.id,itemId:item.id,version:item.version,completed:completed,status:'pending',createdAt:Date.now()});
+  rows.push({id:'q_'+crypto.randomUUID(),type:'checklist-toggle',tripId:state.trip.id,itemId:item.id,version:item.version,completed:completed,status:'pending',createdAt:Date.now()});
   savePendingMutations(rows);
   item.completed_at=completed?Date.now():null;item.completion_source=completed?'user':'none';
   cacheWrite('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/checklist',{items:state.checklist});
@@ -122,7 +122,7 @@ function ageLabel(ms){
 }
 function notify(message){
   var old=document.querySelector('.toast'); if(old)old.remove();
-  var el=document.createElement('div'); el.className='toast'; el.textContent=message;
+  var el=document.createElement('div'); el.className='toast'; el.setAttribute('role','status'); el.setAttribute('aria-live','polite'); el.textContent=message;
   document.body.appendChild(el); setTimeout(function(){el.remove();},3200);
 }
 function locationById(id){return state.locations.find(function(x){return x.id===id;})||null;}
@@ -328,14 +328,15 @@ function openLocalDocDb(){
   });
 }
 async function listLocalDocs(tripId){
-  try{var db=await openLocalDocDb();return await new Promise(function(resolve,reject){var tx=db.transaction('docs','readonly');var idx=tx.objectStore('docs').index('tripId');var req=idx.getAll(tripId);req.onsuccess=function(){resolve(req.result||[]);};req.onerror=function(){reject(req.error);};});}catch(_){return [];}
+  try{var db=await openLocalDocDb();var rows=await new Promise(function(resolve,reject){var tx=db.transaction('docs','readonly');var idx=tx.objectStore('docs').index('tripId');var req=idx.getAll(tripId);req.onsuccess=function(){resolve(req.result||[]);};req.onerror=function(){reject(req.error);};});return await Promise.all(rows.map(async function(row){if(!row.blob||!row.checksum)return Object.assign({},row,{integrity:'unverified'});try{var actual=await sha256Blob(row.blob);return Object.assign({},row,{integrity:actual===row.checksum?'verified':'corrupt'});}catch(_){return Object.assign({},row,{integrity:'unverified'});}}));}catch(_){return [];}
 }
+async function sha256Blob(blob){var bytes=await blob.arrayBuffer();var digest=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(digest)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
 async function saveLocalDoc(file,type,travelerIds){
   if(!state.trip)throw new Error('Open a trip first.');
   if(!file)throw new Error('Choose a file.');
   if(file.size>10*1024*1024)throw new Error('Beta local-document limit is 10 MB per file.');
   var existing=await listLocalDocs(state.trip.id);if(existing.length>=20)throw new Error('Beta limit is 20 local documents per trip on this device.');
-  var db=await openLocalDocDb();var row={id:'doc_'+crypto.randomUUID(),tripId:state.trip.id,name:file.name||'document',mime:file.type||'application/octet-stream',size:file.size,type:type||'other',travelerIds:Array.isArray(travelerIds)?travelerIds:[],savedAt:Date.now(),blob:file};
+  var db=await openLocalDocDb();var checksum=await sha256Blob(file);var row={id:'doc_'+crypto.randomUUID(),tripId:state.trip.id,name:file.name||'document',mime:file.type||'application/octet-stream',size:file.size,type:type||'other',travelerIds:Array.isArray(travelerIds)?travelerIds:[],savedAt:Date.now(),checksum:checksum,integrity:'verified',blob:file};
   await new Promise(function(resolve,reject){var tx=db.transaction('docs','readwrite');tx.objectStore('docs').put(row);tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};});
   state.localDocs=await listLocalDocs(state.trip.id);sendBetaEvent('local_document_saved',state.trip.id);return row;
 }
@@ -349,12 +350,12 @@ async function clearAllLocalBetaData(){
   try{localStorage.clear();sessionStorage.clear();}catch(_){}
 }
 async function openLocalDoc(id){
-  var row=state.localDocs.find(function(x){return x.id===id;});if(!row||!row.blob){notify('Document is not available on this device.');return;}sendBetaEvent('local_document_opened',state.trip&&state.trip.id);var url=URL.createObjectURL(row.blob);window.open(url,'_blank','noopener');setTimeout(function(){URL.revokeObjectURL(url);},60000);
+  var row=state.localDocs.find(function(x){return x.id===id;});if(!row||!row.blob){notify('Document is not available on this device.');return;}if(row.integrity!=='verified'){showRecovery('Document integrity could not be verified.','The saved file is missing a matching checksum.','Remove it and save a fresh copy before relying on it offline.');return;}sendBetaEvent('local_document_opened',state.trip&&state.trip.id);var url=URL.createObjectURL(row.blob);window.open(url,'_blank','noopener');setTimeout(function(){URL.revokeObjectURL(url);},60000);
 }
 function localDocTravelerLabel(d){var ids=Array.isArray(d.travelerIds)?d.travelerIds:[];if(!ids.length)return 'All / unassigned';var names=ids.map(function(id){var t=state.travelers.find(function(x){return x.id===id;});return t?t.display_name:null;}).filter(Boolean);return names.length?names.join(', '):ids.length+' traveler(s)';}
 function localDocRows(){
   if(!state.localDocs.length)return '<div class="empty compact-empty"><p class="subtle">No local documents saved on this device yet.</p></div>';
-  return '<div class="local-doc-list">'+state.localDocs.map(function(d){return '<div class="local-doc-row"><div class="local-doc-icon">▤</div><div class="local-doc-main"><strong>'+esc(d.name)+'</strong><span>'+esc(d.type||'other')+' · '+Math.max(1,Math.round(Number(d.size||0)/1024))+' KB · '+ageLabel(d.savedAt)+'</span><span>Traveler: '+esc(localDocTravelerLabel(d))+'</span></div><div class="inline-actions"><button class="btn btn-ghost compact" data-local-doc-open="'+esc(d.id)+'">Open</button><button class="btn btn-danger compact" data-local-doc-delete="'+esc(d.id)+'">Remove</button></div></div>';}).join('')+'</div>';
+  return '<div class="local-doc-list">'+state.localDocs.map(function(d){return '<div class="local-doc-row"><div class="local-doc-icon">▤</div><div class="local-doc-main"><strong>'+esc(d.name)+'</strong><span>'+esc(d.type||'other')+' · '+Math.max(1,Math.round(Number(d.size||0)/1024))+' KB · '+ageLabel(d.savedAt)+'</span><span>Traveler: '+esc(localDocTravelerLabel(d))+' · Integrity: '+esc(d.integrity||'unverified')+'</span></div><div class="inline-actions"><button class="btn btn-ghost compact" data-local-doc-open="'+esc(d.id)+'">Open</button><button class="btn btn-danger compact" data-local-doc-delete="'+esc(d.id)+'">Remove</button></div></div>';}).join('')+'</div>';
 }
 function importStatusCard(){
   var pending=state.imports.filter(function(x){return x.status==='needs_confirmation';}).length;
@@ -421,12 +422,12 @@ function utcToLocalInput(ms,timeZone){
 }
 function appHeader(){
   var accountMode=state.account&&state.account.mode==='account';
-  return '<header class="topbar"><div class="topbar-inner"><button class="brand brand-button" data-view="home" aria-label="Home">tripto<span>.to</span></button>'+    '<div class="topbar-actions">'+      '<button class="guest-pill '+(accountMode?'account-pill':'')+'" data-view="account" title="Account status">'+(accountMode?'Account':'Guest beta')+'</button>'+      '<div class="status-pill '+(state.offline?'offline':state.pendingSyncCount?'syncing':'')+'"><span class="status-dot"></span>'+(state.offline?'Offline · cached':state.pendingSyncCount?('Sync '+state.pendingSyncCount):'Connected')+'</div>'+    '</div></div></header>';
+  return '<header class="topbar"><div class="topbar-inner"><button class="brand brand-button" data-view="home" aria-label="Home">tripto<span>.to</span></button>'+    '<div class="topbar-actions">'+      '<button class="guest-pill '+(accountMode?'account-pill':'')+'" data-view="account" title="Account status">'+(accountMode?'Account':'Guest beta')+'</button>'+      '<div role="status" aria-live="polite" class="status-pill '+(state.offline?'offline':state.pendingSyncCount?'syncing':'')+'"><span class="status-dot"></span>'+(state.offline?'Offline · cached':state.pendingSyncCount?('Sync '+state.pendingSyncCount):'Connected')+'</div>'+    '</div></div></header>';
 }
 function bottomNav(){
   var items=[['home','⌂','Home'],['trips','▣','Trips'],['add','＋',''],['timeline','≡','Timeline'],['checklist','✓','Checklist']];
   return '<nav class="nav" aria-label="Primary">'+items.map(function(i){
-    if(i[0]==='add')return '<button class="add" data-action="add">＋</button>';
+    if(i[0]==='add')return '<button class="add" data-action="add" aria-label="Add trip item">＋</button>';
     return '<button data-view="'+i[0]+'" class="'+(state.view===i[0]?'active':'')+'"><span>'+i[1]+'</span><span>'+i[2]+'</span></button>';
   }).join('')+'</nav>';
 }
@@ -551,13 +552,14 @@ function offlineReadiness(){
 }
 function travelerDocumentCoverage(){
   if(!state.travelers.length)return '';
-  return state.travelers.map(function(t){var count=state.localDocs.filter(function(d){return Array.isArray(d.travelerIds)&&d.travelerIds.includes(t.id);}).length;return '<div class="offline-row"><div class="offline-check '+(count?'ok':'warn')+'">'+(count?'✓':'!')+'</div><div><strong>'+esc(t.display_name)+' documents</strong><span>'+(count?count+' local file(s) assigned':'No traveler-specific local documents assigned')+'</span></div></div>';}).join('');
+  return state.travelers.map(function(t){var count=state.localDocs.filter(function(d){return d.integrity==='verified'&&Array.isArray(d.travelerIds)&&d.travelerIds.includes(t.id);}).length;return '<div class="offline-row"><div class="offline-check '+(count?'ok':'warn')+'">'+(count?'✓':'!')+'</div><div><strong>'+esc(t.display_name)+' documents</strong><span>'+(count?count+' checksum-verified local file(s) assigned':'No verified traveler-specific local documents assigned')+'</span></div></div>';}).join('');
 }
 function readyOfflineCard(compact){
   var rows=offlineReadiness(), ok=rows.filter(function(x){return x.ok;}).length, total=rows.length;
   var list=rows.map(function(x){return '<div class="offline-row"><div class="offline-check '+(x.ok?'ok':'warn')+'">'+(x.ok?'✓':'!')+'</div><div><strong>'+esc(x.name)+'</strong><span>'+(x.ok?('Cached · '+ageLabel(x.at)):'Open online once to cache')+'</span></div></div>';}).join('');
   var pending=state.pendingSyncCount?'<div class="offline-row"><div class="offline-check warn">↻</div><div><strong>Pending sync</strong><span>'+state.pendingSyncCount+' local change(s) still need server sync or review.</span></div></div>':'<div class="offline-row"><div class="offline-check ok">✓</div><div><strong>Pending sync</strong><span>No unsynced local changes.</span></div></div>';
-  var documents='<div class="offline-row"><div class="offline-check '+(state.localDocs.length?'ok':'warn')+'">'+(state.localDocs.length?'✓':'!')+'</div><div><strong>Local documents</strong><span>'+(state.localDocs.length?state.localDocs.length+' file(s) verified in local device storage':'No local files saved yet')+' · cloud sync disabled</span></div></div>';
+  var verifiedDocs=state.localDocs.filter(function(d){return d.integrity==='verified';});
+  var documents='<div class="offline-row"><div class="offline-check '+(verifiedDocs.length?'ok':'warn')+'">'+(verifiedDocs.length?'✓':'!')+'</div><div><strong>Local documents</strong><span>'+(verifiedDocs.length?verifiedDocs.length+' checksum-verified local file(s)':state.localDocs.length?'Local files exist but checksum verification failed or is unavailable':'No local files saved yet')+' · cloud sync disabled</span></div></div>';
   if(compact)return '<section class="card card-pad"><div class="section-title"><h2>Ready Offline</h2>'+badge(ok+'/'+total,'badge-green')+'</div><div class="subtle">'+ok+' of '+total+' core trip datasets cached'+(state.pendingSyncCount?' · '+state.pendingSyncCount+' pending sync':'')+'.</div><button class="btn btn-ghost" style="margin-top:12px" data-view="ready">Review offline readiness</button></section>';
   return '<div class="page-head"><div><div class="eyebrow">Offline</div><h1>Ready Offline</h1><div class="subtle">Your trip should never disappear because your internet did.</div></div>'+badge(ok+'/'+total,'badge-green')+'</div><section class="card card-pad"><div class="offline-list">'+list+pending+documents+travelerDocumentCoverage()+'</div><div class="fact-note">Cached flight status is never presented as live. Live-flight integration is currently disabled.</div></section>';
 }
@@ -863,6 +865,8 @@ function render(){
 }
 
 function bind(){
+  document.querySelectorAll('.icon-btn[data-close]').forEach(function(el){if(!el.getAttribute('aria-label'))el.setAttribute('aria-label','Close dialog');});
+  document.querySelectorAll('button[data-check]').forEach(function(el){if(!el.getAttribute('aria-label'))el.setAttribute('aria-label','Toggle checklist item');});
   document.querySelectorAll('[data-view]').forEach(function(el){el.addEventListener('click',async function(){state.view=el.dataset.view;persistView();if(state.view==='timeline')sendBetaEvent('timeline_opened');if(state.view==='ready')sendBetaEvent('ready_offline_opened');if(state.view==='home'){sendBetaEvent('whats_next_opened');if(modeForTrip()==='active')sendBetaEvent('during_trip_home_opened');}if(state.view==='sharing')await loadSharingManagement();render();});});
   document.querySelectorAll('[data-open]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.open);if(d)d.showModal();});});
   document.querySelectorAll('[data-close]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.close);if(d)d.close();});});
