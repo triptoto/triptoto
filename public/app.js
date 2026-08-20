@@ -391,25 +391,32 @@ function recoveryForError(title,error,hint){
   }
   showRecovery(title,(error&&error.message?error.message:'The request failed.')+req,hint);
 }
-function localToUtc(localValue,timeZone){
+function resolveBrowserLocalDateTime(localValue,timeZone){
   if(!localValue||!timeZone)throw new Error('Local time and IANA timezone are required.');
-  var m=String(localValue).match(/^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})/);
+  var m=String(localValue).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
   if(!m)throw new Error('Enter a valid local date and time.');
   try{new Intl.DateTimeFormat('en-US',{timeZone:timeZone}).format(new Date());}catch(_){throw new Error('Timezone must be a valid IANA timezone, for example Europe/Rome.');}
   var target=Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]),Number(m[4]),Number(m[5]));
-  var guess=target;
-  for(var i=0;i<3;i++){
-    var parts=new Intl.DateTimeFormat('en-CA',{timeZone:timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(guess));
+  var offsets={};
+  for(var h=-36;h<=36;h+=3){
+    var instant=target+h*3600000;
+    var parts=new Intl.DateTimeFormat('en-CA',{timeZone:timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(instant));
     var o={};parts.forEach(function(p){if(p.type!=='literal')o[p.type]=p.value;});
     var seen=Date.UTC(Number(o.year),Number(o.month)-1,Number(o.day),Number(o.hour),Number(o.minute));
-    guess+=target-seen;
+    offsets[Math.round((seen-instant)/60000)]=true;
   }
-  var checkParts=new Intl.DateTimeFormat('en-CA',{timeZone:timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(guess));
-  var c={};checkParts.forEach(function(p){if(p.type!=='literal')c[p.type]=p.value;});
-  var check=[c.year,c.month,c.day].join('-')+'T'+c.hour+':'+c.minute;
   var wanted=[m[1],m[2],m[3]].join('-')+'T'+m[4]+':'+m[5];
-  if(check!==wanted)throw new Error('That local time is ambiguous or unavailable because of a timezone/DST transition. Choose a different time or verify the booking.');
-  return guess;
+  var candidates=Object.keys(offsets).map(function(offset){return target-Number(offset)*60000;}).filter(function(candidate){
+    var candidateParts=new Intl.DateTimeFormat('en-CA',{timeZone:timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(candidate));
+    var c={};candidateParts.forEach(function(p){if(p.type!=='literal')c[p.type]=p.value;});
+    return [c.year,c.month,c.day].join('-')+'T'+c.hour+':'+c.minute===wanted;
+  }).filter(function(candidate,index,all){return all.indexOf(candidate)===index;}).sort(function(a,b){return a-b;});
+  return {status:candidates.length===0?'invalid':candidates.length===1?'exact':'ambiguous',candidatesUtc:candidates};
+}
+function localToUtc(localValue,timeZone){
+  var resolution=resolveBrowserLocalDateTime(localValue,timeZone);
+  if(resolution.status!=='exact')throw new Error('That local time is ambiguous or unavailable because of a timezone/DST transition. Choose a different time or verify the booking.');
+  return resolution.candidatesUtc[0];
 }
 function utcToLocalInput(ms,timeZone){
   if(ms==null)return '';

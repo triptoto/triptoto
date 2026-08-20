@@ -22,9 +22,11 @@ grep -q "needs_review" public/app.js
 grep -q "Scheduled booking data is never presented as live" public/app.js
 grep -q "i.explanation||i.message" public/major-workspace.js
 grep -q "i.suggestedAction||i.action" public/major-workspace.js
+node tests/browser-timezone.contract.mjs
 
 echo '4/5 PWA and disabled integrations'
 grep -q "tripto-shell-beta-candidate-1" public/sw.js
+grep -q "k.startsWith('tripto-shell-')" public/sw.js
 for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED ACCOUNT_AUTH_ENABLED SHARING_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
   grep -q "\"$flag\": \"false\"" wrangler.jsonc
 done
