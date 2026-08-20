@@ -1,0 +1,20 @@
+
+/* tripto.to UI v3 additions */
+.mode-banner{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px 19px;border-radius:20px;margin-bottom:18px;border:1px solid rgba(20,25,72,.08);box-shadow:0 8px 26px rgba(20,25,72,.06)}
+.mode-banner>div{display:grid;gap:3px}.mode-banner strong{font-size:20px;color:var(--navy)}.mode-banner span{font-size:13px;color:var(--muted)}
+.mode-banner.preparing{background:linear-gradient(135deg,#fff8d9,#fff 70%)}.mode-banner.active{background:linear-gradient(135deg,#eef0ff,#fff)}
+.section-block{display:grid;gap:12px}.travel-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.travel-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 10px 32px rgba(20,25,72,.07)}
+.travel-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.travel-card-top h3{font-size:21px;margin:4px 0 0}
+.route-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:22px 0 14px}.route-row>div{display:grid;gap:4px}.route-row strong{font-size:28px;color:var(--navy);letter-spacing:-1px}.route-row span{font-size:13px;color:var(--muted)}.route-end{text-align:right}.route-line{color:var(--indigo);font-size:23px}
+.travel-meta{display:flex;gap:10px;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;color:var(--muted);font-size:12px}
+.fact-note{margin-top:13px;padding:10px 12px;border-radius:13px;background:#f5f6fa;color:#60667a;font-size:11px;line-height:1.45}
+.hotel-dates{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.hotel-dates>div{display:grid;gap:5px;padding:13px;border-radius:15px;background:#f8f9fc}.hotel-dates span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.hotel-dates strong{color:var(--navy);font-size:14px}
+.address-line{padding:12px 0;color:var(--navy);font-weight:700;font-size:13px;line-height:1.45}.confirmation{font-size:12px;color:var(--muted);padding-bottom:12px}
+.badge-indigo{background:#e8ebff;color:#2F3BAB}
+.offline-list{display:grid}.offline-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.offline-row:last-child{border-bottom:0}.offline-row>div:last-child{display:grid;gap:3px}.offline-row strong{color:var(--navy)}.offline-row span{font-size:12px;color:var(--muted)}
+.offline-check{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-weight:950;flex:none}.offline-check.ok{background:#dff8ec;color:#0f6a48}.offline-check.warn{background:#fff1c7;color:#9a6700}.offline-check.neutral{background:#eef0f5;color:#6e7488}
+.timeline-extra{font-size:12px;color:var(--indigo);font-weight:750;margin-top:7px}
+.driver-dialog{width:min(94vw,620px);background:transparent;box-shadow:none}.driver-dialog::backdrop{background:rgba(20,25,72,.76);backdrop-filter:blur(8px)}
+.driver-sheet{position:relative;background:#F2F4F7;border-radius:30px;padding:44px 28px 34px;text-align:center;border:6px solid #fff}.driver-close{position:absolute;right:16px;top:16px;width:42px;height:42px;border:0;border-radius:50%;background:#141948;color:white;font-size:22px}.driver-kicker{font-size:12px;letter-spacing:.18em;font-weight:950;color:#2F3BAB;margin-bottom:20px}.driver-name{font-size:clamp(34px,8vw,58px);font-weight:950;line-height:.98;letter-spacing:-2px;color:#141948;margin-bottom:22px}.driver-address{font-size:clamp(22px,5vw,34px);line-height:1.2;font-weight:800;color:#15172a}.driver-note{margin-top:26px;color:#6e7488;font-size:12px}
+@media(max-width:700px){.mode-banner{align-items:flex-start;flex-direction:column}.travel-card-grid{grid-template-columns:1fr}.route-row strong{font-size:24px}.hotel-dates{grid-template-columns:1fr 1fr}}
