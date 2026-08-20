@@ -4,7 +4,7 @@
 var API='';
 var CACHE_PREFIX='tripto_cache_v3:';
 var state={
-  view:'home',
+  view:localStorage.getItem('tripto_view')||'home',
   token:localStorage.getItem('tripto_token')||'',
   trips:[],
   trip:null,
@@ -77,6 +77,24 @@ function modeForTrip(){
   if(d!=null&&d>0)return 'preparing';
   return state.trip.lifecycle_state||'draft';
 }
+
+function setupSteps(){
+  var important=state.checklist.filter(function(x){return !x.completed_at&&(x.priority==='critical'||x.priority==='high');}).length;
+  return [
+    {key:'transport',label:'Add transport',done:state.transport.length>0,action:'flight'},
+    {key:'stay',label:'Add a stay',done:state.stays.length>0,action:'hotel'},
+    {key:'essentials',label:'Prepare essentials',done:state.checklist.length>0&&important===0,view:'checklist'},
+    {key:'offline',label:'Cache core trip data',done:offlineReadiness().every(function(x){return x.ok;}),view:'ready'}
+  ];
+}
+function setupProgress(){
+  var steps=setupSteps(), done=steps.filter(function(x){return x.done;}).length;
+  return {done:done,total:steps.length,steps:steps};
+}
+function firstRunSeen(){return localStorage.getItem('tripto_onboarding_seen')==='1';}
+function markOnboardingSeen(){localStorage.setItem('tripto_onboarding_seen','1');}
+function persistView(){localStorage.setItem('tripto_view',state.view);}
+
 function activeIssues(){
   var arr=[];
   if(state.brain&&Array.isArray(state.brain.issues))arr=arr.concat(state.brain.issues);
@@ -196,7 +214,7 @@ function dialogs(){
   var driverAddress=loc?(loc.local_address||loc.formatted_address||'Address unavailable'):'Address unavailable';
   return ''+
   '<dialog id="tripDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">New trip</div><h2>Create a trip</h2></div><button class="icon-btn" data-close="tripDialog">×</button></div><form id="tripForm" class="form"><div class="field"><label>Trip name</label><input name="title" maxlength="120" required placeholder="Rome 2026"></div><div class="two-col"><div class="field"><label>Starts</label><input type="date" name="startsOn"></div><div class="field"><label>Ends</label><input type="date" name="endsOn"></div></div><button class="btn btn-primary" type="submit">Create trip</button></form></div></dialog>'+
-  '<dialog id="bookingDialog" class="dialog booking-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Add booking</div><h2>What are you adding?</h2></div><button class="icon-btn" data-close="bookingDialog">×</button></div><div class="booking-grid">'+
+  '<dialog id="bookingDialog" class="dialog booking-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Quick Add</div><h2>Add to your trip</h2></div><button class="icon-btn" data-close="bookingDialog">×</button></div><div class="booking-grid">'+
     '<button class="booking-choice" data-booking="flight"><span>✈</span><strong>Flight</strong><small>Scheduled booking data</small></button>'+
     '<button class="booking-choice" data-booking="hotel"><span>▣</span><strong>Hotel / Stay</strong><small>Check-in, address, confirmation</small></button>'+
     '<button class="booking-choice" data-booking="train"><span>⇄</span><strong>Train</strong><small>Stations, service, time</small></button>'+
@@ -230,7 +248,19 @@ function dialogs(){
 
 function loadingView(){return shell('<div class="grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>');}
 function emptyView(){
-  return shell('<div class="card empty"><div class="empty-icon">✈</div><div class="eyebrow">Your travel companion</div><h1 style="font-size:42px">Your whole trip.<br>One calm place.</h1><p class="subtle">Start with a real trip. tripto.to will organize the timeline, checklist, Trip Health and what comes next.</p><button class="btn btn-primary" data-open="tripDialog">Create my first trip</button></div>');
+  var intro=
+    '<section class="onboarding-hero"><div class="onboarding-brand">tripto<span>.to</span></div><div class="eyebrow">Your travel companion</div><h1>Your trip.<br>Organized before you need it.</h1><p>Build one calm itinerary for transport, stays, plans, essentials and offline access.</p><div class="onboarding-actions"><button class="btn btn-primary btn-large" data-open="tripDialog" data-onboarding-start="1">Create my first trip</button><button class="btn btn-navy" data-action="show-how">How it works</button></div></section>'+
+    '<section class="onboarding-grid">'+
+      '<article class="onboarding-card"><div class="onboarding-icon">≡</div><div><strong>One timeline</strong><span>Flights, hotels, trains, transfers and activities in travel order.</span></div></article>'+
+      '<article class="onboarding-card"><div class="onboarding-icon">✓</div><div><strong>Prepare smarter</strong><span>Travel-specific essentials and missing items surface before departure.</span></div></article>'+
+      '<article class="onboarding-card"><div class="onboarding-icon">⇩</div><div><strong>Offline-first</strong><span>Cache core trip data so your itinerary stays useful without internet.</span></div></article>'+
+    '</section>'+
+    '<section id="howItWorks" class="how-section"><div class="eyebrow">How it works</div><div class="how-grid">'+
+      '<div><b>1</b><strong>Create a trip</strong><span>Add dates and your first booking.</span></div>'+
+      '<div><b>2</b><strong>Prepare</strong><span>Finish essentials and cache your trip.</span></div>'+
+      '<div><b>3</b><strong>Travel</strong><span>Open Home for what is next and what needs attention.</span></div>'+
+    '</div></section>';
+  return shell(intro);
 }
 function preparingBanner(){
   var mode=modeForTrip(), d=daysUntil(state.trip&&state.trip.starts_on);
@@ -309,8 +339,23 @@ function readyOfflineCard(compact){
   if(compact)return '<section class="card card-pad"><div class="section-title"><h2>Ready Offline</h2>'+badge(ok+'/'+total,'badge-green')+'</div><div class="subtle">'+ok+' of '+total+' core trip datasets cached.</div><button class="btn btn-ghost" style="margin-top:12px" data-view="ready">Review offline readiness</button></section>';
   return '<div class="page-head"><div><div class="eyebrow">Offline</div><h1>Ready Offline</h1><div class="subtle">Your trip should never disappear because your internet did.</div></div>'+badge(ok+'/'+total,'badge-green')+'</div><section class="card card-pad"><div class="offline-list">'+list+documents+'</div><div class="fact-note">Cached flight status is never presented as live. Live-flight integration is currently disabled.</div></section>';
 }
+
+function preparingDashboard(){
+  if(modeForTrip()!=='preparing')return '';
+  var p=setupProgress();
+  return '<section class="card card-pad setup-card"><div class="section-title"><div><div class="eyebrow">Trip setup</div><h2>'+p.done+' of '+p.total+' ready</h2></div>'+badge(p.done===p.total?'Ready':'Preparing',p.done===p.total?'badge-green':'badge-yellow')+'</div>'+
+    '<div class="setup-steps">'+p.steps.map(function(s){
+      var attrs=s.view?'data-view="'+s.view+'"':'data-booking-shortcut="'+s.action+'"';
+      return '<button class="setup-step '+(s.done?'done':'')+'" '+attrs+'><span class="setup-check">'+(s.done?'✓':'+')+'</span><span>'+esc(s.label)+'</span></button>';
+    }).join('')+'</div>'+
+    '<div class="setup-foot"><span>No health percentage. This only shows concrete preparation steps.</span></div></section>';
+}
+function quickActions(){
+  return '<section class="quick-actions"><button data-booking-shortcut="flight"><span>✈</span><b>Flight</b></button><button data-booking-shortcut="hotel"><span>▣</span><b>Stay</b></button><button data-booking-shortcut="train"><span>⇄</span><b>Train</b></button><button data-booking-shortcut="activity"><span>★</span><b>Activity</b></button></section>';
+}
+
 function homeView(){
-  return shell(preparingBanner()+'<div class="page-head"><div><div class="eyebrow">Home / Next</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">The trip changes. Home stays simple.</div></div>'+badge(state.trip.lifecycle_state||'draft')+'</div><div class="grid home-grid"><div class="grid">'+heroCard()+flightCards()+stayCards()+'<section class="card card-pad"><div class="section-title"><h2>Timeline</h2><button class="btn btn-ghost" data-view="timeline">View all</button></div>'+timelinePreview()+'</section></div><div class="grid">'+nextCard()+'<section class="card card-pad"><div class="section-title"><h2>Smart Essentials</h2><button class="btn btn-ghost" data-view="checklist">View all</button></div>'+smartEssentials()+'</section><section class="card card-pad"><div class="section-title"><h2>Trip Health</h2><button class="btn btn-ghost" data-view="health">Details</button></div>'+healthSummary()+'</section>'+readyOfflineCard(true)+'</div></div>');
+  return shell(preparingBanner()+preparingDashboard()+'<div class="page-head"><div><div class="eyebrow">Home / Next</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">The trip changes. Home stays simple.</div></div>'+badge(state.trip.lifecycle_state||'draft')+'</div>'+quickActions()+'<div class="grid home-grid"><div class="grid">'+heroCard()+flightCards()+stayCards()+'<section class="card card-pad"><div class="section-title"><h2>Timeline</h2><button class="btn btn-ghost" data-view="timeline">View all</button></div>'+timelinePreview()+'</section></div><div class="grid">'+nextCard()+'<section class="card card-pad"><div class="section-title"><h2>Smart Essentials</h2><button class="btn btn-ghost" data-view="checklist">View all</button></div>'+smartEssentials()+'</section><section class="card card-pad"><div class="section-title"><h2>Trip Health</h2><button class="btn btn-ghost" data-view="health">Details</button></div>'+healthSummary()+'</section>'+readyOfflineCard(true)+'</div></div>');
 }
 function tripsView(){
   return shell('<div class="page-head"><div><div class="eyebrow">Trips</div><h1>My trips</h1><div class="subtle">Upcoming, active and completed travel in one place.</div></div><button class="btn btn-primary" data-open="tripDialog">New trip</button></div><div class="trip-list">'+state.trips.map(function(t){return '<article class="trip-card '+(state.trip&&t.id===state.trip.id?'active':'')+'" data-trip="'+esc(t.id)+'"><div>'+badge(t.lifecycle_state||'draft')+'</div><h3>'+esc(t.title)+'</h3><div class="trip-dates">'+esc(t.starts_on?dateLabel(t.starts_on):'No start date')+(t.ends_on?' → '+dateLabel(t.ends_on):'')+'</div></article>';}).join('')+'</div>');
@@ -365,12 +410,12 @@ function render(){
 }
 
 function bind(){
-  document.querySelectorAll('[data-view]').forEach(function(el){el.addEventListener('click',function(){state.view=el.dataset.view;render();});});
+  document.querySelectorAll('[data-view]').forEach(function(el){el.addEventListener('click',function(){state.view=el.dataset.view;persistView();render();});});
   document.querySelectorAll('[data-open]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.open);if(d)d.showModal();});});
   document.querySelectorAll('[data-close]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.close);if(d)d.close();});});
   document.querySelectorAll('[data-trip]').forEach(function(el){el.addEventListener('click',async function(){
     state.trip=state.trips.find(function(t){return t.id===el.dataset.trip;})||state.trip;
-    localStorage.setItem('tripto_selected_trip',state.trip.id); state.loading=true; render(); await loadTripDetails(); state.loading=false; state.view='home'; render();
+    localStorage.setItem('tripto_selected_trip',state.trip.id); state.loading=true; render(); await loadTripDetails(); state.loading=false; state.view='home'; persistView(); render();
   });});
   document.querySelectorAll('[data-check]').forEach(function(el){el.addEventListener('click',async function(){
     var item=state.checklist.find(function(x){return x.id===el.dataset.check;}); if(!item)return;
@@ -380,6 +425,11 @@ function bind(){
   document.querySelectorAll('[data-action="add"]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById('bookingDialog');if(d)d.showModal();});});
   document.querySelectorAll('[data-action="seed"]').forEach(function(el){el.addEventListener('click',seedChecklist);});
   document.querySelectorAll('[data-action="recalc"]').forEach(function(el){el.addEventListener('click',recalcImpacts);});
+  document.querySelectorAll('[data-action="show-how"]').forEach(function(el){el.addEventListener('click',function(){
+    var section=document.getElementById('howItWorks'); if(section)section.scrollIntoView({behavior:'smooth',block:'start'});
+  });});
+  document.querySelectorAll('[data-onboarding-start]').forEach(function(el){el.addEventListener('click',markOnboardingSeen);});
+
   document.querySelectorAll('[data-booking]').forEach(function(el){el.addEventListener('click',function(){
     var chooser=document.getElementById('bookingDialog'); if(chooser)chooser.close();
     var map={flight:'flightDialog',hotel:'hotelDialog',train:'trainDialog',car:'carDialog',activity:'planDialog'};
@@ -404,7 +454,7 @@ function bind(){
     e.preventDefault(); var fd=new FormData(tripForm);
     try{
       var d=await api('/api/v1/trips',{method:'POST',body:JSON.stringify({title:fd.get('title'),startsOn:fd.get('startsOn')||null,endsOn:fd.get('endsOn')||null,lifecycleState:'upcoming'})});
-      state.trips.unshift(d.trip);state.trip=d.trip;localStorage.setItem('tripto_selected_trip',d.trip.id);document.getElementById('tripDialog').close();await loadTripDetails();state.view='home';render();
+      state.trips.unshift(d.trip);state.trip=d.trip;localStorage.setItem('tripto_selected_trip',d.trip.id);markOnboardingSeen();document.getElementById('tripDialog').close();await loadTripDetails();state.view='home';persistView();render();
     }catch(err){notify(err.message);}
   });
   var planForm=document.getElementById('planForm');
