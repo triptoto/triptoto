@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test:scenarios": "tsx tests/scenarios/core.scenarios.ts"
+    "test:scenarios": "tsx tests/scenarios/core.scenarios.ts",
+    "smoke:api": "bash scripts/smoke-api.sh"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
