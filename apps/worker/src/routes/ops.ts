@@ -7,16 +7,16 @@ export async function opsSummary(request:Request,env:Env,_auth:AuthContext):Prom
   const supplied=request.headers.get('x-tripto-ops-secret')??'';
   if(!env.OPS_SECRET||env.OPS_SECRET.length<20||!(await equalSecret(supplied,env.OPS_SECRET)))return json({error:{code:'NOT_FOUND',message:'Endpoint not found.'}},{status:404},request,env);
   const since=Date.now()-86400000;
-  const tripStates=(await env.DB.prepare(`SELECT lifecycle_state,COUNT(*) count FROM trips WHERE deleted_at IS NULL GROUP BY lifecycle_state`).all<{lifecycle_state:string;count:number}>()).results??[];
-  const eventCounts=(await env.DB.prepare(`SELECT event_name,COUNT(*) count FROM beta_events WHERE created_at>? GROUP BY event_name ORDER BY count DESC`).bind(since).all<{event_name:string;count:number}>()).results??[];
-  const importStates=(await env.DB.prepare(`SELECT status,COUNT(*) count FROM imports WHERE created_at>? GROUP BY status`).bind(since).all<{status:string;count:number}>()).results??[];
-  const impacts=(await env.DB.prepare(`SELECT severity,COUNT(*) count FROM impact_assessments WHERE status='active' GROUP BY severity`).all<{severity:string;count:number}>()).results??[];
+  const tripStates=(await env.DB.prepare(`SELECT lifecycle_state,COUNT(*) count FROM trips WHERE deleted_at IS NULL AND qa_marker IS NULL GROUP BY lifecycle_state`).all<{lifecycle_state:string;count:number}>()).results??[];
+  const eventCounts=(await env.DB.prepare(`SELECT event_name,COUNT(*) count FROM beta_events WHERE created_at>? AND qa_marker IS NULL GROUP BY event_name ORDER BY count DESC`).bind(since).all<{event_name:string;count:number}>()).results??[];
+  const importStates=(await env.DB.prepare(`SELECT i.status,COUNT(*) count FROM imports i LEFT JOIN trips t ON t.id=i.trip_id WHERE i.created_at>? AND (i.trip_id IS NULL OR t.qa_marker IS NULL) GROUP BY i.status`).bind(since).all<{status:string;count:number}>()).results??[];
+  const impacts=(await env.DB.prepare(`SELECT ia.severity,COUNT(*) count FROM impact_assessments ia JOIN trips t ON t.id=ia.trip_id WHERE ia.status='active' AND t.qa_marker IS NULL GROUP BY ia.severity`).all<{severity:string;count:number}>()).results??[];
   const integrationHealth=(await env.DB.prepare(`SELECT integration_type,provider_key,enabled,status,last_success_at,last_failure_at,consecutive_failures,quota_used,quota_limit,last_error_code,updated_at FROM integration_health ORDER BY integration_type,provider_key`).all()).results??[];
   const totals=await env.DB.prepare(`SELECT
     (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) users,
-    (SELECT COUNT(*) FROM devices WHERE revoked_at IS NULL) devices,
-    (SELECT COUNT(*) FROM trips WHERE deleted_at IS NULL) trips,
-    (SELECT COUNT(*) FROM beta_events WHERE created_at>?) events_24h
+    (SELECT COUNT(*) FROM devices WHERE revoked_at IS NULL AND qa_marker IS NULL) devices,
+    (SELECT COUNT(*) FROM trips WHERE deleted_at IS NULL AND qa_marker IS NULL) trips,
+    (SELECT COUNT(*) FROM beta_events WHERE created_at>? AND qa_marker IS NULL) events_24h
   `).bind(since).first<Record<string,unknown>>();
   return json({ops:{
     release:env.BETA_RELEASE||BETA_RELEASE,

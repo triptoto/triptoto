@@ -14,6 +14,8 @@ const oncePerActor = new Set<BetaEventName>(['second_trip_created']);
 
 export async function recordBetaEvent(env: Env, auth: AuthContext, eventName: BetaEventName, tripId: string | null = null, mode: 'default'|'daily'|'always' = 'default'): Promise<void> {
   if (env.BETA_METRICS_ENABLED !== 'true') return;
+  const qaDevice=await env.DB.prepare(`SELECT qa_marker FROM devices WHERE id=?`).bind(auth.deviceId).first<{qa_marker:string|null}>();
+  if (qaDevice?.qa_marker) return;
   const now = nowMs();
   const day = new Date(now).toISOString().slice(0,10);
   const actor = auth.userId ? `u:${auth.userId}` : `d:${auth.deviceId}`;

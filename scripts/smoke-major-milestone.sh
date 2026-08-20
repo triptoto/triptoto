@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 BASE_URL="${1:-https://tripto-api.travelinkme.workers.dev}"
+QA_MARKER="${QA_MARKER:-qa:major-smoke:$(date -u +%Y%m%dT%H%M%SZ):$$}"
 
 post(){ curl -fsS -X POST "$1" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' --data "$2"; }
 put(){ curl -fsS -X PUT "$1" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' --data "$2"; }
@@ -13,7 +14,7 @@ printf '%s\n' "$READY"
 printf '%s' "$READY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const x=JSON.parse(s);if(!x.ready)process.exit(1)})"
 
 printf '2) Guest session\n'
-SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data '{"platform":"web","appVersion":"major-smoke","apiVersion":"v1"}')
+SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data "{\"platform\":\"web\",\"appVersion\":\"major-smoke\",\"apiVersion\":\"v1\",\"qaMarker\":\"$QA_MARKER\"}")
 TOKEN=$(printf '%s' "$SESSION" | json_field token)
 
 printf '3) Trip, traveler and timeline\n'
@@ -52,3 +53,4 @@ printf '%s\n' "$QUEUED"
 printf '%s' "$QUEUED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const x=JSON.parse(s);if(x.operation.status!=='pending'||!x.operation.safeMode)process.exit(1)})"
 
 printf 'Major Beta Milestone 5–8 smoke test completed. Test trip remains in D1 for inspection.\n'
+printf 'QA marker: %s\nOptional cleanup: bash scripts/cleanup-qa-data.sh --remote --marker %q --execute\n' "$QA_MARKER" "$QA_MARKER"

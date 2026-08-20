@@ -963,6 +963,8 @@ function bind(){
   });});
 
   document.querySelectorAll('[data-action="delete-all-data"]').forEach(function(el){el.addEventListener('click',async function(){
+    updatePendingCount();
+    if(state.pendingSyncCount){showRecovery('Local data cannot be removed yet.',state.pendingSyncCount+' unsynced change(s) still need sync or conflict review.','Reconnect, resolve every pending change, then retry deletion.');return;}
     try{
       var d=await api('/api/v1/account/deletion-preview');var x=d.deletion||{};var effect=document.getElementById('deleteAllDataEffect');
       if(effect)effect.textContent=(x.effect||'All beta data attached to this identity will be deleted.')+' Owned trips: '+(x.ownedTrips==null?'—':x.ownedTrips)+'. Devices: '+(x.devices==null?'—':x.devices)+'.';
@@ -1070,6 +1072,8 @@ function bind(){
   if(deleteAllDataForm)deleteAllDataForm.addEventListener('submit',async function(e){
     e.preventDefault();var fd=new FormData(deleteAllDataForm);
     if(String(fd.get('confirm')||'').trim()!=='DELETE'){notify('Type DELETE exactly to confirm.');return;}
+    updatePendingCount();
+    if(state.pendingSyncCount){showRecovery('Local data cannot be removed yet.',state.pendingSyncCount+' unsynced change(s) still need sync or conflict review.','Reconnect, resolve every pending change, then retry deletion.');return;}
     try{
       await api('/api/v1/account',{method:'DELETE',body:JSON.stringify({confirm:'DELETE'})});
       await clearAllLocalBetaData();location.replace('/');

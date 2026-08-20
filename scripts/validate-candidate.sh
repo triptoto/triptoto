@@ -12,6 +12,7 @@ trap cleanup EXIT
 mkdir -p "$TMP_DIR"
 tsc --noEmit false --outDir "$TMP_DIR" --rewriteRelativeImportExtensions true --allowImportingTsExtensions true
 node "$TMP_DIR/tests/scenarios/candidate.scenarios.js"
+node "$TMP_DIR/tests/scenarios/readiness.scenarios.js"
 
 echo '3/5 Candidate UI and recovery contracts'
 grep -q "checksum-verified local file" public/app.js
@@ -24,6 +25,7 @@ grep -q "Scheduled booking data is never presented as live" public/app.js
 grep -q "i.explanation||i.message" public/major-workspace.js
 grep -q "i.suggestedAction||i.action" public/major-workspace.js
 node tests/browser-timezone.contract.mjs
+node tests/offline-recovery.contract.mjs
 
 echo '4/5 PWA and disabled integrations'
 grep -q "tripto-shell-beta-candidate-1" public/sw.js
@@ -37,5 +39,8 @@ test -f scripts/smoke-beta-candidate.sh
 test -f docs/BETA_CANDIDATE_1.md
 test -f docs/DEPLOY_BETA_CANDIDATE_1.md
 test -f docs/ROLLBACK_BETA_CANDIDATE_1.md
+test -f docs/REAL_TRIP_BETA_TEST.md
+test -x scripts/cleanup-qa-data.sh
+test -x scripts/diagnose-trip.mjs
 
 echo 'Beta Candidate 1 validation passed.'

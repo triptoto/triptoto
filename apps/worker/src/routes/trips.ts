@@ -34,8 +34,9 @@ export async function createTrip(request: Request, env: Env, auth: AuthContext):
 
   const id = uuid();
   const now = nowMs();
-  await env.DB.prepare(`INSERT INTO trips (id, owner_user_id, created_by_device_id, title, lifecycle_state, starts_on, ends_on, created_at, updated_at, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`)
-    .bind(id, auth.userId ?? null, auth.deviceId, title, lifecycleState, startsOn, endsOn, now, now).run();
+  const device=await env.DB.prepare(`SELECT qa_marker FROM devices WHERE id=?`).bind(auth.deviceId).first<{qa_marker:string|null}>();
+  await env.DB.prepare(`INSERT INTO trips (id, owner_user_id, created_by_device_id, title, lifecycle_state, starts_on, ends_on, qa_marker, created_at, updated_at, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`)
+    .bind(id, auth.userId ?? null, auth.deviceId, title, lifecycleState, startsOn, endsOn, device?.qa_marker??null, now, now).run();
   if (auth.userId) {
     await env.DB.prepare(`INSERT OR IGNORE INTO trip_members (trip_id,user_id,role,status,joined_at) VALUES (?,?,'owner','active',?)`).bind(id, auth.userId, now).run();
   }

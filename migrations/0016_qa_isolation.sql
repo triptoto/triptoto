@@ -1,0 +1,10 @@
+PRAGMA foreign_keys = ON;
+ALTER TABLE devices ADD COLUMN qa_marker TEXT;
+ALTER TABLE trips ADD COLUMN qa_marker TEXT;
+ALTER TABLE beta_events ADD COLUMN qa_marker TEXT;
+CREATE INDEX idx_devices_qa_marker ON devices(qa_marker) WHERE qa_marker IS NOT NULL;
+CREATE INDEX idx_trips_qa_marker ON trips(qa_marker) WHERE qa_marker IS NOT NULL;
+CREATE INDEX idx_beta_events_qa_marker ON beta_events(qa_marker) WHERE qa_marker IS NOT NULL;
+UPDATE devices SET qa_marker='qa:legacy:'||app_version WHERE qa_marker IS NULL AND app_version IN ('smoke','smoke-v1.1','smoke-v1.2','smoke-milestone-4','major-smoke');
+UPDATE trips SET qa_marker=(SELECT d.qa_marker FROM devices d WHERE d.id=trips.created_by_device_id) WHERE qa_marker IS NULL AND created_by_device_id IN (SELECT id FROM devices WHERE qa_marker IS NOT NULL);
+UPDATE beta_events SET qa_marker=(SELECT d.qa_marker FROM devices d WHERE d.id=beta_events.device_id) WHERE qa_marker IS NULL AND device_id IN (SELECT id FROM devices WHERE qa_marker IS NOT NULL);

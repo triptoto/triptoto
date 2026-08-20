@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 BASE_URL="${1:-https://tripto-api.travelinkme.workers.dev}"
+QA_MARKER="${QA_MARKER:-qa:milestone4-smoke:$(date -u +%Y%m%dT%H%M%SZ):$$}"
 TMP_DIR="${TMPDIR:-/tmp}/tripto-smoke-m4-$$"
 mkdir -p "$TMP_DIR"
 cleanup(){ rm -rf "$TMP_DIR"; }
@@ -14,7 +15,7 @@ printf '%s' "$HEALTH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('e
 echo OK
 
 printf 'Guest session... '
-SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data '{"platform":"web","appVersion":"smoke-milestone-4","apiVersion":"v1"}')
+SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data "{\"platform\":\"web\",\"appVersion\":\"smoke-milestone-4\",\"apiVersion\":\"v1\",\"qaMarker\":\"$QA_MARKER\"}")
 TOKEN=$(printf '%s' "$SESSION" | json_field token)
 echo OK
 
@@ -93,8 +94,5 @@ TOKEN=$(printf '%s' "$REFRESH" | json_field token)
 AUTH=(-H "authorization: Bearer $TOKEN")
 echo OK
 
-printf 'Cleanup smoke trip... '
-curl -fsS -X DELETE "$BASE_URL/api/v1/trips/$TRIP_ID" "${AUTH[@]}" -H 'content-type: application/json' --data "{\"version\":$TRIP_VERSION}" >/dev/null
-echo OK
-
 echo 'Beta Milestone 4 smoke test completed.'
+printf 'Test data retained for inspection. QA marker: %s\nOptional cleanup: bash scripts/cleanup-qa-data.sh --remote --marker %q --execute\n' "$QA_MARKER" "$QA_MARKER"

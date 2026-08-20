@@ -36,11 +36,17 @@ export function parseForwardedEmail(input: ForwardedEmailInput): ParsedForwarded
   return {
     candidates,
     normalizedText: text,
-    unsupportedReason: candidates.length ? undefined : 'No supported flight or stay booking could be identified deterministically.',
+    unsupportedReason: candidates.length ? undefined : /\b(train|rail|coach|platform)\b/i.test(text)
+      ? 'Train confirmation detected, but this deterministic parser cannot safely map it yet.'
+      : /\b(activity|tour|excursion|admission|ticketed event)\b/i.test(text)
+        ? 'Activity confirmation detected, but this deterministic parser cannot safely map it yet.'
+        : 'No supported flight or stay booking could be identified deterministically.',
   };
 }
 
 function parseFlight(text: string): ParsedImportCandidate | null {
+  if (/\b(train|rail|coach|platform)\b/i.test(text) && !/\b(flight|airline|boarding)\b/i.test(text)) return null;
+  if (/\b(activity|tour|excursion|admission|ticketed event)\b/i.test(text) && !/\b(flight|airline|boarding)\b/i.test(text)) return null;
   const route = extractRoute(text);
   const flightNo = extractFlightNumber(text);
   const hasFlightWords = /\b(flight|boarding|airline|departure|arrival)\b/i.test(text);
@@ -53,6 +59,7 @@ function parseFlight(text: string): ParsedImportCandidate | null {
   if (!route) warnings.push('Departure/arrival airport codes were not confidently detected.');
   if (!flightNo) warnings.push('Airline/flight number was not confidently detected.');
   if (!departure || !arrival) warnings.push('Departure/arrival local times need confirmation.');
+  if (/\b(?:operated by|codeshare)\b/i.test(text)) warnings.push('Codeshare/operating carrier details require confirmation.');
   warnings.push('Airport timezones must be confirmed before creating the flight.');
 
   let score = 0.35;
@@ -109,7 +116,18 @@ function parseStay(text: string, subject: string): ParsedImportCandidate | null 
 }
 
 function normalize(value: string): string {
-  return value.replace(/\r\n?/g,'\n').replace(/[\t ]+/g,' ').replace(/ *\n */g,'\n').replace(/\n{2,}/g,'\n').trim();
+  return value
+    .replace(/\r\n?/g,'\n')
+    .replace(/<(?:br|\/p|\/div|\/li)\s*\/?>/gi,'\n')
+    .replace(/<[^>]{1,500}>/g,' ')
+    .replace(/&nbsp;|&#160;/gi,' ')
+    .replace(/&gt;|&#62;/gi,'>')
+    .replace(/&lt;|&#60;/gi,'<')
+    .replace(/&amp;|&#38;/gi,'&')
+    .replace(/[\t ]+/g,' ')
+    .replace(/ *\n */g,'\n')
+    .replace(/\n{2,}/g,'\n')
+    .trim();
 }
 
 function extractRoute(text: string): { from: string; to: string } | null {

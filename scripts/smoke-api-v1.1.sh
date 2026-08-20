@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 BASE_URL="${1:-https://tripto-api.travelinkme.workers.dev}"
+QA_MARKER="${QA_MARKER:-qa:v1.1-smoke:$(date -u +%Y%m%dT%H%M%SZ):$$}"
 post(){ curl -fsS -X POST "$1" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' --data "$2"; }
-SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data '{"platform":"web","appVersion":"smoke-v1.1"}')
+SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data "{\"platform\":\"web\",\"appVersion\":\"smoke-v1.1\",\"qaMarker\":\"$QA_MARKER\"}")
 TOKEN=$(printf '%s' "$SESSION" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).token))")
 TRIP=$(post "$BASE_URL/api/v1/trips" '{"title":"V1.1 Rome Connection Test","lifecycleState":"upcoming"}')
 TRIP_ID=$(printf '%s' "$TRIP"|node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).trip.id))")
@@ -23,3 +24,4 @@ IMPACTS=$(post "$BASE_URL/api/v1/trips/$TRIP_ID/impacts/recalculate" '{}')
 echo "$IMPACTS"
 curl -fsS "$BASE_URL/api/v1/trips/$TRIP_ID/changes" -H "authorization: Bearer $TOKEN"; echo
 echo "Backend API v1.1 smoke test completed."
+printf 'QA marker: %s\nOptional cleanup: bash scripts/cleanup-qa-data.sh --remote --marker %q --execute\n' "$QA_MARKER" "$QA_MARKER"

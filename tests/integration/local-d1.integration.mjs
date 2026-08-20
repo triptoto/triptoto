@@ -13,9 +13,10 @@ const { tripSupportBundle }=await load('apps/worker/src/routes/support.js');
 const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, updateMemberRole, removeMember, revokeInvite }=await load('apps/worker/src/routes/sharing.js');
 const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-auth.js');
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
-const { refreshSession }=await load('apps/worker/src/routes/session.js');
+const { createGuestSession, refreshSession }=await load('apps/worker/src/routes/session.js');
 const { previewForwardedEmail, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
 const { betaStatus, recordClientBetaEvent }=await load('apps/worker/src/routes/beta.js');
+const { recordBetaEvent }=await load('apps/worker/src/beta-events.js');
 const { enforceActorRateLimit, enforcePublicRateLimit }=await load('apps/worker/src/rate-limit.js');
 const { deletionPreview, deleteMyData }=await load('apps/worker/src/routes/privacy.js');
 const { opsSummary }=await load('apps/worker/src/routes/ops.js');
@@ -42,6 +43,11 @@ for(const name of readdirSync('migrations').filter(x=>x.endsWith('.sql')).sort()
 const env={DB:new LocalD1(db),SESSION_SECRET:'x'.repeat(64),ACCOUNT_AUTH_ENABLED:'false',SHARING_ENABLED:'false',DEMO_TOOLS_ENABLED:'true',DEMO_TOOLS_SECRET:'demo-secret-value-12345',LIVE_FLIGHTS_ENABLED:'false',AI_ENABLED:'false',GMAIL_SYNC_ENABLED:'false',R2_DOCUMENTS_ENABLED:'false',APP_BASE_URL:'https://app.tripto.test',BETA_RELEASE:'beta-milestone-4',BETA_METRICS_ENABLED:'true',OPS_ENABLED:'false'};
 addDevice(db,'guest-device');
 const guest={deviceId:'guest-device'};
+
+const qaSession=await body(await createGuestSession(req('https://test/api/v1/session/guest','POST',{platform:'web',appVersion:'major-smoke',qaMarker:'qa:integration:session'}),env));
+assert(db.prepare(`SELECT qa_marker FROM devices WHERE id=?`).get(qaSession.device.id).qa_marker==='qa:integration:session','QA session marker stored');
+let markerRejected=false;try{await createGuestSession(req('https://test/api/v1/session/guest','POST',{platform:'web',appVersion:'browser',qaMarker:'qa:integration:spoof'}),env);}catch(e){markerRejected=e.code==='QA_MARKER_NOT_ALLOWED';}
+assert(markerRejected,'normal app version cannot self-mark as QA');
 
 const accountGuest=await body(await accountStatus(req('https://test/api/v1/account'),env,guest));
 assert(accountGuest.account.mode==='guest','account status guest');
@@ -176,6 +182,14 @@ assert(beta.beta.activation.usedWhatsNext===true,'whats next activation recorded
 assert(typeof beta.beta.trip.importPreviewsRemaining==='number','import quota remaining surfaced');
 assert(!JSON.stringify(beta).includes('ABC123'),'beta status leaks no confirmation number');
 
+// QA devices and trips are explicitly marked and never enter beta metrics.
+db.prepare(`INSERT INTO devices(id,platform,app_version,api_version,qa_marker,created_at,last_seen_at) VALUES ('qa-isolated','web','major-smoke','v1','qa:test:isolation',?,?)`).run(Date.now(),Date.now());
+const qaAuth={deviceId:'qa-isolated'};
+db.prepare(`INSERT INTO trips(id,created_by_device_id,title,lifecycle_state,qa_marker,created_at,updated_at,version) VALUES ('qa-trip','qa-isolated','QA','upcoming','qa:test:isolation',?,?,1)`).run(Date.now(),Date.now());
+await recordBetaEvent(env,qaAuth,'trip_created','qa-trip');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM beta_events WHERE device_id='qa-isolated'`).get().c)===0,'QA beta event excluded');
+assert(db.prepare(`SELECT qa_marker FROM trips WHERE id='qa-trip'`).get().qa_marker==='qa:test:isolation','QA trip marker retained');
+
 // Fixed-window actor and public abuse guards.
 await enforceActorRateLimit(env,owner,{action:'integration_actor',limit:2,windowMs:3600000});
 await enforceActorRateLimit(env,owner,{action:'integration_actor',limit:2,windowMs:3600000});
@@ -222,4 +236,3 @@ assert(db.prepare(`SELECT COUNT(*) c FROM usage_counters WHERE scope_id IN (?,?)
 assert(Number(db.prepare(`SELECT COUNT(*) c FROM privacy_deletions`).get().c)>=2,'anonymous privacy deletion counters recorded');
 
 console.log('Local D1 integration suite passed: auth, migration, sharing, imports, beta metrics, rate limits, ops privacy and data deletion.');
-

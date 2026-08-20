@@ -18,7 +18,7 @@ export async function recordClientBetaEvent(request:Request,env:Env,auth:AuthCon
 export async function betaStatus(request:Request,env:Env,auth:AuthContext):Promise<Response>{
   const url=new URL(request.url); const tripId=url.searchParams.get('tripId');
   if(tripId)await requireTripAccess(env,auth,tripId);
-  const actorEvents=(await env.DB.prepare(`SELECT event_name,COUNT(*) count,MAX(created_at) last_at FROM beta_events WHERE ${auth.userId?'user_id=?':'device_id=?'} GROUP BY event_name`)
+  const actorEvents=(await env.DB.prepare(`SELECT event_name,COUNT(*) count,MAX(created_at) last_at FROM beta_events WHERE ${auth.userId?'user_id=?':'device_id=?'} AND qa_marker IS NULL GROUP BY event_name`)
     .bind(auth.userId??auth.deviceId).all<{event_name:string;count:number;last_at:number}>()).results??[];
   const eventMap=Object.fromEntries(actorEvents.map(x=>[x.event_name,{count:Number(x.count),lastAt:Number(x.last_at)}]));
   const tripCount=auth.userId

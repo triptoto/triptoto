@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 BASE_URL="${1:-https://tripto-api.travelinkme.workers.dev}"
+QA_MARKER="${QA_MARKER:-qa:v1.2-smoke:$(date -u +%Y%m%dT%H%M%SZ):$$}"
 post(){ curl -fsS -X POST "$1" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' --data "$2"; }
 patch(){ curl -fsS -X PATCH "$1" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' --data "$2"; }
 del(){ curl -fsS -X DELETE "$1" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' --data "$2"; }
-SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data '{"platform":"web","appVersion":"smoke-v1.2"}')
+SESSION=$(curl -fsS -X POST "$BASE_URL/api/v1/session/guest" -H 'content-type: application/json' --data "{\"platform\":\"web\",\"appVersion\":\"smoke-v1.2\",\"qaMarker\":\"$QA_MARKER\"}")
 TOKEN=$(printf '%s' "$SESSION"|node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).token))")
 TRIP=$(post "$BASE_URL/api/v1/trips" '{"title":"V1.2 Edit Test","lifecycleState":"upcoming"}')
 TRIP_ID=$(printf '%s' "$TRIP"|node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).trip.id))")
@@ -41,3 +42,4 @@ STAY_V2=$(printf '%s' "$STAY2"|node -e "let s='';process.stdin.on('data',d=>s+=d
 del "$BASE_URL/api/v1/trips/$TRIP_ID/stays/$STAY_ID" "{\"version\":$STAY_V2}" >/dev/null
 del "$BASE_URL/api/v1/trips/$TRIP_ID/transport/$FLIGHT_ID" "{\"version\":$UPDATED_V}" >/dev/null
 echo "Backend API v1.2 edit/delete smoke test completed."
+printf 'QA marker: %s\nOptional cleanup: bash scripts/cleanup-qa-data.sh --remote --marker %q --execute\n' "$QA_MARKER" "$QA_MARKER"

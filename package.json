@@ -15,7 +15,9 @@
     "test:major-integration": "bash scripts/test-major-local-d1.sh",
     "smoke:major": "bash scripts/smoke-major-milestone.sh",
     "validate:major": "bash scripts/validate-major.sh",
-    "validate:candidate": "bash scripts/validate-candidate.sh"
+    "validate:candidate": "bash scripts/validate-candidate.sh",
+    "diagnose:trip": "node scripts/diagnose-trip.mjs",
+    "test:readiness": "node --import tsx/esm tests/scenarios/readiness.scenarios.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
