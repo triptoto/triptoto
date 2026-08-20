@@ -12,9 +12,11 @@ printf '2) Disabled feature flags confirmed by health response\n'
 
 printf '3) PWA shell and safety labels\n'
 curl -fsS "$BASE_URL/manifest.webmanifest" >/dev/null
-curl -fsS "$BASE_URL/sw.js" | grep -q 'tripto-shell-beta-candidate-1'
-curl -fsS "$BASE_URL/app.js" | grep -q 'Scheduled booking data is never presented as live'
-curl -fsS "$BASE_URL/app.js" | grep -q 'checksum-verified local file'
+SW_SOURCE=$(curl -fsS "$BASE_URL/sw.js")
+APP_SOURCE=$(curl -fsS "$BASE_URL/app.js")
+[[ "$SW_SOURCE" == *tripto-shell-beta-candidate-1* ]]
+[[ "$APP_SOURCE" == *'Scheduled booking data is never presented as live'* ]]
+[[ "$APP_SOURCE" == *'checksum-verified local file'* ]]
 
 printf '4) Full major API smoke\n'
 bash "$(dirname "$0")/smoke-major-milestone.sh" "$BASE_URL"
