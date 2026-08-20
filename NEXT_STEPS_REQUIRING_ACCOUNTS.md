@@ -1,24 +1,46 @@
-# External-account boundary
+# External-account boundary — current beta state
 
-Everything before this file can be developed locally without external accounts.
+Cloudflare Workers and D1 are already part of the deployed beta architecture. This repository still keeps external paid/provider integrations disabled by default.
 
-## Cloudflare account becomes necessary when we want to:
-1. Create the real D1 database.
-2. Create the private R2 documents bucket.
-3. Create/deploy the Worker and bind D1/R2.
-4. Configure production secrets, custom domain, inbound email routing, and observability.
+## Already connected in the current beta
 
-At that point expected commands include Wrangler resource creation/migration/deploy commands, but no credentials or resource IDs are stored in this repository.
+- Cloudflare Worker
+- D1 database
+- Worker static assets
+- HMAC guest sessions via `SESSION_SECRET`
 
-## GitHub account/repository becomes useful when we want to:
-1. Create a private remote repository.
-2. Push this local codebase.
-3. Enable branch protection/CI and retain durable project history.
+## Prepared but intentionally not connected
 
-## Not required yet
-- OpenAI or other AI API.
-- Live-flight provider account/key.
-- Gmail OAuth credentials.
-- Apple Developer account.
-- Google Play account.
-- Paid maps/navigation provider.
+### Verified account authentication
+
+The data model and guest → account migration contract are ready. To activate real accounts later we still need at least one verified adapter:
+
+- Sign in with Apple, or
+- Google Sign-In, or
+- email code delivery/verification.
+
+Do not enable `ACCOUNT_AUTH_ENABLED` until one of these adapters verifies identity before calling the migration contract.
+
+### Shared trips
+
+Owner/editor/viewer access, invite storage, hashed tokens and acceptance contracts are ready. `SHARING_ENABLED` stays false until verified account auth exists.
+
+### R2 documents
+
+Schema and offline UX are prepared, but R2 file storage remains disabled. Do not add an R2 subscription/bucket until the product decision changes.
+
+### Live flights
+
+Provider abstraction exists; `LIVE_FLIGHTS_ENABLED=false` remains mandatory until a provider, quota strategy and licensing decision are approved.
+
+### Generative AI
+
+`AI_ENABLED=false`. No generative AI provider or API key is required for the current product.
+
+### Gmail Sync
+
+`GMAIL_SYNC_ENABLED=false`. Forwarded-email import remains the preferred earlier-stage import path.
+
+## Optional internal QA
+
+Demo scenario generation is implemented but disabled. If it is ever enabled temporarily, store `DEMO_TOOLS_SECRET` as a Cloudflare secret and never commit it.

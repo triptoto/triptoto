@@ -24,6 +24,11 @@ export interface Env {
   AI_ENABLED?: string;
   GMAIL_SYNC_ENABLED?: string;
   R2_DOCUMENTS_ENABLED?: string;
+  ACCOUNT_AUTH_ENABLED?: string;
+  SHARING_ENABLED?: string;
+  DEMO_TOOLS_ENABLED?: string;
+  DEMO_TOOLS_SECRET?: string;
+  APP_BASE_URL?: string;
 }
 
 export interface AuthContext {

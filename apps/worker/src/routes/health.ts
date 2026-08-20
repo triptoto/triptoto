@@ -20,6 +20,9 @@ export async function health(request: Request, env: Env): Promise<Response> {
       generativeAI: env.AI_ENABLED === 'true',
       gmailSync: env.GMAIL_SYNC_ENABLED === 'true',
       r2Documents: env.R2_DOCUMENTS_ENABLED === 'true',
+      accountAuth: env.ACCOUNT_AUTH_ENABLED === 'true',
+      sharing: env.SHARING_ENABLED === 'true',
+      demoTools: env.DEMO_TOOLS_ENABLED === 'true',
     },
     timestamp: Date.now(),
   }, { status: database.ok ? 200 : 503 }, request, env);

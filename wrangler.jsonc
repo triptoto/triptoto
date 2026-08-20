@@ -14,7 +14,10 @@
     "LIVE_FLIGHTS_ENABLED": "false",
     "AI_ENABLED": "false",
     "GMAIL_SYNC_ENABLED": "false",
-    "R2_DOCUMENTS_ENABLED": "false"
+    "R2_DOCUMENTS_ENABLED": "false",
+    "ACCOUNT_AUTH_ENABLED": "false",
+    "SHARING_ENABLED": "false",
+    "DEMO_TOOLS_ENABLED": "false"
   },
   "assets": {
     "directory": "./public",

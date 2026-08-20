@@ -13,6 +13,11 @@ import { listTransport, createTransport, updateTransport, deleteTransport } from
 import { listStays, createStay, updateStay, deleteStay } from './routes/stays.ts';
 import { listConnections, createConnection, updateConnection, deleteConnection } from './routes/connections.ts';
 import { listImpacts, recalculateImpacts, listChanges } from './routes/impacts.ts';
+import { accountStatus } from './routes/account.ts';
+import { diagnostics } from './routes/diagnostics.ts';
+import { exportTripJson } from './routes/export.ts';
+import { sharingStatus, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
+import { createDemoTrip } from './routes/demo.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -26,6 +31,10 @@ export default {
       if (request.method === 'POST' && path === '/api/v1/session/guest') return createGuestSession(request, env);
 
       const auth = await requireAuth(request, env);
+      if (request.method === 'GET' && path === '/api/v1/account') return accountStatus(request, env, auth);
+      if (request.method === 'GET' && path === '/api/v1/diagnostics') return diagnostics(request, env, auth);
+      if (request.method === 'POST' && path === '/api/v1/invites/accept') return acceptInvite(request, env, auth);
+      if (request.method === 'POST' && path === '/api/v1/internal/demo-trips') return createDemoTrip(request, env, auth);
       if (path === '/api/v1/trips') {
         if (request.method === 'GET') return listTrips(request, env, auth);
         if (request.method === 'POST') return createTrip(request, env, auth);
@@ -85,6 +94,18 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listConnections(request,env,auth,tripId); if(request.method==='POST') return createConnection(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/connections\/([^/]+)$/);
       if (match) { const tripId=decodeURIComponent(match[1]), connectionId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateConnection(request,env,auth,tripId,connectionId); if(request.method==='DELETE') return deleteConnection(request,env,auth,tripId,connectionId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/export\/json$/);
+      if (match && request.method==='GET') return exportTripJson(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/sharing$/);
+      if (match && request.method==='GET') return sharingStatus(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/members$/);
+      if (match && request.method==='GET') return listMembers(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/members\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), userId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateMemberRole(request,env,auth,tripId,userId); if(request.method==='DELETE') return removeMember(request,env,auth,tripId,userId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/invites$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listInvites(request,env,auth,tripId); if(request.method==='POST') return createInvite(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/invites\/([^/]+)$/);
+      if (match && request.method==='DELETE') return revokeInvite(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts$/);
       if (match && request.method==='GET') return listImpacts(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts\/recalculate$/);

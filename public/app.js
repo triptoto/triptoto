@@ -21,7 +21,11 @@ var state={
   offline:!navigator.onLine,
   lastRefreshAt:null,
   installPrompt:null,
-  pendingDeleteTripId:null
+  pendingDeleteTripId:null,
+  account:null,
+  sharing:null,
+  diagnostics:null,
+  pendingInviteToken:(location.pathname.indexOf('/join/')===0?decodeURIComponent(location.pathname.slice(6)):null)
 };
 var app=document.getElementById('app');
 
@@ -127,7 +131,7 @@ async function ensureSession(){
   var r=await fetch(API+'/api/v1/session/guest',{
     method:'POST',
     headers:{'content-type':'application/json'},
-    body:JSON.stringify({platform:'web',appVersion:'ui-v3',apiVersion:'v1'})
+    body:JSON.stringify({platform:'web',appVersion:'beta-milestone-1',apiVersion:'v1'})
   });
   if(!r.ok)throw new Error('Could not start guest session.');
   var d=await r.json();
@@ -135,7 +139,10 @@ async function ensureSession(){
   return state.token;
 }
 async function api(path,opts){
-  opts=opts||{}; await ensureSession();
+  opts=opts||{};
+  var method=String(opts.method||'GET').toUpperCase();
+  if(method!=='GET'&&!navigator.onLine)throw new Error('This change needs internet. Your cached trip remains available offline; reconnect and try again.');
+  await ensureSession();
   var headers=Object.assign({'content-type':'application/json','authorization':'Bearer '+state.token},opts.headers||{});
   var r=await fetch(API+path,Object.assign({},opts,{headers:headers}));
   if(r.status===401){
@@ -165,7 +172,8 @@ async function apiGet(path){
 async function loadTrips(){
   state.loading=true; render();
   try{
-    var d=await apiGet('/api/v1/trips');
+    var pair=await Promise.all([apiGet('/api/v1/trips'),apiGet('/api/v1/account')]);
+    var d=pair[0]; state.account=pair[1].account||null;
     state.trips=d.trips||[];
     var selected=localStorage.getItem('tripto_selected_trip');
     state.trip=state.trips.find(function(t){return t.id===selected;})||state.trips[0]||null;
@@ -178,7 +186,7 @@ async function loadTrips(){
 async function loadTripDetails(){
   if(!state.trip){
     state.timeline=[];state.checklist=[];state.brain=null;state.impacts=[];
-    state.transport=[];state.stays=[];state.locations=[];state.travelers=[];state.connections=[];return;
+    state.transport=[];state.stays=[];state.locations=[];state.travelers=[];state.connections=[];state.sharing=null;return;
   }
   var id=encodeURIComponent(state.trip.id);
   var paths=[
@@ -190,7 +198,8 @@ async function loadTripDetails(){
     '/api/v1/trips/'+id+'/stays',
     '/api/v1/trips/'+id+'/locations',
     '/api/v1/trips/'+id+'/travelers',
-    '/api/v1/trips/'+id+'/connections'
+    '/api/v1/trips/'+id+'/connections',
+    '/api/v1/trips/'+id+'/sharing'
   ];
   var r=await Promise.allSettled(paths.map(apiGet));
   if(r[0].status==='fulfilled')state.timeline=r[0].value.items||[];
@@ -202,6 +211,7 @@ async function loadTripDetails(){
   if(r[6].status==='fulfilled')state.locations=r[6].value.locations||[];
   if(r[7].status==='fulfilled')state.travelers=r[7].value.travelers||[];
   if(r[8].status==='fulfilled')state.connections=r[8].value.connections||[];
+  if(r[9].status==='fulfilled')state.sharing=r[9].value.sharing||null;
 }
 
 function travelerChecks(){
@@ -252,11 +262,8 @@ function utcToLocalInput(ms,timeZone){
   }catch(_){return '';}
 }
 function appHeader(){
-  return '<header class="topbar"><div class="topbar-inner"><button class="brand brand-button" data-view="home" aria-label="Home">tripto<span>.to</span></button>'+
-    '<div class="topbar-actions">'+
-      '<button class="guest-pill" data-view="settings" title="Guest beta session">Guest beta</button>'+
-      '<div class="status-pill '+(state.offline?'offline':'')+'"><span class="status-dot"></span>'+(state.offline?'Offline · cached':'Connected')+'</div>'+
-    '</div></div></header>';
+  var accountMode=state.account&&state.account.mode==='account';
+  return '<header class="topbar"><div class="topbar-inner"><button class="brand brand-button" data-view="home" aria-label="Home">tripto<span>.to</span></button>'+    '<div class="topbar-actions">'+      '<button class="guest-pill '+(accountMode?'account-pill':'')+'" data-view="settings" title="Account status">'+(accountMode?'Account':'Guest beta')+'</button>'+      '<div class="status-pill '+(state.offline?'offline':'')+'"><span class="status-dot"></span>'+(state.offline?'Offline · cached':'Connected')+'</div>'+    '</div></div></header>';
 }
 function bottomNav(){
   var items=[['home','⌂','Home'],['trips','▣','Trips'],['add','＋',''],['timeline','≡','Timeline'],['checklist','✓','Checklist']];
@@ -295,6 +302,7 @@ function dialogs(){
 
 function loadingView(){return shell('<div class="grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>');}
 function emptyView(){
+  var invite=state.pendingInviteToken?'<div class="invite-notice"><strong>Trip invite detected</strong><span>Verified account sign-in is required before accepting shared-trip invitations. Your invite link remains in this tab.</span></div>':'';
   var intro=
     '<section class="onboarding-hero"><div class="onboarding-brand">tripto<span>.to</span></div><div class="eyebrow">Your travel companion</div><h1>Your trip.<br>Organized before you need it.</h1><p>Build one calm itinerary for transport, stays, plans, essentials and offline access.</p><div class="onboarding-actions"><button class="btn btn-primary btn-large" data-open="tripDialog" data-onboarding-start="1">Create my first trip</button><button class="btn btn-navy" data-action="show-how">How it works</button></div></section>'+
     '<section class="onboarding-grid">'+
@@ -307,7 +315,7 @@ function emptyView(){
       '<div><b>2</b><strong>Prepare</strong><span>Finish essentials and cache your trip.</span></div>'+
       '<div><b>3</b><strong>Travel</strong><span>Open Home for what is next and what needs attention.</span></div>'+
     '</div></section>';
-  return shell(intro);
+  return shell(invite+intro);
 }
 function preparingBanner(){
   var mode=modeForTrip(), d=daysUntil(state.trip&&state.trip.starts_on);
@@ -451,34 +459,68 @@ function healthView(){
 
 function settingsView(){
   var t=state.trip;
-  var mode=modeForTrip();
   var installAvailable=!!state.installPrompt;
+  var accountMode=state.account&&state.account.mode==='account';
+  var sharing=state.sharing||{};
+  var sharingText=accountMode?(sharing.enabled?'Sharing is enabled for this account.':'Sharing contracts are ready, but the environment flag is still off.'):'Trips are device-bound until verified account sign-in is connected.';
+  var pendingInvite=state.pendingInviteToken?'<div class="invite-notice"><strong>Invite link detected</strong><span>A verified account is required before this invite can be accepted. The token is kept only in this tab.</span></div>':'';
   return shell(
-    '<div class="page-head"><div><div class="eyebrow">Trip settings</div><h1>'+esc(t.title)+'</h1><div class="subtle">Trip identity, lifecycle and beta access safeguards.</div></div><button class="btn btn-ghost" data-view="trips">Back to trips</button></div>'+
+    '<div class="page-head"><div><div class="eyebrow">Trip settings</div><h1>'+esc(t.title)+'</h1><div class="subtle">Trip identity, lifecycle, backup and beta access.</div></div><button class="btn btn-ghost" data-view="trips">Back to trips</button></div>'+pendingInvite+
     '<div class="settings-grid">'+
-      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Trip</div><h2>Basics</h2></div>'+badge(t.lifecycle_state||'draft')+'</div>'+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Trip</div><h2>Basics</h2></div>'+badge(t.lifecycle_state||'draft')+'</div>'+ 
         '<form id="tripSettingsForm" class="form">'+
-          '<div class="field"><label>Trip name</label><input name="title" maxlength="120" required value="'+esc(t.title||'')+'"></div>'+
-          '<div class="two-col"><div class="field"><label>Starts</label><input type="date" name="startsOn" value="'+esc(t.starts_on||'')+'"></div><div class="field"><label>Ends</label><input type="date" name="endsOn" value="'+esc(t.ends_on||'')+'"></div></div>'+
-          '<div class="field"><label>Lifecycle</label><select name="lifecycleState">'+lifecycleOptions(t.lifecycle_state)+'</select></div>'+
-          '<div class="lifecycle-help">'+lifecycleHelp(t.lifecycle_state)+'</div>'+
-          '<button class="btn btn-primary" type="submit">Save trip settings</button>'+
-        '</form>'+
-      '</section>'+
-      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Access</div><h2>Guest beta</h2></div>'+badge('Device-bound','badge-yellow')+'</div>'+
-        '<div class="health-line"><div class="health-icon warn">!</div><div><strong>Keep this browser data</strong><div class="subtle">Until account sign-in is connected, clearing site data may break access to guest trips.</div></div></div>'+
-        '<div class="inline-actions"><button class="btn btn-ghost" data-open="guestInfoDialog">How guest mode works</button>'+(installAvailable?'<button class="btn btn-indigo" data-action="install-app">Install app</button>':'')+'</div>'+
-      '</section>'+
-      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Offline</div><h2>Local trip cache</h2></div></div>'+
-        '<div class="subtle">Clear only cached API snapshots for this trip. This does not delete cloud trip data.</div>'+
-        '<button class="btn btn-ghost" style="margin-top:12px" data-action="clear-trip-cache">Clear cached trip data</button>'+
-      '</section>'+
-      '<section class="card card-pad danger-card"><div class="section-title"><div><div class="eyebrow danger-text">Danger zone</div><h2>Delete trip</h2></div></div>'+
-        '<div class="subtle">Deletion requires the current version and a typed confirmation. This avoids accidental destructive actions.</div>'+
-        '<button class="btn btn-danger" style="margin-top:12px" data-action="delete-trip">Delete '+esc(t.title)+'</button>'+
-      '</section>'+
+          '<div class="field"><label>Trip name</label><input name="title" maxlength="120" required value="'+esc(t.title||'')+'"></div>'+ 
+          '<div class="two-col"><div class="field"><label>Starts</label><input type="date" name="startsOn" value="'+esc(t.starts_on||'')+'"></div><div class="field"><label>Ends</label><input type="date" name="endsOn" value="'+esc(t.ends_on||'')+'"></div></div>'+ 
+          '<div class="field"><label>Lifecycle</label><select name="lifecycleState">'+lifecycleOptions(t.lifecycle_state)+'</select></div>'+ 
+          '<div class="lifecycle-help">'+lifecycleHelp(t.lifecycle_state)+'</div>'+ 
+          '<button class="btn btn-primary" type="submit">Save trip settings</button>'+ 
+        '</form>'+ 
+      '</section>'+ 
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Identity</div><h2>'+(accountMode?'Account':'Guest beta')+'</h2></div>'+badge(accountMode?'Account':'Device-bound',accountMode?'badge-green':'badge-yellow')+'</div>'+ 
+        '<div class="health-line"><div class="health-icon '+(accountMode?'':'warn')+'">'+(accountMode?'✓':'!')+'</div><div><strong>'+(accountMode?'Account identity attached':'Keep this browser data')+'</strong><div class="subtle">'+(accountMode?'This device can use the account ownership model.':'Until verified sign-in is connected, clearing site data may break access to guest trips.')+'</div></div></div>'+ 
+        '<div class="fact-note">Guest → account migration is implemented server-side but intentionally cannot be triggered without a verified Apple, Google or email-code auth adapter.</div>'+ 
+        '<div class="inline-actions"><button class="btn btn-ghost" data-open="guestInfoDialog">Identity details</button>'+(installAvailable?'<button class="btn btn-indigo" data-action="install-app">Install app</button>':'')+'</div>'+ 
+      '</section>'+ 
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Sharing</div><h2>Trip members</h2></div>'+badge(sharing.enabled?'Enabled':'Foundation',sharing.enabled?'badge-green':'')+'</div>'+ 
+        '<div class="subtle">'+esc(sharingText)+'</div>'+ 
+        '<div class="sharing-summary"><span>Role</span><strong>'+esc(sharing.role||'owner')+'</strong><span>Members</span><strong>'+esc(sharing.activeMembers==null?'—':sharing.activeMembers)+'</strong></div>'+ 
+        '<button class="btn btn-ghost" style="margin-top:12px" data-action="sharing-info">'+(accountMode&&sharing.enabled?'Manage sharing':'Why sharing is not active')+'</button>'+ 
+      '</section>'+ 
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Backup</div><h2>Export trip</h2></div>'+badge('JSON')+'</div>'+ 
+        '<div class="subtle">Download structured trip data, travelers, timeline, transport, stays, checklist and document metadata. File bytes are not included.</div>'+ 
+        '<div class="inline-actions" style="margin-top:12px"><button class="btn btn-indigo" data-action="export-json">Export JSON</button><button class="btn btn-ghost" data-action="show-diagnostics">Diagnostics</button></div>'+ 
+      '</section>'+ 
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Offline</div><h2>Local trip cache</h2></div></div>'+ 
+        '<div class="subtle">Clear only cached API snapshots for this trip. This does not delete D1 trip data.</div>'+ 
+        '<button class="btn btn-ghost" style="margin-top:12px" data-action="clear-trip-cache">Clear cached trip data</button>'+ 
+      '</section>'+ 
+      '<section class="card card-pad danger-card"><div class="section-title"><div><div class="eyebrow danger-text">Danger zone</div><h2>Delete trip</h2></div></div>'+ 
+        '<div class="subtle">Deletion requires the current version and a typed confirmation. This avoids accidental destructive actions.</div>'+ 
+        '<button class="btn btn-danger" style="margin-top:12px" data-action="delete-trip">Delete '+esc(t.title)+'</button>'+ 
+      '</section>'+ 
     '</div>'
   );
+}
+function downloadJson(filename,data){
+  try{
+    var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }catch(e){showRecovery('Export could not be created.',e.message,'Your trip data is unchanged.');}
+}
+async function exportCurrentTrip(){
+  if(!state.trip)return;
+  try{
+    var data=await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/export/json');
+    var name=String(state.trip.title||'trip').replace(/[^a-z0-9._-]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,50)||'trip';
+    downloadJson(name+'-tripto-export.json',data);notify('Trip export created.');
+  }catch(e){showRecovery('Trip export failed.',e.message,'Reconnect if you are offline, then try again.');}
+}
+async function showDiagnostics(){
+  try{
+    var d=await api('/api/v1/diagnostics');state.diagnostics=d.diagnostics||null;
+    var x=state.diagnostics||{};var f=x.features||{};
+    showRecovery('Beta diagnostics','Mode: '+(x.mode||'unknown')+' · Trips: '+(x.tripCount==null?'—':x.tripCount)+' · Account auth: '+(f.accountAuth?'on':'off')+' · Sharing: '+(f.sharing?'on':'off')+' · Live flights: '+(f.liveFlights?'on':'off')+' · AI: '+(f.generativeAI?'on':'off'),'No secrets or booking contents are included in this diagnostic summary.');
+  }catch(e){showRecovery('Diagnostics unavailable.',e.message,'Your trip data is unchanged.');}
 }
 function lifecycleOptions(current){
   return ['draft','upcoming','active','completed','cancelled'].map(function(v){
@@ -552,6 +594,12 @@ function bind(){
     state.installPrompt=null;render();
   });});
   document.querySelectorAll('[data-action="clear-trip-cache"]').forEach(function(el){el.addEventListener('click',clearTripCache);});
+  document.querySelectorAll('[data-action="export-json"]').forEach(function(el){el.addEventListener('click',exportCurrentTrip);});
+  document.querySelectorAll('[data-action="show-diagnostics"]').forEach(function(el){el.addEventListener('click',showDiagnostics);});
+  document.querySelectorAll('[data-action="sharing-info"]').forEach(function(el){el.addEventListener('click',function(){
+    if(state.account&&state.account.mode==='account'&&state.sharing&&state.sharing.enabled){showRecovery('Sharing is enabled.','Member/invite API contracts are active for this account.','Invitation delivery UI will be connected with verified account auth.');}
+    else showRecovery('Sharing is not active yet.','The owner/editor/viewer model, invite tokens and access controls are implemented, but verified account auth and the sharing feature flag remain disabled.','This prevents insecure guest sharing during beta.');
+  });});
   document.querySelectorAll('[data-action="delete-trip"]').forEach(function(el){el.addEventListener('click',function(){
     state.pendingDeleteTripId=state.trip&&state.trip.id;
     var d=document.getElementById('deleteTripDialog');if(d)d.showModal();
