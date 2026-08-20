@@ -196,8 +196,35 @@ function dialogs(){
   var driverAddress=loc?(loc.local_address||loc.formatted_address||'Address unavailable'):'Address unavailable';
   return ''+
   '<dialog id="tripDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">New trip</div><h2>Create a trip</h2></div><button class="icon-btn" data-close="tripDialog">×</button></div><form id="tripForm" class="form"><div class="field"><label>Trip name</label><input name="title" maxlength="120" required placeholder="Rome 2026"></div><div class="two-col"><div class="field"><label>Starts</label><input type="date" name="startsOn"></div><div class="field"><label>Ends</label><input type="date" name="endsOn"></div></div><button class="btn btn-primary" type="submit">Create trip</button></form></div></dialog>'+
-  '<dialog id="planDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Add plan</div><h2>Add to timeline</h2></div><button class="icon-btn" data-close="planDialog">×</button></div><form id="planForm" class="form"><div class="field"><label>Type</label><select name="type"><option value="activity">Activity</option><option value="reservation">Reservation</option><option value="custom">Other</option></select></div><div class="field"><label>Title</label><input name="title" maxlength="160" required placeholder="Vatican Museums"></div><div class="field"><label>When</label><input type="datetime-local" name="when" required></div><button class="btn btn-primary" type="submit">Add plan</button></form></div></dialog>'+
+  '<dialog id="bookingDialog" class="dialog booking-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Add booking</div><h2>What are you adding?</h2></div><button class="icon-btn" data-close="bookingDialog">×</button></div><div class="booking-grid">'+
+    '<button class="booking-choice" data-booking="flight"><span>✈</span><strong>Flight</strong><small>Scheduled booking data</small></button>'+
+    '<button class="booking-choice" data-booking="hotel"><span>▣</span><strong>Hotel / Stay</strong><small>Check-in, address, confirmation</small></button>'+
+    '<button class="booking-choice" data-booking="train"><span>⇄</span><strong>Train</strong><small>Stations, service, time</small></button>'+
+    '<button class="booking-choice" data-booking="car"><span>⌁</span><strong>Car / Transfer</strong><small>Pickup, drop-off, time</small></button>'+
+    '<button class="booking-choice" data-booking="activity"><span>★</span><strong>Activity</strong><small>Reservation or plan</small></button>'+
+    '<button class="booking-choice disabled" type="button" disabled><span>▤</span><strong>Document</strong><small>Cloud storage disabled in beta</small></button>'+
+  '</div></div></dialog>'+
+  '<dialog id="planDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Add plan</div><h2>Add activity</h2></div><button class="icon-btn" data-close="planDialog">×</button></div><form id="planForm" class="form"><div class="field"><label>Type</label><select name="type"><option value="activity">Activity</option><option value="reservation">Reservation</option><option value="custom">Other</option></select></div><div class="field"><label>Title</label><input name="title" maxlength="160" required placeholder="Vatican Museums"></div><div class="field"><label>When</label><input type="datetime-local" name="when" required></div><button class="btn btn-primary" type="submit">Add plan</button></form></div></dialog>'+
   '<dialog id="hotelDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Stay</div><h2>Add hotel or stay</h2></div><button class="icon-btn" data-close="hotelDialog">×</button></div><form id="hotelForm" class="form"><div class="field"><label>Property name</label><input name="propertyName" maxlength="160" required placeholder="Hotel Artemide"></div><div class="field"><label>Address</label><input name="address" maxlength="300" placeholder="Via Nazionale 22, Rome"></div><div class="field"><label>Local-language address</label><input name="localAddress" maxlength="300" placeholder="Optional"></div><div class="two-col"><div class="field"><label>Check-in</label><input type="date" name="checkInDate"></div><div class="field"><label>Check-out</label><input type="date" name="checkOutDate"></div></div><div class="field"><label>Confirmation number</label><input name="confirmationNumber" maxlength="100"></div><button class="btn btn-primary" type="submit">Add stay</button></form></div></dialog>'+
+  '<dialog id="flightDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Flight</div><h2>Add scheduled flight</h2></div><button class="icon-btn" data-close="flightDialog">×</button></div><div class="fact-note">Live flight tracking is off. Enter scheduled information from the ticket or booking confirmation.</div><form id="flightForm" class="form">'+
+    '<div class="two-col"><div class="field"><label>Airline code</label><input name="airlineCode" maxlength="3" placeholder="LY"></div><div class="field"><label>Flight number</label><input name="flightNumber" maxlength="12" placeholder="383"></div></div>'+
+    '<div class="route-form"><div><div class="field"><label>From airport</label><input name="fromName" required placeholder="Tel Aviv Ben Gurion"></div><div class="two-col"><div class="field"><label>IATA</label><input name="fromCode" maxlength="3" required placeholder="TLV"></div><div class="field"><label>Timezone</label><input name="fromTz" placeholder="Asia/Jerusalem"></div></div></div>'+
+    '<div><div class="field"><label>To airport</label><input name="toName" required placeholder="Rome Fiumicino"></div><div class="two-col"><div class="field"><label>IATA</label><input name="toCode" maxlength="3" required placeholder="FCO"></div><div class="field"><label>Timezone</label><input name="toTz" placeholder="Europe/Rome"></div></div></div></div>'+
+    '<div class="two-col"><div class="field"><label>Departure</label><input type="datetime-local" name="departure" required></div><div class="field"><label>Arrival</label><input type="datetime-local" name="arrival" required></div></div>'+
+    '<div class="two-col"><div class="field"><label>Departure terminal</label><input name="departureTerminal" maxlength="20"></div><div class="field"><label>Arrival terminal</label><input name="arrivalTerminal" maxlength="20"></div></div>'+
+    '<button class="btn btn-primary" type="submit">Add flight</button></form></div></dialog>'+
+  '<dialog id="trainDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Train</div><h2>Add train</h2></div><button class="icon-btn" data-close="trainDialog">×</button></div><form id="trainForm" class="form">'+
+    '<div class="two-col"><div class="field"><label>Operator</label><input name="carrierName" maxlength="120" placeholder="Trenitalia"></div><div class="field"><label>Train / service number</label><input name="serviceNumber" maxlength="40" placeholder="FR 9520"></div></div>'+
+    '<div class="two-col"><div class="field"><label>From station</label><input name="fromName" required placeholder="Roma Termini"></div><div class="field"><label>Station code</label><input name="fromCode" maxlength="20"></div></div>'+
+    '<div class="two-col"><div class="field"><label>To station</label><input name="toName" required placeholder="Firenze S. M. Novella"></div><div class="field"><label>Station code</label><input name="toCode" maxlength="20"></div></div>'+
+    '<div class="two-col"><div class="field"><label>Departure</label><input type="datetime-local" name="departure" required></div><div class="field"><label>Arrival</label><input type="datetime-local" name="arrival" required></div></div>'+
+    '<button class="btn btn-primary" type="submit">Add train</button></form></div></dialog>'+
+  '<dialog id="carDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Ground transport</div><h2>Add car or transfer</h2></div><button class="icon-btn" data-close="carDialog">×</button></div><form id="carForm" class="form">'+
+    '<div class="field"><label>Title</label><input name="title" maxlength="160" required placeholder="Airport → Hotel"></div>'+
+    '<div class="two-col"><div class="field"><label>Pickup</label><input name="fromName" required placeholder="FCO Airport"></div><div class="field"><label>Drop-off</label><input name="toName" required placeholder="Hotel Artemide"></div></div>'+
+    '<div class="two-col"><div class="field"><label>Pickup time</label><input type="datetime-local" name="departure" required></div><div class="field"><label>Estimated arrival</label><input type="datetime-local" name="arrival"></div></div>'+
+    '<button class="btn btn-primary" type="submit">Add transport</button></form></div></dialog>'+
+  '<dialog id="detailDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow" id="detailEyebrow">Details</div><h2 id="detailTitle">Booking</h2></div><button class="icon-btn" data-close="detailDialog">×</button></div><div id="detailBody"></div></div></dialog>'+
   '<dialog id="driverDialog" class="dialog driver-dialog"><div class="driver-sheet"><button class="driver-close" data-close="driverDialog">×</button><div class="driver-kicker">SHOW TO DRIVER</div><div class="driver-name">'+esc(driverName)+'</div><div class="driver-address">'+esc(driverAddress)+'</div><div class="driver-note">Saved trip address · available from cached trip data</div></div></dialog>';
 }
 
@@ -207,8 +234,11 @@ function emptyView(){
 }
 function preparingBanner(){
   var mode=modeForTrip(), d=daysUntil(state.trip&&state.trip.starts_on);
+  var openImportant=state.checklist.filter(function(x){return !x.completed_at&&(x.priority==='critical'||x.priority==='high');}).length;
+  var hasStay=state.stays.length>0;
+  var hasOutbound=state.transport.length>0;
   if(mode==='preparing'){
-    return '<section class="mode-banner preparing"><div><div class="eyebrow">Preparing mode</div><strong>'+(d===1?'Tomorrow':d+' days to go')+'</strong><span>Finish the essentials and make this trip offline-ready.</span></div><button class="btn btn-navy" data-view="ready">Ready Offline</button></section>';
+    return '<section class="mode-banner preparing"><div><div class="eyebrow">Preparing mode</div><strong>'+(d===1?'Tomorrow':d+' days to go')+'</strong><span>'+(hasOutbound?'Transport added':'Add your transport')+' · '+(hasStay?'Stay added':'Add your stay')+' · '+openImportant+' important task(s) open</span></div><div class="inline-actions"><button class="btn btn-navy" data-view="ready">Ready Offline</button><button class="btn btn-primary" data-open="bookingDialog">Add booking</button></div></section>';
   }
   if(mode==='active'){
     return '<section class="mode-banner active"><div><div class="eyebrow">Travel mode</div><strong>Trip in progress</strong><span>Focus on what is next. Details stay one tap away.</span></div><button class="btn btn-primary" data-view="home">What’s next</button></section>';
@@ -227,20 +257,20 @@ function nextCard(){
 }
 function flightCards(){
   var flights=state.transport.filter(function(x){return x.transport_type==='flight';});
-  if(!flights.length)return '';
+  if(!flights.length)return '<section class="section-block"><div class="section-title"><h2>Flights</h2><button class="btn btn-ghost" data-booking-shortcut="flight">Add flight</button></div></section>';
   return '<section class="section-block"><div class="section-title"><h2>Flights</h2>'+badge('SCHEDULED DATA','badge-indigo')+'</div><div class="travel-card-grid">'+flights.map(function(f){
     var dep=locationShort(f.departure_location_id||f.start_location_id);
     var arr=locationShort(f.arrival_location_id||f.end_location_id);
     var code=(f.marketing_airline_code||f.carrier_name||'Flight')+' '+(f.marketing_flight_number||f.service_number||'');
-    return '<article class="travel-card flight-card"><div class="travel-card-top"><div><div class="eyebrow">Flight</div><h3>'+esc(code.trim())+'</h3></div>'+badge('Confirmed','badge-green')+'</div><div class="route-row"><div><strong>'+esc(dep)+'</strong><span>'+timeLabel(f.scheduled_departure_utc)+'</span></div><div class="route-line">✈</div><div class="route-end"><strong>'+esc(arr)+'</strong><span>'+timeLabel(f.scheduled_arrival_utc)+'</span></div></div><div class="travel-meta"><span>'+fullDate(f.scheduled_departure_utc)+'</span><span>'+(f.departure_terminal?'Terminal '+esc(f.departure_terminal):'Terminal unavailable')+'</span></div><div class="fact-note">Scheduled/confirmed booking data. Live flight tracking is not enabled.</div></article>';
+    return '<article class="travel-card flight-card interactive-card" data-flight-detail="'+esc(f.id||f.trip_item_id)+'"><div class="travel-card-top"><div><div class="eyebrow">Flight</div><h3>'+esc(code.trim())+'</h3></div>'+badge('Confirmed','badge-green')+'</div><div class="route-row"><div><strong>'+esc(dep)+'</strong><span>'+timeLabel(f.scheduled_departure_utc)+'</span></div><div class="route-line">✈</div><div class="route-end"><strong>'+esc(arr)+'</strong><span>'+timeLabel(f.scheduled_arrival_utc)+'</span></div></div><div class="travel-meta"><span>'+fullDate(f.scheduled_departure_utc)+'</span><span>'+(f.departure_terminal?'Terminal '+esc(f.departure_terminal):'Terminal unavailable')+'</span></div><div class="fact-note">Scheduled/confirmed booking data. Live flight tracking is not enabled.</div></article>';
   }).join('')+'</div></section>';
 }
 function stayCards(){
-  if(!state.stays.length)return '<section class="section-block"><div class="section-title"><h2>Stay</h2><button class="btn btn-ghost" data-open="hotelDialog">Add stay</button></div></section>';
-  return '<section class="section-block"><div class="section-title"><h2>Stay</h2><button class="btn btn-ghost" data-open="hotelDialog">Add another</button></div><div class="travel-card-grid">'+state.stays.map(function(s){
+  if(!state.stays.length)return '<section class="section-block"><div class="section-title"><h2>Stay</h2><button class="btn btn-ghost" data-booking-shortcut="hotel">Add stay</button></div></section>';
+  return '<section class="section-block"><div class="section-title"><h2>Stay</h2><button class="btn btn-ghost" data-booking-shortcut="hotel">Add another</button></div><div class="travel-card-grid">'+state.stays.map(function(s){
     var loc=locationById(s.property_location_id||s.start_location_id);
     var addr=loc?(loc.local_address||loc.formatted_address||'Address unavailable'):'Address unavailable';
-    return '<article class="travel-card hotel-card"><div class="travel-card-top"><div><div class="eyebrow">Stay</div><h3>'+esc(s.property_name||s.title)+'</h3></div>'+badge(s.booking_status||'Confirmed','badge-green')+'</div><div class="hotel-dates"><div><span>Check-in</span><strong>'+esc(s.check_in_date?dateLabel(s.check_in_date):'Not set')+'</strong></div><div><span>Check-out</span><strong>'+esc(s.check_out_date?dateLabel(s.check_out_date):'Not set')+'</strong></div></div><div class="address-line">⌖ '+esc(addr)+'</div>'+(s.confirmation_number?'<div class="confirmation">Confirmation · '+esc(s.confirmation_number)+'</div>':'')+'<div class="inline-actions"><button class="btn btn-indigo" data-open="driverDialog">Show to driver</button></div></article>';
+    return '<article class="travel-card hotel-card interactive-card" data-stay-detail="'+esc(s.id||s.trip_item_id)+'"><div class="travel-card-top"><div><div class="eyebrow">Stay</div><h3>'+esc(s.property_name||s.title)+'</h3></div>'+badge(s.booking_status||'Confirmed','badge-green')+'</div><div class="hotel-dates"><div><span>Check-in</span><strong>'+esc(s.check_in_date?dateLabel(s.check_in_date):'Not set')+'</strong></div><div><span>Check-out</span><strong>'+esc(s.check_out_date?dateLabel(s.check_out_date):'Not set')+'</strong></div></div><div class="address-line">⌖ '+esc(addr)+'</div>'+(s.confirmation_number?'<div class="confirmation">Confirmation · '+esc(s.confirmation_number)+'</div>':'')+'<div class="inline-actions"><button class="btn btn-indigo" data-open="driverDialog">Show to driver</button></div></article>';
   }).join('')+'</div></section>';
 }
 function timelinePreview(){
@@ -347,9 +377,27 @@ function bind(){
     try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/checklist/'+encodeURIComponent(item.id),{method:'PATCH',body:JSON.stringify({version:item.version,completed:!item.completed_at})});await loadTripDetails();render();}catch(e){notify(e.message);}
   });});
   document.querySelectorAll('[data-action="refresh"]').forEach(function(el){el.addEventListener('click',loadTrips);});
-  document.querySelectorAll('[data-action="add"]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById('planDialog');if(d)d.showModal();});});
+  document.querySelectorAll('[data-action="add"]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById('bookingDialog');if(d)d.showModal();});});
   document.querySelectorAll('[data-action="seed"]').forEach(function(el){el.addEventListener('click',seedChecklist);});
   document.querySelectorAll('[data-action="recalc"]').forEach(function(el){el.addEventListener('click',recalcImpacts);});
+  document.querySelectorAll('[data-booking]').forEach(function(el){el.addEventListener('click',function(){
+    var chooser=document.getElementById('bookingDialog'); if(chooser)chooser.close();
+    var map={flight:'flightDialog',hotel:'hotelDialog',train:'trainDialog',car:'carDialog',activity:'planDialog'};
+    var d=document.getElementById(map[el.dataset.booking]); if(d)d.showModal();
+  });});
+  document.querySelectorAll('[data-booking-shortcut]').forEach(function(el){el.addEventListener('click',function(e){
+    e.stopPropagation();
+    var map={flight:'flightDialog',hotel:'hotelDialog',train:'trainDialog',car:'carDialog',activity:'planDialog'};
+    var d=document.getElementById(map[el.dataset.bookingShortcut]); if(d)d.showModal();
+  });});
+  document.querySelectorAll('[data-flight-detail]').forEach(function(el){el.addEventListener('click',function(){
+    openFlightDetail(el.dataset.flightDetail);
+  });});
+  document.querySelectorAll('[data-stay-detail]').forEach(function(el){el.addEventListener('click',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('[data-open=\"driverDialog\"]'))return;
+    openStayDetail(el.dataset.stayDetail);
+  });});
+
 
   var tripForm=document.getElementById('tripForm');
   if(tripForm)tripForm.addEventListener('submit',async function(e){
@@ -381,6 +429,98 @@ function bind(){
       await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/stays',{method:'POST',body:JSON.stringify({propertyName:fd.get('propertyName'),propertyLocationId:locationId,checkInDate:fd.get('checkInDate')||null,checkOutDate:fd.get('checkOutDate')||null,confirmationNumber:fd.get('confirmationNumber')||null})});
       document.getElementById('hotelDialog').close();hotelForm.reset();await loadTripDetails();render();
     }catch(err){notify(err.message);}
+  });
+  var flightForm=document.getElementById('flightForm');
+  if(flightForm)flightForm.addEventListener('submit',async function(e){
+    e.preventDefault(); var fd=new FormData(flightForm);
+    try{
+      var depMs=new Date(String(fd.get('departure'))).getTime(), arrMs=new Date(String(fd.get('arrival'))).getTime();
+      if(!Number.isFinite(depMs)||!Number.isFinite(arrMs)||arrMs<depMs)throw new Error('Please enter valid departure and arrival times.');
+      var from=await createLocation('airport',fd.get('fromName'),{iataCode:String(fd.get('fromCode')||'').toUpperCase(),timezone:fd.get('fromTz')||null});
+      var to=await createLocation('airport',fd.get('toName'),{iataCode:String(fd.get('toCode')||'').toUpperCase(),timezone:fd.get('toTz')||null});
+      var code=String(fd.get('airlineCode')||'').toUpperCase(), num=String(fd.get('flightNumber')||'').trim();
+      await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/transport',{method:'POST',body:JSON.stringify({
+        transportType:'flight',title:(code||'Flight')+(num?' '+num:''),departureLocationId:from.id,arrivalLocationId:to.id,
+        scheduledDepartureUtc:depMs,scheduledArrivalUtc:arrMs,departureTimezone:fd.get('fromTz')||null,arrivalTimezone:fd.get('toTz')||null,
+        marketingAirlineCode:code||null,marketingFlightNumber:num||null,departureTerminal:fd.get('departureTerminal')||null,arrivalTerminal:fd.get('arrivalTerminal')||null
+      })});
+      document.getElementById('flightDialog').close(); flightForm.reset(); await loadTripDetails(); render(); notify('Flight added.');
+    }catch(err){notify(err.message);}
+  });
+
+  var trainForm=document.getElementById('trainForm');
+  if(trainForm)trainForm.addEventListener('submit',async function(e){
+    e.preventDefault(); var fd=new FormData(trainForm);
+    try{
+      var depMs=new Date(String(fd.get('departure'))).getTime(), arrMs=new Date(String(fd.get('arrival'))).getTime();
+      if(!Number.isFinite(depMs)||!Number.isFinite(arrMs)||arrMs<depMs)throw new Error('Please enter valid departure and arrival times.');
+      var from=await createLocation('station',fd.get('fromName'),{stationCode:fd.get('fromCode')||null});
+      var to=await createLocation('station',fd.get('toName'),{stationCode:fd.get('toCode')||null});
+      var carrier=String(fd.get('carrierName')||'').trim(), service=String(fd.get('serviceNumber')||'').trim();
+      await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/transport',{method:'POST',body:JSON.stringify({
+        transportType:'train',title:(carrier||'Train')+(service?' '+service:''),carrierName:carrier||null,serviceNumber:service||null,
+        departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:depMs,scheduledArrivalUtc:arrMs
+      })});
+      document.getElementById('trainDialog').close(); trainForm.reset(); await loadTripDetails(); render(); notify('Train added.');
+    }catch(err){notify(err.message);}
+  });
+
+  var carForm=document.getElementById('carForm');
+  if(carForm)carForm.addEventListener('submit',async function(e){
+    e.preventDefault(); var fd=new FormData(carForm);
+    try{
+      var depMs=new Date(String(fd.get('departure'))).getTime();
+      var arrivalValue=String(fd.get('arrival')||'');
+      var arrMs=arrivalValue?new Date(arrivalValue).getTime():null;
+      if(!Number.isFinite(depMs)||(arrMs!=null&&!Number.isFinite(arrMs))||(arrMs!=null&&arrMs<depMs))throw new Error('Please enter valid transport times.');
+      var from=await createLocation('address',fd.get('fromName'),{});
+      var to=await createLocation('address',fd.get('toName'),{});
+      await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/transport',{method:'POST',body:JSON.stringify({
+        transportType:'car',title:fd.get('title'),departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:depMs,scheduledArrivalUtc:arrMs
+      })});
+      document.getElementById('carDialog').close(); carForm.reset(); await loadTripDetails(); render(); notify('Transport added.');
+    }catch(err){notify(err.message);}
+  });
+
+}
+
+async function createLocation(type,name,extra){
+  extra=extra||{};
+  var body={type:type,displayName:String(name||'').trim()};
+  if(!body.displayName)throw new Error('Location name is required.');
+  Object.keys(extra).forEach(function(k){if(extra[k]!=null&&extra[k]!=='')body[k]=extra[k];});
+  var d=await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/locations',{method:'POST',body:JSON.stringify(body)});
+  return d.location;
+}
+function openFlightDetail(id){
+  var f=state.transport.find(function(x){return String(x.id||x.trip_item_id)===String(id);});
+  if(!f)return;
+  var dep=locationById(f.departure_location_id||f.start_location_id), arr=locationById(f.arrival_location_id||f.end_location_id);
+  var title=((f.marketing_airline_code||f.carrier_name||'Flight')+' '+(f.marketing_flight_number||f.service_number||'')).trim();
+  document.getElementById('detailEyebrow').textContent='Flight details';
+  document.getElementById('detailTitle').textContent=title||'Flight';
+  document.getElementById('detailBody').innerHTML=
+    '<div class="detail-route"><div><strong>'+esc(dep?(dep.iata_code||dep.display_name):'From')+'</strong><span>'+dateTimeLabel(f.scheduled_departure_utc)+'</span></div><div class="detail-plane">✈</div><div><strong>'+esc(arr?(arr.iata_code||arr.display_name):'To')+'</strong><span>'+dateTimeLabel(f.scheduled_arrival_utc)+'</span></div></div>'+
+    '<div class="detail-grid"><div><span>Departure terminal</span><strong>'+esc(f.departure_terminal||'Unavailable')+'</strong></div><div><span>Arrival terminal</span><strong>'+esc(f.arrival_terminal||'Unavailable')+'</strong></div><div><span>Status source</span><strong>Confirmed booking</strong></div><div><span>Live status</span><strong>Not enabled</strong></div></div>'+
+    '<div class="fact-note">tripto.to will never present this scheduled information as live. Live-flight integration remains disabled.</div>';
+  document.getElementById('detailDialog').showModal();
+}
+function openStayDetail(id){
+  var s=state.stays.find(function(x){return String(x.id||x.trip_item_id)===String(id);});
+  if(!s)return;
+  var loc=locationById(s.property_location_id||s.start_location_id);
+  document.getElementById('detailEyebrow').textContent='Stay details';
+  document.getElementById('detailTitle').textContent=s.property_name||s.title||'Stay';
+  document.getElementById('detailBody').innerHTML=
+    '<div class="detail-grid"><div><span>Check-in</span><strong>'+esc(s.check_in_date?dateLabel(s.check_in_date):'Not set')+'</strong></div><div><span>Check-out</span><strong>'+esc(s.check_out_date?dateLabel(s.check_out_date):'Not set')+'</strong></div><div><span>Confirmation</span><strong>'+esc(s.confirmation_number||'Unavailable')+'</strong></div><div><span>Booking status</span><strong>'+esc(s.booking_status||'Confirmed')+'</strong></div></div>'+
+    '<div class="detail-address"><span>Address</span><strong>'+esc(loc?(loc.local_address||loc.formatted_address||loc.display_name):'Unavailable')+'</strong></div>'+
+    '<div class="inline-actions"><button class="btn btn-indigo" id="detailDriverButton">Show to driver</button></div>';
+  var detail=document.getElementById('detailDialog');
+  detail.showModal();
+  var btn=document.getElementById('detailDriverButton');
+  if(btn)btn.addEventListener('click',function(){
+    detail.close();
+    var driver=document.getElementById('driverDialog'); if(driver)driver.showModal();
   });
 }
 async function seedChecklist(){
