@@ -4,7 +4,9 @@ Offline-first travel companion. The beta is deterministic/rules-based: no genera
 
 ## Current phase
 
-Working Cloudflare Worker + D1 beta with a mobile-first web/PWA frontend. Current capabilities include trips, timeline, transport, stays, travelers, checklist/Smart Essentials, Trip Brain, Impact Engine, connection rules, Ready Offline caching, Show to Driver, JSON export, guest sessions, trip lifecycle/settings, and account/sharing foundations that remain disabled until verified auth is connected.
+Working Cloudflare Worker + D1 beta with a mobile-first web/PWA frontend. Current capabilities include trips, timeline, transport, stays, travelers, checklist/Smart Essentials, Trip Brain, Impact Engine, connection rules, Ready Offline caching, Show to Driver, JSON + calendar export, privacy-safe support bundles, guest sessions with proactive refresh, trip lifecycle/settings, limited offline checklist mutation queue, and account/sharing foundations that remain disabled until verified auth is connected.
+
+The internal verified-auth bridge supports safe guest → account migration after a real Apple/Google/email-code adapter verifies identity. It is deliberately **not** exposed as a public browser endpoint.
 
 ## Product principles
 
@@ -13,6 +15,7 @@ Working Cloudflare Worker + D1 beta with a mobile-first web/PWA frontend. Curren
 - Facts, live facts, estimates, and recommendations must be visually and structurally distinct.
 - Scheduled flight data must never be presented as live.
 - High-impact automation requires high confidence and a clear recovery path.
+- Guest data must not be silently abandoned when a session needs recovery.
 - $0 mandatory monthly infrastructure/API cost until demand is validated.
 
 ## Default-disabled integrations
@@ -36,4 +39,10 @@ npm run test:scenarios
 npm run test:integration
 ```
 
-See `docs/BETA_MILESTONE_1.md` for the current milestone and deployment sequence.
+After deployment:
+
+```bash
+bash scripts/smoke-beta-milestone.sh
+```
+
+See `docs/BETA_MILESTONE_2.md` for the current milestone and deployment sequence.

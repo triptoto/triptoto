@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test:scenarios": "tsx tests/scenarios/core.scenarios.ts && tsx tests/scenarios/beta.scenarios.ts",
+    "test:scenarios": "tsx tests/scenarios/core.scenarios.ts && tsx tests/scenarios/beta.scenarios.ts && tsx tests/scenarios/milestone2.scenarios.ts",
     "smoke:api": "bash scripts/smoke-api.sh",
     "check:ui": "node --check public/app.js",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",
-    "test:integration": "bash scripts/test-local-d1.sh"
+    "test:integration": "bash scripts/test-local-d1.sh",
+    "validate:beta": "npm run check:ui && npm run typecheck && npm run test:scenarios && npm run test:integration"
   },
   "devDependencies": {
     "typescript": "^5.9.0",

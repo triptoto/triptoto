@@ -2,7 +2,7 @@ import type { Env } from './types.ts';
 import { corsPreflight, errorResponse, json } from './http.ts';
 import { requireAuth } from './auth.ts';
 import { health } from './routes/health.ts';
-import { createGuestSession } from './routes/session.ts';
+import { createGuestSession, refreshSession } from './routes/session.ts';
 import { createTrip, deleteTrip, getTrip, listTrips, updateTrip } from './routes/trips.ts';
 import { createTimelineItem, deleteTimelineItem, listTimeline, updateTimelineItem } from './routes/timeline.ts';
 import { createChecklistItem, listChecklist, seedTripChecklist, updateChecklistItem } from './routes/checklist.ts';
@@ -13,10 +13,11 @@ import { listTransport, createTransport, updateTransport, deleteTransport } from
 import { listStays, createStay, updateStay, deleteStay } from './routes/stays.ts';
 import { listConnections, createConnection, updateConnection, deleteConnection } from './routes/connections.ts';
 import { listImpacts, recalculateImpacts, listChanges } from './routes/impacts.ts';
-import { accountStatus } from './routes/account.ts';
+import { accountStatus, accountMigrationPreview } from './routes/account.ts';
 import { diagnostics } from './routes/diagnostics.ts';
-import { exportTripJson } from './routes/export.ts';
-import { sharingStatus, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
+import { exportTripJson, exportTripCalendar } from './routes/export.ts';
+import { tripSupportBundle } from './routes/support.ts';
+import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
 import { createDemoTrip } from './routes/demo.ts';
 
 export default {
@@ -27,12 +28,15 @@ export default {
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
       if (request.method === 'GET' && path === '/health') return health(request, env);
-      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1' }, {}, request, env);
+      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: 'beta-milestone-2' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') return createGuestSession(request, env);
 
       const auth = await requireAuth(request, env);
+      if (request.method === 'POST' && path === '/api/v1/session/refresh') return refreshSession(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account') return accountStatus(request, env, auth);
+      if (request.method === 'GET' && path === '/api/v1/account/migration-preview') return accountMigrationPreview(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/diagnostics') return diagnostics(request, env, auth);
+      if (request.method === 'POST' && path === '/api/v1/invites/preview') return previewInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/invites/accept') return acceptInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/internal/demo-trips') return createDemoTrip(request, env, auth);
       if (path === '/api/v1/trips') {
@@ -96,6 +100,10 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]), connectionId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateConnection(request,env,auth,tripId,connectionId); if(request.method==='DELETE') return deleteConnection(request,env,auth,tripId,connectionId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/export\/json$/);
       if (match && request.method==='GET') return exportTripJson(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/export\/calendar\.ics$/);
+      if (match && request.method==='GET') return exportTripCalendar(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/support$/);
+      if (match && request.method==='GET') return tripSupportBundle(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/sharing$/);
       if (match && request.method==='GET') return sharingStatus(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/members$/);

@@ -6,20 +6,34 @@ export class HttpError extends Error {
   }
 }
 
+const requestIds = new WeakMap<Request, string>();
+const requestIdPattern = /^[A-Za-z0-9._:-]{8,80}$/;
+
+export function requestId(request: Request): string {
+  const cached = requestIds.get(request);
+  if (cached) return cached;
+  const supplied = request.headers.get('x-request-id')?.trim() ?? '';
+  const id = requestIdPattern.test(supplied) ? supplied : crypto.randomUUID();
+  requestIds.set(request, id);
+  return id;
+}
+
 export function json(data: unknown, init: ResponseInit = {}, request?: Request, env?: Env): Response {
   const headers = new Headers(init.headers);
   headers.set('content-type', 'application/json; charset=utf-8');
   headers.set('cache-control', 'no-store');
+  if (request) headers.set('x-request-id', requestId(request));
   if (request && env) applyCors(headers, request, env);
   return new Response(JSON.stringify(data), { ...init, headers });
 }
 
 export function errorResponse(error: unknown, request: Request, env: Env): Response {
+  const id = requestId(request);
   if (error instanceof HttpError) {
-    return json({ error: { code: error.code, message: error.message, details: error.details } }, { status: error.status }, request, env);
+    return json({ error: { code: error.code, message: error.message, details: error.details, requestId: id } }, { status: error.status }, request, env);
   }
-  console.error('Unhandled worker error', error);
-  return json({ error: { code: 'INTERNAL_ERROR', message: 'Unexpected server error.' } }, { status: 500 }, request, env);
+  console.error('Unhandled worker error', { requestId: id, error });
+  return json({ error: { code: 'INTERNAL_ERROR', message: 'Unexpected server error.', requestId: id } }, { status: 500 }, request, env);
 }
 
 export async function readJson<T>(request: Request): Promise<T> {
@@ -75,6 +89,7 @@ export function applyCors(headers: Headers, request: Request, env: Env): void {
   const allowed = (env.ALLOWED_ORIGINS ?? '').split(',').map(v => v.trim()).filter(Boolean);
   if (allowed.includes(origin)) {
     headers.set('access-control-allow-origin', origin);
+    headers.set('access-control-expose-headers', 'x-request-id,content-disposition');
     headers.set('vary', 'Origin');
   }
 }
@@ -83,7 +98,7 @@ export function corsPreflight(request: Request, env: Env): Response {
   const headers = new Headers();
   applyCors(headers, request, env);
   headers.set('access-control-allow-methods', 'GET,POST,PATCH,DELETE,OPTIONS');
-  headers.set('access-control-allow-headers', 'authorization,content-type,x-api-version,x-tripto-demo-secret');
+  headers.set('access-control-allow-headers', 'authorization,content-type,x-api-version,x-tripto-demo-secret,x-request-id');
   headers.set('access-control-max-age', '600');
   return new Response(null, { status: 204, headers });
 }

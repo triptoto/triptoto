@@ -13,8 +13,34 @@ export async function sharingStatus(request:Request, env:Env, auth:AuthContext, 
     enabled:env.SHARING_ENABLED==='true',
     accountRequired:!auth.userId,
     role:access.role,
+    canManage:access.role==='owner' && !!auth.userId,
     activeMembers:Number(count?.count??0),
     maxMembers:PRODUCT_LIMITS.tripMembers,
+  }},{},request,env);
+}
+
+export async function previewInvite(request:Request,env:Env,auth:AuthContext):Promise<Response>{
+  const body=await readJson<{token?:unknown}>(request);
+  const token=requireString(body.token,'token',300);
+  const hash=await sha256Hex(token); const now=nowMs();
+  const row=await env.DB.prepare(`SELECT i.role,i.status,i.expires_at,i.invited_email,t.id trip_id,t.title,t.lifecycle_state,t.deleted_at trip_deleted_at
+    FROM trip_invites i JOIN trips t ON t.id=i.trip_id WHERE i.token_hash=? LIMIT 1`).bind(hash).first<Record<string,unknown>>();
+  if(!row||row.trip_deleted_at!=null)throw new HttpError(404,'INVITE_NOT_FOUND','Invite was not found.');
+  let status=String(row.status);
+  if(status==='invited'&&Number(row.expires_at)<=now){
+    await env.DB.prepare(`UPDATE trip_invites SET status='expired' WHERE token_hash=? AND status='invited'`).bind(hash).run();
+    status='expired';
+  }
+  return json({invite:{
+    tripId:row.trip_id,
+    tripTitle:row.title,
+    tripLifecycleState:row.lifecycle_state,
+    role:row.role,
+    status,
+    expiresAt:row.expires_at,
+    emailRestricted:!!row.invited_email,
+    accountRequired:!auth.userId,
+    sharingEnabled:env.SHARING_ENABLED==='true',
   }},{},request,env);
 }
 
@@ -42,12 +68,17 @@ export async function createInvite(request:Request,env:Env,auth:AuthContext,trip
   const email=optionalEmail(body.email);
   const days=body.expiresInDays==null?7:Number(body.expiresInDays);
   if(!Number.isInteger(days)||days<1||days>30)throw new HttpError(400,'VALIDATION_ERROR','expiresInDays must be an integer from 1 to 30.');
-  const pending=await env.DB.prepare(`SELECT COUNT(*) AS count FROM trip_invites WHERE trip_id=? AND status='invited' AND expires_at>?`).bind(tripId,nowMs()).first<{count:number}>();
+  const now=nowMs();
+  if(email){
+    const duplicate=await env.DB.prepare(`SELECT id FROM trip_invites WHERE trip_id=? AND lower(invited_email)=lower(?) AND status='invited' AND expires_at>? LIMIT 1`).bind(tripId,email,now).first();
+    if(duplicate)throw new HttpError(409,'INVITE_ALREADY_PENDING','An active invite already exists for this email address.');
+  }
+  const pending=await env.DB.prepare(`SELECT COUNT(*) AS count FROM trip_invites WHERE trip_id=? AND status='invited' AND expires_at>?`).bind(tripId,now).first<{count:number}>();
   if(Number(pending?.count??0)>=PRODUCT_LIMITS.pendingInvitesPerTrip)throw new HttpError(409,'INVITE_LIMIT_REACHED','Too many pending invites for this trip.');
   const memberCount=await env.DB.prepare(`SELECT COUNT(*) AS count FROM trip_members WHERE trip_id=? AND status='active'`).bind(tripId).first<{count:number}>();
   if(Number(memberCount?.count??0)>=PRODUCT_LIMITS.tripMembers)throw new HttpError(409,'MEMBER_LIMIT_REACHED','Trip member limit reached.');
 
-  const token=randomToken(); const tokenHash=await sha256Hex(token); const id=uuid(); const now=nowMs(); const expiresAt=now+days*86400000;
+  const token=randomToken(); const tokenHash=await sha256Hex(token); const id=uuid(); const expiresAt=now+days*86400000;
   await env.DB.prepare(`INSERT INTO trip_invites(id,trip_id,invited_email,role,token_hash,status,created_by_user_id,expires_at,created_at) VALUES (?,?,?,?,?,'invited',?,?,?)`)
     .bind(id,tripId,email,role,tokenHash,auth.userId!,expiresAt,now).run();
   const base=(env.APP_BASE_URL??'').replace(/\/$/,'');
@@ -56,9 +87,11 @@ export async function createInvite(request:Request,env:Env,auth:AuthContext,trip
 
 export async function revokeInvite(request:Request,env:Env,auth:AuthContext,tripId:string,inviteId:string):Promise<Response>{
   await requireOwner(env,auth,tripId);
+  const existing=await env.DB.prepare(`SELECT id,status FROM trip_invites WHERE id=? AND trip_id=?`).bind(inviteId,tripId).first<{id:string;status:string}>();
+  if(!existing)throw new HttpError(404,'INVITE_NOT_FOUND','Invite was not found.');
+  if(existing.status!=='invited')throw new HttpError(409,'INVITE_UNAVAILABLE','Only a pending invite can be revoked.');
   const now=nowMs();
-  const result=await env.DB.prepare(`UPDATE trip_invites SET status='revoked',revoked_at=? WHERE id=? AND trip_id=? AND status='invited'`).bind(now,inviteId,tripId).run();
-  if(!result.success)throw new HttpError(500,'UPDATE_FAILED','Invite could not be revoked.');
+  await env.DB.prepare(`UPDATE trip_invites SET status='revoked',revoked_at=? WHERE id=? AND trip_id=? AND status='invited'`).bind(now,inviteId,tripId).run();
   return new Response(null,{status:204});
 }
 
@@ -94,15 +127,18 @@ export async function updateMemberRole(request:Request,env:Env,auth:AuthContext,
   await requireOwner(env,auth,tripId); const body=await readJson<{role?:unknown}>(request); const role=enumValue(body.role,'role',roles);
   const trip=await env.DB.prepare(`SELECT owner_user_id FROM trips WHERE id=? AND deleted_at IS NULL`).bind(tripId).first<{owner_user_id:string|null}>();
   if(trip?.owner_user_id===userId)throw new HttpError(409,'OWNER_ROLE_FIXED','Trip owner role cannot be changed.');
+  const existing=await env.DB.prepare(`SELECT user_id,role,status FROM trip_members WHERE trip_id=? AND user_id=? AND status='active'`).bind(tripId,userId).first();
+  if(!existing)throw new HttpError(404,'MEMBER_NOT_FOUND','Trip member was not found.');
   await env.DB.prepare(`UPDATE trip_members SET role=? WHERE trip_id=? AND user_id=? AND status='active'`).bind(role,tripId,userId).run();
   const member=await env.DB.prepare(`SELECT user_id,role,status,joined_at FROM trip_members WHERE trip_id=? AND user_id=? AND status='active'`).bind(tripId,userId).first();
-  if(!member)throw new HttpError(404,'MEMBER_NOT_FOUND','Trip member was not found.');
   return json({member},{},request,env);
 }
 
 export async function removeMember(request:Request,env:Env,auth:AuthContext,tripId:string,userId:string):Promise<Response>{
   await requireOwner(env,auth,tripId); const trip=await env.DB.prepare(`SELECT owner_user_id FROM trips WHERE id=? AND deleted_at IS NULL`).bind(tripId).first<{owner_user_id:string|null}>();
   if(trip?.owner_user_id===userId)throw new HttpError(409,'OWNER_CANNOT_BE_REMOVED','Trip owner cannot be removed.');
+  const existing=await env.DB.prepare(`SELECT user_id FROM trip_members WHERE trip_id=? AND user_id=? AND status='active'`).bind(tripId,userId).first();
+  if(!existing)throw new HttpError(404,'MEMBER_NOT_FOUND','Trip member was not found.');
   const now=nowMs(); await env.DB.prepare(`UPDATE trip_members SET status='removed',removed_at=? WHERE trip_id=? AND user_id=? AND status='active'`).bind(now,tripId,userId).run();
   return new Response(null,{status:204});
 }

@@ -25,9 +25,53 @@ var state={
   account:null,
   sharing:null,
   diagnostics:null,
+  invitePreview:null,
+  members:[],
+  invites:[],
+  lastInvite:null,
+  pendingSyncCount:0,
   pendingInviteToken:(location.pathname.indexOf('/join/')===0?decodeURIComponent(location.pathname.slice(6)):null)
 };
 var app=document.getElementById('app');
+
+
+function ApiError(message,status,code,requestId,details){
+  this.name='ApiError';this.message=message||'Request failed';this.status=status||0;this.code=code||'REQUEST_FAILED';this.requestId=requestId||null;this.details=details;
+  if(Error.captureStackTrace)Error.captureStackTrace(this,ApiError);
+}
+ApiError.prototype=Object.create(Error.prototype);ApiError.prototype.constructor=ApiError;
+
+var PENDING_KEY='tripto_pending_mutations_v1';
+function pendingMutations(){try{var raw=localStorage.getItem(PENDING_KEY);var rows=raw?JSON.parse(raw):[];return Array.isArray(rows)?rows:[];}catch(_){return [];}}
+function savePendingMutations(rows){try{localStorage.setItem(PENDING_KEY,JSON.stringify(rows));}catch(_){}state.pendingSyncCount=rows.filter(function(x){return x.status!=='done';}).length;}
+function updatePendingCount(){state.pendingSyncCount=pendingMutations().filter(function(x){return x.status!=='done';}).length;}
+function queueChecklistToggle(item,completed){
+  var rows=pendingMutations();
+  rows=rows.filter(function(x){return !(x.type==='checklist-toggle'&&x.tripId===state.trip.id&&x.itemId===item.id&&x.status==='pending');});
+  rows.push({id:'q_'+Date.now()+'_'+Math.random().toString(36).slice(2),type:'checklist-toggle',tripId:state.trip.id,itemId:item.id,version:item.version,completed:completed,status:'pending',createdAt:Date.now()});
+  savePendingMutations(rows);
+  item.completed_at=completed?Date.now():null;item.completion_source=completed?'user':'none';
+  cacheWrite('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/checklist',{items:state.checklist});
+}
+async function flushPendingMutations(){
+  if(!navigator.onLine)return;
+  var rows=pendingMutations();if(!rows.length){updatePendingCount();return;}
+  var changed=false;
+  for(var i=0;i<rows.length;i++){
+    var q=rows[i];if(q.status!=='pending')continue;
+    try{
+      if(q.type==='checklist-toggle'){
+        await api('/api/v1/trips/'+encodeURIComponent(q.tripId)+'/checklist/'+encodeURIComponent(q.itemId),{method:'PATCH',body:JSON.stringify({version:q.version,completed:q.completed}),_fromQueue:true});
+        q.status='done';changed=true;
+      }
+    }catch(e){
+      if(e&&e.status===409){q.status='needs_review';q.error=e.message;q.requestId=e.requestId||null;changed=true;}
+      else{q.error=e&&e.message?e.message:'Sync failed';q.requestId=e&&e.requestId?e.requestId:null;}
+    }
+  }
+  if(changed)rows=rows.filter(function(x){return x.status!=='done';});
+  savePendingMutations(rows);
+}
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function badge(text,kind){return '<span class="badge '+(kind||'')+'">'+esc(text)+'</span>';}
@@ -67,6 +111,10 @@ function cacheStatus(path){
   var c=cacheRead(path);
   if(!c)return {ok:false,at:null};
   return {ok:true,at:c.at||null};
+}
+function ageLabel(ms){
+  if(!ms)return 'Unknown age';var d=Math.max(0,Date.now()-Number(ms));
+  if(d<60000)return 'updated just now';if(d<3600000)return 'updated '+Math.floor(d/60000)+'m ago';if(d<86400000)return 'updated '+Math.floor(d/3600000)+'h ago';return 'updated '+Math.floor(d/86400000)+'d ago';
 }
 function notify(message){
   var old=document.querySelector('.toast'); if(old)old.remove();
@@ -125,13 +173,30 @@ function firstStayLocation(){
 function transportForItem(id){return state.transport.find(function(x){return x.id===id||x.trip_item_id===id;})||null;}
 function stayForItem(id){return state.stays.find(function(x){return x.id===id||x.trip_item_id===id;})||null;}
 
+
+var sessionRefreshPromise=null;
+function sessionExpiry(token){
+  try{var body=String(token||'').split('.')[0];if(!body)return 0;var padded=body.replace(/-/g,'+').replace(/_/g,'/');padded+='='.repeat((4-padded.length%4)%4);var json=decodeURIComponent(Array.prototype.map.call(atob(padded),function(c){return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));var p=JSON.parse(json);return Number(p.exp)||0;}catch(_){return 0;}
+}
+async function refreshSessionIfNeeded(){
+  if(!state.token||!navigator.onLine)return;
+  var exp=sessionExpiry(state.token);if(!exp||exp-Date.now()>14*86400000)return;
+  if(sessionRefreshPromise)return sessionRefreshPromise;
+  sessionRefreshPromise=(async function(){
+    var current=state.token;
+    var r=await fetch(API+'/api/v1/session/refresh',{method:'POST',headers:{'authorization':'Bearer '+current,'content-type':'application/json'},body:'{}'});
+    if(!r.ok){var rid=r.headers.get('x-request-id');throw new ApiError('Your device session could not be refreshed. Keep local browser data and try again while online.',r.status,'SESSION_REFRESH_FAILED',rid);}
+    var d=await r.json();state.token=d.token;localStorage.setItem('tripto_token',state.token);
+  })();
+  try{return await sessionRefreshPromise;}finally{sessionRefreshPromise=null;}
+}
 async function ensureSession(){
-  if(state.token)return state.token;
+  if(state.token){await refreshSessionIfNeeded();return state.token;}
   if(!navigator.onLine)throw new Error('No saved session is available offline.');
   var r=await fetch(API+'/api/v1/session/guest',{
     method:'POST',
     headers:{'content-type':'application/json'},
-    body:JSON.stringify({platform:'web',appVersion:'beta-milestone-1',apiVersion:'v1'})
+    body:JSON.stringify({platform:'web',appVersion:'beta-milestone-2',apiVersion:'v1'})
   });
   if(!r.ok)throw new Error('Could not start guest session.');
   var d=await r.json();
@@ -146,13 +211,13 @@ async function api(path,opts){
   var headers=Object.assign({'content-type':'application/json','authorization':'Bearer '+state.token},opts.headers||{});
   var r=await fetch(API+path,Object.assign({},opts,{headers:headers}));
   if(r.status===401){
-    localStorage.removeItem('tripto_token'); state.token='';
-    if(!opts._retry){opts._retry=true;return api(path,opts);}
+    var rid401=r.headers.get('x-request-id');
+    throw new ApiError('This device session is no longer accepted. Your cached trip remains on this device. Do not clear browser data; reconnect or use verified account recovery when available.',401,'SESSION_RECOVERY_REQUIRED',rid401);
   }
   if(!r.ok){
-    var msg='Request failed ('+r.status+')';
-    try{var e=await r.json();msg=(e.error&&e.error.message)||msg;}catch(_){}
-    throw new Error(msg);
+    var msg='Request failed ('+r.status+')',code='REQUEST_FAILED',rid=r.headers.get('x-request-id'),details=null;
+    try{var e=await r.json();if(e.error){msg=e.error.message||msg;code=e.error.code||code;rid=e.error.requestId||rid;details=e.error.details;}}catch(_){}
+    throw new ApiError(msg,r.status,code,rid,details);
   }
   if(r.status===204)return null;
   return r.json();
@@ -178,7 +243,9 @@ async function loadTrips(){
     var selected=localStorage.getItem('tripto_selected_trip');
     state.trip=state.trips.find(function(t){return t.id===selected;})||state.trips[0]||null;
     if(state.trip)localStorage.setItem('tripto_selected_trip',state.trip.id);
+    if(navigator.onLine)await flushPendingMutations();
     await loadTripDetails();
+    if(state.pendingInviteToken)await loadInvitePreview();
     state.lastRefreshAt=Date.now();
   }catch(e){notify(e.message);}
   finally{state.loading=false;render();}
@@ -214,6 +281,24 @@ async function loadTripDetails(){
   if(r[9].status==='fulfilled')state.sharing=r[9].value.sharing||null;
 }
 
+
+async function loadInvitePreview(){
+  if(!state.pendingInviteToken){state.invitePreview=null;return;}
+  try{
+    var d=await api('/api/v1/invites/preview',{method:'POST',body:JSON.stringify({token:state.pendingInviteToken})});
+    state.invitePreview=d.invite||null;
+  }catch(e){
+    state.invitePreview={status:'unavailable',error:e.message,requestId:e.requestId||null};
+  }
+}
+async function loadSharingManagement(){
+  state.members=[];state.invites=[];state.lastInvite=null;
+  if(!state.trip||!state.account||state.account.mode!=='account'||!state.sharing||!state.sharing.enabled)return;
+  var id=encodeURIComponent(state.trip.id);
+  var results=await Promise.allSettled([api('/api/v1/trips/'+id+'/members'),api('/api/v1/trips/'+id+'/invites')]);
+  if(results[0].status==='fulfilled')state.members=results[0].value.members||[];
+  if(results[1].status==='fulfilled')state.invites=results[1].value.invites||[];
+}
 function travelerChecks(){
   if(!state.travelers.length)return '<div class="form-note">No travelers yet. You can add travelers from Preparing Mode.</div>';
   return '<div class="traveler-checks">'+state.travelers.map(function(t){return '<label><input type="checkbox" name="travelerIds" value="'+esc(t.id)+'"><span>'+esc(t.display_name)+'</span></label>';}).join('')+'</div>';
@@ -231,6 +316,14 @@ function recovery(message,detail){
   if(title)title.textContent=message||'Something needs attention';
   if(body)body.textContent=detail||'Your existing trip data is safe. Review the fields and try again.';
   if(!d.open)d.showModal();
+}
+function showRecovery(title,message,hint){
+  var detail=[message,hint].filter(Boolean).join(' ');
+  recovery(title,detail);
+}
+function recoveryForError(title,error,hint){
+  var req=error&&error.requestId?' Request ID: '+error.requestId+'.':'';
+  showRecovery(title,(error&&error.message?error.message:'The request failed.')+req,hint);
 }
 function localToUtc(localValue,timeZone){
   if(!localValue||!timeZone)throw new Error('Local time and IANA timezone are required.');
@@ -263,7 +356,7 @@ function utcToLocalInput(ms,timeZone){
 }
 function appHeader(){
   var accountMode=state.account&&state.account.mode==='account';
-  return '<header class="topbar"><div class="topbar-inner"><button class="brand brand-button" data-view="home" aria-label="Home">tripto<span>.to</span></button>'+    '<div class="topbar-actions">'+      '<button class="guest-pill '+(accountMode?'account-pill':'')+'" data-view="settings" title="Account status">'+(accountMode?'Account':'Guest beta')+'</button>'+      '<div class="status-pill '+(state.offline?'offline':'')+'"><span class="status-dot"></span>'+(state.offline?'Offline · cached':'Connected')+'</div>'+    '</div></div></header>';
+  return '<header class="topbar"><div class="topbar-inner"><button class="brand brand-button" data-view="home" aria-label="Home">tripto<span>.to</span></button>'+    '<div class="topbar-actions">'+      '<button class="guest-pill '+(accountMode?'account-pill':'')+'" data-view="account" title="Account status">'+(accountMode?'Account':'Guest beta')+'</button>'+      '<div class="status-pill '+(state.offline?'offline':state.pendingSyncCount?'syncing':'')+'"><span class="status-dot"></span>'+(state.offline?'Offline · cached':state.pendingSyncCount?('Sync '+state.pendingSyncCount):'Connected')+'</div>'+    '</div></div></header>';
 }
 function bottomNav(){
   var items=[['home','⌂','Home'],['trips','▣','Trips'],['add','＋',''],['timeline','≡','Timeline'],['checklist','✓','Checklist']];
@@ -389,10 +482,11 @@ function offlineReadiness(){
 }
 function readyOfflineCard(compact){
   var rows=offlineReadiness(), ok=rows.filter(function(x){return x.ok;}).length, total=rows.length;
-  var list=rows.map(function(x){return '<div class="offline-row"><div class="offline-check '+(x.ok?'ok':'warn')+'">'+(x.ok?'✓':'!')+'</div><div><strong>'+esc(x.name)+'</strong><span>'+(x.ok?'Cached on this device':'Open online once to cache')+'</span></div></div>';}).join('');
+  var list=rows.map(function(x){return '<div class="offline-row"><div class="offline-check '+(x.ok?'ok':'warn')+'">'+(x.ok?'✓':'!')+'</div><div><strong>'+esc(x.name)+'</strong><span>'+(x.ok?('Cached · '+ageLabel(x.at)):'Open online once to cache')+'</span></div></div>';}).join('');
+  var pending=state.pendingSyncCount?'<div class="offline-row"><div class="offline-check warn">↻</div><div><strong>Pending sync</strong><span>'+state.pendingSyncCount+' local change(s) still need server sync or review.</span></div></div>':'<div class="offline-row"><div class="offline-check ok">✓</div><div><strong>Pending sync</strong><span>No unsynced local changes.</span></div></div>';
   var documents='<div class="offline-row"><div class="offline-check neutral">—</div><div><strong>Documents</strong><span>Cloud document storage is intentionally disabled in this beta.</span></div></div>';
-  if(compact)return '<section class="card card-pad"><div class="section-title"><h2>Ready Offline</h2>'+badge(ok+'/'+total,'badge-green')+'</div><div class="subtle">'+ok+' of '+total+' core trip datasets cached.</div><button class="btn btn-ghost" style="margin-top:12px" data-view="ready">Review offline readiness</button></section>';
-  return '<div class="page-head"><div><div class="eyebrow">Offline</div><h1>Ready Offline</h1><div class="subtle">Your trip should never disappear because your internet did.</div></div>'+badge(ok+'/'+total,'badge-green')+'</div><section class="card card-pad"><div class="offline-list">'+list+documents+'</div><div class="fact-note">Cached flight status is never presented as live. Live-flight integration is currently disabled.</div></section>';
+  if(compact)return '<section class="card card-pad"><div class="section-title"><h2>Ready Offline</h2>'+badge(ok+'/'+total,'badge-green')+'</div><div class="subtle">'+ok+' of '+total+' core trip datasets cached'+(state.pendingSyncCount?' · '+state.pendingSyncCount+' pending sync':'')+'.</div><button class="btn btn-ghost" style="margin-top:12px" data-view="ready">Review offline readiness</button></section>';
+  return '<div class="page-head"><div><div class="eyebrow">Offline</div><h1>Ready Offline</h1><div class="subtle">Your trip should never disappear because your internet did.</div></div>'+badge(ok+'/'+total,'badge-green')+'</div><section class="card card-pad"><div class="offline-list">'+list+pending+documents+'</div><div class="fact-note">Cached flight status is never presented as live. Live-flight integration is currently disabled.</div></section>';
 }
 
 function preparingDashboard(){
@@ -413,7 +507,8 @@ function homeView(){
   return shell(preparingBanner()+preparingDashboard()+'<div class="page-head"><div><div class="eyebrow">Home / Next</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">The trip changes. Home stays simple.</div></div>'+badge(state.trip.lifecycle_state||'draft')+'</div>'+quickActions()+'<div class="grid home-grid"><div class="grid">'+heroCard()+flightCards()+stayCards()+'<section class="card card-pad"><div class="section-title"><h2>Timeline</h2><button class="btn btn-ghost" data-view="timeline">View all</button></div>'+timelinePreview()+'</section></div><div class="grid">'+nextCard()+'<section class="card card-pad"><div class="section-title"><h2>Smart Essentials</h2><button class="btn btn-ghost" data-view="checklist">View all</button></div>'+smartEssentials()+'</section><section class="card card-pad"><div class="section-title"><h2>Trip Health</h2><button class="btn btn-ghost" data-view="health">Details</button></div>'+healthSummary()+'</section>'+readyOfflineCard(true)+'</div></div>');
 }
 function tripsView(){
-  return shell('<div class="page-head"><div><div class="eyebrow">Trips</div><h1>My trips</h1><div class="subtle">Upcoming, active and completed travel in one place.</div></div><button class="btn btn-primary" data-open="tripDialog">New trip</button></div><div class="trip-list">'+state.trips.map(function(t){return '<article class="trip-card '+(state.trip&&t.id===state.trip.id?'active':'')+'" data-trip="'+esc(t.id)+'"><div class="trip-card-topline"><div>'+badge(t.lifecycle_state||'draft')+'</div><button class="trip-settings-btn" data-trip-settings="'+esc(t.id)+'" aria-label="Trip settings">•••</button></div><h3>'+esc(t.title)+'</h3><div class="trip-dates">'+esc(t.starts_on?dateLabel(t.starts_on):'No start date')+(t.ends_on?' → '+dateLabel(t.ends_on):'')+'</div></article>';}).join('')+'</div>');
+  var cards=state.trips.length?'<div class="trip-list">'+state.trips.map(function(t){return '<article class="trip-card '+(state.trip&&t.id===state.trip.id?'active':'')+'" data-trip="'+esc(t.id)+'"><div class="trip-card-topline"><div>'+badge(t.lifecycle_state||'draft')+'</div><button class="trip-settings-btn" data-trip-settings="'+esc(t.id)+'" aria-label="Trip settings">•••</button></div><h3>'+esc(t.title)+'</h3><div class="trip-dates">'+esc(t.starts_on?dateLabel(t.starts_on):'No start date')+(t.ends_on?' → '+dateLabel(t.ends_on):'')+'</div></article>';}).join('')+'</div>':'<section class="card empty"><div class="empty-icon">✈</div><h2>No trips yet</h2><p class="subtle">Create a trip, then add the bookings you already have.</p><button class="btn btn-primary" data-open="tripDialog">Create trip</button></section>';
+  return shell('<div class="page-head"><div><div class="eyebrow">Trips</div><h1>My trips</h1><div class="subtle">Upcoming, active and completed travel in one place.</div></div><button class="btn btn-primary" data-open="tripDialog">New trip</button></div>'+cards);
 }
 function timelineView(){
   var body=state.timeline.length?'<div class="timeline">'+state.timeline.map(function(x){
@@ -457,6 +552,52 @@ function healthView(){
   );
 }
 
+
+function accountView(){
+  var a=state.account||{mode:'guest',migrationPreview:{}};
+  var isAccount=a.mode==='account';
+  var m=a.migrationPreview||{};
+  var syncRows=pendingMutations();
+  var review=syncRows.filter(function(x){return x.status==='needs_review';}).length;
+  var invite=state.invitePreview;
+  var inviteCard='';
+  if(state.pendingInviteToken){
+    if(invite&&invite.tripTitle){
+      inviteCard='<section class="card card-pad invite-card"><div class="section-title"><div><div class="eyebrow">Shared trip invite</div><h2>'+esc(invite.tripTitle)+'</h2></div>'+badge(invite.status||'unknown',invite.status==='invited'?'badge-green':'badge-yellow')+'</div><div class="sharing-summary"><span>Role</span><strong>'+esc(invite.role||'viewer')+'</strong><span>Expires</span><strong>'+esc(invite.expiresAt?dateTimeLabel(invite.expiresAt):'—')+'</strong></div><div class="fact-note">'+(invite.emailRestricted?'This invitation is restricted to a matching verified email address.':'This invitation is link-based.')+'</div><div class="inline-actions" style="margin-top:12px">'+(isAccount&&invite.sharingEnabled&&invite.status==='invited'?'<button class="btn btn-primary" data-action="accept-invite">Accept invite</button>':'<button class="btn btn-ghost" disabled>Verified account required</button>')+'</div></section>';
+    }else{
+      inviteCard='<section class="card card-pad"><div class="eyebrow">Shared trip invite</div><h2>Invite detected</h2><div class="subtle">'+esc(invite&&invite.error?invite.error:'Checking invitation…')+'</div></section>';
+    }
+  }
+  return shell(
+    '<div class="page-head"><div><div class="eyebrow">Account & backup</div><h1>'+(isAccount?'Your account':'Guest beta')+'</h1><div class="subtle">Identity, restore readiness, exports and privacy-safe support tools.</div></div>'+(state.trip?'<button class="btn btn-ghost" data-view="home">Back to trip</button>':'')+'</div>'+inviteCard+
+    '<div class="settings-grid">'+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Identity</div><h2>'+(isAccount?'Verified account':'Device-bound guest')+'</h2></div>'+badge(isAccount?'Account':'Guest',isAccount?'badge-green':'badge-yellow')+'</div>'+
+        (isAccount?'<div class="health-line"><div class="health-icon">✓</div><div><strong>Account ownership active</strong><div class="subtle">Trips can use owner/editor/viewer permissions and account-linked devices.</div></div></div>':'<div class="health-line"><div class="health-icon warn">!</div><div><strong>Keep this browser data</strong><div class="subtle">Clearing site data may remove the guest session used to reopen these trips.</div></div></div>')+
+        '<div class="migration-box"><span>Guest trips ready to migrate</span><strong>'+esc(m.trips==null?'—':m.trips)+'</strong><span>Timeline items</span><strong>'+esc(m.timelineItems==null?'—':m.timelineItems)+'</strong></div>'+
+        '<div class="fact-note">Apple / Google / email-code adapters remain unconnected. The internal verified-auth bridge cannot be called with unverified browser input.</div>'+
+      '</section>'+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Sync</div><h2>Device changes</h2></div>'+badge(state.pendingSyncCount?state.pendingSyncCount+' pending':'Up to date',state.pendingSyncCount?'badge-yellow':'badge-green')+'</div>'+
+        '<div class="subtle">Offline checklist changes are queued with entity versions and replayed when connectivity returns.</div>'+
+        (review?'<div class="danger-box"><strong>'+review+' change(s) need review</strong><span>A newer server version exists. Refresh the trip and apply the intended change again.</span></div>':'')+
+        '<div class="inline-actions" style="margin-top:12px"><button class="btn btn-ghost" data-action="sync-now" '+(!navigator.onLine?'disabled':'')+'>Sync now</button>'+(review?'<button class="btn btn-danger" data-action="clear-sync-review">Clear review queue</button>':'')+'</div>'+
+      '</section>'+
+      (state.trip?'<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Backup</div><h2>'+esc(state.trip.title)+'</h2></div></div><div class="subtle">Create portable backups without exposing live session or invite secrets.</div><div class="backup-grid"><button class="btn btn-indigo" data-action="export-json">JSON backup</button><button class="btn btn-ghost" data-action="export-calendar">Calendar .ics</button><button class="btn btn-ghost" data-action="export-support">Support bundle</button></div></section>':'')+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Diagnostics</div><h2>Beta status</h2></div></div><div class="subtle">Generate a privacy-safe runtime summary with feature flags, database counts and a request ID.</div><button class="btn btn-ghost" style="margin-top:12px" data-action="show-diagnostics">Run diagnostics</button></section>'+
+    '</div>'
+  );
+}
+function sharingView(){
+  var isAccount=state.account&&state.account.mode==='account';
+  var sh=state.sharing||{};
+  if(!isAccount||!sh.enabled){
+    return shell('<div class="page-head"><div><div class="eyebrow">Trip sharing</div><h1>Sharing is not active</h1><div class="subtle">The permissions and invite system are implemented, but verified account auth and the sharing flag must both be enabled first.</div></div><button class="btn btn-ghost" data-view="settings">Back</button></div><section class="card card-pad"><div class="health-line"><div class="health-icon warn">!</div><div><strong>No insecure guest sharing</strong><div class="subtle">tripto.to will not create pseudo-accounts or anonymous shared-trip permissions.</div></div></div></section>');
+  }
+  var owner=sh.role==='owner';
+  var memberRows=state.members.length?state.members.map(function(x){return '<div class="member-row"><div><strong>'+esc(x.display_name||'Member')+'</strong><span>'+esc(x.role||'member')+'</span></div><div class="member-actions">'+(x.role==='owner'?badge('owner','badge-green'):(owner?'<select data-member-role="'+esc(x.user_id)+'"><option value="viewer" '+(x.role==='viewer'?'selected':'')+'>Viewer</option><option value="editor" '+(x.role==='editor'?'selected':'')+'>Editor</option></select><button class="mini-danger" data-member-remove="'+esc(x.user_id)+'">Remove</button>':badge(x.role||'viewer')))+'</div></div>';}).join(''):'<div class="subtle">No members loaded.</div>';
+  var inviteRows=state.invites.length?state.invites.map(function(x){return '<div class="invite-row"><div><strong>'+esc(x.invited_email||'Link invitation')+'</strong><span>'+esc(x.role)+' · '+esc(x.status)+' · expires '+esc(dateTimeLabel(x.expires_at))+'</span></div>'+(owner&&x.status==='invited'?'<button class="mini-danger" data-invite-revoke="'+esc(x.id)+'">Revoke</button>':'')+'</div>';}).join(''):'<div class="subtle">No invitations yet.</div>';
+  var newInvite=state.lastInvite?'<div class="new-invite"><strong>Invite created — copy it now</strong><code>'+esc(state.lastInvite.inviteUrl||((location.origin||'')+'/join/'+state.lastInvite.token))+'</code><button class="btn btn-primary" data-action="copy-last-invite">Copy invite link</button><span>The raw token is returned once and is not stored in D1.</span></div>':'';
+  return shell('<div class="page-head"><div><div class="eyebrow">Trip sharing</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">Owner / editor / viewer permissions with expiring hashed invitations.</div></div><button class="btn btn-ghost" data-view="settings">Back</button></div>'+newInvite+'<div class="settings-grid"><section class="card card-pad"><div class="section-title"><h2>Members</h2>'+badge(state.members.length+'/'+(sh.maxMembers||10))+'</div>'+memberRows+'</section><section class="card card-pad"><div class="section-title"><h2>Invitations</h2></div>'+inviteRows+(owner?'<form id="inviteForm" class="form" style="margin-top:18px"><div class="field"><label>Email (optional)</label><input name="email" type="email" maxlength="254" placeholder="friend@example.com"></div><div class="two-col"><div class="field"><label>Role</label><select name="role"><option value="viewer">Viewer</option><option value="editor">Editor</option></select></div><div class="field"><label>Expires</label><select name="expiresInDays"><option value="3">3 days</option><option value="7" selected>7 days</option><option value="14">14 days</option></select></div></div><button class="btn btn-primary" type="submit">Create invite</button></form>':'')+'</section></div>');
+}
 function settingsView(){
   var t=state.trip;
   var installAvailable=!!state.installPrompt;
@@ -507,20 +648,43 @@ function downloadJson(filename,data){
     var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);
   }catch(e){showRecovery('Export could not be created.',e.message,'Your trip data is unchanged.');}
 }
+
+async function downloadAuthenticated(path,defaultName){
+  if(!navigator.onLine)throw new Error('Downloads require internet. Cached trip data remains available offline.');
+  await ensureSession();
+  var r=await fetch(API+path,{headers:{'authorization':'Bearer '+state.token}});
+  if(!r.ok){
+    var msg='Download failed ('+r.status+')',rid=r.headers.get('x-request-id'),code='DOWNLOAD_FAILED';
+    try{var e=await r.json();if(e.error){msg=e.error.message||msg;rid=e.error.requestId||rid;code=e.error.code||code;}}catch(_){}
+    throw new ApiError(msg,r.status,code,rid);
+  }
+  var blob=await r.blob();var cd=r.headers.get('content-disposition')||'';var m=cd.match(/filename="?([^";]+)"?/i);var name=m?m[1]:defaultName;
+  var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1200);
+}
+async function exportCurrentCalendar(){
+  if(!state.trip)return;
+  try{await downloadAuthenticated('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/export/calendar.ics','tripto-calendar.ics');notify('Calendar export created.');}
+  catch(e){recoveryForError('Calendar export failed.',e,'Reconnect and try again.');}
+}
+async function exportSupportBundle(){
+  if(!state.trip)return;
+  try{await downloadAuthenticated('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/support','tripto-support.json');notify('Support bundle created.');}
+  catch(e){recoveryForError('Support bundle failed.',e,'Your trip data is unchanged.');}
+}
 async function exportCurrentTrip(){
   if(!state.trip)return;
   try{
     var data=await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/export/json');
     var name=String(state.trip.title||'trip').replace(/[^a-z0-9._-]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,50)||'trip';
     downloadJson(name+'-tripto-export.json',data);notify('Trip export created.');
-  }catch(e){showRecovery('Trip export failed.',e.message,'Reconnect if you are offline, then try again.');}
+  }catch(e){recoveryForError('Trip export failed.',e,'Reconnect if you are offline, then try again.');}
 }
 async function showDiagnostics(){
   try{
     var d=await api('/api/v1/diagnostics');state.diagnostics=d.diagnostics||null;
     var x=state.diagnostics||{};var f=x.features||{};
-    showRecovery('Beta diagnostics','Mode: '+(x.mode||'unknown')+' · Trips: '+(x.tripCount==null?'—':x.tripCount)+' · Account auth: '+(f.accountAuth?'on':'off')+' · Sharing: '+(f.sharing?'on':'off')+' · Live flights: '+(f.liveFlights?'on':'off')+' · AI: '+(f.generativeAI?'on':'off'),'No secrets or booking contents are included in this diagnostic summary.');
-  }catch(e){showRecovery('Diagnostics unavailable.',e.message,'Your trip data is unchanged.');}
+    showRecovery('Beta diagnostics','Mode: '+(x.mode||'unknown')+' · Trips: '+(x.tripCount==null?'—':x.tripCount)+' · DB tables: '+(x.database&&x.database.tables!=null?x.database.tables:'—')+' · Migrations: '+(x.database&&x.database.migrations!=null?x.database.migrations:'—')+' · Account auth: '+(f.accountAuth?'on':'off')+' · Sharing: '+(f.sharing?'on':'off')+' · Live flights: '+(f.liveFlights?'on':'off')+' · AI: '+(f.generativeAI?'on':'off')+' · Request ID: '+(x.requestId||'—'),'No secrets or booking contents are included in this diagnostic summary.');
+  }catch(e){recoveryForError('Diagnostics unavailable.',e,'Your trip data is unchanged.');}
 }
 function lifecycleOptions(current){
   return ['draft','upcoming','active','completed','cancelled'].map(function(v){
@@ -558,13 +722,15 @@ function clearTripCache(){
 function readyView(){return shell(readyOfflineCard(false));}
 function render(){
   if(state.loading){app.innerHTML=loadingView();bind();return;}
+  if(state.view==='account'){app.innerHTML=accountView();bind();return;}
+  if(state.view==='trips'){app.innerHTML=tripsView();bind();return;}
   if(!state.trip){app.innerHTML=emptyView();bind();return;}
-  var out=state.view==='trips'?tripsView():state.view==='timeline'?timelineView():state.view==='checklist'?checklistView():state.view==='health'?healthView():state.view==='ready'?readyView():state.view==='settings'?settingsView():homeView();
+  var out=state.view==='timeline'?timelineView():state.view==='checklist'?checklistView():state.view==='health'?healthView():state.view==='ready'?readyView():state.view==='settings'?settingsView():state.view==='sharing'?sharingView():homeView();
   app.innerHTML=out; bind();
 }
 
 function bind(){
-  document.querySelectorAll('[data-view]').forEach(function(el){el.addEventListener('click',function(){state.view=el.dataset.view;persistView();render();});});
+  document.querySelectorAll('[data-view]').forEach(function(el){el.addEventListener('click',async function(){state.view=el.dataset.view;persistView();if(state.view==='sharing')await loadSharingManagement();render();});});
   document.querySelectorAll('[data-open]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.open);if(d)d.showModal();});});
   document.querySelectorAll('[data-close]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(el.dataset.close);if(d)d.close();});});
   document.querySelectorAll('[data-trip]').forEach(function(el){el.addEventListener('click',async function(){
@@ -573,10 +739,13 @@ function bind(){
   });});
   document.querySelectorAll('[data-check]').forEach(function(el){el.addEventListener('click',async function(){
     var item=state.checklist.find(function(x){return x.id===el.dataset.check;}); if(!item)return;
-    try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/checklist/'+encodeURIComponent(item.id),{method:'PATCH',body:JSON.stringify({version:item.version,completed:!item.completed_at})});await loadTripDetails();render();}catch(e){notify(e.message);}
+    var completed=!item.completed_at;
+    if(!navigator.onLine){queueChecklistToggle(item,completed);render();notify('Saved on this device. It will sync when you reconnect.');return;}
+    try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/checklist/'+encodeURIComponent(item.id),{method:'PATCH',body:JSON.stringify({version:item.version,completed:completed})});await loadTripDetails();render();}
+    catch(e){recoveryForError('Checklist change was not saved.',e,'Refresh and try again.');}
   });});
   document.querySelectorAll('[data-action="refresh"]').forEach(function(el){el.addEventListener('click',loadTrips);});
-  document.querySelectorAll('[data-action="add"]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById('bookingDialog');if(d)d.showModal();});});
+  document.querySelectorAll('[data-action="add"]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById(state.trip?'bookingDialog':'tripDialog');if(d)d.showModal();});});
   document.querySelectorAll('[data-action="seed"]').forEach(function(el){el.addEventListener('click',seedChecklist);});
   document.querySelectorAll('[data-action="recalc"]').forEach(function(el){el.addEventListener('click',recalcImpacts);});
   document.querySelectorAll('[data-trip-settings]').forEach(function(el){el.addEventListener('click',async function(e){
@@ -595,9 +764,45 @@ function bind(){
   });});
   document.querySelectorAll('[data-action="clear-trip-cache"]').forEach(function(el){el.addEventListener('click',clearTripCache);});
   document.querySelectorAll('[data-action="export-json"]').forEach(function(el){el.addEventListener('click',exportCurrentTrip);});
+  document.querySelectorAll('[data-action="export-calendar"]').forEach(function(el){el.addEventListener('click',exportCurrentCalendar);});
+  document.querySelectorAll('[data-action="export-support"]').forEach(function(el){el.addEventListener('click',exportSupportBundle);});
   document.querySelectorAll('[data-action="show-diagnostics"]').forEach(function(el){el.addEventListener('click',showDiagnostics);});
-  document.querySelectorAll('[data-action="sharing-info"]').forEach(function(el){el.addEventListener('click',function(){
-    if(state.account&&state.account.mode==='account'&&state.sharing&&state.sharing.enabled){showRecovery('Sharing is enabled.','Member/invite API contracts are active for this account.','Invitation delivery UI will be connected with verified account auth.');}
+  document.querySelectorAll('[data-action="sync-now"]').forEach(function(el){el.addEventListener('click',async function(){
+    await flushPendingMutations();await loadTrips();notify(state.pendingSyncCount?'Some changes still need review.':'Device changes synced.');
+  });});
+  document.querySelectorAll('[data-action="clear-sync-review"]').forEach(function(el){el.addEventListener('click',function(){
+    var rows=pendingMutations().filter(function(x){return x.status!=='needs_review';});savePendingMutations(rows);render();notify('Review queue cleared. Server trip data was not changed.');
+  });});
+  document.querySelectorAll('[data-action="accept-invite"]').forEach(function(el){el.addEventListener('click',async function(){
+    if(!state.pendingInviteToken)return;
+    try{
+      var d=await api('/api/v1/invites/accept',{method:'POST',body:JSON.stringify({token:state.pendingInviteToken})});
+      state.pendingInviteToken=null;state.invitePreview=null;history.replaceState(null,'','/');await loadTrips();
+      var target=state.trips.find(function(t){return t.id===d.tripId;});if(target){state.trip=target;localStorage.setItem('tripto_selected_trip',target.id);await loadTripDetails();}
+      state.view='home';persistView();render();notify('Shared trip added.');
+    }catch(e){recoveryForError('Invite was not accepted.',e,'Confirm that the verified account matches the invitation and try again.');}
+  });});
+  document.querySelectorAll('[data-action="copy-last-invite"]').forEach(function(el){el.addEventListener('click',async function(){
+    if(!state.lastInvite)return;var value=state.lastInvite.inviteUrl||((location.origin||'')+'/join/'+state.lastInvite.token);
+    try{await navigator.clipboard.writeText(value);notify('Invite link copied.');}catch(_){showRecovery('Copy unavailable.',value,'Copy this link manually.');}
+  });});
+  document.querySelectorAll('[data-invite-revoke]').forEach(function(el){el.addEventListener('click',async function(){
+    if(!confirm('Revoke this invitation?'))return;
+    try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/invites/'+encodeURIComponent(el.dataset.inviteRevoke),{method:'DELETE',body:'{}'});await loadSharingManagement();render();notify('Invite revoked.');}
+    catch(e){recoveryForError('Invite was not revoked.',e,'Refresh sharing and try again.');}
+  });});
+  document.querySelectorAll('[data-member-role]').forEach(function(el){el.addEventListener('change',async function(){
+    try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/members/'+encodeURIComponent(el.dataset.memberRole),{method:'PATCH',body:JSON.stringify({role:el.value})});await loadSharingManagement();render();notify('Member role updated.');}
+    catch(e){recoveryForError('Member role was not changed.',e,'Refresh sharing and try again.');}
+  });});
+  document.querySelectorAll('[data-member-remove]').forEach(function(el){el.addEventListener('click',async function(){
+    if(!confirm('Remove this member from the trip?'))return;
+    try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/members/'+encodeURIComponent(el.dataset.memberRemove),{method:'DELETE',body:'{}'});await loadSharingManagement();render();notify('Member removed.');}
+    catch(e){recoveryForError('Member was not removed.',e,'Refresh sharing and try again.');}
+  });});
+
+  document.querySelectorAll('[data-action="sharing-info"]').forEach(function(el){el.addEventListener('click',async function(){
+    if(state.account&&state.account.mode==='account'&&state.sharing&&state.sharing.enabled){state.view='sharing';persistView();await loadSharingManagement();render();}
     else showRecovery('Sharing is not active yet.','The owner/editor/viewer model, invite tokens and access controls are implemented, but verified account auth and the sharing feature flag remain disabled.','This prevents insecure guest sharing during beta.');
   });});
   document.querySelectorAll('[data-action="delete-trip"]').forEach(function(el){el.addEventListener('click',function(){
@@ -635,6 +840,16 @@ function bind(){
     openStayDetail(el.dataset.stayDetail);
   });});
 
+
+
+  var inviteForm=document.getElementById('inviteForm');
+  if(inviteForm)inviteForm.addEventListener('submit',async function(e){
+    e.preventDefault();var fd=new FormData(inviteForm);
+    try{
+      var d=await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/invites',{method:'POST',body:JSON.stringify({email:fd.get('email')||null,role:fd.get('role'),expiresInDays:Number(fd.get('expiresInDays'))})});
+      state.lastInvite=d.invite||null;await loadSharingManagement();state.lastInvite=d.invite||null;render();notify('Invite created. Copy it now.');
+    }catch(err){recoveryForError('Invite was not created.',err,'Review the email, member limit and feature status.');}
+  });
 
   var tripForm=document.getElementById('tripForm');
   if(tripForm)tripForm.addEventListener('submit',async function(e){
@@ -810,8 +1025,9 @@ window.addEventListener('appinstalled',function(){
   state.installPrompt=null;
   notify('tripto.to installed on this device.');
 });
-window.addEventListener('online',function(){state.offline=false;loadTrips();});
+window.addEventListener('online',function(){state.offline=false;flushPendingMutations().finally(loadTrips);});
 window.addEventListener('offline',function(){state.offline=true;render();});
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
+updatePendingCount();
 loadTrips();
 })();

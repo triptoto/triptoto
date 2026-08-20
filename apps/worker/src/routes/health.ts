@@ -14,6 +14,7 @@ export async function health(request: Request, env: Env): Promise<Response> {
   return json({
     ok: database.ok,
     service: 'tripto-api',
+    build: 'beta-milestone-2',
     database,
     features: {
       liveFlights: env.LIVE_FLIGHTS_ENABLED === 'true',

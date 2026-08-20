@@ -6,11 +6,13 @@ export async function accountStatus(request: Request, env: Env, auth: AuthContex
     .bind(auth.deviceId).first<Record<string,unknown>>();
 
   if (!auth.userId) {
+    const preview = await guestMigrationPreview(env, auth.deviceId);
     return json({
       account: {
         mode: 'guest',
         accountAuthEnabled: env.ACCOUNT_AUTH_ENABLED === 'true',
         migrationReady: true,
+        migrationPreview: preview,
         device: device ? { id: device.id, platform: device.platform, createdAt: device.created_at } : null,
         providers: [
           { provider: 'apple', enabled: false },
@@ -28,9 +30,40 @@ export async function accountStatus(request: Request, env: Env, auth: AuthContex
     account: {
       mode: 'account',
       accountAuthEnabled: env.ACCOUNT_AUTH_ENABLED === 'true',
+      migrationReady: false,
+      migrationPreview: { trips: 0, travelers: 0, timelineItems: 0, checklistItems: 0 },
       user,
       identities,
       device: device ? { id: device.id, platform: device.platform, createdAt: device.created_at } : null,
     },
   }, {}, request, env);
+}
+
+export async function accountMigrationPreview(request: Request, env: Env, auth: AuthContext): Promise<Response> {
+  if (auth.userId) {
+    return json({ migration: { mode: 'account', eligible: false, reason: 'ALREADY_ACCOUNT', trips: 0, travelers: 0, timelineItems: 0, checklistItems: 0 } }, {}, request, env);
+  }
+  const preview = await guestMigrationPreview(env, auth.deviceId);
+  return json({ migration: { mode: 'guest', eligible: true, reason: null, ...preview, accountAuthEnabled: env.ACCOUNT_AUTH_ENABLED === 'true' } }, {}, request, env);
+}
+
+async function guestMigrationPreview(env: Env, deviceId: string): Promise<{trips:number;travelers:number;timelineItems:number;checklistItems:number}> {
+  const rows = await env.DB.prepare(`
+    SELECT
+      COUNT(DISTINCT t.id) AS trips,
+      COUNT(DISTINCT tr.id) AS travelers,
+      COUNT(DISTINCT ti.id) AS timeline_items,
+      COUNT(DISTINCT ci.id) AS checklist_items
+    FROM trips t
+    LEFT JOIN travelers tr ON tr.trip_id=t.id AND tr.deleted_at IS NULL
+    LEFT JOIN trip_items ti ON ti.trip_id=t.id AND ti.deleted_at IS NULL
+    LEFT JOIN trip_checklist_items ci ON ci.trip_id=t.id AND ci.deleted_at IS NULL
+    WHERE t.created_by_device_id=? AND t.owner_user_id IS NULL AND t.deleted_at IS NULL
+  `).bind(deviceId).first<Record<string,unknown>>();
+  return {
+    trips: Number(rows?.trips ?? 0),
+    travelers: Number(rows?.travelers ?? 0),
+    timelineItems: Number(rows?.timeline_items ?? 0),
+    checklistItems: Number(rows?.checklist_items ?? 0),
+  };
 }
