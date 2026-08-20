@@ -7,6 +7,12 @@ import { createTrip, deleteTrip, getTrip, listTrips, updateTrip } from './routes
 import { createTimelineItem, deleteTimelineItem, listTimeline, updateTimelineItem } from './routes/timeline.ts';
 import { createChecklistItem, listChecklist, seedTripChecklist, updateChecklistItem } from './routes/checklist.ts';
 import { tripBrain } from './routes/brain.ts';
+import { listTravelers, createTraveler, updateTraveler, deleteTraveler } from './routes/travelers.ts';
+import { listLocations, createLocation } from './routes/locations.ts';
+import { listTransport, createTransport } from './routes/transport.ts';
+import { listStays, createStay } from './routes/stays.ts';
+import { listConnections, createConnection } from './routes/connections.ts';
+import { listImpacts, recalculateImpacts, listChanges } from './routes/impacts.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -59,6 +65,26 @@ export default {
       if (match && request.method === 'PATCH') return updateChecklistItem(request, env, auth, decodeURIComponent(match[1]), decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/brain$/);
       if (match && request.method === 'GET') return tripBrain(request, env, auth, decodeURIComponent(match[1]));
+
+
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/travelers$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listTravelers(request,env,auth,tripId); if(request.method==='POST') return createTraveler(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/travelers\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), travelerId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateTraveler(request,env,auth,tripId,travelerId); if(request.method==='DELETE') return deleteTraveler(request,env,auth,tripId,travelerId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/locations$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listLocations(request,env,auth,tripId); if(request.method==='POST') return createLocation(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listTransport(request,env,auth,tripId); if(request.method==='POST') return createTransport(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/stays$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listStays(request,env,auth,tripId); if(request.method==='POST') return createStay(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/connections$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listConnections(request,env,auth,tripId); if(request.method==='POST') return createConnection(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts$/);
+      if (match && request.method==='GET') return listImpacts(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts\/recalculate$/);
+      if (match && request.method==='POST') return recalculateImpacts(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/changes$/);
+      if (match && request.method==='GET') return listChanges(request,env,auth,decodeURIComponent(match[1]));
 
       return json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } }, { status: 404 }, request, env);
     } catch (error) {
