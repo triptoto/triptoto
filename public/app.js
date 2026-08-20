@@ -19,7 +19,9 @@ var state={
   connections:[],
   loading:true,
   offline:!navigator.onLine,
-  lastRefreshAt:null
+  lastRefreshAt:null,
+  installPrompt:null,
+  pendingDeleteTripId:null
 };
 var app=document.getElementById('app');
 
@@ -250,9 +252,11 @@ function utcToLocalInput(ms,timeZone){
   }catch(_){return '';}
 }
 function appHeader(){
-  return '<header class="topbar"><div class="topbar-inner"><div class="brand">tripto<span>.to</span></div>'+
-    '<div class="status-pill '+(state.offline?'offline':'')+'"><span class="status-dot"></span>'+
-    (state.offline?'Offline · cached':'Connected')+'</div></div></header>';
+  return '<header class="topbar"><div class="topbar-inner"><button class="brand brand-button" data-view="home" aria-label="Home">tripto<span>.to</span></button>'+
+    '<div class="topbar-actions">'+
+      '<button class="guest-pill" data-view="settings" title="Guest beta session">Guest beta</button>'+
+      '<div class="status-pill '+(state.offline?'offline':'')+'"><span class="status-dot"></span>'+(state.offline?'Offline · cached':'Connected')+'</div>'+
+    '</div></div></header>';
 }
 function bottomNav(){
   var items=[['home','⌂','Home'],['trips','▣','Trips'],['add','＋',''],['timeline','≡','Timeline'],['checklist','✓','Checklist']];
@@ -284,6 +288,8 @@ function dialogs(){
   '<dialog id="connectionDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Connections</div><h2>Connection protection</h2></div><button class="icon-btn" data-close="connectionDialog">×</button></div><div class="fact-note">Use Protected only when segments are actually on a protected through-ticket. Self-transfer means the next carrier may not protect you if the first segment is late.</div><div class="manager-list">'+connectionHtml+'</div><form id="connectionForm" class="form manager-form"><div class="two-col"><div class="field"><label>From</label><select name="fromItemId" required><option value="">Choose transport</option>'+transportOptionRows()+'</select></div><div class="field"><label>To</label><select name="toItemId" required><option value="">Choose transport</option>'+transportOptionRows()+'</select></div></div><div class="two-col"><div class="field"><label>Connection type</label><select name="connectionType"><option value="unknown">Unknown</option><option value="protected">Protected ticket</option><option value="self_transfer">Self-transfer</option><option value="planned_transfer">Planned transfer</option></select></div><div class="field"><label>Recommended buffer · minutes</label><input type="number" min="0" max="1440" name="recommendedBufferMinutes" value="90"></div></div><div class="connection-flags"><label><input type="checkbox" name="requiresBaggageReclaim"> Baggage reclaim</label><label><input type="checkbox" name="requiresImmigration"> Immigration</label><label><input type="checkbox" name="requiresAirportChange"> Airport change</label></div><button class="btn btn-primary" type="submit">Add connection</button></form></div></dialog>'+
   '<dialog id="detailDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow" id="detailEyebrow">Details</div><h2 id="detailTitle">Booking</h2></div><button class="icon-btn" data-close="detailDialog">×</button></div><div id="detailBody"></div></div></dialog>'+
   '<dialog id="recoveryDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Recovery</div><h2 id="recoveryTitle">Something needs attention</h2></div><button class="icon-btn" data-close="recoveryDialog">×</button></div><p class="subtle" id="recoveryBody">Your existing trip data is safe.</p><div class="inline-actions"><button class="btn btn-primary" data-action="recovery-refresh">Refresh trip</button><button class="btn" data-close="recoveryDialog">Close</button></div></div></dialog>'+
+  '<dialog id="deleteTripDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Delete trip</div><h2>This removes the trip</h2></div><button class="icon-btn" data-close="deleteTripDialog">×</button></div><div class="danger-box"><strong>Soft-delete from your trip list</strong><span>Current beta data is retained internally through tombstones/change history for sync safety, but the trip will disappear from the app.</span></div><form id="deleteTripForm" class="form"><div class="field"><label>Type DELETE to confirm</label><input name="confirm" autocomplete="off" required placeholder="DELETE"></div><button class="btn btn-danger" type="submit">Delete this trip</button></form></div></dialog>'+
+  '<dialog id="guestInfoDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Guest beta</div><h2>Your current access</h2></div><button class="icon-btn" data-close="guestInfoDialog">×</button></div><div class="guest-info"><div class="health-line"><div class="health-icon warn">!</div><div><strong>Do not clear browser storage yet</strong><div class="subtle">This beta uses a device-bound guest session. Clearing site data can remove the token used to reopen guest trips.</div></div></div><div class="health-line"><div class="health-icon">✓</div><div><strong>No password required</strong><div class="subtle">Account sign-in and cross-device restore remain intentionally deferred until the auth layer is connected.</div></div></div></div><button class="btn btn-navy" data-close="guestInfoDialog">Got it</button></div></dialog>'+
   '<dialog id="driverDialog" class="dialog driver-dialog"><div class="driver-sheet"><button class="driver-close" data-close="driverDialog">×</button><div class="driver-kicker">SHOW TO DRIVER</div><div class="driver-name">'+esc(driverName)+'</div><div class="driver-address">'+esc(driverAddress)+'</div><div class="driver-note">Saved trip address · available from cached trip data</div></div></dialog>';
 }
 
@@ -318,7 +324,7 @@ function preparingBanner(){
 }
 function heroCard(){
   var t=state.trip; var dates=t.starts_on&&t.ends_on?dateLabel(t.starts_on)+' — '+dateLabel(t.ends_on):'Add dates when you are ready';
-  return '<section class="card hero card-pad"><div class="eyebrow">'+esc(t.lifecycle_state||'trip')+'</div><div class="hero-title">'+esc(t.title)+'</div><div class="hero-meta">'+esc(dates)+'</div><div class="stat-row"><div class="stat"><strong>'+state.timeline.length+'</strong><span>Plans</span></div><div class="stat"><strong>'+state.checklist.filter(function(x){return !x.completed_at;}).length+'</strong><span>To do</span></div><div class="stat"><strong>'+activeIssues().length+'</strong><span>Issues</span></div></div><div class="hero-actions"><button class="btn btn-primary" data-view="timeline">View timeline</button><button class="btn" data-action="refresh">Refresh</button></div></section>';
+  return '<section class="card hero card-pad"><div class="eyebrow">'+esc(t.lifecycle_state||'trip')+'</div><div class="hero-title">'+esc(t.title)+'</div><div class="hero-meta">'+esc(dates)+'</div><div class="stat-row"><div class="stat"><strong>'+state.timeline.length+'</strong><span>Plans</span></div><div class="stat"><strong>'+state.checklist.filter(function(x){return !x.completed_at;}).length+'</strong><span>To do</span></div><div class="stat"><strong>'+activeIssues().length+'</strong><span>Issues</span></div></div><div class="hero-actions"><button class="btn btn-primary" data-view="timeline">View timeline</button><button class="btn" data-view="settings">Trip settings</button><button class="btn" data-action="refresh">Refresh</button></div></section>';
 }
 function nextCard(){
   var n=state.brain&&state.brain.nextItem;
@@ -399,7 +405,7 @@ function homeView(){
   return shell(preparingBanner()+preparingDashboard()+'<div class="page-head"><div><div class="eyebrow">Home / Next</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">The trip changes. Home stays simple.</div></div>'+badge(state.trip.lifecycle_state||'draft')+'</div>'+quickActions()+'<div class="grid home-grid"><div class="grid">'+heroCard()+flightCards()+stayCards()+'<section class="card card-pad"><div class="section-title"><h2>Timeline</h2><button class="btn btn-ghost" data-view="timeline">View all</button></div>'+timelinePreview()+'</section></div><div class="grid">'+nextCard()+'<section class="card card-pad"><div class="section-title"><h2>Smart Essentials</h2><button class="btn btn-ghost" data-view="checklist">View all</button></div>'+smartEssentials()+'</section><section class="card card-pad"><div class="section-title"><h2>Trip Health</h2><button class="btn btn-ghost" data-view="health">Details</button></div>'+healthSummary()+'</section>'+readyOfflineCard(true)+'</div></div>');
 }
 function tripsView(){
-  return shell('<div class="page-head"><div><div class="eyebrow">Trips</div><h1>My trips</h1><div class="subtle">Upcoming, active and completed travel in one place.</div></div><button class="btn btn-primary" data-open="tripDialog">New trip</button></div><div class="trip-list">'+state.trips.map(function(t){return '<article class="trip-card '+(state.trip&&t.id===state.trip.id?'active':'')+'" data-trip="'+esc(t.id)+'"><div>'+badge(t.lifecycle_state||'draft')+'</div><h3>'+esc(t.title)+'</h3><div class="trip-dates">'+esc(t.starts_on?dateLabel(t.starts_on):'No start date')+(t.ends_on?' → '+dateLabel(t.ends_on):'')+'</div></article>';}).join('')+'</div>');
+  return shell('<div class="page-head"><div><div class="eyebrow">Trips</div><h1>My trips</h1><div class="subtle">Upcoming, active and completed travel in one place.</div></div><button class="btn btn-primary" data-open="tripDialog">New trip</button></div><div class="trip-list">'+state.trips.map(function(t){return '<article class="trip-card '+(state.trip&&t.id===state.trip.id?'active':'')+'" data-trip="'+esc(t.id)+'"><div class="trip-card-topline"><div>'+badge(t.lifecycle_state||'draft')+'</div><button class="trip-settings-btn" data-trip-settings="'+esc(t.id)+'" aria-label="Trip settings">•••</button></div><h3>'+esc(t.title)+'</h3><div class="trip-dates">'+esc(t.starts_on?dateLabel(t.starts_on):'No start date')+(t.ends_on?' → '+dateLabel(t.ends_on):'')+'</div></article>';}).join('')+'</div>');
 }
 function timelineView(){
   var body=state.timeline.length?'<div class="timeline">'+state.timeline.map(function(x){
@@ -442,11 +448,76 @@ function healthView(){
     '<section class="card card-pad">'+healthSummary()+'</section>'+issuesHtml
   );
 }
+
+function settingsView(){
+  var t=state.trip;
+  var mode=modeForTrip();
+  var installAvailable=!!state.installPrompt;
+  return shell(
+    '<div class="page-head"><div><div class="eyebrow">Trip settings</div><h1>'+esc(t.title)+'</h1><div class="subtle">Trip identity, lifecycle and beta access safeguards.</div></div><button class="btn btn-ghost" data-view="trips">Back to trips</button></div>'+
+    '<div class="settings-grid">'+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Trip</div><h2>Basics</h2></div>'+badge(t.lifecycle_state||'draft')+'</div>'+
+        '<form id="tripSettingsForm" class="form">'+
+          '<div class="field"><label>Trip name</label><input name="title" maxlength="120" required value="'+esc(t.title||'')+'"></div>'+
+          '<div class="two-col"><div class="field"><label>Starts</label><input type="date" name="startsOn" value="'+esc(t.starts_on||'')+'"></div><div class="field"><label>Ends</label><input type="date" name="endsOn" value="'+esc(t.ends_on||'')+'"></div></div>'+
+          '<div class="field"><label>Lifecycle</label><select name="lifecycleState">'+lifecycleOptions(t.lifecycle_state)+'</select></div>'+
+          '<div class="lifecycle-help">'+lifecycleHelp(t.lifecycle_state)+'</div>'+
+          '<button class="btn btn-primary" type="submit">Save trip settings</button>'+
+        '</form>'+
+      '</section>'+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Access</div><h2>Guest beta</h2></div>'+badge('Device-bound','badge-yellow')+'</div>'+
+        '<div class="health-line"><div class="health-icon warn">!</div><div><strong>Keep this browser data</strong><div class="subtle">Until account sign-in is connected, clearing site data may break access to guest trips.</div></div></div>'+
+        '<div class="inline-actions"><button class="btn btn-ghost" data-open="guestInfoDialog">How guest mode works</button>'+(installAvailable?'<button class="btn btn-indigo" data-action="install-app">Install app</button>':'')+'</div>'+
+      '</section>'+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Offline</div><h2>Local trip cache</h2></div></div>'+
+        '<div class="subtle">Clear only cached API snapshots for this trip. This does not delete cloud trip data.</div>'+
+        '<button class="btn btn-ghost" style="margin-top:12px" data-action="clear-trip-cache">Clear cached trip data</button>'+
+      '</section>'+
+      '<section class="card card-pad danger-card"><div class="section-title"><div><div class="eyebrow danger-text">Danger zone</div><h2>Delete trip</h2></div></div>'+
+        '<div class="subtle">Deletion requires the current version and a typed confirmation. This avoids accidental destructive actions.</div>'+
+        '<button class="btn btn-danger" style="margin-top:12px" data-action="delete-trip">Delete '+esc(t.title)+'</button>'+
+      '</section>'+
+    '</div>'
+  );
+}
+function lifecycleOptions(current){
+  return ['draft','upcoming','active','completed','cancelled'].map(function(v){
+    var labels={draft:'Draft',upcoming:'Upcoming',active:'Active / travelling',completed:'Completed',cancelled:'Cancelled'};
+    return '<option value="'+v+'" '+(v===current?'selected':'')+'>'+labels[v]+'</option>';
+  }).join('');
+}
+function lifecycleHelp(current){
+  var copy={
+    draft:'Still being assembled. Use this before the trip is committed.',
+    upcoming:'Confirmed future travel. Preparing Mode can guide setup.',
+    active:'Trip is in progress. Home prioritizes what is next.',
+    completed:'Travel has finished. The trip remains available for reference.',
+    cancelled:'Trip was cancelled. Data remains explicit instead of being silently deleted.'
+  };
+  return '<span>'+esc(copy[current]||copy.draft)+'</span>';
+}
+function clearTripCache(){
+  if(!state.trip)return;
+  var id=encodeURIComponent(state.trip.id);
+  var prefixes=[
+    '/api/v1/trips/'+id,
+    '/api/v1/trips'
+  ];
+  try{
+    Object.keys(localStorage).forEach(function(k){
+      if(k.indexOf(CACHE_PREFIX)!==0)return;
+      var logical=k.slice(CACHE_PREFIX.length);
+      if(prefixes.some(function(p){return logical.indexOf(p)===0;}))localStorage.removeItem(k);
+    });
+    notify('Cached trip snapshots cleared. Live trip data was not deleted.');
+  }catch(e){notify('Could not clear cache on this device.');}
+}
+
 function readyView(){return shell(readyOfflineCard(false));}
 function render(){
   if(state.loading){app.innerHTML=loadingView();bind();return;}
   if(!state.trip){app.innerHTML=emptyView();bind();return;}
-  var out=state.view==='trips'?tripsView():state.view==='timeline'?timelineView():state.view==='checklist'?checklistView():state.view==='health'?healthView():state.view==='ready'?readyView():homeView();
+  var out=state.view==='trips'?tripsView():state.view==='timeline'?timelineView():state.view==='checklist'?checklistView():state.view==='health'?healthView():state.view==='ready'?readyView():state.view==='settings'?settingsView():homeView();
   app.innerHTML=out; bind();
 }
 
@@ -466,6 +537,26 @@ function bind(){
   document.querySelectorAll('[data-action="add"]').forEach(function(el){el.addEventListener('click',function(){var d=document.getElementById('bookingDialog');if(d)d.showModal();});});
   document.querySelectorAll('[data-action="seed"]').forEach(function(el){el.addEventListener('click',seedChecklist);});
   document.querySelectorAll('[data-action="recalc"]').forEach(function(el){el.addEventListener('click',recalcImpacts);});
+  document.querySelectorAll('[data-trip-settings]').forEach(function(el){el.addEventListener('click',async function(e){
+    e.stopPropagation();
+    var target=state.trips.find(function(t){return t.id===el.dataset.tripSettings;});
+    if(target){
+      state.trip=target;localStorage.setItem('tripto_selected_trip',target.id);
+      state.loading=true;render();await loadTripDetails();state.loading=false;state.view='settings';persistView();render();
+    }
+  });});
+  document.querySelectorAll('[data-action="install-app"]').forEach(function(el){el.addEventListener('click',async function(){
+    if(!state.installPrompt){notify('Install is not currently offered by this browser.');return;}
+    state.installPrompt.prompt();
+    try{await state.installPrompt.userChoice;}catch(_){}
+    state.installPrompt=null;render();
+  });});
+  document.querySelectorAll('[data-action="clear-trip-cache"]').forEach(function(el){el.addEventListener('click',clearTripCache);});
+  document.querySelectorAll('[data-action="delete-trip"]').forEach(function(el){el.addEventListener('click',function(){
+    state.pendingDeleteTripId=state.trip&&state.trip.id;
+    var d=document.getElementById('deleteTripDialog');if(d)d.showModal();
+  });});
+
   document.querySelectorAll('[data-action="recovery-refresh"]').forEach(function(el){el.addEventListener('click',async function(){var d=document.getElementById('recoveryDialog');if(d)d.close();await loadTrips();});});
   document.querySelectorAll('[data-traveler-edit]').forEach(function(el){el.addEventListener('click',function(){startEditTraveler(el.dataset.travelerEdit);});});
   document.querySelectorAll('[data-traveler-delete]').forEach(function(el){el.addEventListener('click',async function(){await removeTraveler(el.dataset.travelerDelete);});});
@@ -530,6 +621,47 @@ function bind(){
       document.getElementById('hotelDialog').close();resetStayForm();await loadTripDetails();render();
     }catch(err){recovery(err.message,'The stay was not saved. Existing trip data is unchanged. Review the fields and try again.');}
   });
+
+  var tripSettingsForm=document.getElementById('tripSettingsForm');
+  if(tripSettingsForm)tripSettingsForm.addEventListener('submit',async function(e){
+    e.preventDefault();
+    var fd=new FormData(tripSettingsForm);
+    try{
+      var payload={
+        version:state.trip.version,
+        title:fd.get('title'),
+        startsOn:fd.get('startsOn')||null,
+        endsOn:fd.get('endsOn')||null,
+        lifecycleState:fd.get('lifecycleState')
+      };
+      var d=await api('/api/v1/trips/'+encodeURIComponent(state.trip.id),{method:'PATCH',body:JSON.stringify(payload)});
+      state.trip=d.trip;
+      state.trips=state.trips.map(function(t){return t.id===d.trip.id?d.trip:t;});
+      localStorage.setItem('tripto_selected_trip',d.trip.id);
+      await loadTripDetails();render();notify('Trip settings saved.');
+    }catch(err){showRecovery('Trip settings were not saved.',err.message,'Refresh the trip and try again.');}
+  });
+
+  var deleteTripForm=document.getElementById('deleteTripForm');
+  if(deleteTripForm)deleteTripForm.addEventListener('submit',async function(e){
+    e.preventDefault();
+    var fd=new FormData(deleteTripForm);
+    if(String(fd.get('confirm')||'').trim()!=='DELETE'){notify('Type DELETE exactly to confirm.');return;}
+    if(!state.trip||state.pendingDeleteTripId!==state.trip.id){notify('Trip selection changed. Reopen delete confirmation.');return;}
+    try{
+      var deletedId=state.trip.id;
+      await api('/api/v1/trips/'+encodeURIComponent(deletedId),{method:'DELETE',body:JSON.stringify({version:state.trip.version})});
+      document.getElementById('deleteTripDialog').close();
+      state.pendingDeleteTripId=null;
+      state.trips=state.trips.filter(function(t){return t.id!==deletedId;});
+      state.trip=state.trips[0]||null;
+      if(state.trip)localStorage.setItem('tripto_selected_trip',state.trip.id);else localStorage.removeItem('tripto_selected_trip');
+      state.view=state.trip?'home':'trips';persistView();
+      if(state.trip)await loadTripDetails();else{state.timeline=[];state.checklist=[];state.transport=[];state.stays=[];state.locations=[];state.travelers=[];state.brain=null;state.impacts=[];}
+      render();notify('Trip deleted.');
+    }catch(err){showRecovery('Trip was not deleted.',err.message,'Refresh before trying again. The trip may have changed on another client.');}
+  });
+
   var flightForm=document.getElementById('flightForm');
   if(flightForm)flightForm.addEventListener('submit',async function(e){
     e.preventDefault();var fd=new FormData(flightForm);
@@ -620,6 +752,16 @@ async function recalcImpacts(){
   try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/impacts/recalculate',{method:'POST',body:'{}'});await loadTripDetails();render();notify('Trip Health recalculated.');}catch(e){notify(e.message);}
 }
 
+
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();
+  state.installPrompt=e;
+  if(state.view==='settings')render();
+});
+window.addEventListener('appinstalled',function(){
+  state.installPrompt=null;
+  notify('tripto.to installed on this device.');
+});
 window.addEventListener('online',function(){state.offline=false;loadTrips();});
 window.addEventListener('offline',function(){state.offline=true;render();});
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
