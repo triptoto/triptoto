@@ -1,0 +1,15 @@
+{
+  "name": "tripto-to",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:scenarios": "tsx tests/scenarios/core.scenarios.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "tsx": "^4.20.0",
+    "wrangler": "^4.0.0"
+  }
+}

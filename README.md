@@ -1,16 +1,13 @@
-## Hi there 👋
+# tripto.to
 
-<!--
-**triptoto/triptoto** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Offline-first travel companion. Initial implementation is deterministic/rules-based: no generative AI and no live-flight API integration.
 
-Here are some ideas to get you started:
+## Current phase
+Pre-account implementation package. This repository contains the technical blueprint, D1 schema migrations, domain contracts, Trip Brain, Impact Engine, checklist rules, provider abstractions, sync contracts, quotas, and scenario fixtures. Cloudflare/GitHub accounts are not required yet.
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Product principles
+- Your trip should never disappear because your internet did.
+- Never invent travel data.
+- Facts, live facts, estimates, and recommendations must be visually and structurally distinct.
+- High-impact automation requires high confidence and a clear recovery path.
+- $0 mandatory monthly infrastructure/API cost until demand is validated.
