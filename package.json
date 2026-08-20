@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test:scenarios": "tsx tests/scenarios/core.scenarios.ts && tsx tests/scenarios/beta.scenarios.ts && tsx tests/scenarios/milestone2.scenarios.ts",
+    "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts",
     "smoke:api": "bash scripts/smoke-api.sh",
     "check:ui": "node --check public/app.js",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",

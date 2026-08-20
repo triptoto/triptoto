@@ -19,6 +19,7 @@ import { exportTripJson, exportTripCalendar } from './routes/export.ts';
 import { tripSupportBundle } from './routes/support.ts';
 import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
 import { createDemoTrip } from './routes/demo.ts';
+import { previewForwardedEmail, listImports, getImport, resolveImportCandidate } from './routes/imports.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -28,7 +29,7 @@ export default {
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
       if (request.method === 'GET' && path === '/health') return health(request, env);
-      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: 'beta-milestone-2' }, {}, request, env);
+      if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: 'beta-milestone-3' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') return createGuestSession(request, env);
 
       const auth = await requireAuth(request, env);
@@ -114,6 +115,14 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listInvites(request,env,auth,tripId); if(request.method==='POST') return createInvite(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/invites\/([^/]+)$/);
       if (match && request.method==='DELETE') return revokeInvite(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listImports(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/forwarded-email\/preview$/);
+      if (match && request.method==='POST') return previewForwardedEmail(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/([^/]+)$/);
+      if (match && request.method==='GET') return getImport(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/([^/]+)\/resolve$/);
+      if (match && request.method==='POST') return resolveImportCandidate(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts$/);
       if (match && request.method==='GET') return listImpacts(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts\/recalculate$/);

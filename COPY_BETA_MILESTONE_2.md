@@ -31,6 +31,10 @@ This is a cumulative milestone package. It includes the prior beta foundation pl
 
 No new D1 migration is required for this milestone. `0012_accounts_sharing.sql` remains the latest migration.
 
+## Node / test runner note
+
+`test:scenarios` uses `node --import tsx/esm` rather than the `tsx` CLI so it also works on Node 25, where the `tsx` CLI IPC bootstrap can fail with `listen EPERM`. Node 22/24 LTS are still preferred for deployment work.
+
 ## Install and validate
 
 ```bash

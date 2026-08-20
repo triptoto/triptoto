@@ -11,7 +11,8 @@ export async function tripSupportBundle(request:Request,env:Env,auth:AuthContext
     (SELECT COUNT(*) FROM travelers WHERE trip_id=? AND deleted_at IS NULL) travelers,
     (SELECT COUNT(*) FROM trip_checklist_items WHERE trip_id=? AND deleted_at IS NULL) checklist_items,
     (SELECT COUNT(*) FROM connections WHERE trip_id=?) connections,
-    (SELECT COUNT(*) FROM documents WHERE trip_id=? AND deleted_at IS NULL) documents`).bind(tripId,tripId,tripId,tripId,tripId).first<Record<string,unknown>>();
+    (SELECT COUNT(*) FROM documents WHERE trip_id=? AND deleted_at IS NULL) documents,
+    (SELECT COUNT(*) FROM imports WHERE trip_id=?) imports`).bind(tripId,tripId,tripId,tripId,tripId,tripId).first<Record<string,unknown>>();
   const confidence=(await env.DB.prepare(`SELECT confidence,COUNT(*) count FROM trip_items WHERE trip_id=? AND deleted_at IS NULL GROUP BY confidence ORDER BY confidence`).bind(tripId).all()).results??[];
   const sources=(await env.DB.prepare(`SELECT source_type,COUNT(*) count FROM trip_items WHERE trip_id=? AND deleted_at IS NULL GROUP BY source_type ORDER BY source_type`).bind(tripId).all()).results??[];
   const changes=(await env.DB.prepare(`SELECT entity_type,event_type,source_type,created_at FROM change_events WHERE trip_id=? ORDER BY created_at DESC LIMIT 25`).bind(tripId).all()).results??[];

@@ -46,3 +46,7 @@ bash scripts/smoke-beta-milestone.sh
 ```
 
 See `docs/BETA_MILESTONE_2.md` for the current milestone and deployment sequence.
+
+## Beta Milestone 3
+
+The current beta foundation now includes deterministic booking-email preview/confirmation and local-only offline document storage while R2 remains disabled. Raw forwarded-email bodies are not persisted, ambiguous locale dates are not guessed, and imported bookings require explicit confirmation before trip data changes.

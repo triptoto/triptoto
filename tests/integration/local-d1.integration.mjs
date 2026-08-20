@@ -14,6 +14,7 @@ const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, u
 const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-auth.js');
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
 const { refreshSession }=await load('apps/worker/src/routes/session.js');
+const { previewForwardedEmail, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -143,4 +144,21 @@ for(const scenario of ['normal','overnight','family','missing_essentials','date_
   if(scenario==='provider_outage')assert(Number(db.prepare(`SELECT COUNT(*) c FROM alerts WHERE trip_id=? AND type='provider_outage'`).get(made.demo.tripId).c)===1,'provider outage alert seeded');
 }
 
-console.log('Local D1 integration suite passed: auth bridge, migration, session refresh, export, support, sharing, invites and all QA scenarios.');
+
+// Forwarded-email import: raw body is not stored, duplicates are idempotent, confirmation materializes only after user review.
+const importBody={sender:'airline@example.test',subject:'Fwd: Flight confirmation',body:'Booking reference: ABC123\\nFlight: LY 383\\nTLV -> FCO\\nDeparture: 2026-09-01 10:30\\nArrival: 2026-09-01 13:15'};
+const previewImport=await body(await previewForwardedEmail(req('https://test/api/v1/trips/x/imports/forwarded-email/preview','POST',importBody),env,owner,tripId));
+assert(previewImport.import.status==='needs_confirmation','import needs confirmation');
+assert(previewImport.privacy.rawBodyStored===false,'raw forwarded body not stored');
+assert(previewImport.candidates.length===1&&previewImport.candidates[0].candidate_type==='flight','flight import candidate');
+const duplicateImport=await body(await previewForwardedEmail(req('https://test/api/v1/trips/x/imports/forwarded-email/preview','POST',importBody),env,owner,tripId));
+assert(duplicateImport.duplicate===true&&duplicateImport.import.id===previewImport.import.id,'duplicate import is idempotent');
+const importCandidate=previewImport.candidates[0];
+const resolvedImport=await body(await resolveImportCandidate(req('https://test/api/v1/trips/x/imports/y/resolve','POST',{candidateId:importCandidate.id,action:'confirm',payload:{airlineCode:'LY',flightNumber:'383',departureIata:'TLV',arrivalIata:'FCO',scheduledDepartureUtc:Date.UTC(2026,8,1,7,30),scheduledArrivalUtc:Date.UTC(2026,8,1,11,15),departureTimezone:'Asia/Jerusalem',arrivalTimezone:'Europe/Rome',confirmationNumber:'ABC123'}}),env,owner,tripId,previewImport.import.id));
+assert(resolvedImport.resolved==='confirmed','import candidate confirmed');
+assert(db.prepare(`SELECT source_type FROM trip_items WHERE id=?`).get(resolvedImport.entityId).source_type==='email','confirmed import materializes email-sourced item');
+const importsAfter=await body(await listImports(req('https://test/api/v1/trips/x/imports'),env,owner,tripId));
+assert(importsAfter.imports.some(x=>x.id===previewImport.import.id&&x.status==='completed'),'import completes after confirmation');
+assert(!Object.keys(db.prepare(`SELECT * FROM import_messages WHERE import_id=?`).get(previewImport.import.id)).some(k=>/body|raw|content/i.test(k)),'import message schema stores no raw body');
+
+console.log('Local D1 integration suite passed: auth bridge, migration, session refresh, export, support, sharing, invites, deterministic imports and all QA scenarios.');

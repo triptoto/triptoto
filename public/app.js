@@ -30,6 +30,9 @@ var state={
   invites:[],
   lastInvite:null,
   pendingSyncCount:0,
+  imports:[],
+  localDocs:[],
+  importReview:null,
   pendingInviteToken:(location.pathname.indexOf('/join/')===0?decodeURIComponent(location.pathname.slice(6)):null)
 };
 var app=document.getElementById('app');
@@ -253,7 +256,7 @@ async function loadTrips(){
 async function loadTripDetails(){
   if(!state.trip){
     state.timeline=[];state.checklist=[];state.brain=null;state.impacts=[];
-    state.transport=[];state.stays=[];state.locations=[];state.travelers=[];state.connections=[];state.sharing=null;return;
+    state.transport=[];state.stays=[];state.locations=[];state.travelers=[];state.connections=[];state.imports=[];state.localDocs=[];state.sharing=null;return;
   }
   var id=encodeURIComponent(state.trip.id);
   var paths=[
@@ -266,7 +269,8 @@ async function loadTripDetails(){
     '/api/v1/trips/'+id+'/locations',
     '/api/v1/trips/'+id+'/travelers',
     '/api/v1/trips/'+id+'/connections',
-    '/api/v1/trips/'+id+'/sharing'
+    '/api/v1/trips/'+id+'/sharing',
+    '/api/v1/trips/'+id+'/imports'
   ];
   var r=await Promise.allSettled(paths.map(apiGet));
   if(r[0].status==='fulfilled')state.timeline=r[0].value.items||[];
@@ -279,6 +283,8 @@ async function loadTripDetails(){
   if(r[7].status==='fulfilled')state.travelers=r[7].value.travelers||[];
   if(r[8].status==='fulfilled')state.connections=r[8].value.connections||[];
   if(r[9].status==='fulfilled')state.sharing=r[9].value.sharing||null;
+  if(r[10].status==='fulfilled')state.imports=r[10].value.imports||[];
+  state.localDocs=await listLocalDocs(state.trip.id);
 }
 
 
@@ -298,6 +304,43 @@ async function loadSharingManagement(){
   var results=await Promise.allSettled([api('/api/v1/trips/'+id+'/members'),api('/api/v1/trips/'+id+'/invites')]);
   if(results[0].status==='fulfilled')state.members=results[0].value.members||[];
   if(results[1].status==='fulfilled')state.invites=results[1].value.invites||[];
+}
+
+var LOCAL_DOC_DB='tripto-local-docs-v1';
+function openLocalDocDb(){
+  return new Promise(function(resolve,reject){
+    if(!('indexedDB' in window)){reject(new Error('IndexedDB is unavailable on this device.'));return;}
+    var req=indexedDB.open(LOCAL_DOC_DB,1);
+    req.onupgradeneeded=function(){var db=req.result;if(!db.objectStoreNames.contains('docs')){var store=db.createObjectStore('docs',{keyPath:'id'});store.createIndex('tripId','tripId',{unique:false});}};
+    req.onsuccess=function(){resolve(req.result);};req.onerror=function(){reject(req.error||new Error('Could not open local document storage.'));};
+  });
+}
+async function listLocalDocs(tripId){
+  try{var db=await openLocalDocDb();return await new Promise(function(resolve,reject){var tx=db.transaction('docs','readonly');var idx=tx.objectStore('docs').index('tripId');var req=idx.getAll(tripId);req.onsuccess=function(){resolve(req.result||[]);};req.onerror=function(){reject(req.error);};});}catch(_){return [];}
+}
+async function saveLocalDoc(file,type,travelerIds){
+  if(!state.trip)throw new Error('Open a trip first.');
+  if(!file)throw new Error('Choose a file.');
+  if(file.size>10*1024*1024)throw new Error('Beta local-document limit is 10 MB per file.');
+  var existing=await listLocalDocs(state.trip.id);if(existing.length>=20)throw new Error('Beta limit is 20 local documents per trip on this device.');
+  var db=await openLocalDocDb();var row={id:'doc_'+crypto.randomUUID(),tripId:state.trip.id,name:file.name||'document',mime:file.type||'application/octet-stream',size:file.size,type:type||'other',travelerIds:Array.isArray(travelerIds)?travelerIds:[],savedAt:Date.now(),blob:file};
+  await new Promise(function(resolve,reject){var tx=db.transaction('docs','readwrite');tx.objectStore('docs').put(row);tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};});
+  state.localDocs=await listLocalDocs(state.trip.id);return row;
+}
+async function removeLocalDoc(id){
+  try{var db=await openLocalDocDb();await new Promise(function(resolve,reject){var tx=db.transaction('docs','readwrite');tx.objectStore('docs').delete(id);tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};});state.localDocs=await listLocalDocs(state.trip.id);render();notify('Local document removed from this device.');}catch(e){showRecovery('Document was not removed.',e.message,'Your trip data is unchanged.');}
+}
+async function openLocalDoc(id){
+  var row=state.localDocs.find(function(x){return x.id===id;});if(!row||!row.blob){notify('Document is not available on this device.');return;}var url=URL.createObjectURL(row.blob);window.open(url,'_blank','noopener');setTimeout(function(){URL.revokeObjectURL(url);},60000);
+}
+function localDocTravelerLabel(d){var ids=Array.isArray(d.travelerIds)?d.travelerIds:[];if(!ids.length)return 'All / unassigned';var names=ids.map(function(id){var t=state.travelers.find(function(x){return x.id===id;});return t?t.display_name:null;}).filter(Boolean);return names.length?names.join(', '):ids.length+' traveler(s)';}
+function localDocRows(){
+  if(!state.localDocs.length)return '<div class="empty compact-empty"><p class="subtle">No local documents saved on this device yet.</p></div>';
+  return '<div class="local-doc-list">'+state.localDocs.map(function(d){return '<div class="local-doc-row"><div class="local-doc-icon">▤</div><div class="local-doc-main"><strong>'+esc(d.name)+'</strong><span>'+esc(d.type||'other')+' · '+Math.max(1,Math.round(Number(d.size||0)/1024))+' KB · '+ageLabel(d.savedAt)+'</span><span>Traveler: '+esc(localDocTravelerLabel(d))+'</span></div><div class="inline-actions"><button class="btn btn-ghost compact" data-local-doc-open="'+esc(d.id)+'">Open</button><button class="btn btn-danger compact" data-local-doc-delete="'+esc(d.id)+'">Remove</button></div></div>';}).join('')+'</div>';
+}
+function importStatusCard(){
+  var pending=state.imports.filter(function(x){return x.status==='needs_confirmation';}).length;
+  return '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Booking import</div><h2>Forwarded email</h2></div>'+badge(pending?pending+' review':'Ready',pending?'badge-yellow':'badge-green')+'</div><div class="subtle">Paste a forwarded booking email. Parsing is deterministic and raw email body is not stored.</div><div class="inline-actions" style="margin-top:12px"><button class="btn btn-ghost" data-open="importDialog">Import booking email</button><button class="btn btn-ghost" data-view="imports">Import history</button></div></section>';
 }
 function travelerChecks(){
   if(!state.travelers.length)return '<div class="form-note">No travelers yet. You can add travelers from Preparing Mode.</div>';
@@ -378,7 +421,7 @@ function dialogs(){
   var connectionHtml=state.connections.length?state.connections.map(function(c){return '<div class="manager-row"><div><strong>'+esc(itemTitle(c.from_item_id))+' → '+esc(itemTitle(c.to_item_id))+'</strong><span>'+esc(c.connection_type)+' · '+(c.recommended_buffer_minutes==null?'buffer not set':c.recommended_buffer_minutes+' min buffer')+'</span></div><div class="connection-actions"><select data-connection-type="'+esc(c.id)+'" data-version="'+esc(c.version)+'"><option value="protected" '+(c.connection_type==='protected'?'selected':'')+'>Protected</option><option value="self_transfer" '+(c.connection_type==='self_transfer'?'selected':'')+'>Self-transfer</option><option value="planned_transfer" '+(c.connection_type==='planned_transfer'?'selected':'')+'>Planned transfer</option><option value="unknown" '+(c.connection_type==='unknown'?'selected':'')+'>Unknown</option></select><button class="btn btn-danger compact" data-connection-delete="'+esc(c.id)+'" data-version="'+esc(c.version)+'">Remove</button></div></div>';}).join(''):'<div class="form-note">No explicit connections yet. Add one when timing between bookings matters.</div>';
   return ''+
   '<dialog id="tripDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">New trip</div><h2>Create a trip</h2></div><button class="icon-btn" data-close="tripDialog">×</button></div><form id="tripForm" class="form"><div class="field"><label>Trip name</label><input name="title" maxlength="120" required placeholder="Rome 2026"></div><div class="two-col"><div class="field"><label>Starts</label><input type="date" name="startsOn"></div><div class="field"><label>Ends</label><input type="date" name="endsOn"></div></div><button class="btn btn-primary" type="submit">Create trip</button></form></div></dialog>'+
-  '<dialog id="bookingDialog" class="dialog booking-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Quick Add</div><h2>Add to your trip</h2></div><button class="icon-btn" data-close="bookingDialog">×</button></div><div class="booking-grid"><button class="booking-choice" data-booking="flight"><span>✈</span><strong>Flight</strong><small>Timezone-safe scheduled booking</small></button><button class="booking-choice" data-booking="hotel"><span>▣</span><strong>Hotel / Stay</strong><small>Check-in, address, confirmation</small></button><button class="booking-choice" data-booking="train"><span>⇄</span><strong>Train</strong><small>Stations and event-local times</small></button><button class="booking-choice" data-booking="car"><span>⌁</span><strong>Car / Transfer</strong><small>Pickup and drop-off</small></button><button class="booking-choice" data-booking="activity"><span>★</span><strong>Activity</strong><small>Reservation or plan</small></button><button class="booking-choice" data-booking="traveler"><span>◉</span><strong>Travelers</strong><small>People on this trip</small></button></div></div></dialog>'+
+  '<dialog id="bookingDialog" class="dialog booking-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Quick Add</div><h2>Add to your trip</h2></div><button class="icon-btn" data-close="bookingDialog">×</button></div><div class="booking-grid"><button class="booking-choice" data-booking="flight"><span>✈</span><strong>Flight</strong><small>Timezone-safe scheduled booking</small></button><button class="booking-choice" data-booking="hotel"><span>▣</span><strong>Hotel / Stay</strong><small>Check-in, address, confirmation</small></button><button class="booking-choice" data-booking="train"><span>⇄</span><strong>Train</strong><small>Stations and event-local times</small></button><button class="booking-choice" data-booking="car"><span>⌁</span><strong>Car / Transfer</strong><small>Pickup and drop-off</small></button><button class="booking-choice" data-booking="activity"><span>★</span><strong>Activity</strong><small>Reservation or plan</small></button><button class="booking-choice" data-booking="traveler"><span>◉</span><strong>Travelers</strong><small>People on this trip</small></button><button class="booking-choice" data-booking="import"><span>✉</span><strong>Forwarded email</strong><small>Deterministic preview + confirmation</small></button><button class="booking-choice" data-booking="document"><span>▤</span><strong>Local document</strong><small>Saved only on this device</small></button></div></div></dialog>'+
   '<dialog id="planDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Add plan</div><h2>Add activity</h2></div><button class="icon-btn" data-close="planDialog">×</button></div><form id="planForm" class="form"><div class="field"><label>Type</label><select name="type"><option value="activity">Activity</option><option value="reservation">Reservation</option><option value="custom">Other</option></select></div><div class="field"><label>Title</label><input name="title" maxlength="160" required placeholder="Vatican Museums"></div><div class="field"><label>When</label><input type="datetime-local" name="when" required></div><button class="btn btn-primary" type="submit">Add plan</button></form></div></dialog>'+
   '<dialog id="hotelDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Stay</div><h2 id="hotelDialogTitle">Add hotel or stay</h2></div><button class="icon-btn" data-close="hotelDialog">×</button></div><form id="hotelForm" class="form"><input type="hidden" name="editId"><input type="hidden" name="version"><input type="hidden" name="locationId"><div class="field"><label>Property name</label><input name="propertyName" maxlength="160" required placeholder="Hotel Artemide"></div><div class="field"><label>Address</label><input name="address" maxlength="300" placeholder="Via Nazionale 22, Rome"></div><div class="field"><label>Local-language address</label><input name="localAddress" maxlength="300" placeholder="Optional"></div><div class="two-col"><div class="field"><label>Check-in</label><input type="date" name="checkInDate"></div><div class="field"><label>Check-out</label><input type="date" name="checkOutDate"></div></div><div class="field"><label>Confirmation number</label><input name="confirmationNumber" maxlength="100"></div><div class="field"><label>Travelers</label>'+travelerChecks()+'</div><button class="btn btn-primary" id="hotelSubmit" type="submit">Add stay</button></form></div></dialog>'+
   '<dialog id="flightDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Flight</div><h2 id="flightDialogTitle">Add scheduled flight</h2></div><button class="icon-btn" data-close="flightDialog">×</button></div><div class="fact-note">Times are interpreted in the airport timezones you enter, not in the device timezone. Live flight tracking remains off.</div><form id="flightForm" class="form"><input type="hidden" name="editId"><input type="hidden" name="version"><input type="hidden" name="fromLocationId"><input type="hidden" name="toLocationId"><div class="two-col"><div class="field"><label>Airline code</label><input name="airlineCode" maxlength="3" placeholder="LY"></div><div class="field"><label>Flight number</label><input name="flightNumber" maxlength="12" placeholder="383"></div></div><div class="route-form"><div><div class="field"><label>From airport</label><input name="fromName" required placeholder="Tel Aviv Ben Gurion"></div><div class="two-col"><div class="field"><label>IATA</label><input name="fromCode" maxlength="3" required placeholder="TLV"></div><div class="field"><label>Timezone</label><input name="fromTz" required placeholder="Asia/Jerusalem"></div></div></div><div><div class="field"><label>To airport</label><input name="toName" required placeholder="Rome Fiumicino"></div><div class="two-col"><div class="field"><label>IATA</label><input name="toCode" maxlength="3" required placeholder="FCO"></div><div class="field"><label>Timezone</label><input name="toTz" required placeholder="Europe/Rome"></div></div></div></div><div class="two-col"><div class="field"><label>Departure · local airport time</label><input type="datetime-local" name="departure" required></div><div class="field"><label>Arrival · local airport time</label><input type="datetime-local" name="arrival" required></div></div><div class="two-col"><div class="field"><label>Departure terminal</label><input name="departureTerminal" maxlength="20"></div><div class="field"><label>Arrival terminal</label><input name="arrivalTerminal" maxlength="20"></div></div><div class="field"><label>Travelers</label>'+travelerChecks()+'</div><button class="btn btn-primary" id="flightSubmit" type="submit">Add flight</button></form></div></dialog>'+
@@ -387,6 +430,9 @@ function dialogs(){
   '<dialog id="travelerDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Travelers</div><h2>People on this trip</h2></div><button class="icon-btn" data-close="travelerDialog">×</button></div><div class="manager-list">'+travelersHtml+'</div><form id="travelerForm" class="form manager-form"><input type="hidden" name="editId"><input type="hidden" name="version"><div class="two-col"><div class="field"><label>Name</label><input name="displayName" required maxlength="120" placeholder="Traveler name"></div><div class="field"><label>Type</label><select name="travelerType"><option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option><option value="unknown">Unknown</option></select></div></div><button class="btn btn-primary" id="travelerSubmit" type="submit">Add traveler</button></form></div></dialog>'+
   '<dialog id="connectionDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Connections</div><h2>Connection protection</h2></div><button class="icon-btn" data-close="connectionDialog">×</button></div><div class="fact-note">Use Protected only when segments are actually on a protected through-ticket. Self-transfer means the next carrier may not protect you if the first segment is late.</div><div class="manager-list">'+connectionHtml+'</div><form id="connectionForm" class="form manager-form"><div class="two-col"><div class="field"><label>From</label><select name="fromItemId" required><option value="">Choose transport</option>'+transportOptionRows()+'</select></div><div class="field"><label>To</label><select name="toItemId" required><option value="">Choose transport</option>'+transportOptionRows()+'</select></div></div><div class="two-col"><div class="field"><label>Connection type</label><select name="connectionType"><option value="unknown">Unknown</option><option value="protected">Protected ticket</option><option value="self_transfer">Self-transfer</option><option value="planned_transfer">Planned transfer</option></select></div><div class="field"><label>Recommended buffer · minutes</label><input type="number" min="0" max="1440" name="recommendedBufferMinutes" value="90"></div></div><div class="connection-flags"><label><input type="checkbox" name="requiresBaggageReclaim"> Baggage reclaim</label><label><input type="checkbox" name="requiresImmigration"> Immigration</label><label><input type="checkbox" name="requiresAirportChange"> Airport change</label></div><button class="btn btn-primary" type="submit">Add connection</button></form></div></dialog>'+
   '<dialog id="detailDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow" id="detailEyebrow">Details</div><h2 id="detailTitle">Booking</h2></div><button class="icon-btn" data-close="detailDialog">×</button></div><div id="detailBody"></div></div></dialog>'+
+  '<dialog id="importDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Forwarded email</div><h2>Preview booking import</h2></div><button class="icon-btn" data-close="importDialog">×</button></div><div class="fact-note">No generative AI is used. The raw email body is parsed in memory and not stored. Nothing is added to the trip until you confirm.</div><form id="importEmailForm" class="form"><div class="two-col"><div class="field"><label>Sender (optional)</label><input name="sender" maxlength="320" placeholder="airline@example.com"></div><div class="field"><label>Subject (optional)</label><input name="subject" maxlength="500" placeholder="Fwd: Booking confirmation"></div></div><div class="field"><label>Forwarded email text</label><textarea name="body" rows="12" maxlength="80000" required placeholder="Paste the booking confirmation here…"></textarea></div><button class="btn btn-primary" type="submit">Parse and preview</button></form></div></dialog>'+
+  '<dialog id="importReviewDialog" class="dialog wide-dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Safe Mode</div><h2>Confirm extracted booking</h2></div><button class="icon-btn" data-close="importReviewDialog">×</button></div><div id="importReviewBody"><div class="subtle">No candidate loaded.</div></div></div></dialog>'+
+  '<dialog id="localDocDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Documents</div><h2>Save on this device</h2></div><button class="icon-btn" data-close="localDocDialog">×</button></div><div class="fact-note">R2 cloud document storage is still disabled. This file stays only in this browser/device and is available offline through IndexedDB.</div><form id="localDocForm" class="form"><div class="field"><label>Document type</label><select name="type"><option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="other" selected>Other</option></select></div><div class="field"><label>File · max 10 MB</label><input type="file" name="file" required></div><div class="field"><label>Traveler assignment (optional)</label>'+travelerChecks()+'</div><button class="btn btn-primary" type="submit">Save locally</button></form></div></dialog>'+
   '<dialog id="recoveryDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Recovery</div><h2 id="recoveryTitle">Something needs attention</h2></div><button class="icon-btn" data-close="recoveryDialog">×</button></div><p class="subtle" id="recoveryBody">Your existing trip data is safe.</p><div class="inline-actions"><button class="btn btn-primary" data-action="recovery-refresh">Refresh trip</button><button class="btn" data-close="recoveryDialog">Close</button></div></div></dialog>'+
   '<dialog id="deleteTripDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Delete trip</div><h2>This removes the trip</h2></div><button class="icon-btn" data-close="deleteTripDialog">×</button></div><div class="danger-box"><strong>Soft-delete from your trip list</strong><span>Current beta data is retained internally through tombstones/change history for sync safety, but the trip will disappear from the app.</span></div><form id="deleteTripForm" class="form"><div class="field"><label>Type DELETE to confirm</label><input name="confirm" autocomplete="off" required placeholder="DELETE"></div><button class="btn btn-danger" type="submit">Delete this trip</button></form></div></dialog>'+
   '<dialog id="guestInfoDialog" class="dialog"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow">Guest beta</div><h2>Your current access</h2></div><button class="icon-btn" data-close="guestInfoDialog">×</button></div><div class="guest-info"><div class="health-line"><div class="health-icon warn">!</div><div><strong>Do not clear browser storage yet</strong><div class="subtle">This beta uses a device-bound guest session. Clearing site data can remove the token used to reopen guest trips.</div></div></div><div class="health-line"><div class="health-icon">✓</div><div><strong>No password required</strong><div class="subtle">Account sign-in and cross-device restore remain intentionally deferred until the auth layer is connected.</div></div></div></div><button class="btn btn-navy" data-close="guestInfoDialog">Got it</button></div></dialog>'+
@@ -480,13 +526,17 @@ function offlineReadiness(){
   ];
   return rows.map(function(r){var s=cacheStatus(r[1]);return {name:r[0],ok:s.ok,at:s.at};});
 }
+function travelerDocumentCoverage(){
+  if(!state.travelers.length)return '';
+  return state.travelers.map(function(t){var count=state.localDocs.filter(function(d){return Array.isArray(d.travelerIds)&&d.travelerIds.includes(t.id);}).length;return '<div class="offline-row"><div class="offline-check '+(count?'ok':'warn')+'">'+(count?'✓':'!')+'</div><div><strong>'+esc(t.display_name)+' documents</strong><span>'+(count?count+' local file(s) assigned':'No traveler-specific local documents assigned')+'</span></div></div>';}).join('');
+}
 function readyOfflineCard(compact){
   var rows=offlineReadiness(), ok=rows.filter(function(x){return x.ok;}).length, total=rows.length;
   var list=rows.map(function(x){return '<div class="offline-row"><div class="offline-check '+(x.ok?'ok':'warn')+'">'+(x.ok?'✓':'!')+'</div><div><strong>'+esc(x.name)+'</strong><span>'+(x.ok?('Cached · '+ageLabel(x.at)):'Open online once to cache')+'</span></div></div>';}).join('');
   var pending=state.pendingSyncCount?'<div class="offline-row"><div class="offline-check warn">↻</div><div><strong>Pending sync</strong><span>'+state.pendingSyncCount+' local change(s) still need server sync or review.</span></div></div>':'<div class="offline-row"><div class="offline-check ok">✓</div><div><strong>Pending sync</strong><span>No unsynced local changes.</span></div></div>';
-  var documents='<div class="offline-row"><div class="offline-check neutral">—</div><div><strong>Documents</strong><span>Cloud document storage is intentionally disabled in this beta.</span></div></div>';
+  var documents='<div class="offline-row"><div class="offline-check '+(state.localDocs.length?'ok':'warn')+'">'+(state.localDocs.length?'✓':'!')+'</div><div><strong>Local documents</strong><span>'+(state.localDocs.length?state.localDocs.length+' file(s) verified in local device storage':'No local files saved yet')+' · cloud sync disabled</span></div></div>';
   if(compact)return '<section class="card card-pad"><div class="section-title"><h2>Ready Offline</h2>'+badge(ok+'/'+total,'badge-green')+'</div><div class="subtle">'+ok+' of '+total+' core trip datasets cached'+(state.pendingSyncCount?' · '+state.pendingSyncCount+' pending sync':'')+'.</div><button class="btn btn-ghost" style="margin-top:12px" data-view="ready">Review offline readiness</button></section>';
-  return '<div class="page-head"><div><div class="eyebrow">Offline</div><h1>Ready Offline</h1><div class="subtle">Your trip should never disappear because your internet did.</div></div>'+badge(ok+'/'+total,'badge-green')+'</div><section class="card card-pad"><div class="offline-list">'+list+pending+documents+'</div><div class="fact-note">Cached flight status is never presented as live. Live-flight integration is currently disabled.</div></section>';
+  return '<div class="page-head"><div><div class="eyebrow">Offline</div><h1>Ready Offline</h1><div class="subtle">Your trip should never disappear because your internet did.</div></div>'+badge(ok+'/'+total,'badge-green')+'</div><section class="card card-pad"><div class="offline-list">'+list+pending+documents+travelerDocumentCoverage()+'</div><div class="fact-note">Cached flight status is never presented as live. Live-flight integration is currently disabled.</div></section>';
 }
 
 function preparingDashboard(){
@@ -500,11 +550,11 @@ function preparingDashboard(){
     '<div class="setup-foot"><span>No health percentage. This only shows concrete preparation steps.</span></div></section>';
 }
 function quickActions(){
-  return '<section class="quick-actions"><button data-booking-shortcut="flight"><span>✈</span><b>Flight</b></button><button data-booking-shortcut="hotel"><span>▣</span><b>Stay</b></button><button data-booking-shortcut="train"><span>⇄</span><b>Train</b></button><button data-booking-shortcut="activity"><span>★</span><b>Activity</b></button><button data-open="travelerDialog"><span>◉</span><b>Travelers</b></button><button data-open="connectionDialog"><span>↔</span><b>Connections</b></button></section>';
+  return '<section class="quick-actions"><button data-booking-shortcut="flight"><span>✈</span><b>Flight</b></button><button data-booking-shortcut="hotel"><span>▣</span><b>Stay</b></button><button data-booking-shortcut="train"><span>⇄</span><b>Train</b></button><button data-booking-shortcut="activity"><span>★</span><b>Activity</b></button><button data-open="travelerDialog"><span>◉</span><b>Travelers</b></button><button data-open="connectionDialog"><span>↔</span><b>Connections</b></button><button data-open="importDialog"><span>✉</span><b>Import</b></button><button data-view="documents"><span>▤</span><b>Documents</b></button></section>';
 }
 
 function homeView(){
-  return shell(preparingBanner()+preparingDashboard()+'<div class="page-head"><div><div class="eyebrow">Home / Next</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">The trip changes. Home stays simple.</div></div>'+badge(state.trip.lifecycle_state||'draft')+'</div>'+quickActions()+'<div class="grid home-grid"><div class="grid">'+heroCard()+flightCards()+stayCards()+'<section class="card card-pad"><div class="section-title"><h2>Timeline</h2><button class="btn btn-ghost" data-view="timeline">View all</button></div>'+timelinePreview()+'</section></div><div class="grid">'+nextCard()+'<section class="card card-pad"><div class="section-title"><h2>Smart Essentials</h2><button class="btn btn-ghost" data-view="checklist">View all</button></div>'+smartEssentials()+'</section><section class="card card-pad"><div class="section-title"><h2>Trip Health</h2><button class="btn btn-ghost" data-view="health">Details</button></div>'+healthSummary()+'</section>'+readyOfflineCard(true)+'</div></div>');
+  return shell(preparingBanner()+preparingDashboard()+'<div class="page-head"><div><div class="eyebrow">Home / Next</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">The trip changes. Home stays simple.</div></div>'+badge(state.trip.lifecycle_state||'draft')+'</div>'+quickActions()+'<div class="grid home-grid"><div class="grid">'+heroCard()+flightCards()+stayCards()+'<section class="card card-pad"><div class="section-title"><h2>Timeline</h2><button class="btn btn-ghost" data-view="timeline">View all</button></div>'+timelinePreview()+'</section></div><div class="grid">'+nextCard()+'<section class="card card-pad"><div class="section-title"><h2>Smart Essentials</h2><button class="btn btn-ghost" data-view="checklist">View all</button></div>'+smartEssentials()+'</section><section class="card card-pad"><div class="section-title"><h2>Trip Health</h2><button class="btn btn-ghost" data-view="health">Details</button></div>'+healthSummary()+'</section>'+importStatusCard()+readyOfflineCard(true)+'</div></div>');
 }
 function tripsView(){
   var cards=state.trips.length?'<div class="trip-list">'+state.trips.map(function(t){return '<article class="trip-card '+(state.trip&&t.id===state.trip.id?'active':'')+'" data-trip="'+esc(t.id)+'"><div class="trip-card-topline"><div>'+badge(t.lifecycle_state||'draft')+'</div><button class="trip-settings-btn" data-trip-settings="'+esc(t.id)+'" aria-label="Trip settings">•••</button></div><h3>'+esc(t.title)+'</h3><div class="trip-dates">'+esc(t.starts_on?dateLabel(t.starts_on):'No start date')+(t.ends_on?' → '+dateLabel(t.ends_on):'')+'</div></article>';}).join('')+'</div>':'<section class="card empty"><div class="empty-icon">✈</div><h2>No trips yet</h2><p class="subtle">Create a trip, then add the bookings you already have.</p><button class="btn btn-primary" data-open="tripDialog">Create trip</button></section>';
@@ -598,6 +648,15 @@ function sharingView(){
   var newInvite=state.lastInvite?'<div class="new-invite"><strong>Invite created — copy it now</strong><code>'+esc(state.lastInvite.inviteUrl||((location.origin||'')+'/join/'+state.lastInvite.token))+'</code><button class="btn btn-primary" data-action="copy-last-invite">Copy invite link</button><span>The raw token is returned once and is not stored in D1.</span></div>':'';
   return shell('<div class="page-head"><div><div class="eyebrow">Trip sharing</div><h1>'+esc(state.trip.title)+'</h1><div class="subtle">Owner / editor / viewer permissions with expiring hashed invitations.</div></div><button class="btn btn-ghost" data-view="settings">Back</button></div>'+newInvite+'<div class="settings-grid"><section class="card card-pad"><div class="section-title"><h2>Members</h2>'+badge(state.members.length+'/'+(sh.maxMembers||10))+'</div>'+memberRows+'</section><section class="card card-pad"><div class="section-title"><h2>Invitations</h2></div>'+inviteRows+(owner?'<form id="inviteForm" class="form" style="margin-top:18px"><div class="field"><label>Email (optional)</label><input name="email" type="email" maxlength="254" placeholder="friend@example.com"></div><div class="two-col"><div class="field"><label>Role</label><select name="role"><option value="viewer">Viewer</option><option value="editor">Editor</option></select></div><div class="field"><label>Expires</label><select name="expiresInDays"><option value="3">3 days</option><option value="7" selected>7 days</option><option value="14">14 days</option></select></div></div><button class="btn btn-primary" type="submit">Create invite</button></form>':'')+'</section></div>');
 }
+
+
+function importsView(){
+  var rows=state.imports.length?'<div class="import-history">'+state.imports.map(function(x){return '<article class="import-history-row"><div><strong>'+esc(x.subject||'Forwarded booking email')+'</strong><span>'+esc(x.sender||'Sender unavailable')+' · '+esc(x.status)+' · '+ageLabel(x.created_at)+'</span></div><div class="inline-actions">'+badge(x.candidate_count+' candidate(s)',x.status==='completed'?'badge-green':x.status==='needs_confirmation'?'badge-yellow':'')+(x.status==='needs_confirmation'?'<button class="btn btn-ghost compact" data-import-open="'+esc(x.id)+'">Review</button>':'')+'</div></article>';}).join('')+'</div>':'<div class="empty compact-empty"><p class="subtle">No booking-email imports yet.</p></div>';
+  return shell('<div class="page-head"><div><div class="eyebrow">Imports</div><h1>Booking email history</h1><div class="subtle">Every extracted booking requires confirmation. Duplicate emails are detected by a normalized hash.</div></div><button class="btn btn-primary" data-open="importDialog">Import email</button></div><section class="card card-pad"><div class="section-title"><h2>'+state.imports.length+' import(s)</h2>'+badge('No AI','badge-indigo')+'</div>'+rows+'</section>');
+}
+function documentsView(){
+  return shell('<div class="page-head"><div><div class="eyebrow">Documents</div><h1>Offline documents</h1><div class="subtle">Boarding passes, tickets and confirmations stored locally on this device while R2 remains disabled.</div></div><button class="btn btn-primary" data-open="localDocDialog">Add document</button></div><section class="local-only-banner"><strong>Local-only beta storage</strong><span>These files are not synced to another device and will be lost if this browser site data is removed.</span></section><section class="card card-pad"><div class="section-title"><h2>'+state.localDocs.length+' saved file(s)</h2>'+badge('Device only','badge-yellow')+'</div>'+localDocRows()+'</section>');
+}
 function settingsView(){
   var t=state.trip;
   var installAvailable=!!state.installPrompt;
@@ -635,6 +694,8 @@ function settingsView(){
         '<div class="subtle">Clear only cached API snapshots for this trip. This does not delete D1 trip data.</div>'+ 
         '<button class="btn btn-ghost" style="margin-top:12px" data-action="clear-trip-cache">Clear cached trip data</button>'+ 
       '</section>'+ 
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Imports</div><h2>Booking email</h2></div>'+badge(state.imports.length+' import(s)')+'</div><div class="subtle">Forwarded-email parsing is deterministic and always requires confirmation before creating trip data.</div><div class="inline-actions" style="margin-top:12px"><button class="btn btn-ghost" data-open="importDialog">Import email</button><button class="btn btn-ghost" data-view="imports">View history</button></div></section>'+
+      '<section class="card card-pad"><div class="section-title"><div><div class="eyebrow">Documents</div><h2>Local offline files</h2></div>'+badge(state.localDocs.length+' file(s)',state.localDocs.length?'badge-green':'badge-yellow')+'</div><div class="subtle">Cloud document storage remains disabled. Local files are stored in IndexedDB only on this device.</div><button class="btn btn-ghost" style="margin-top:12px" data-view="documents">Manage documents</button></section>'+
       '<section class="card card-pad danger-card"><div class="section-title"><div><div class="eyebrow danger-text">Danger zone</div><h2>Delete trip</h2></div></div>'+ 
         '<div class="subtle">Deletion requires the current version and a typed confirmation. This avoids accidental destructive actions.</div>'+ 
         '<button class="btn btn-danger" style="margin-top:12px" data-action="delete-trip">Delete '+esc(t.title)+'</button>'+ 
@@ -720,12 +781,46 @@ function clearTripCache(){
 }
 
 function readyView(){return shell(readyOfflineCard(false));}
+
+function renderImportReview(){
+  var host=document.getElementById('importReviewBody');if(!host)return;
+  var data=state.importReview;
+  if(!data||!Array.isArray(data.candidates)){host.innerHTML='<div class="subtle">No import preview loaded.</div>';return;}
+  if(!data.candidates.length){host.innerHTML='<div class="danger-box"><strong>No supported booking found</strong><span>'+esc((data.import&&data.import.recovery_action)||'Enter the booking manually instead.')+'</span></div>';return;}
+  host.innerHTML='<div class="fact-note">'+(data.duplicate?'This email was already previewed. ':'')+'Nothing is created until you press Confirm. Low-confidence fields remain editable.</div>'+data.candidates.map(function(c){
+    var p=c.payload||{},warnings=Array.isArray(p.warnings)?p.warnings:[];var status=c.validation_status||'pending';
+    var warningHtml=warnings.length?'<div class="import-warnings">'+warnings.map(function(w){return '<span>! '+esc(w)+'</span>';}).join('')+'</div>':'';
+    if(c.candidate_type==='flight'){
+      return '<section class="import-candidate" data-import-candidate="'+esc(c.id)+'" data-type="flight"><div class="section-title"><div><div class="eyebrow">Flight candidate</div><h3>'+esc((p.airlineCode||'Flight')+' '+(p.flightNumber||''))+'</h3></div>'+badge(Math.round(Number(c.confidence||0)*100)+'% extracted',Number(c.confidence||0)>=.8?'badge-green':'badge-yellow')+'</div>'+warningHtml+'<div class="route-form"><div><div class="field"><label>Airline code</label><input data-f="airlineCode" maxlength="3" value="'+esc(p.airlineCode||'')+'"></div><div class="field"><label>From IATA</label><input data-f="departureIata" maxlength="3" value="'+esc(p.departureIata||'')+'"></div><div class="field"><label>Departure timezone</label><input data-f="departureTimezone" placeholder="Asia/Jerusalem" value="'+esc(p.departureTimezone||'')+'"></div><div class="field"><label>Departure local time</label><input data-f="departureLocal" type="datetime-local" value="'+esc(p.departureLocal||'')+'"></div></div><div><div class="field"><label>Flight number</label><input data-f="flightNumber" maxlength="12" value="'+esc(p.flightNumber||'')+'"></div><div class="field"><label>To IATA</label><input data-f="arrivalIata" maxlength="3" value="'+esc(p.arrivalIata||'')+'"></div><div class="field"><label>Arrival timezone</label><input data-f="arrivalTimezone" placeholder="Europe/Rome" value="'+esc(p.arrivalTimezone||'')+'"></div><div class="field"><label>Arrival local time</label><input data-f="arrivalLocal" type="datetime-local" value="'+esc(p.arrivalLocal||'')+'"></div></div></div><div class="field"><label>Confirmation / PNR</label><input data-f="confirmationNumber" maxlength="80" value="'+esc(p.confirmationNumber||'')+'"></div><div class="inline-actions"><button class="btn btn-primary" data-import-confirm="'+esc(c.id)+'" '+(status!=='pending'?'disabled':'')+'>Confirm flight</button><button class="btn btn-ghost" data-import-reject="'+esc(c.id)+'" '+(status!=='pending'?'disabled':'')+'>Reject</button>'+badge(status,status==='confirmed'?'badge-green':status==='rejected'?'badge-red':'')+'</div></section>';
+    }
+    return '<section class="import-candidate" data-import-candidate="'+esc(c.id)+'" data-type="stay"><div class="section-title"><div><div class="eyebrow">Stay candidate</div><h3>'+esc(p.propertyName||'Stay')+'</h3></div>'+badge(Math.round(Number(c.confidence||0)*100)+'% extracted',Number(c.confidence||0)>=.8?'badge-green':'badge-yellow')+'</div>'+warningHtml+'<div class="field"><label>Property name</label><input data-f="propertyName" maxlength="160" value="'+esc(p.propertyName||'')+'"></div><div class="two-col"><div class="field"><label>Check-in</label><input data-f="checkInDate" type="date" value="'+esc(p.checkInDate||'')+'"></div><div class="field"><label>Check-out</label><input data-f="checkOutDate" type="date" value="'+esc(p.checkOutDate||'')+'"></div></div><div class="field"><label>Address</label><input data-f="address" maxlength="500" value="'+esc(p.address||'')+'"></div><div class="field"><label>Confirmation</label><input data-f="confirmationNumber" maxlength="100" value="'+esc(p.confirmationNumber||'')+'"></div><div class="inline-actions"><button class="btn btn-primary" data-import-confirm="'+esc(c.id)+'" '+(status!=='pending'?'disabled':'')+'>Confirm stay</button><button class="btn btn-ghost" data-import-reject="'+esc(c.id)+'" '+(status!=='pending'?'disabled':'')+'>Reject</button>'+badge(status,status==='confirmed'?'badge-green':status==='rejected'?'badge-red':'')+'</div></section>';
+  }).join('');
+  bindImportReviewActions();
+}
+function candidatePayloadFromCard(card){
+  var type=card.dataset.type,p={};card.querySelectorAll('[data-f]').forEach(function(el){p[el.dataset.f]=el.value||null;});
+  if(type==='flight'){
+    p.airlineCode=String(p.airlineCode||'').toUpperCase();p.flightNumber=String(p.flightNumber||'').toUpperCase();p.departureIata=String(p.departureIata||'').toUpperCase();p.arrivalIata=String(p.arrivalIata||'').toUpperCase();
+    p.scheduledDepartureUtc=localToUtc(String(p.departureLocal||''),String(p.departureTimezone||''));p.scheduledArrivalUtc=localToUtc(String(p.arrivalLocal||''),String(p.arrivalTimezone||''));
+    if(p.scheduledArrivalUtc<p.scheduledDepartureUtc)throw new Error('Arrival cannot be before departure.');
+  }
+  return p;
+}
+function bindImportReviewActions(){
+  document.querySelectorAll('[data-import-confirm]').forEach(function(el){el.addEventListener('click',async function(){
+    var card=el.closest('[data-import-candidate]');if(!card||!state.importReview||!state.trip)return;
+    try{var payload=candidatePayloadFromCard(card);await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/imports/'+encodeURIComponent(state.importReview.import.id)+'/resolve',{method:'POST',body:JSON.stringify({candidateId:el.dataset.importConfirm,action:'confirm',payload:payload})});var c=state.importReview.candidates.find(function(x){return x.id===el.dataset.importConfirm;});if(c)c.validation_status='confirmed';await loadTripDetails();renderImportReview();notify('Booking added from confirmed email data.');}catch(e){recoveryForError('Import was not confirmed.',e,'Check the extracted fields and event-local timezones. Nothing was added automatically.');}
+  });});
+  document.querySelectorAll('[data-import-reject]').forEach(function(el){el.addEventListener('click',async function(){
+    if(!state.importReview||!state.trip)return;try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/imports/'+encodeURIComponent(state.importReview.import.id)+'/resolve',{method:'POST',body:JSON.stringify({candidateId:el.dataset.importReject,action:'reject'})});var c=state.importReview.candidates.find(function(x){return x.id===el.dataset.importReject;});if(c)c.validation_status='rejected';renderImportReview();notify('Candidate rejected.');}catch(e){recoveryForError('Candidate was not rejected.',e);}
+  });});
+}
 function render(){
   if(state.loading){app.innerHTML=loadingView();bind();return;}
   if(state.view==='account'){app.innerHTML=accountView();bind();return;}
   if(state.view==='trips'){app.innerHTML=tripsView();bind();return;}
   if(!state.trip){app.innerHTML=emptyView();bind();return;}
-  var out=state.view==='timeline'?timelineView():state.view==='checklist'?checklistView():state.view==='health'?healthView():state.view==='ready'?readyView():state.view==='settings'?settingsView():state.view==='sharing'?sharingView():homeView();
+  var out=state.view==='timeline'?timelineView():state.view==='checklist'?checklistView():state.view==='health'?healthView():state.view==='ready'?readyView():state.view==='settings'?settingsView():state.view==='sharing'?sharingView():state.view==='documents'?documentsView():state.view==='imports'?importsView():homeView();
   app.innerHTML=out; bind();
 }
 
@@ -817,6 +912,13 @@ function bind(){
   document.querySelectorAll('[data-connection-delete]').forEach(function(el){el.addEventListener('click',async function(){if(!confirm('Remove this connection rule?'))return;try{await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/connections/'+encodeURIComponent(el.dataset.connectionDelete),{method:'DELETE',body:JSON.stringify({version:Number(el.dataset.version)})});await loadTripDetails();render();notify('Connection removed.');}catch(e){recovery(e.message);}});});
   document.querySelectorAll('[data-transport-detail]').forEach(function(el){el.addEventListener('click',function(){openTransportDetail(el.dataset.transportDetail);});});
 
+
+
+  document.querySelectorAll('[data-import-open]').forEach(function(el){el.addEventListener('click',async function(){
+    if(!state.trip)return;try{var d=await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/imports/'+encodeURIComponent(el.dataset.importOpen));state.importReview=d;var review=document.getElementById('importReviewDialog');if(review)review.showModal();renderImportReview();}catch(e){recoveryForError('Import could not be opened.',e,'Refresh the import history and try again.');}
+  });});
+  document.querySelectorAll('[data-local-doc-open]').forEach(function(el){el.addEventListener('click',function(){openLocalDoc(el.dataset.localDocOpen);});});
+  document.querySelectorAll('[data-local-doc-delete]').forEach(function(el){el.addEventListener('click',function(){if(confirm('Remove this local document from this device?'))removeLocalDoc(el.dataset.localDocDelete);});});
   document.querySelectorAll('[data-action="show-how"]').forEach(function(el){el.addEventListener('click',function(){
     var section=document.getElementById('howItWorks'); if(section)section.scrollIntoView({behavior:'smooth',block:'start'});
   });});
@@ -824,12 +926,12 @@ function bind(){
 
   document.querySelectorAll('[data-booking]').forEach(function(el){el.addEventListener('click',function(){
     var chooser=document.getElementById('bookingDialog'); if(chooser)chooser.close();
-    var map={flight:'flightDialog',hotel:'hotelDialog',train:'trainDialog',car:'carDialog',activity:'planDialog',traveler:'travelerDialog'};
+    var map={flight:'flightDialog',hotel:'hotelDialog',train:'trainDialog',car:'carDialog',activity:'planDialog',traveler:'travelerDialog',import:'importDialog',document:'localDocDialog'};
     var d=document.getElementById(map[el.dataset.booking]); if(d)d.showModal();
   });});
   document.querySelectorAll('[data-booking-shortcut]').forEach(function(el){el.addEventListener('click',function(e){
     e.stopPropagation();
-    var map={flight:'flightDialog',hotel:'hotelDialog',train:'trainDialog',car:'carDialog',activity:'planDialog',traveler:'travelerDialog'};
+    var map={flight:'flightDialog',hotel:'hotelDialog',train:'trainDialog',car:'carDialog',activity:'planDialog',traveler:'travelerDialog',import:'importDialog',document:'localDocDialog'};
     var d=document.getElementById(map[el.dataset.bookingShortcut]); if(d)d.showModal();
   });});
   document.querySelectorAll('[data-flight-detail]').forEach(function(el){el.addEventListener('click',function(){
@@ -841,6 +943,21 @@ function bind(){
   });});
 
 
+
+
+  var importEmailForm=document.getElementById('importEmailForm');
+  if(importEmailForm)importEmailForm.addEventListener('submit',async function(e){
+    e.preventDefault();if(!state.trip)return;var fd=new FormData(importEmailForm);
+    try{
+      var d=await api('/api/v1/trips/'+encodeURIComponent(state.trip.id)+'/imports/forwarded-email/preview',{method:'POST',body:JSON.stringify({sender:fd.get('sender')||null,subject:fd.get('subject')||null,body:fd.get('body')})});
+      state.importReview=d;document.getElementById('importDialog').close();var review=document.getElementById('importReviewDialog');if(review)review.showModal();renderImportReview();await loadTripDetails();
+    }catch(err){recoveryForError('Email could not be previewed.',err,'Paste the plain booking-confirmation text or add the booking manually.');}
+  });
+  var localDocForm=document.getElementById('localDocForm');
+  if(localDocForm)localDocForm.addEventListener('submit',async function(e){
+    e.preventDefault();var fd=new FormData(localDocForm);var input=localDocForm.elements.file;var file=input&&input.files&&input.files[0];
+    try{await saveLocalDoc(file,String(fd.get('type')||'other'),selectedTravelerIds(localDocForm));document.getElementById('localDocDialog').close();localDocForm.reset();render();notify('Document saved on this device for offline use.');}catch(err){showRecovery('Document was not saved.',err.message,'Choose a supported file up to 10 MB. Cloud document storage remains disabled.');}
+  });
 
   var inviteForm=document.getElementById('inviteForm');
   if(inviteForm)inviteForm.addEventListener('submit',async function(e){
