@@ -9,9 +9,9 @@ import { createChecklistItem, listChecklist, seedTripChecklist, updateChecklistI
 import { tripBrain } from './routes/brain.ts';
 import { listTravelers, createTraveler, updateTraveler, deleteTraveler } from './routes/travelers.ts';
 import { listLocations, createLocation } from './routes/locations.ts';
-import { listTransport, createTransport } from './routes/transport.ts';
-import { listStays, createStay } from './routes/stays.ts';
-import { listConnections, createConnection } from './routes/connections.ts';
+import { listTransport, createTransport, updateTransport, deleteTransport } from './routes/transport.ts';
+import { listStays, createStay, updateStay, deleteStay } from './routes/stays.ts';
+import { listConnections, createConnection, updateConnection, deleteConnection } from './routes/connections.ts';
 import { listImpacts, recalculateImpacts, listChanges } from './routes/impacts.ts';
 
 export default {
@@ -75,10 +75,16 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listLocations(request,env,auth,tripId); if(request.method==='POST') return createLocation(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listTransport(request,env,auth,tripId); if(request.method==='POST') return createTransport(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateTransport(request,env,auth,tripId,itemId); if(request.method==='DELETE') return deleteTransport(request,env,auth,tripId,itemId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/stays$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listStays(request,env,auth,tripId); if(request.method==='POST') return createStay(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/stays\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateStay(request,env,auth,tripId,itemId); if(request.method==='DELETE') return deleteStay(request,env,auth,tripId,itemId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/connections$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listConnections(request,env,auth,tripId); if(request.method==='POST') return createConnection(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/connections\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), connectionId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateConnection(request,env,auth,tripId,connectionId); if(request.method==='DELETE') return deleteConnection(request,env,auth,tripId,connectionId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts$/);
       if (match && request.method==='GET') return listImpacts(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/impacts\/recalculate$/);
