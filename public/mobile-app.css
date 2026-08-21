@@ -28,6 +28,12 @@
   --radius-sm:13px;
   --app-width:430px;
   --nav-height:74px;
+  --motion-fast:140ms;
+  --motion-standard:200ms;
+  --motion-slow:280ms;
+  --ease-standard:cubic-bezier(.2,0,0,1);
+  --ease-emphasized:cubic-bezier(.2,.8,.2,1);
+  --ease-sheet:cubic-bezier(.22,1,.36,1);
 }
 
 *{box-sizing:border-box}
@@ -467,7 +473,8 @@ svg{display:block}
 :focus-visible{outline:3px solid rgba(47,59,171,.4);outline-offset:2px}
 
 /* production mobile app additions */
-html,body{overscroll-behavior-y:none}
+html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-y:none;scrollbar-width:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
 body{min-width:320px}
 button{border:0;background:none;color:inherit}
 [hidden]{display:none!important}
@@ -622,4 +629,103 @@ button{border:0;background:none;color:inherit}
   .ticket-meta--home>div{padding-left:7px;padding-right:7px}
   .airport-code{font-size:42px}
   .hotel-sheet{padding-left:16px;padding-right:16px}
+}
+
+/* premium mobile interaction and state system */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+html.sheet-open,html.sheet-open body{overflow:hidden}
+.route-enter.route-forward{animation:screen-forward var(--motion-standard) var(--ease-standard) both}
+.route-enter.route-back{animation:screen-back var(--motion-standard) var(--ease-standard) both}
+.route-enter.route-tab{animation:screen-tab var(--motion-fast) var(--ease-standard) both}
+.route-exit{pointer-events:none}
+.route-exit-forward{animation:screen-exit-forward 90ms var(--ease-standard) both}
+.route-exit-back{animation:screen-exit-back 90ms var(--ease-standard) both}
+.route-exit-tab{animation:screen-exit-tab 70ms linear both}
+@keyframes screen-forward{from{opacity:.72;transform:translate3d(18px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes screen-back{from{opacity:.72;transform:translate3d(-14px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes screen-tab{from{opacity:.68}to{opacity:1}}
+@keyframes screen-exit-forward{to{opacity:.82;transform:translate3d(-7px,0,0)}}
+@keyframes screen-exit-back{to{opacity:.82;transform:translate3d(7px,0,0)}}
+@keyframes screen-exit-tab{to{opacity:.78}}
+
+.primary-cta,.secondary-cta,.icon-button,.header-icon,.nav-item,.simple-row,.timeline-event,.booking-card,.info-card,.sheet-option,.contact-row,.text-action{
+  -webkit-tap-highlight-color:transparent;
+  transition:transform var(--motion-fast) var(--ease-standard),opacity var(--motion-fast) var(--ease-standard),background-color var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard);
+}
+.primary-cta:active,.secondary-cta:active,.icon-button:active,.header-icon:active,.simple-row:active,.timeline-event:active,.booking-card:active,.info-card[data-action]:active,.sheet-option:active,.contact-row:active{transform:scale(.98)}
+.primary-cta:disabled,.secondary-cta:disabled{opacity:.58;transform:none}
+@media(hover:hover){.header-icon:hover,.icon-button:hover{background:var(--paper)}.simple-row:hover,.booking-card:hover,.timeline-event:hover{background:#F8F9FC}.sheet-option:hover{border-color:#C8D0E4;background:#FAFBFE}}
+
+.nav-item svg,.nav-item>span,.nav-item>span svg,.nav-item>span+small{transition:transform var(--motion-fast) var(--ease-emphasized),color var(--motion-fast) var(--ease-standard),opacity var(--motion-fast) var(--ease-standard)}
+.nav-item.active svg{transform:translateY(-1px);stroke-width:2.15}
+.nav-item.active span{font-weight:850}
+.nav-add:active span{transform:scale(.97)}
+.ticket-status,.health-good,.health-warning,.offline-state,.info-status{transition:opacity var(--motion-fast) var(--ease-standard),transform var(--motion-fast) var(--ease-standard),background-color var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard)}
+.flight-ticket{animation:ticket-enter var(--motion-slow) var(--ease-emphasized) both}
+@keyframes ticket-enter{from{opacity:.72;transform:translate3d(0,8px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+
+.sheet-backdrop{animation:backdrop-in var(--motion-standard) var(--ease-standard) both}
+.bottom-sheet{--sheet-drag:0px;overflow:hidden;animation:sheet-in var(--motion-slow) var(--ease-sheet) both;transform:translate3d(-50%,var(--sheet-drag),0);transition:transform var(--motion-standard) var(--ease-sheet)}
+.bottom-sheet.is-dragging{transition:none}
+.bottom-sheet.is-closing{animation:sheet-out var(--motion-standard) var(--ease-standard) both}
+.sheet-backdrop.is-closing{animation:backdrop-out var(--motion-standard) var(--ease-standard) both}
+.sheet-scroll{max-height:calc(88dvh - 78px - env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;padding:2px 0 2px;scrollbar-width:none}
+.sheet-scroll::-webkit-scrollbar{display:none}
+.sheet-handle,[data-sheet-drag]{touch-action:none}
+@keyframes sheet-in{from{opacity:.6;transform:translate3d(-50%,28px,0)}to{opacity:1;transform:translate3d(-50%,var(--sheet-drag),0)}}
+@keyframes sheet-out{from{opacity:1;transform:translate3d(-50%,var(--sheet-drag),0)}to{opacity:0;transform:translate3d(-50%,32px,0)}}
+@keyframes backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes backdrop-out{from{opacity:1}to{opacity:0}}
+
+.toast-mobile{animation:toast-in var(--motion-standard) var(--ease-emphasized) both}
+.toast-mobile--alert{background:#8E2824}
+@keyframes toast-in{from{opacity:0;transform:translate3d(-50%,10px,0)}to{opacity:1;transform:translate3d(-50%,0,0)}}
+
+.timeline-event--current:before{background:var(--yellow);box-shadow:0 0 0 4px rgba(254,191,2,.15)}
+.timeline-event--current .timeline-symbol{color:var(--indigo);background:#EEF2FF}
+.timeline-event--current .timeline-card h3{color:var(--indigo)}
+.timeline-event--past{opacity:.68}
+.timeline-event--future{opacity:1}
+.timeline-event--current .timeline-card{animation:current-item-in var(--motion-slow) var(--ease-standard) both}
+@keyframes current-item-in{from{opacity:.72;transform:translate3d(0,4px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+
+.flight-more summary{cursor:pointer;list-style:none}
+.flight-more summary::-webkit-details-marker{display:none}
+.flight-more summary:after{content:"+";margin-left:auto;font-size:18px;font-weight:500;transition:transform var(--motion-standard) var(--ease-standard)}
+.flight-more[open] summary:after{transform:rotate(45deg)}
+.flight-more-content{transform-origin:top;animation:disclosure-in var(--motion-standard) var(--ease-standard) both}
+@keyframes disclosure-in{from{opacity:0;transform:translate3d(0,-5px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.missing-document-state{display:flex;align-items:flex-start;gap:8px;margin:0 0 10px;padding:10px 11px;border:1px solid #F1D06F;border-radius:11px;background:var(--amber-soft);color:#735500;font-size:11px;line-height:1.35}
+.missing-document-state svg{flex:0 0 auto}
+
+.hotel-hero{position:relative;overflow:hidden}
+.hotel-hero-image{width:100%;height:100%;object-fit:cover;animation:image-in var(--motion-slow) var(--ease-standard) both}
+@keyframes image-in{from{opacity:0}to{opacity:1}}
+.address span{min-width:0;overflow-wrap:anywhere}
+.contact-row{width:100%;text-align:left;text-decoration:none;color:inherit}
+.offline-refresh.is-loading svg{animation:refresh-once .8s linear infinite}
+@keyframes refresh-once{to{transform:rotate(360deg)}}
+
+.app-loading{display:block;padding:calc(18px + env(safe-area-inset-top)) 20px 24px}
+.loading-skeleton{width:100%;animation:skeleton-fade var(--motion-standard) var(--ease-standard) both}
+.skeleton-line,.skeleton-ticket,.skeleton-route i{background:linear-gradient(90deg,#E2E6ED 20%,#F4F6F9 45%,#E2E6ED 70%);background-size:220% 100%;animation:skeleton-shimmer 1.35s ease-in-out infinite}
+.skeleton-line{height:14px;border-radius:999px}
+.skeleton-brand{width:112px;height:28px;margin:12px 0 26px}.skeleton-context{width:58%;margin-bottom:12px}.skeleton-ticket{height:340px;padding:20px;border-radius:24px}.skeleton-chip{width:92px;height:30px}.skeleton-route{display:flex;justify-content:space-between;margin:74px 0 82px}.skeleton-route i{display:block;width:88px;height:44px;border-radius:10px}.skeleton-action{width:100%;height:50px}.skeleton-row{width:100%;height:58px;margin-top:18px}
+@keyframes skeleton-shimmer{to{background-position:-220% 0}}
+@keyframes skeleton-fade{from{opacity:0}to{opacity:1}}
+.recovery-safe{color:#3C6C54!important;font-weight:750}
+
+.screen,.hotel-sheet,.detail-content,.timeline-page,.bookings-list,.list-stack,.account-section{min-width:0}
+.screen{overflow-x:clip}
+.bottom-nav~*{max-width:100%}
+button,a,summary,input,select{touch-action:manipulation}
+.sheet-option,.contact-row,.text-action,.flight-more summary{min-height:44px}
+
+@media(prefers-reduced-motion:reduce){
+  :root{--motion-fast:1ms;--motion-standard:1ms;--motion-slow:1ms}
+  .route-enter,.route-exit,.flight-ticket,.sheet-backdrop,.bottom-sheet,.bottom-sheet.is-closing,.sheet-backdrop.is-closing,.toast-mobile,.timeline-event--current .timeline-card,.flight-more-content,.hotel-hero-image,.loading-skeleton{animation:reduced-fade 1ms linear both!important}
+  .primary-cta,.secondary-cta,.icon-button,.header-icon,.nav-item,.simple-row,.timeline-event,.booking-card,.info-card,.sheet-option,.contact-row,.text-action,.nav-item svg,.nav-item>span,.flight-more summary:after{transition:none!important}
+  .primary-cta:active,.secondary-cta:active,.icon-button:active,.header-icon:active,.simple-row:active,.timeline-event:active,.booking-card:active,.info-card[data-action]:active,.sheet-option:active,.contact-row:active{transform:none!important}
+  .skeleton-line,.skeleton-ticket,.skeleton-route i,.offline-refresh.is-loading svg{animation:none!important;background:#EDF0F5}
+  @keyframes reduced-fade{from{opacity:.98}to{opacity:1}}
 }

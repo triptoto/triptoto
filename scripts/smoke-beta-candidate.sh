@@ -14,7 +14,7 @@ printf '3) PWA shell and safety labels\n'
 curl -fsS "$BASE_URL/manifest.webmanifest" >/dev/null
 SW_SOURCE=$(curl -fsS "$BASE_URL/sw.js")
 APP_SOURCE=$(curl -fsS "$BASE_URL/app.js")
-[[ "$SW_SOURCE" == *tripto-shell-beta-candidate-1* ]]
+[[ "$SW_SOURCE" == *tripto-shell-mobile-ui-premium-v1* ]]
 [[ "$APP_SOURCE" == *'Scheduled booking data is never presented as live'* ]]
 [[ "$APP_SOURCE" == *'checksum-verified local file'* ]]
 
