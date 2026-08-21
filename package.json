@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit",
     "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts",
     "smoke:api": "bash scripts/smoke-api.sh",
-    "check:ui": "node --check public/app.js && node --check public/major-workspace.js",
+    "check:ui": "node --check public/mobile-app.js && node --check public/legacy-bridge.js && node --check public/app.js && node --check public/major-workspace.js && node tests/mobile-ui.contract.mjs",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",
     "test:integration": "bash scripts/test-local-d1.sh",
     "validate:beta": "npm run check:ui && npm run typecheck && npm run test:scenarios && npm run test:integration",

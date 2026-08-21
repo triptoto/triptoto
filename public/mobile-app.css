@@ -1,0 +1,625 @@
+:root{
+  --navy:#141948;
+  --navy-2:#0d1942;
+  --navy-3:#08153a;
+  --indigo:#2F3BAB;
+  --indigo-soft:#EAF0FF;
+  --yellow:#FEBF02;
+  --yellow-2:#FFD42A;
+  --paper:#F2F4F7;
+  --surface:#FFFFFF;
+  --ink:#10204A;
+  --muted:#6D7A9A;
+  --muted-2:#8C97B0;
+  --line:#E6EAF2;
+  --green:#18C46C;
+  --green-soft:#E9F9F0;
+  --amber:#F4A800;
+  --amber-soft:#FFF7DF;
+  --red:#E4473B;
+  --red-soft:#FFF0EF;
+  --blue-soft:#F3F6FF;
+  --shadow-lg:0 24px 64px rgba(20,25,72,.18);
+  --shadow-md:0 14px 34px rgba(20,25,72,.12);
+  --shadow-sm:0 8px 20px rgba(20,25,72,.08);
+  --radius-xl:28px;
+  --radius-lg:22px;
+  --radius-md:17px;
+  --radius-sm:13px;
+  --app-width:430px;
+  --nav-height:74px;
+}
+
+*{box-sizing:border-box}
+html{background:#E9ECF2}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+body{background:#E9ECF2}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+svg{display:block}
+
+#app{min-height:100dvh}
+.phone-app{
+  position:relative;
+  width:100%;
+  max-width:var(--app-width);
+  min-height:100dvh;
+  margin:0 auto;
+  overflow-x:hidden;
+  background:var(--surface);
+  box-shadow:0 0 0 1px rgba(20,25,72,.03),0 24px 80px rgba(20,25,72,.12);
+}
+.screen{
+  min-height:100dvh;
+  padding-bottom:calc(var(--nav-height) + 28px + env(safe-area-inset-bottom));
+  background:var(--surface);
+}
+.screen--navless{padding-bottom:0}
+.content{padding:0 22px 28px}
+
+/* app chrome */
+.app-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:86px;
+  padding:calc(18px + env(safe-area-inset-top)) 22px 12px;
+  background:#fff;
+}
+.brand{
+  border:0;
+  background:none;
+  padding:0;
+  color:var(--navy);
+  font-size:31px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:-1.6px;
+}
+.brand-dot{color:var(--yellow)}
+.header-icon,.icon-button{
+  display:grid;
+  place-items:center;
+  width:46px;
+  height:46px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:var(--navy);
+}
+.header-icon:hover,.icon-button:hover{background:var(--paper)}
+.app-bar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:grid;
+  grid-template-columns:48px 1fr 48px;
+  align-items:center;
+  min-height:70px;
+  padding:calc(8px + env(safe-area-inset-top)) 10px 8px;
+  border-bottom:1px solid rgba(20,25,72,.06);
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(18px);
+}
+.app-bar--dark{background:linear-gradient(180deg,var(--navy-2),var(--navy));border-bottom:0;color:#fff}
+.app-bar--dark .icon-button{color:#fff}
+.app-bar-title{text-align:center;min-width:0}
+.app-bar-title strong{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-bar-title span{display:block;margin-top:3px;color:var(--muted);font-size:11px}
+.app-bar--dark .app-bar-title span{color:#C4CBE0}
+
+/* typography */
+.greeting{margin:12px 0 30px}
+.greeting h1{margin:0;color:var(--navy);font-size:30px;line-height:1.12;letter-spacing:-.8px}
+.greeting p{margin:9px 0 0;color:var(--muted);font-size:18px}
+.section-label{
+  margin:30px 0 14px;
+  color:#657498;
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+.screen-title{margin:0;color:var(--navy);font-size:29px;letter-spacing:-.8px}
+.screen-subtitle{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+
+/* ticket / next flight */
+.flight-ticket{
+  position:relative;
+  overflow:hidden;
+  padding:23px 22px 22px;
+  border-radius:30px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 52% 41%,rgba(55,83,186,.23),transparent 36%),
+    linear-gradient(145deg,#0A1740 0%,#10245D 55%,#081532 100%);
+  box-shadow:var(--shadow-lg);
+  isolation:isolate;
+}
+.flight-ticket:before,.flight-ticket:after{
+  content:"";
+  position:absolute;
+  top:138px;
+  z-index:4;
+  width:25px;
+  height:48px;
+  border-radius:50%;
+  background:#fff;
+}
+.flight-ticket:before{left:-13px}
+.flight-ticket:after{right:-13px}
+.ticket-map{
+  position:absolute;
+  inset:78px 58px auto 58px;
+  height:170px;
+  opacity:.12;
+  background-image:radial-gradient(circle,#7B94E8 1.2px,transparent 1.3px);
+  background-size:8px 8px;
+  mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);
+  z-index:-2;
+}
+.ticket-city{
+  position:absolute;
+  right:-15px;
+  bottom:100px;
+  width:210px;
+  opacity:.13;
+  z-index:-1;
+}
+.ticket-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.ticket-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:38px;
+  padding:0 14px;
+  border-radius:999px;
+  background:rgba(73,100,199,.63);
+  color:#fff;
+  font-size:13px;
+  font-weight:850;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+}
+.ticket-status{text-align:right}
+.ticket-status span{display:block;color:#7092FF;font-size:14px;font-weight:700}
+.ticket-status strong{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:5px;color:#55E68A;font-size:16px}
+.route-primary{
+  display:grid;
+  grid-template-columns:1fr 54px 1fr;
+  align-items:center;
+  gap:10px;
+  margin:52px 0 38px;
+}
+.airport-code{font-size:56px;font-weight:450;line-height:.92;letter-spacing:-3px}
+.airport-name{display:block;margin-top:13px;color:#CCD4E9;font-size:15px}
+.route-arrow{display:flex;align-items:center;justify-content:center;color:#fff}
+.route-arrow:before,.route-arrow:after{content:"";width:18px;border-top:1px dashed rgba(255,255,255,.35)}
+.ticket-rule{width:34px;height:2px;margin-bottom:18px;background:#4865B7}
+.ticket-meta{
+  display:grid;
+  grid-template-columns:1.18fr 1.05fr .62fr .62fr;
+  gap:0;
+  margin-bottom:24px;
+}
+.ticket-meta>div{min-width:0;padding:0 13px;border-left:1px solid rgba(255,255,255,.12)}
+.ticket-meta>div:first-child{padding-left:0;border-left:0}
+.ticket-meta>div:last-child{padding-right:0}
+.ticket-meta span{display:block;margin-bottom:8px;color:#AEB9D4;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.ticket-meta strong{display:block;font-size:22px;font-weight:700;white-space:nowrap}
+.ticket-meta small{display:block;margin-top:8px;color:#7293FF;font-size:12px;white-space:nowrap}
+.airline-name{margin-top:10px;color:#fff;font-size:12px;font-weight:800}
+.primary-cta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  min-height:62px;
+  padding:0 20px;
+  border:0;
+  border-radius:15px;
+  background:linear-gradient(90deg,var(--yellow),var(--yellow-2));
+  color:var(--navy);
+  box-shadow:0 12px 26px rgba(254,191,2,.2);
+  font-size:17px;
+  font-weight:850;
+}
+.cta-left{display:flex;align-items:center;gap:15px}
+
+/* simple rows */
+.simple-row{
+  display:grid;
+  grid-template-columns:52px 1fr auto;
+  align-items:center;
+  gap:14px;
+  min-height:88px;
+  padding:0;
+  border-bottom:1px solid var(--line);
+  color:inherit;
+  text-decoration:none;
+}
+.simple-row:last-child{border-bottom:0}
+.row-icon{
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:#F4F6FB;
+  color:var(--navy);
+  box-shadow:inset 0 0 0 1px #E7EBF3;
+}
+.row-copy{min-width:0}
+.row-copy strong{display:block;color:var(--navy);font-size:17px}
+.row-copy span{display:block;margin-top:6px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-date{text-align:center;color:var(--muted);font-size:13px;line-height:1.45}
+.upcoming-route{
+  display:grid;
+  grid-template-columns:auto 1fr auto 1fr auto auto;
+  align-items:center;
+  gap:10px;
+  min-height:102px;
+  border-bottom:1px solid var(--line);
+}
+.upcoming-route .code{color:var(--navy);font-size:22px;font-weight:850}
+.upcoming-route .city{display:block;margin-top:5px;color:var(--muted);font-size:12px}
+.route-line{height:1px;background:#AEB9D4;position:relative}
+.route-line:before{content:"";position:absolute;left:-2px;top:-4px;width:7px;height:7px;border:2px solid #AEB9D4;border-radius:50%;background:#fff}
+.health-good{background:linear-gradient(135deg,#11C775,#2FD48C);color:#fff}
+.health-warning{background:linear-gradient(135deg,#F4A800,#FFC94A);color:#fff}
+
+/* bottom navigation */
+.bottom-nav{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  z-index:50;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  width:min(100%,var(--app-width));
+  min-height:calc(var(--nav-height) + env(safe-area-inset-bottom));
+  padding:7px 10px calc(7px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line);
+  background:rgba(255,255,255,.97);
+  box-shadow:0 -8px 30px rgba(20,25,72,.06);
+  backdrop-filter:blur(18px);
+  transform:translateX(-50%);
+}
+.nav-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+  min-height:56px;
+  border:0;
+  background:none;
+  color:#7E8BA9;
+  font-size:11px;
+  font-weight:650;
+}
+.nav-item.active{color:#1745B5}
+.nav-add{position:relative}
+.nav-add span{
+  display:grid;
+  place-items:center;
+  width:58px;
+  height:58px;
+  margin-top:-28px;
+  border:4px solid #fff;
+  border-radius:50%;
+  background:linear-gradient(145deg,#2F59D6,#153FA7);
+  color:#fff;
+  box-shadow:0 12px 25px rgba(47,59,171,.26);
+}
+
+/* timeline */
+.timeline-page{padding:14px 18px 30px}
+.day-label{display:flex;align-items:flex-start;gap:12px;margin:22px 0 10px}
+.day-date{width:45px;color:#607196;font-size:10px;font-weight:850;line-height:1.35;text-transform:uppercase}
+.day-line{flex:1;border-top:1px solid var(--line);margin-top:8px}
+.timeline-list{position:relative;margin-left:40px}
+.timeline-list:before{content:"";position:absolute;left:8px;top:2px;bottom:2px;width:1px;background:#B6C1DC}
+.timeline-event{
+  position:relative;
+  display:grid;
+  grid-template-columns:42px 1fr;
+  gap:14px;
+  padding:0 0 16px;
+}
+.timeline-event:before{content:"";position:absolute;left:4px;top:12px;width:9px;height:9px;border:3px solid #fff;border-radius:50%;background:var(--indigo);box-shadow:0 0 0 1px #9CADDA}
+.timeline-symbol{display:grid;place-items:center;width:38px;height:38px;margin-left:-12px;border-radius:50%;background:#F5F7FC;color:var(--navy);box-shadow:0 5px 14px rgba(20,25,72,.08)}
+.timeline-card{min-width:0;padding:14px 15px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow-sm)}
+.timeline-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.timeline-time{color:var(--navy);font-size:11px;font-weight:850}
+.timeline-status{color:var(--green);font-size:10px;font-weight:850}
+.timeline-card h3{margin:7px 0 0;color:var(--navy);font-size:15px;line-height:1.3}
+.timeline-card p{margin:5px 0 0;color:var(--muted);font-size:12px}
+
+/* detail pages */
+.dark-detail{min-height:100dvh;background:linear-gradient(180deg,#0B1A49,#0F245B 68%,#08163D);color:#fff}
+.detail-content{padding:24px 20px calc(28px + var(--nav-height) + env(safe-area-inset-bottom))}
+.detail-route{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;margin:28px 0 14px}
+.detail-route .airport-code{font-size:45px}
+.detail-route .airport-name{font-size:12px}
+.detail-date{margin:18px 0 16px;color:#D9DFF0;font-size:13px}
+.detail-panel{padding:18px;border-radius:20px;background:#fff;color:var(--ink);box-shadow:var(--shadow-md)}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.detail-grid>div{min-height:74px;padding:12px 10px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.detail-grid>div:nth-child(3n){border-right:0}
+.detail-grid>div:nth-last-child(-n+3){border-bottom:0}
+.detail-grid span{display:block;color:var(--muted);font-size:9px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
+.detail-grid strong{display:block;margin-top:8px;color:var(--navy);font-size:18px}
+.detail-grid small{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+.airline-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0;color:var(--navy)}
+.secondary-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:10px;border:1px solid #CBD2E3;border-radius:14px;background:#fff;color:var(--navy);font-weight:800}
+
+/* hotel */
+.hotel-hero{height:220px;background:#111 url('/assets/mobile/hotel-room.svg') center/cover no-repeat}
+.hotel-sheet{position:relative;margin-top:-30px;padding:22px;border-radius:26px 26px 0 0;background:#fff}
+.hotel-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hotel-title-row h1{margin:0;color:var(--navy);font-size:27px;letter-spacing:-.7px}
+.confirmed{display:flex;align-items:center;gap:6px;color:var(--green);font-size:12px;font-weight:850}
+.stars{margin-top:7px;color:var(--yellow);letter-spacing:3px}
+.hotel-stats{display:grid;grid-template-columns:1fr 1fr .7fr;margin:22px 0;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.hotel-stats>div{padding:13px;border-right:1px solid var(--line)}
+.hotel-stats>div:last-child{border-right:0}
+.hotel-stats span{display:block;color:var(--muted);font-size:9px;font-weight:850;text-transform:uppercase}
+.hotel-stats strong{display:block;margin-top:6px;color:var(--navy);font-size:15px}
+.address{display:flex;align-items:flex-start;gap:10px;margin:16px 0;color:var(--navy);font-size:13px;line-height:1.4}
+.map-card{height:128px;border-radius:16px;background:
+  linear-gradient(120deg,transparent 0 25%,rgba(47,59,171,.09) 26% 28%,transparent 29% 55%,rgba(47,59,171,.08) 56% 58%,transparent 59%),
+  linear-gradient(30deg,#E8E7D9,#F3F2E9 45%,#DDE9E3 46% 100%);position:relative;overflow:hidden}
+.map-card:after{content:"";position:absolute;left:50%;top:44%;width:22px;height:22px;border:7px solid var(--indigo);border-radius:50% 50% 50% 0;background:#fff;transform:translate(-50%,-50%) rotate(-45deg)}
+.hotel-actions{display:grid;grid-template-columns:1fr;gap:9px;margin-top:10px}
+.contact-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;border-bottom:1px solid var(--line);font-size:13px}
+.contact-row:last-child{border-bottom:0}
+
+/* list/document/offline */
+.intro-block{padding:12px 22px 14px}
+.intro-block h1{margin:0;color:var(--navy);font-size:28px}
+.intro-block p{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+.list-stack{display:grid;gap:12px;padding:0 18px 28px}
+.info-card{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:14px;min-height:88px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow-sm)}
+.info-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--indigo-soft);color:var(--indigo)}
+.info-icon.purple{background:#F0EAFD;color:#7E45C4}
+.info-icon.green{background:var(--green-soft);color:#11A45B}
+.info-icon.red{background:var(--red-soft);color:var(--red)}
+.info-copy{min-width:0}
+.info-copy strong{display:block;color:var(--navy);font-size:14px}
+.info-copy span{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.35}
+.info-status{color:var(--green);font-size:11px;font-weight:850}
+.info-status.warning{color:var(--amber)}
+.download-action{padding:16px 18px calc(24px + var(--nav-height) + env(safe-area-inset-bottom))}
+
+/* health */
+.health-summary{text-align:center;padding:20px 24px 16px}
+.health-shield{display:grid;place-items:center;width:80px;height:80px;margin:0 auto 14px;color:#fff;background:linear-gradient(145deg,#1D4A9B,#0C234F);clip-path:polygon(50% 0,89% 14%,84% 68%,50% 100%,16% 68%,11% 14%)}
+.health-summary h1{margin:0;color:var(--navy);font-size:25px}
+.health-summary p{margin:7px 0 0;color:var(--muted);font-size:13px}
+.health-card{display:grid;grid-template-columns:38px 1fr auto;gap:12px;padding:16px;border-radius:16px;border:1px solid var(--line);background:#fff}
+.health-card.good{background:var(--green-soft);border-color:#C5EDD7}
+.health-card.warn{background:var(--amber-soft);border-color:#F5D884}
+.health-card.info{background:#F0F5FF;border-color:#BFD0F6}
+.health-card strong{display:block;color:var(--navy);font-size:14px}
+.health-card p{margin:7px 0 0;color:#4D5F84;font-size:12px;line-height:1.45}
+
+/* booking list and account */
+.bookings-list{padding:0 18px 28px}
+.booking-card{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:13px;min-height:82px;padding:14px 0;border-bottom:1px solid var(--line)}
+.booking-card strong{display:block;color:var(--navy);font-size:15px}
+.booking-card span{display:block;margin-top:5px;color:var(--muted);font-size:12px}
+.account-section{padding:0 18px 24px}
+.account-card{padding:18px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:var(--shadow-sm)}
+.account-profile{display:flex;align-items:center;gap:14px}
+.avatar{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:var(--navy);color:#fff;font-size:22px;font-weight:850}
+
+/* bottom sheet */
+.sheet-backdrop{position:fixed;inset:0;z-index:80;background:rgba(7,17,48,.56);backdrop-filter:blur(4px)}
+.bottom-sheet{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  z-index:90;
+  width:min(100%,var(--app-width));
+  max-height:88dvh;
+  padding:12px 18px calc(24px + env(safe-area-inset-bottom));
+  border-radius:28px 28px 0 0;
+  background:#fff;
+  box-shadow:0 -24px 60px rgba(7,17,48,.24);
+  transform:translateX(-50%);
+}
+.sheet-handle{width:44px;height:5px;margin:0 auto 18px;border-radius:999px;background:#C8CFDE}
+.sheet-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sheet-title-row h2{margin:0;color:var(--navy);font-size:21px}
+.sheet-option{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:13px;min-height:66px;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:#fff;color:inherit;text-align:left}
+.sheet-option+.sheet-option{margin-top:9px}
+.sheet-option strong{display:block;color:var(--navy);font-size:14px}
+.sheet-option small{display:block;margin-top:4px;color:var(--muted);font-size:11px}
+
+/* driver */
+.driver-screen{min-height:100dvh;padding:calc(16px + env(safe-area-inset-top)) 22px calc(30px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#0D2458,#07183F);color:#fff}
+.driver-top{display:flex;align-items:center;justify-content:space-between}
+.driver-label{display:flex;align-items:center;gap:12px;margin-top:58px;color:#D2D9EC;font-size:20px}
+.driver-name{margin:34px 0 16px;font-size:60px;line-height:.96;letter-spacing:-2px}
+.driver-local{margin:0 0 32px;color:var(--yellow);font-size:27px;font-weight:800}
+.driver-rule{height:1px;background:rgba(255,255,255,.28);margin:24px 0}
+.driver-address{display:flex;gap:14px;font-size:18px;line-height:1.45}
+.driver-cta{margin-top:70px}
+.driver-cta small{font-size:12px;font-weight:700}
+
+/* utility */
+.status-dot-check{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#55E68A;color:#0D2A57}
+.chevron{color:#7483A6}
+.mobile-only-note{padding:12px 18px;color:var(--muted);font-size:11px;text-align:center}
+@media (min-width:431px){.phone-app{min-height:100vh}}
+@media (max-width:375px){
+  .content{padding-left:18px;padding-right:18px}
+  .airport-code{font-size:50px}
+  .ticket-meta strong{font-size:19px}
+  .flight-ticket{padding-left:18px;padding-right:18px}
+  .driver-name{font-size:52px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+:focus-visible{outline:3px solid rgba(47,59,171,.4);outline-offset:2px}
+
+/* production mobile app additions */
+html,body{overscroll-behavior-y:none}
+body{min-width:320px}
+button{border:0;background:none;color:inherit}
+[hidden]{display:none!important}
+.phone-app{border-left:1px solid rgba(20,25,72,.035);border-right:1px solid rgba(20,25,72,.035)}
+.app-loading{display:grid;min-height:100dvh;place-items:center;padding:28px;background:#fff}
+.loading-mark{display:grid;place-items:center;width:78px;height:78px;border-radius:26px;background:var(--navy);color:var(--yellow);font-size:28px;font-weight:950;box-shadow:var(--shadow-lg)}
+.loading-copy{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+.mobile-alert{display:flex;align-items:flex-start;gap:10px;margin:0 22px 14px;padding:12px 13px;border:1px solid #F4D87E;border-radius:14px;background:var(--amber-soft);color:#705400;font-size:12px;line-height:1.4}
+.mobile-alert--offline{border-color:#CCD6F1;background:#F0F5FF;color:#2A477E}
+.trip-context{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 18px}
+.trip-context-copy{min-width:0}.trip-context-copy strong{display:block;color:var(--navy);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trip-context-copy span{display:block;margin-top:4px;color:var(--muted);font-size:11px}
+.context-chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 11px;border-radius:999px;background:var(--green-soft);color:#087B43;font-size:11px;font-weight:850;white-space:nowrap}.context-chip.warning{background:var(--amber-soft);color:#8A6200}
+.next-action-card{position:relative;overflow:hidden;padding:22px;border-radius:28px;background:linear-gradient(145deg,#0A1740,#17326F);color:#fff;box-shadow:var(--shadow-lg)}
+.next-action-card .ticket-chip{margin-bottom:24px}.next-action-card h2{margin:0;font-size:27px;line-height:1.08;letter-spacing:-.7px}.next-action-card p{margin:9px 0 0;color:#CBD4EA;font-size:13px;line-height:1.45}.next-action-time{margin:26px 0 6px;color:var(--yellow);font-size:38px;font-weight:900;letter-spacing:-1px}
+.next-action-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:22px}.next-action-actions .secondary-cta{margin:0;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.09);color:#fff}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:30px 0 12px}.section-head .section-label{margin:0}.text-action{min-height:44px;padding:0 4px;color:var(--indigo);font-size:12px;font-weight:850}
+.empty-mobile{padding:36px 22px;text-align:center}.empty-mobile-icon{display:grid;place-items:center;width:72px;height:72px;margin:0 auto 17px;border-radius:24px;background:var(--indigo-soft);color:var(--indigo)}.empty-mobile h1,.empty-mobile h2{margin:0;color:var(--navy);font-size:24px}.empty-mobile p{margin:9px auto 20px;max-width:290px;color:var(--muted);font-size:13px;line-height:1.5}.empty-mobile .primary-cta{max-width:320px;margin:0 auto}
+.flight-ticket--unavailable{background:linear-gradient(145deg,#13204A,#263C78)}.ticket-notice{margin:-4px 0 20px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#D5DCEF;font-size:11px;line-height:1.45}.flight-list-empty{padding:24px 0;color:var(--muted);font-size:13px;text-align:center}
+.booking-card{width:100%;text-align:left}.booking-card span:nth-child(2){min-width:0}.booking-card span:nth-child(2)>strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.health-summary .health-shield.warning{background:linear-gradient(145deg,#F4A800,#FFCB42);color:var(--navy)}.health-summary .health-shield.critical{background:linear-gradient(145deg,#C53C32,#E65A4F)}.health-card button{min-width:44px;min-height:44px}
+.detail-grid.detail-grid--two{grid-template-columns:repeat(2,1fr)}.detail-grid.detail-grid--two>div:nth-child(2n){border-right:0}.detail-grid.detail-grid--two>div:nth-last-child(-n+2){border-bottom:0}
+.detail-note{margin:14px 0 0;padding:11px 12px;border-radius:12px;background:#EEF2FC;color:#40557F;font-size:11px;line-height:1.45}.dark-detail .detail-note{background:rgba(255,255,255,.08);color:#D3DBEE}.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.action-grid .secondary-cta{margin:0}
+.doc-integrity{display:inline-flex;align-items:center;gap:5px;margin-top:5px!important;color:#087B43!important;font-size:10px!important;font-weight:800}.info-status.bad{color:var(--red)}.info-card{width:100%;color:inherit;text-align:left}
+.offline-summary{padding:10px 22px 18px;text-align:center}.offline-summary strong{display:block;color:var(--navy);font-size:26px}.offline-summary span{display:block;margin-top:7px;color:var(--muted);font-size:13px}
+.account-meta{margin-top:5px;color:var(--muted);font-size:12px}.account-actions{margin-top:20px}.legacy-link{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:20px;border:1px dashed #BFC8DB;border-radius:14px;color:#5B6D94;font-size:12px;font-weight:800;text-decoration:none}
+.sheet-form{display:grid;gap:13px;max-height:68dvh;overflow:auto;padding:2px 2px 8px}.sheet-field{display:grid;gap:7px}.sheet-field label{color:var(--navy);font-size:12px;font-weight:850}.sheet-field select,.sheet-field input{min-height:48px;width:100%;padding:0 13px;border:1px solid #DDE2ED;border-radius:13px;background:#FAFBFD;color:var(--ink);outline:none}.sheet-field select:focus,.sheet-field input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(47,59,171,.11)}
+.traveler-pills{display:flex;flex-wrap:wrap;gap:8px}.traveler-pill{position:relative}.traveler-pill input{position:absolute;opacity:0;pointer-events:none}.traveler-pill span{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid #DDE2ED;border-radius:999px;background:#fff;color:#5E6B88;font-size:12px;font-weight:750}.traveler-pill input:checked+span{border-color:var(--indigo);background:var(--indigo-soft);color:var(--indigo)}.sheet-submit{position:sticky;bottom:0;padding-top:8px;background:#fff}.hidden-file{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.connection-state{display:flex;align-items:center;gap:6px}.offline-state{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 10px;border-radius:999px;background:var(--amber-soft);color:#805C00;font-size:11px;font-weight:850;white-space:nowrap}
+.timeline-event{width:100%;border:0;background:none;text-align:left;color:inherit}.timeline-card{display:block}.timeline-status.warning{color:var(--amber)}.timeline-status.bad{color:var(--red)}
+.map-card button{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
+.toast-mobile{position:fixed;left:50%;bottom:calc(var(--nav-height) + 18px + env(safe-area-inset-bottom));z-index:120;width:min(calc(100% - 32px),398px);padding:13px 15px;border-radius:14px;background:var(--navy);color:#fff;box-shadow:var(--shadow-lg);font-size:13px;font-weight:750;text-align:center;transform:translateX(-50%)}
+.error-state{padding:32px 22px;text-align:center}.error-state code{display:block;margin:14px 0;padding:10px;border-radius:10px;background:var(--paper);color:var(--red);font-size:11px;word-break:break-word}
+@media(max-width:430px){.ticket-meta{grid-template-columns:1.05fr 1.05fr .8fr .8fr}.ticket-meta>div{padding-left:9px;padding-right:9px}.ticket-meta span{font-size:8px}.ticket-meta strong{font-size:20px}}
+@media(max-width:359px){.app-header{padding-left:17px;padding-right:17px}.content{padding-left:16px;padding-right:16px}.ticket-meta{grid-template-columns:1fr 1fr}.ticket-meta>div{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.12)}.ticket-meta>div:nth-child(3){border-left:0}.route-primary{grid-template-columns:1fr 42px 1fr}.airport-code{font-size:46px}}
+
+/* approved mobile UI compactness pass */
+.screen{padding-bottom:calc(var(--nav-height) + 32px + env(safe-area-inset-bottom))}
+.content{padding:0 20px 24px}
+.app-header{min-height:72px;padding:calc(12px + env(safe-area-inset-top)) 20px 8px}
+.brand{min-height:44px;font-size:28px}
+.header-icon,.icon-button{min-width:44px;min-height:44px}
+.trip-context{min-height:32px;margin:2px 0 8px}
+.trip-context-copy strong{font-size:12px}
+.trip-context-copy span{margin-top:2px;font-size:10px}
+.context-chip{min-height:28px;padding:0 10px;font-size:10px}
+.greeting{margin:6px 0 12px}
+.greeting h1{font-size:22px;line-height:1.1}
+.section-head{margin:14px 0 4px}
+.section-label{font-size:10px}
+.text-action{min-height:44px}
+
+.flight-ticket{padding:16px 16px 15px;border-radius:24px;box-shadow:0 10px 24px rgba(20,25,72,.13)}
+.flight-ticket:before,.flight-ticket:after{top:101px;width:21px;height:38px}
+.flight-ticket:before{left:-11px}.flight-ticket:after{right:-11px}
+.ticket-map{inset:56px 45px auto;height:120px}
+.ticket-city{bottom:70px;width:160px}
+.ticket-chip{min-height:32px;padding:0 11px;font-size:10px}
+.ticket-status span{font-size:11px}
+.route-primary{grid-template-columns:1fr 46px 1fr;margin:22px 0 18px}
+.airport-code{font-size:45px;letter-spacing:-2px}
+.airport-name{margin-top:7px;font-size:11px}
+.ticket-meta{margin-bottom:14px}
+.ticket-meta--home{grid-template-columns:1.15fr 1fr .68fr}
+.ticket-meta--home>div{padding:0 10px}
+.ticket-meta span{margin-bottom:5px;font-size:8px}
+.ticket-meta strong{font-size:17px}
+.ticket-meta small{margin-top:4px;font-size:9px}
+.primary-cta{min-height:50px;border-radius:13px;box-shadow:0 7px 16px rgba(254,191,2,.16);font-size:14px}
+.simple-row{grid-template-columns:44px 1fr auto;gap:10px;min-height:64px}
+.row-icon{width:40px;height:40px;box-shadow:none}
+.row-copy strong{font-size:14px}.row-copy span{margin-top:3px;font-size:11px}.row-date{font-size:10px}
+.home-screen .simple-row{min-height:62px}
+.home-screen .section-head+.simple-row{border-bottom:0}
+.home-screen .simple-row[data-screen="health"] .row-copy span{white-space:normal;overflow:visible;text-overflow:clip}
+.ticket-status{display:grid;justify-items:end;align-content:start;gap:2px}
+.ticket-status>strong{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin:0;color:#fff;font-size:13px}
+.ticket-status.confirmed>strong{color:#55E68A}
+.ticket-status>span{display:block;margin:0;color:#AEB9D4;font-size:9px;font-weight:700}
+.ticket-status .status-dot-check{width:16px;height:16px;background:#55E68A;color:#0D2A57}
+
+.timeline-page{padding:6px 18px 24px}
+.day-label{margin:12px 0 4px}
+.timeline-list{margin-left:34px}
+.timeline-list:before{left:7px}
+.timeline-event{grid-template-columns:34px 1fr;gap:10px;padding:0}
+.timeline-event:before{left:3px;top:18px;width:8px;height:8px}
+.timeline-symbol{width:34px;height:34px;margin:10px 0 0 -10px;box-shadow:none}
+.timeline-card{min-height:64px;padding:11px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+.timeline-time{font-size:10px}
+.timeline-card h3{margin-top:4px;font-size:14px}
+.timeline-card p{margin-top:3px;font-size:11px}
+
+.detail-content{padding:16px 18px 28px}
+.detail-route{margin:20px 0 10px}
+.detail-route .airport-code{font-size:42px}
+.detail-date{margin:12px 0;color:#CDD5E9;font-size:11px}
+.event-local-times{display:grid;grid-template-columns:1fr 22px 1fr;align-items:center;margin:10px 0 12px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+.event-local-times>div:last-child{text-align:right}
+.event-local-times span{display:block;color:#9EADD0;font-size:8px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
+.event-local-times strong{display:block;margin-top:3px;color:#fff;font-size:17px}
+.event-local-times small{display:block;margin-top:2px;color:#C8D1E7;font-size:9px}
+.event-local-times .event-local-arrow{display:grid;place-items:center;color:#899BC6}
+.detail-panel{padding:14px;border-radius:18px;box-shadow:0 8px 22px rgba(4,13,38,.16)}
+.detail-primary-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
+.detail-primary-grid>div{min-width:0;padding:8px 7px 12px;border-right:1px solid var(--line)}
+.detail-primary-grid>div:last-child{border-right:0}
+.detail-primary-grid span,.detail-secondary-row span{display:block;color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
+.detail-primary-grid strong{display:block;margin-top:7px;color:var(--navy);font-size:17px}
+.detail-secondary-row{display:grid;grid-template-columns:.65fr 1.45fr 1fr;margin-bottom:14px}
+.detail-secondary-row>div{min-width:0;padding:12px 8px}
+.detail-secondary-row strong{display:block;margin-top:6px;color:var(--navy);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.detail-panel>.secondary-cta{min-height:46px;margin-top:8px}
+.flight-more{margin-top:8px;border-top:1px solid var(--line)}
+.flight-more summary{display:flex;align-items:center;min-height:44px;color:var(--indigo);font-size:12px;font-weight:800}
+.flight-more dl{display:grid;grid-template-columns:1fr 1fr;margin:0}
+.flight-more dl div{padding:8px 0}.flight-more dt{color:var(--muted);font-size:9px;text-transform:uppercase}.flight-more dd{margin:4px 0 0;color:var(--navy);font-size:12px}
+.flight-more p{margin:6px 0;color:var(--muted);font-size:10px;line-height:1.4}
+
+.hotel-hero{height:154px}
+.hotel-sheet{margin-top:-22px;padding:18px 20px calc(20px + var(--nav-height) + env(safe-area-inset-bottom));border-radius:22px 22px 0 0}
+.hotel-title-row h1{font-size:23px}
+.hotel-stats{grid-template-columns:1fr 1fr .55fr;margin:14px 0 10px;border-radius:13px}
+.hotel-stats>div{padding:10px 9px}
+.hotel-stats strong{font-size:12px;line-height:1.4}
+.hotel-actions{grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 4px}
+.hotel-actions .secondary-cta{min-height:46px;margin:0;font-size:12px}
+.address{margin:12px 0;font-size:12px}
+.map-card{height:92px;border-radius:13px}
+.contact-row{min-height:48px}
+
+.offline-summary{padding:14px 20px 12px;text-align:left}
+.offline-summary strong{font-size:22px}
+.offline-summary span{margin-top:4px;font-size:12px}
+.ready-list{display:block;padding:0 20px 8px}
+.ready-list .info-card{grid-template-columns:44px 1fr auto;gap:10px;min-height:66px;padding:10px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+.ready-list .info-icon{width:40px;height:40px;border-radius:10px}
+.ready-list .info-status{display:flex;align-items:center;gap:4px}
+.ready-list .info-card.needs-attention{background:linear-gradient(90deg,transparent,var(--amber-soft))}
+.download-action{padding:12px 20px calc(20px + var(--nav-height) + env(safe-area-inset-bottom))}
+.offline-refresh{margin:0;border-color:#BCC8E4;background:#fff;color:var(--indigo)}
+
+.bottom-sheet{padding:12px 20px calc(20px + env(safe-area-inset-bottom))}
+.sheet-option{width:100%;min-height:58px;padding:7px 10px;border-radius:13px}
+.sheet-option+.sheet-option{margin-top:7px}
+.sheet-handle{margin-bottom:12px}
+.sheet-title-row{margin-bottom:10px}
+
+@media(max-width:375px){
+  .content{padding-left:16px;padding-right:16px}
+  .flight-ticket{padding-left:14px;padding-right:14px}
+  .ticket-meta--home{grid-template-columns:1.15fr 1fr .62fr}
+  .ticket-meta--home>div{padding-left:7px;padding-right:7px}
+  .airport-code{font-size:42px}
+  .hotel-sheet{padding-left:16px;padding-right:16px}
+}

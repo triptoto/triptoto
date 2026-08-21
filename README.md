@@ -2,13 +2,19 @@
 
 tripto.to is an offline-first travel companion for organizing trips, bookings, travelers, timelines, travel essentials and what comes next.
 
+## Mobile App UI v1
+
+The approved mobile-first interface is the default `/` experience. The previous advanced beta interface remains available at `/legacy.html`.
+
+See `INSTALL_MOBILE_APP_UI_V1.md` and `docs/MOBILE_APP_UI_V1.md`.
+
 ## Current beta candidate
 
 The `beta-candidate-1` branch contains Beta Candidate 1 (`0.9.0-beta.1`), built as a focused hardening layer on the cumulative Major Beta Milestone 5–8. See `docs/BETA_CANDIDATE_1.md`.
 
 ## Major beta foundation
 
-The repository now includes the cumulative Major Beta Milestone 5–8:
+The repository includes the cumulative Major Beta Milestone 5–8:
 
 - Cloudflare Worker + D1 backend;
 - deterministic Trip Brain and Expanded Trip Health;
