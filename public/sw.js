@@ -1,4 +1,4 @@
-const CACHE='tripto-shell-mobile-ui-premium-v1';
+const CACHE='tripto-shell-mobile-design-lock-v1';
 const ASSETS=['/','/app','/index.html','/mobile-app.css','/mobile-app.js','/manifest.webmanifest','/assets/mobile/hotel-room.svg','/assets/mobile/rome-silhouette.svg','/legacy.html','/legacy-bridge.js','/app.css','/app-v3.css','/app-v4.css','/app-v5.css','/app-v6.css','/app-v7.css','/app-beta.css','/app-milestone2.css','/app-milestone3.css','/app-milestone4.css','/major.css','/app.js','/major-workspace.js'];
 
 self.addEventListener('install',event=>{

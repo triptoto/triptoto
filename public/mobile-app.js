@@ -39,6 +39,18 @@
       '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M3 10h18"></path>',
     clock:
       '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
+    night:
+      '<path d="M16.8 17.4A7.5 7.5 0 0 1 7.2 7.2a7.5 7.5 0 1 0 9.6 10.2Z"></path><path d="M16.5 4.5v3M15 6h3M20 9v2M19 10h2"></path>',
+    day:
+      '<path d="M5 16h14"></path><path d="M7 16a5 5 0 0 1 10 0"></path><path d="M12 4v3M4.9 8.9 7 11M19.1 8.9 17 11M3 20h18"></path>',
+    terminal:
+      '<path d="M4 20h16M6 20v-6h12v6M9 14V9h6v5M10 9V6h4v3M8 17h2M14 17h2"></path>',
+    gate:
+      '<path d="M6 21V7h12v14M9 21v-8h6v8M5 7h14M8 4h8v3M12 16h.01"></path>',
+    seat:
+      '<path d="M8 4v8a4 4 0 0 0 4 4h5"></path><path d="M8 9h5a3 3 0 0 1 3 3v4M6 20h12M9 16l-1 4M16 16l1 4"></path>',
+    chevronDown: '<path d="m6 9 6 6 6-6"></path>',
+    chevronUp: '<path d="m6 15 6-6 6 6"></path>',
     back: '<path d="m15 18-6-6 6-6"></path>',
     share:
       '<path d="M12 16V3M8 7l4-4 4 4"></path><path d="M5 12v8h14v-8"></path>',
@@ -77,6 +89,7 @@
     requestId: null,
     routeMotion: "forward",
     refreshingOffline: false,
+    flightDetailsOpen: false,
     trips: [],
     trip: null,
     timeline: [],
@@ -103,7 +116,7 @@
     routeTimer = null;
   const scrollPositions = new Map();
   function icon(name, size = 24, extra = "") {
-    return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="${extra}">${ICONS[name] || ""}</svg>`;
+    return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${extra}">${ICONS[name] || ""}</svg>`;
   }
   function esc(value) {
     return String(value ?? "").replace(
@@ -145,6 +158,11 @@
   }
   function route(screen, id, replace = false, kind = "forward") {
     scrollPositions.set(state.screen, window.scrollY);
+    if (
+      screen !== "flight" ||
+      String(id || "") !== String(state.selectedId || "")
+    )
+      state.flightDetailsOpen = false;
     const hash = "#" + screen + (id ? ":" + encodeURIComponent(id) : "");
     state.routeMotion =
       kind === "tab" ? "tab" : kind === "back" ? "back" : "forward";
@@ -1129,11 +1147,24 @@
       ),
     };
   }
+  function flightLocationCode(id) {
+    const loc = locationById(id);
+    const raw = loc ? val(loc, "iata_code", "station_code") : null;
+    const code = String(raw || "").trim().toUpperCase();
+    return /^[A-Z0-9]{2,5}$/.test(code) ? code : "—";
+  }
   function flightNumber(flight) {
     const carrier =
         val(flight, "marketing_airline_code", "carrier_name") || "Flight",
       number = val(flight, "marketing_flight_number", "service_number") || "";
     return `${carrier}${number ? " " + number : ""}`;
+  }
+  function compactFlightNumber(flight) {
+    const carrier = val(flight, "marketing_airline_code"),
+      number = val(flight, "marketing_flight_number"),
+      service = val(flight, "service_number");
+    if (carrier && number) return `${carrier} ${number}`;
+    return String(service || carrier || "Unavailable");
   }
   function flightDeparture(flight) {
     return (
@@ -1161,19 +1192,61 @@
     return detailFor(flight) || {};
   }
 
-  function flightTicket(flight) {
-    const r = flightRoute(flight),
+  function flightPass(flight, detailVariant = false) {
+    const route = flightRoute(flight),
       detail = primaryFlightDetail(flight),
       departure = flightDeparture(flight),
+      arrival = flightArrival(flight),
       departureZone = val(flight, "departure_timezone", "start_timezone"),
+      arrivalZone = val(flight, "arrival_timezone", "end_timezone"),
       terminal = val(flight, "departure_terminal"),
+      gate = val(flight, "departure_gate", "gate"),
       seat = val(detail, "seat"),
+      cabin = val(detail, "cabin_class"),
       status = statusText(
         val(flight, "booking_status", "status") || "scheduled",
       ),
       confirmed = status === "Confirmed",
-      doc = boardingDocumentFor(flight);
-    return `<section class="flight-ticket" aria-label="Next scheduled flight"><div class="ticket-map"></div><img class="ticket-city" src="/assets/mobile/rome-silhouette.svg" alt="" aria-hidden="true"><div class="ticket-top"><span class="ticket-chip">${icon("plane", 18)} ${esc(flightNumber(flight))}</span><div class="ticket-status ${confirmed ? "confirmed" : ""}"><strong>${confirmed ? checkDot() : ""}${esc(status)}</strong><span>Scheduled data</span></div></div><div class="route-primary"><div><div class="airport-code">${esc(r.fromCode)}</div><span class="airport-name">${esc(r.fromName)}</span></div><div class="route-arrow">${icon("plane", 25)}</div><div style="text-align:right"><div class="airport-code">${esc(r.toCode)}</div><span class="airport-name">${esc(r.toName)}</span></div></div><div class="ticket-meta ticket-meta--home"><div><span>Departure</span><strong>${esc(formatTime(departure, departureZone))}</strong><small>${esc(formatDay(departure, departureZone))}</small></div><div><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? "Departure" : "Unavailable"}</small></div><div><span>Seat</span><strong>${esc(seat || "—")}</strong><small>${seat ? "Assigned" : "Unavailable"}</small></div></div>${primaryCta(doc ? "Open Boarding Pass" : "Add Boarding Pass", doc ? "boarding-pass" : "add-boarding-pass", "qr", `data-id="${esc(doc?.id || itemId(flight))}"`)}</section>`;
+      document = boardingDocumentFor(flight),
+      duration =
+        departure && arrival ? durationLabel(arrival - departure) : "",
+      action = document ? "boarding-pass" : "add-boarding-pass",
+      actionLabel = document ? "Open Boarding Pass" : "Add Boarding Pass",
+      actionId = document?.id || itemId(flight),
+      departureDay = formatDay(departure, departureZone),
+      arrivalDay = formatDay(arrival, arrivalZone),
+      fromCode = detailVariant
+        ? flightLocationCode(
+            val(flight, "departure_location_id", "start_location_id"),
+          )
+        : route.fromCode,
+      toCode = detailVariant
+        ? flightLocationCode(
+            val(flight, "arrival_location_id", "end_location_id"),
+          )
+        : route.toCode,
+      displayedFlightNumber = detailVariant
+        ? compactFlightNumber(flight)
+        : flightNumber(flight);
+
+    const routeMarkup = `<div class="flight-pass__route"><div class="flight-pass__airport"><div class="flight-pass__airport-code">${esc(fromCode)}</div><span class="flight-pass__airport-name">${esc(route.fromName)}</span></div><div class="flight-pass__route-center"><div class="flight-pass__route-line">${icon("plane", 25)}</div>${duration ? `<span class="flight-pass__duration">${icon("clock", 14)} ${esc(duration)}</span>` : ""}</div><div class="flight-pass__airport flight-pass__airport--right"><div class="flight-pass__airport-code">${esc(toCode)}</div><span class="flight-pass__airport-name">${esc(route.toName)}</span></div></div>`;
+    const header = `<div class="flight-pass__header"><span class="flight-pass__pill">${icon("plane", 22)} ${esc(displayedFlightNumber)}</span><div class="flight-pass__status ${confirmed ? "is-confirmed" : ""}"${detailVariant ? ` role="status" aria-label="${esc(status)}. Scheduled booking data is never presented as live."` : ""}><strong>${confirmed ? checkDot() : ""}${esc(status)}</strong><small>Scheduled data</small></div>${detailVariant ? `<span class="flight-pass__status-chevron" aria-hidden="true">${icon("chevron", 22)}</span>` : ""}</div>`;
+    const primaryAction = primaryCta(
+      actionLabel,
+      action,
+      "qr",
+      `data-id="${esc(actionId)}"`,
+    );
+
+    if (!detailVariant) {
+      return `<section class="flight-pass flight-pass--home" aria-label="Next scheduled flight"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span>Departure</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)}</small>` : ""}</div><div class="flight-pass__fact"><span>Terminal</span><strong>${esc(terminal || "—")}</strong>${terminal ? "<small>Departure</small>" : ""}</div><div class="flight-pass__fact"><span>Seat</span><strong>${esc(seat || "—")}</strong>${cabin ? `<small>${esc(cabin)}</small>` : ""}</div></div><div class="flight-pass__actions flight-pass__actions--single">${primaryAction}</div></div></section>`;
+    }
+
+    return `<section class="flight-pass flight-pass--detail" aria-label="Scheduled flight details"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__times" aria-label="Scheduled departure and arrival in event-local time"><div class="flight-pass__time"><span class="flight-pass__event-icon">${icon("night", 30)}</span><span class="flight-pass__time-copy"><span>Departs</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)} · Local time</small>` : ""}</span></div><div class="flight-pass__time-separator"></div><div class="flight-pass__time flight-pass__time--right"><span class="flight-pass__time-copy"><span>Arrives</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong>${arrivalDay ? `<small>${esc(arrivalDay)} · Local time</small>` : ""}</span><span class="flight-pass__event-icon flight-pass__event-icon--day">${icon("day", 30)}</span></div></div><div class="flight-pass__divider flight-pass__divider--facts"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("terminal", 27)}</span><span class="flight-pass__fact-copy"><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("gate", 27)}</span><span class="flight-pass__fact-copy"><span>Gate</span><strong>${esc(gate || "—")}</strong><small>${gate ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("seat", 27)}</span><span class="flight-pass__fact-copy"><span>Seat</span><strong>${esc(seat || "—")}</strong>${seat ? (cabin ? `<small>${esc(cabin)}</small>` : "") : "<small>Not assigned</small>"}</span></div></div><div class="flight-pass__actions">${primaryAction}<button class="flight-pass__secondary" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 18)}<span>Airport directions</span></button></div></div></section>`;
+  }
+
+  function flightTicket(flight) {
+    return flightPass(flight, false);
   }
   function genericNextCard(item) {
     const type = timelineType(item),
@@ -1207,8 +1280,18 @@
   function homeScreen() {
     const next = nextItem(),
       flight = nextFlight(),
-      health = healthSummary();
-    return `<div class="phone-app"><section class="screen home-screen">${topbar()}${mobileAlert()}<main class="content">${tripContext()}${state.trip ? `<div class="greeting"><h1>${esc(timeGreeting())}</h1></div>` : ""}${state.trip ? (flight ? flightTicket(flight) : next ? genericNextCard(next) : `<section class="next-action-card"><span class="ticket-chip">${icon("check", 18)} Trip ready</span><h2>No upcoming plan</h2><p>Add the next booking or mark the trip completed when travel is finished.</p><div class="next-action-actions"><button class="secondary-cta" data-action="open-add">${icon("plus", 19)} Add booking</button><button class="secondary-cta" data-screen="trips">${icon("trips", 19)} Timeline</button></div></section>`) : emptyTripCard()}${state.trip ? `${sectionHead("Upcoming journey", "open-timeline")}<div>${upcomingRows()}</div>${sectionHead("Trip health", "open-health", "Review")}<button class="simple-row" data-screen="health"><span class="row-icon ${health.kind === "warning" ? "health-warning" : "health-good"}">${icon(health.icon, 22)}</span><span class="row-copy"><strong>${esc(health.title)}</strong><span>${esc(health.subtitle)}</span></span>${icon("chevron", 22, "chevron")}</button>` : ""}</main>${bottomNav("home")}</section></div>`;
+      health = healthSummary(),
+      nextCard = state.trip
+        ? flight
+          ? flightTicket(flight)
+          : next
+            ? genericNextCard(next)
+            : `<section class="next-action-card"><span class="ticket-chip">${icon("check", 18)} Trip ready</span><h2>No upcoming plan</h2><p>Add the next booking or mark the trip completed when travel is finished.</p><div class="next-action-actions"><button class="secondary-cta" data-action="open-add">${icon("plus", 19)} Add booking</button><button class="secondary-cta" data-screen="trips">${icon("trips", 19)} Timeline</button></div></section>`
+        : emptyTripCard(),
+      summaries = state.trip
+        ? `<section class="home-summary-module">${sectionHead("Upcoming journey", "open-timeline")}<div>${upcomingRows()}</div></section><section class="home-summary-module home-health-module">${sectionHead("Trip health", "open-health", "Review")}<button class="simple-row" data-screen="health"><span class="row-icon ${health.kind === "warning" ? "health-warning" : "health-good"}">${icon(health.icon, 22)}</span><span class="row-copy"><strong>${esc(health.title)}</strong><span>${esc(health.subtitle)}</span></span>${icon("chevron", 22, "chevron")}</button></section>`
+        : "";
+    return `<div class="phone-app"><section class="screen home-screen">${topbar()}${mobileAlert()}<main class="content">${tripContext()}${nextCard}${summaries}</main>${bottomNav("home")}</section></div>`;
   }
   function timeGreeting() {
     const hour = new Date().getHours();
@@ -1257,26 +1340,51 @@
         "Flight unavailable",
         "No active flight booking is available.",
       );
-    const r = flightRoute(flight),
-      detail = detailFor(flight) || {},
+    const detail = detailFor(flight) || {},
       contact = contactFor(flight, "airline"),
-      departure = flightDeparture(flight),
-      arrival = flightArrival(flight),
       departureZone = val(flight, "departure_timezone", "start_timezone"),
-      arrivalZone = val(flight, "arrival_timezone", "end_timezone"),
       boarding =
         Number(val(flight, "boarding_time_utc", "boarding_at_utc")) || null,
-      status = statusText(
-        val(flight, "booking_status", "status") || "scheduled",
-      ),
-      confirmed = status === "Confirmed",
       doc = boardingDocumentFor(flight),
       bags = [];
     if (val(detail, "checked_bags") != null)
       bags.push(`${detail.checked_bags} checked`);
     if (val(detail, "cabin_bags") != null)
       bags.push(`${detail.cabin_bags} cabin`);
-    return `<div class="phone-app"><section class="screen screen--navless dark-detail">${appBar("Flight Detail", "", true, `<button class="icon-button" data-action="share-flight" aria-label="Share flight">${icon("share", 23)}</button>`)}<main class="detail-content"><div class="ticket-top"><span class="ticket-chip">${icon("plane", 18)} ${esc(flightNumber(flight))}</span><div class="ticket-status ${confirmed ? "confirmed" : ""}"><strong>${confirmed ? checkDot() : ""}${esc(status)}</strong><span>Scheduled data</span></div></div><div class="detail-route"><div><div class="airport-code">${esc(r.fromCode)}</div><span class="airport-name">${esc(r.fromName)}</span></div><div class="route-arrow">${icon("plane", 25)}</div><div style="text-align:right"><div class="airport-code">${esc(r.toCode)}</div><span class="airport-name">${esc(r.toName)}</span></div></div><div class="event-local-times" aria-label="Scheduled departure and arrival in local time"><div><span>Depart · ${esc(r.fromCode)}</span><strong>${esc(formatTime(departure, departureZone))}</strong><small>${esc(formatDay(departure, departureZone))} · local</small></div><span class="event-local-arrow">${icon("chevron", 18)}</span><div><span>Arrive · ${esc(r.toCode)}</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong><small>${esc(formatDay(arrival, arrivalZone))} · local</small></div></div><section class="detail-panel"><div class="detail-primary-grid"><div><span>Departure</span><strong>${esc(formatTime(departure, departureZone))}</strong></div><div><span>Boarding</span><strong>${esc(formatTime(boarding, departureZone))}</strong></div><div><span>Terminal</span><strong>${esc(val(flight, "departure_terminal") || "—")}</strong></div><div><span>Gate</span><strong>${esc(val(flight, "departure_gate", "gate") || "—")}</strong></div></div><div class="detail-secondary-row"><div><span>Seat</span><strong>${esc(val(detail, "seat") || "—")}</strong></div><div><span>Baggage</span><strong>${esc(bags.length ? bags.join(" · ") : "—")}</strong></div><div><span>PNR</span><strong>${esc(val(flight, "booking_reference") || "—")}</strong></div></div>${doc ? "" : `<div class="missing-document-state" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${doc ? primaryCta("Open Boarding Pass", "boarding-pass", "qr", `data-id="${esc(doc.id)}"`) : primaryCta("Add Boarding Pass", "add-boarding-pass", "qr")}<button class="secondary-cta" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 19)} Airport directions</button><details class="flight-more"><summary>More flight details</summary><div class="flight-more-content"><dl><div><dt>Arrival</dt><dd>${esc(formatTime(arrival, arrivalZone))}</dd></div><div><dt>Duration</dt><dd>${departure && arrival ? esc(durationLabel(arrival - departure)) : "—"}</dd></div><div><dt>Ticket</dt><dd>${esc(val(detail, "ticket_number") || "Unavailable")}</dd></div><div><dt>Airline</dt><dd>${esc(val(contact, "display_name") || val(flight, "carrier_name", "marketing_airline_code") || "Unavailable")}</dd></div></dl><p>Scheduled booking data is never presented as live. Gate, delay and operational updates are unavailable while live-flight integration is disabled.</p></div></details></section></main></section></div>`;
+    const operatingCode = val(flight, "operating_airline_code"),
+      operatingNumber = val(flight, "operating_flight_number"),
+      disclosureRows = [
+        boarding
+          ? ["Boarding", formatTime(boarding, departureZone)]
+          : null,
+        bags.length ? ["Baggage", bags.join(" · ")] : null,
+        val(flight, "booking_reference")
+          ? ["PNR", val(flight, "booking_reference")]
+          : null,
+        val(detail, "ticket_number")
+          ? ["Ticket", val(detail, "ticket_number")]
+          : null,
+        val(contact, "display_name") ||
+        val(flight, "carrier_name", "marketing_airline_code")
+          ? [
+              "Airline",
+              val(contact, "display_name") ||
+                val(flight, "carrier_name", "marketing_airline_code"),
+            ]
+          : null,
+        operatingCode
+          ? [
+              "Operating carrier",
+              `${operatingCode}${operatingNumber ? ` ${operatingNumber}` : ""}`,
+            ]
+          : null,
+      ].filter(Boolean),
+      disclosureId = "flight-details-panel",
+      disclosureButtonId = "flight-details-toggle",
+      disclosure = disclosureRows.length
+        ? `<section class="flight-more flight-more--pass"><button type="button" class="flight-more__toggle" id="${disclosureButtonId}" data-action="toggle-flight-details" aria-expanded="${state.flightDetailsOpen}" aria-controls="${disclosureId}"><span>More flight details</span><span class="flight-more__chevron" aria-hidden="true">${icon(state.flightDetailsOpen ? "chevronUp" : "chevronDown", 18)}</span></button><div class="flight-more-content" id="${disclosureId}" role="region" aria-labelledby="${disclosureButtonId}"${state.flightDetailsOpen ? "" : " hidden"}><dl>${disclosureRows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section>`
+        : "";
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, `<button class="icon-button" data-action="share-flight" aria-label="Share flight">${icon("share", 23)}</button>`)}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div></main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -1302,7 +1410,8 @@
       address =
         val(location, "local_address", "formatted_address") ||
         "Address unavailable";
-    return `<div class="phone-app"><section class="screen">${appBar("Hotel")}<div class="hotel-hero" role="img" aria-label="Hotel property image">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image">` : ""}</div><main class="hotel-sheet"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="confirmed">${esc(statusText(val(stay, "booking_status", "status")))} ${checkDot()}</span></div><div class="hotel-stats"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))} · ${esc(val(stay, "check_in_from") || "Time unavailable")}</strong></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))} · ${esc(val(stay, "check_out_by") || "Time unavailable")}</strong></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></div><div class="hotel-actions"><button class="secondary-cta" data-action="directions-hotel" data-id="${esc(itemId(stay))}">${icon("navigation", 20)} Directions</button><button class="secondary-cta" data-action="show-driver" data-id="${esc(itemId(stay))}">${icon("car", 20)} Show to Driver</button></div><div class="address">${icon("pin", 21)}<span>${esc(address)}</span></div><div class="map-card" aria-label="Hotel location"><button data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel directions"></button></div>${val(contact, "phone") ? `<button class="contact-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone", 19)} ${esc(contact.phone)}</span>${icon("phone", 18)}</button>` : ""}${val(contact, "email") ? `<a class="contact-row" href="mailto:${encodeURIComponent(contact.email)}"><span>${icon("mail", 19)} ${esc(contact.email)}</span></a>` : ""}<button class="contact-row" data-action="copy" data-value="${esc(val(stay, "confirmation_number") || "")}"><span>Confirmation # ${esc(val(stay, "confirmation_number") || "Unavailable")}</span>${val(stay, "confirmation_number") ? icon("copy", 18) : ""}</button></main>${bottomNav("bookings")}</section></div>`;
+    const contactRows = `${val(contact, "phone") ? `<button class="contact-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone", 19)} ${esc(contact.phone)}</span>${icon("phone", 18)}</button>` : ""}${val(contact, "email") ? `<a class="contact-row" href="mailto:${encodeURIComponent(contact.email)}"><span>${icon("mail", 19)} ${esc(contact.email)}</span></a>` : ""}<button class="contact-row" data-action="copy" data-value="${esc(val(stay, "confirmation_number") || "")}"><span>Confirmation # ${esc(val(stay, "confirmation_number") || "Unavailable")}</span>${val(stay, "confirmation_number") ? icon("copy", 18) : ""}</button>`;
+    return `<div class="phone-app"><section class="screen">${appBar("Hotel")}<div class="hotel-hero" role="img" aria-label="Hotel property image">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span></div><main class="hotel-sheet"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="confirmed">${esc(statusText(val(stay, "booking_status", "status")))} ${checkDot()}</span></div><section class="hotel-stay-card"><div class="hotel-stats"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong><small>Stay</small></div></div><div class="hotel-actions"><button class="secondary-cta hotel-action-primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}">${icon("navigation", 20)} Directions</button><button class="secondary-cta" data-action="show-driver" data-id="${esc(itemId(stay))}">${icon("car", 20)} Show to Driver</button></div></section><div class="address">${icon("pin", 21)}<span>${esc(address)}</span></div><div class="map-card" aria-label="Hotel location"><button data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel directions"></button></div><section class="hotel-contact-card" aria-label="Hotel contact and confirmation">${contactRows}</section></main>${bottomNav("bookings")}</section></div>`;
   }
   function bookingsScreen() {
     const rows = [];
@@ -1455,7 +1564,7 @@
     const rows = readyOfflineRows(),
       ready = rows.filter((row) => row.ready).length,
       allReady = rows.length > 0 && ready === rows.length;
-    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 23)}</button>`)}<div class="offline-summary"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Important items are available on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></div><main class="list-stack ready-list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 17)}`}</span></div>`).join("")}</main><div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}</div>${bottomNav("trips")}</section></div>`;
+    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 23)}</button>`)}<section class="offline-summary ${allReady ? "offline-summary--ready" : "offline-summary--attention"}"><span class="offline-summary-icon">${icon(allReady ? "check" : "warning", 27)}</span><span class="offline-summary-copy"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Your essentials are saved on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></span></section><main class="list-stack ready-list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 17)}`}</span></div>`).join("")}</main><div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}</div>${bottomNav("trips")}</section></div>`;
   }
   function issueKind(issue) {
     return ["critical", "high"].includes(issue.severity)
@@ -1524,12 +1633,12 @@
     return bottomSheet(
       "add",
       "Add to trip",
-      options
+      `<div class="sheet-options-group">${options
         .map(
           ([ic, title, sub, type]) =>
-            `<button class="sheet-option" data-action="add-type" data-type="${type}"><span class="info-icon">${icon(ic, 22)}</span><span><strong>${title}</strong><small>${sub}</small></span>${icon("chevron", 22, "chevron")}</button>`,
+            `<button class="sheet-option sheet-option--${type}" data-action="add-type" data-type="${type}"><span class="info-icon">${icon(ic, 22)}</span><span><strong>${title}</strong><small>${sub}</small></span>${icon("chevron", 22, "chevron")}</button>`,
         )
-        .join(""),
+        .join("")}</div>`,
     );
   }
   function documentSheet() {
@@ -1909,6 +2018,13 @@
         );
         break;
       }
+      case "toggle-flight-details":
+        state.flightDetailsOpen = !state.flightDetailsOpen;
+        render();
+        requestAnimationFrame(() =>
+          document.getElementById("flight-details-toggle")?.focus(),
+        );
+        break;
       case "directions-item": {
         const item = state.timeline.find(
             (row) => itemId(row) === String(target.dataset.id),
@@ -2019,6 +2135,11 @@
   window.addEventListener("hashchange", () => {
     const next = parseRoute();
     scrollPositions.set(state.screen, window.scrollY);
+    if (
+      next.screen !== "flight" ||
+      String(next.id || "") !== String(state.selectedId || "")
+    )
+      state.flightDetailsOpen = false;
     if (!state.routeMotion) state.routeMotion = "back";
     state.screen = next.screen;
     state.selectedId = next.id;
@@ -2036,6 +2157,22 @@
     render();
   });
   window.addEventListener("keydown", (event) => {
+    const disclosureButton = event.target?.closest?.(
+      '[data-action="toggle-flight-details"]',
+    );
+    if (
+      disclosureButton &&
+      ["Enter", " ", "Spacebar"].includes(event.key)
+    ) {
+      event.preventDefault();
+      handleAction("toggle-flight-details", disclosureButton).catch((error) =>
+        showToast(
+          error instanceof Error ? error.message : String(error),
+          "alert",
+        ),
+      );
+      return;
+    }
     if (!state.sheet || state.sheet === "driver") return;
     if (event.key === "Escape") {
       event.preventDefault();
