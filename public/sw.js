@@ -1,4 +1,4 @@
-const CACHE='tripto-shell-date-range-v2';
+const CACHE='tripto-shell-date-range-v3';
 const ASSETS=['/','/app','/index.html','/date-range-picker.css','/date-range-picker.js','/mobile-trip-rules.js','/mobile-app.css','/mobile-app.js','/manifest.webmanifest','/assets/mobile/hotel-fallback-premium.jpg','/assets/mobile/rome-silhouette.svg','/legacy.html','/legacy-bridge.js','/app.css','/app-v3.css','/app-v4.css','/app-v5.css','/app-v6.css','/app-v7.css','/app-beta.css','/app-milestone2.css','/app-milestone3.css','/app-milestone4.css','/major.css','/app.js','/major-workspace.js'];
 
 self.addEventListener('install',event=>{

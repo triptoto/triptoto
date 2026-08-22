@@ -105,7 +105,10 @@
   }
 
   function enhance(root) {
-    root.querySelectorAll?.("[data-date-range]").forEach((container) => {
+    const containers = [];
+    if (root.matches?.("[data-date-range]")) containers.push(root);
+    root.querySelectorAll?.("[data-date-range]").forEach((container) => containers.push(container));
+    containers.forEach((container) => {
       if (container.dataset.rangeReady) { update(container); return; }
       container.dataset.rangeReady = "true";
       const start = container.querySelector("[data-range-start]"), end = container.querySelector("[data-range-end]");
@@ -130,7 +133,11 @@
     });
   }
 
-  const observer = new MutationObserver(() => enhance(document));
+  const observer = new MutationObserver((records) => {
+    records.forEach((record) => record.addedNodes.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
+    }));
+  });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { enhance(document); observer.observe(document.body, { childList: true, subtree: true }); });
   else { enhance(document); observer.observe(document.body, { childList: true, subtree: true }); }
   window.TriptoDateRangePicker = { enhance, update };
