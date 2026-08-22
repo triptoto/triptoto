@@ -1,0 +1,100 @@
+:root{
+  --navy:#141948;
+  --navy-deep:#071536;
+  --navy-mid:#0B1C4D;
+  --indigo:#2F3BAB;
+  --indigo-bright:#4358D5;
+  --indigo-soft:#E9EEFF;
+  --yellow:#FEBF02;
+  --yellow-highlight:#FFD83D;
+  --surface:#FFFFFF;
+  --ink:#0E1B44;
+  --muted:#687697;
+  --line:#E7EAF1;
+  --success:#42E884;
+  --app-width:430px;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#F7F8FB;color:var(--ink);font-family:inherit;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+body{display:flex;justify-content:center}
+#app{width:100%;max-width:var(--app-width);min-height:100dvh;background:#fff;position:relative;overflow:hidden}
+.app-screen{min-height:100dvh;padding-bottom:calc(86px + env(safe-area-inset-bottom));background:#fff}
+.app-screen--navy{background:linear-gradient(180deg,#101D50 0%,#07163A 100%);color:#fff}
+.app-content{padding:calc(16px + env(safe-area-inset-top)) 20px 24px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.brand{font-size:29px;font-weight:850;letter-spacing:-1.3px;color:var(--navy)}
+.brand-dot{color:var(--yellow)}
+.profile{width:44px;height:44px;border:0;background:transparent;color:var(--navy);display:grid;place-items:center}
+.trip-context{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.trip-context h1{font-size:15px;font-weight:760;margin:0 0 3px}
+.trip-context p{font-size:12px;color:var(--muted);margin:0;font-variant-numeric:tabular-nums}
+.current-pill{padding:7px 12px;border-radius:999px;background:#E9FAF0;color:#188F51;font-size:12px;font-weight:750}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:24px 0 10px}
+.section-label{font-size:11px;font-weight:780;letter-spacing:.10em;text-transform:uppercase;color:#667598}
+.section-link{border:0;background:none;color:var(--indigo);font-size:13px;font-weight:750}
+
+.flight-pass{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:
+  radial-gradient(circle at 50% 5%,rgba(67,88,213,.25),transparent 38%),
+  linear-gradient(145deg,#061333 0%,#0A1C4C 52%,#07163A 100%);
+  border-radius:30px;box-shadow:0 18px 48px rgba(7,21,54,.18);border:1px solid rgba(255,255,255,.08)}
+.flight-pass::before{content:"";position:absolute;inset:94px 0 auto;height:116px;z-index:-1;opacity:.25;background-image:radial-gradient(circle,rgba(98,119,229,.8) 1.2px,transparent 1.5px);background-size:12px 12px;mask-image:linear-gradient(90deg,transparent,#000 25%,#000 75%,transparent)}
+.notch{position:absolute;top:36%;width:25px;height:54px;border-radius:50%;background:#fff;z-index:2}
+.notch.left{left:-14px}.notch.right{right:-14px}
+.flight-inner{padding:20px 18px 18px}
+.flight-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.flight-pill{height:48px;padding:0 17px;border-radius:999px;background:linear-gradient(135deg,#3D55BE,#293997);display:inline-flex;align-items:center;gap:10px;font-size:16px;font-weight:780;letter-spacing:.08em}
+.flight-status{text-align:right;padding-top:3px}
+.flight-status strong{display:flex;align-items:center;justify-content:flex-end;gap:6px;color:var(--success);font-size:17px;font-weight:820}
+.flight-status small{display:block;margin-top:5px;color:#BAC4E3;font-size:12px;font-weight:620}
+.check{width:22px;height:22px;border-radius:50%;background:var(--success);color:#0B673C;display:grid;place-items:center}
+.flight-route{display:grid;grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr);align-items:center;margin-top:21px}
+.airport.right{text-align:right}
+.airport-code{font-size:58px;font-weight:780;line-height:.88;letter-spacing:-3.4px;font-variant-numeric:tabular-nums}
+.airport-name{margin-top:8px;color:#CED6EC;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.route-center{display:grid;place-items:center;gap:7px}
+.route-line{width:92px;display:flex;align-items:center;gap:7px;color:#A7B5E2}
+.route-line::before,.route-line::after{content:"";height:1px;flex:1;background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 8px)}
+.route-plane{font-size:26px;transform:rotate(-8deg)}
+.duration{display:inline-flex;align-items:center;height:29px;padding:0 11px;border-radius:999px;background:rgba(67,88,213,.20);border:1px solid rgba(160,175,231,.12);color:#DCE4FA;font-size:12px;font-weight:680;white-space:nowrap}
+.divider{height:1px;background:rgba(159,176,232,.20);margin:17px 0}
+.times{display:grid;grid-template-columns:1fr 1px 1fr;gap:14px;align-items:center}
+.time.right{text-align:right}
+.label{font-size:10px;font-weight:790;letter-spacing:.12em;text-transform:uppercase;color:#7E91EA}
+.big-time{font-size:31px;font-weight:740;line-height:1.05;margin-top:5px;font-variant-numeric:tabular-nums}
+.date{font-size:12px;color:#BDC8E6;margin-top:5px}
+.time-sep{width:1px;height:50px;background:rgba(146,162,219,.34)}
+.facts{display:grid;grid-template-columns:repeat(3,1fr)}
+.fact{padding:0 12px;border-right:1px solid rgba(146,162,219,.16)}
+.fact:first-child{padding-left:0}.fact:last-child{padding-right:0;border-right:0}
+.fact-value{font-size:25px;font-weight:740;line-height:1;margin-top:7px}
+.fact-note{font-size:12px;color:#AEBBDB;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.actions{display:grid;grid-template-columns:minmax(0,1.92fr) minmax(118px,1fr);gap:12px;margin-top:18px}
+.actions.compact{grid-template-columns:1fr}
+.primary,.secondary{height:58px;border:0;border-radius:18px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;white-space:nowrap}
+.primary{background:linear-gradient(135deg,var(--yellow),var(--yellow-highlight));color:#071536;padding:0 18px;font-size:17px;box-shadow:0 10px 24px rgba(254,191,2,.22)}
+.primary .push{margin-left:auto}
+.secondary{background:rgba(50,69,136,.34);color:#fff;border:1px solid rgba(157,171,222,.12);padding:0 12px;font-size:14px}
+.home-pass .times{display:none}
+.home-pass .divider{margin:15px 0}
+.home-pass .flight-route{margin-top:18px}
+.home-pass .airport-code{font-size:55px}
+
+.summary-row{min-height:66px;display:grid;grid-template-columns:44px minmax(0,1fr) auto 28px;gap:10px;align-items:center;border-bottom:1px solid var(--line)}
+.summary-icon{width:42px;height:42px;border-radius:50%;background:#F5F7FC;color:var(--indigo);display:grid;place-items:center}
+.summary-icon.success{background:var(--success);color:#fff}
+.summary-title{font-size:15px;font-weight:760}
+.summary-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.summary-meta{text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.app-bar{height:52px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin-bottom:8px}
+.app-bar button{width:44px;height:44px;border:0;background:transparent;color:currentColor}
+.app-bar-title{text-align:center;font-size:17px;font-weight:750}
+
+.bottom-nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,430px);height:calc(72px + env(safe-area-inset-bottom));padding:7px 14px env(safe-area-inset-bottom);background:rgba(255,255,255,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr)}
+.nav-item{min-height:55px;border:0;background:transparent;color:#8290AD;display:grid;place-items:center;align-content:center;gap:3px;font-size:10px;font-weight:680}
+.nav-item.active{color:#1746B8}
+.nav-add{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#244EC9,#1A3FAE);color:#fff;border:3px solid #fff;box-shadow:0 8px 22px rgba(27,67,183,.28);display:grid;place-items:center;margin:-16px auto 0}
+@media(max-width:375px){.app-content{padding-left:16px;padding-right:16px}.flight-inner{padding-left:16px;padding-right:16px}.airport-code{font-size:52px}.flight-route{grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr)}.route-line{width:78px}.secondary{display:none}.actions{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}

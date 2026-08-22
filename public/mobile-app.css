@@ -28,11 +28,20 @@
   --radius-sm:13px;
   --app-width:430px;
   --nav-height:74px;
+  --motion-fast:140ms;
+  --motion-standard:200ms;
+  --motion-slow:280ms;
+  --ease-standard:cubic-bezier(.2,0,0,1);
+  --ease-emphasized:cubic-bezier(.2,.8,.2,1);
+  --ease-sheet:cubic-bezier(.22,1,.36,1);
+  --keyboard-offset:0px;
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  --font-text:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
 }
 
 *{box-sizing:border-box}
 html{background:#E9ECF2}
-html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+html,body{margin:0;min-height:100%;font-family:var(--font-text);font-feature-settings:"kern" 1,"liga" 1;color:var(--ink)}
 body{background:#E9ECF2}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
@@ -76,6 +85,7 @@ svg{display:block}
   line-height:1;
   font-weight:900;
   letter-spacing:-1.6px;
+  font-family:var(--font-display);
 }
 .brand-dot{color:var(--yellow)}
 .header-icon,.icon-button{
@@ -106,7 +116,7 @@ svg{display:block}
 .app-bar--dark{background:linear-gradient(180deg,var(--navy-2),var(--navy));border-bottom:0;color:#fff}
 .app-bar--dark .icon-button{color:#fff}
 .app-bar-title{text-align:center;min-width:0}
-.app-bar-title strong{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-bar-title strong{display:block;font-family:var(--font-display);font-size:16px;letter-spacing:-.25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app-bar-title span{display:block;margin-top:3px;color:var(--muted);font-size:11px}
 .app-bar--dark .app-bar-title span{color:#C4CBE0}
 
@@ -122,7 +132,7 @@ svg{display:block}
   letter-spacing:.055em;
   text-transform:uppercase;
 }
-.screen-title{margin:0;color:var(--navy);font-size:29px;letter-spacing:-.8px}
+.screen-title{margin:0;color:var(--navy);font-family:var(--font-display);font-size:29px;letter-spacing:-.8px}
 .screen-subtitle{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
 
 /* ticket / next flight */
@@ -193,7 +203,7 @@ svg{display:block}
   gap:10px;
   margin:52px 0 38px;
 }
-.airport-code{font-size:56px;font-weight:450;line-height:.92;letter-spacing:-3px}
+.airport-code{font-family:var(--font-display);font-size:56px;font-weight:600;line-height:.88;letter-spacing:-3.2px}
 .airport-name{display:block;margin-top:13px;color:#CCD4E9;font-size:15px}
 .route-arrow{display:flex;align-items:center;justify-content:center;color:#fff}
 .route-arrow:before,.route-arrow:after{content:"";width:18px;border-top:1px dashed rgba(255,255,255,.35)}
@@ -358,7 +368,7 @@ svg{display:block}
 .secondary-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:10px;border:1px solid #CBD2E3;border-radius:14px;background:#fff;color:var(--navy);font-weight:800}
 
 /* hotel */
-.hotel-hero{height:220px;background:#111 url('/assets/mobile/hotel-room.svg') center/cover no-repeat}
+.hotel-hero{height:220px;background:#E7E4DE url('/assets/mobile/hotel-fallback-premium.jpg') center/cover no-repeat}
 .hotel-sheet{position:relative;margin-top:-30px;padding:22px;border-radius:26px 26px 0 0;background:#fff}
 .hotel-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .hotel-title-row h1{margin:0;color:var(--navy);font-size:27px;letter-spacing:-.7px}
@@ -467,7 +477,8 @@ svg{display:block}
 :focus-visible{outline:3px solid rgba(47,59,171,.4);outline-offset:2px}
 
 /* production mobile app additions */
-html,body{overscroll-behavior-y:none}
+html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-y:none;scrollbar-width:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
 body{min-width:320px}
 button{border:0;background:none;color:inherit}
 [hidden]{display:none!important}
@@ -509,7 +520,7 @@ button{border:0;background:none;color:inherit}
 .app-header{min-height:72px;padding:calc(12px + env(safe-area-inset-top)) 20px 8px}
 .brand{min-height:44px;font-size:28px}
 .header-icon,.icon-button{min-width:44px;min-height:44px}
-.trip-context{min-height:32px;margin:2px 0 8px}
+.trip-context{min-height:32px;margin:2px 0 10px}
 .trip-context-copy strong{font-size:12px}
 .trip-context-copy span{margin-top:2px;font-size:10px}
 .context-chip{min-height:28px;padding:0 10px;font-size:10px}
@@ -519,27 +530,35 @@ button{border:0;background:none;color:inherit}
 .section-label{font-size:10px}
 .text-action{min-height:44px}
 
-.flight-ticket{padding:16px 16px 15px;border-radius:24px;box-shadow:0 10px 24px rgba(20,25,72,.13)}
-.flight-ticket:before,.flight-ticket:after{top:101px;width:21px;height:38px}
+.home-screen .flight-ticket{padding:14px 16px 14px;border-radius:24px;box-shadow:0 12px 26px rgba(20,25,72,.16)}
+.home-screen .flight-ticket:before,.home-screen .flight-ticket:after{top:91px;width:21px;height:38px}
 .flight-ticket:before{left:-11px}.flight-ticket:after{right:-11px}
-.ticket-map{inset:56px 45px auto;height:120px}
-.ticket-city{bottom:70px;width:160px}
+.home-screen .ticket-map{inset:50px 45px auto;height:112px}
+.home-screen .ticket-city{bottom:66px;width:150px}
 .ticket-chip{min-height:32px;padding:0 11px;font-size:10px}
 .ticket-status span{font-size:11px}
-.route-primary{grid-template-columns:1fr 46px 1fr;margin:22px 0 18px}
-.airport-code{font-size:45px;letter-spacing:-2px}
-.airport-name{margin-top:7px;font-size:11px}
+.home-screen .route-primary{grid-template-columns:1fr 54px 1fr;margin:17px 0 13px}
+.home-screen .airport-code{font-size:52px;font-weight:650;letter-spacing:-3.1px}
+.home-screen .airport-name{margin-top:5px;color:#B9C4DE;font-size:9px}
+.route-center{display:grid;justify-items:center;align-content:center;gap:6px;min-width:0}
+.route-center .route-arrow{width:100%}
+.route-duration{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:0 7px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.08);color:#D9E0F0;font-size:8px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
 .ticket-meta{margin-bottom:14px}
 .ticket-meta--home{grid-template-columns:1.15fr 1fr .68fr}
 .ticket-meta--home>div{padding:0 10px}
 .ticket-meta span{margin-bottom:5px;font-size:8px}
-.ticket-meta strong{font-size:17px}
-.ticket-meta small{margin-top:4px;font-size:9px}
-.primary-cta{min-height:50px;border-radius:13px;box-shadow:0 7px 16px rgba(254,191,2,.16);font-size:14px}
+.ticket-meta--home strong{font-size:18px;letter-spacing:-.25px}
+.ticket-meta--home small{margin-top:3px;font-size:8px}
+.primary-cta{min-height:54px;border-radius:14px;box-shadow:0 8px 18px rgba(254,191,2,.17);font-family:var(--font-text);font-size:14px;font-weight:850;letter-spacing:-.1px}
+.primary-cta svg{width:17px;height:17px;stroke-width:2}
 .simple-row{grid-template-columns:44px 1fr auto;gap:10px;min-height:64px}
 .row-icon{width:40px;height:40px;box-shadow:none}
 .row-copy strong{font-size:14px}.row-copy span{margin-top:3px;font-size:11px}.row-date{font-size:10px}
-.home-screen .simple-row{min-height:62px}
+.home-screen .simple-row{min-height:58px}
+.home-screen .section-head{margin-top:11px}
+.home-screen .row-icon{width:38px;height:38px}
+.home-screen .row-copy strong{font-size:13px;letter-spacing:-.1px}
+.home-screen .row-copy span{font-size:10px}
 .home-screen .section-head+.simple-row{border-bottom:0}
 .home-screen .simple-row[data-screen="health"] .row-copy span{white-space:normal;overflow:visible;text-overflow:clip}
 .ticket-status{display:grid;justify-items:end;align-content:start;gap:2px}
@@ -557,38 +576,44 @@ button{border:0;background:none;color:inherit}
 .timeline-symbol{width:34px;height:34px;margin:10px 0 0 -10px;box-shadow:none}
 .timeline-card{min-height:64px;padding:11px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
 .timeline-time{font-size:10px}
-.timeline-card h3{margin-top:4px;font-size:14px}
+.timeline-card h3{margin-top:4px;font-family:var(--font-display);font-size:14px;letter-spacing:-.15px}
 .timeline-card p{margin-top:3px;font-size:11px}
 
-.detail-content{padding:16px 18px 28px}
-.detail-route{margin:20px 0 10px}
-.detail-route .airport-code{font-size:42px}
+.detail-content{padding:14px 18px 26px}
+.dark-detail .ticket-top{align-items:center}
+.detail-route{grid-template-columns:1fr 54px 1fr;margin:16px 0 7px}
+.detail-route .airport-code{font-size:52px;font-weight:650;letter-spacing:-3.2px}
+.detail-route .airport-name{margin-top:5px;color:#B9C4DE;font-size:9px}
 .detail-date{margin:12px 0;color:#CDD5E9;font-size:11px}
-.event-local-times{display:grid;grid-template-columns:1fr 22px 1fr;align-items:center;margin:10px 0 12px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+.event-local-times{display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;margin:7px 0 10px;padding:9px 12px;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
 .event-local-times>div:last-child{text-align:right}
 .event-local-times span{display:block;color:#9EADD0;font-size:8px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
-.event-local-times strong{display:block;margin-top:3px;color:#fff;font-size:17px}
+.event-local-times strong{display:block;margin-top:3px;color:#fff;font-size:18px;letter-spacing:-.25px}
 .event-local-times small{display:block;margin-top:2px;color:#C8D1E7;font-size:9px}
-.event-local-times .event-local-arrow{display:grid;place-items:center;color:#899BC6}
-.detail-panel{padding:14px;border-radius:18px;box-shadow:0 8px 22px rgba(4,13,38,.16)}
-.detail-primary-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
-.detail-primary-grid>div{min-width:0;padding:8px 7px 12px;border-right:1px solid var(--line)}
+.event-local-duration{display:grid!important;justify-items:center;text-align:center;text-transform:none!important}
+.event-local-duration:before,.event-local-duration:after{content:"";width:100%;border-top:1px dashed rgba(255,255,255,.2)}
+.event-local-duration strong{margin:4px 0;padding:3px 7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.07);font-size:10px!important;font-weight:850;letter-spacing:0!important}
+.event-local-duration small{display:none}
+.detail-panel{padding:13px;border-radius:20px;box-shadow:0 10px 24px rgba(4,13,38,.18)}
+.detail-primary-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.detail-primary-grid>div{min-width:0;padding:8px 9px 11px;border-right:1px solid var(--line)}
 .detail-primary-grid>div:last-child{border-right:0}
 .detail-primary-grid span,.detail-secondary-row span{display:block;color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}
-.detail-primary-grid strong{display:block;margin-top:7px;color:var(--navy);font-size:17px}
-.detail-secondary-row{display:grid;grid-template-columns:.65fr 1.45fr 1fr;margin-bottom:14px}
-.detail-secondary-row>div{min-width:0;padding:12px 8px}
+.detail-primary-grid strong{display:block;margin-top:6px;color:var(--navy);font-size:19px;letter-spacing:-.25px}
+.detail-secondary-row{display:grid;grid-template-columns:.65fr 1.45fr 1fr;margin-bottom:11px}
+.detail-secondary-row>div{min-width:0;padding:10px 8px}
 .detail-secondary-row strong{display:block;margin-top:6px;color:var(--navy);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.detail-panel>.secondary-cta{min-height:46px;margin-top:8px}
+.detail-panel>.primary-cta{min-height:54px;font-size:15px}
+.detail-panel>.secondary-cta{min-height:44px;margin-top:7px}
 .flight-more{margin-top:8px;border-top:1px solid var(--line)}
-.flight-more summary{display:flex;align-items:center;min-height:44px;color:var(--indigo);font-size:12px;font-weight:800}
+.flight-more__toggle{display:flex;align-items:center;width:100%;min-height:44px;border:0;background:transparent;color:var(--indigo);font-size:12px;font-weight:800;text-align:left}
 .flight-more dl{display:grid;grid-template-columns:1fr 1fr;margin:0}
 .flight-more dl div{padding:8px 0}.flight-more dt{color:var(--muted);font-size:9px;text-transform:uppercase}.flight-more dd{margin:4px 0 0;color:var(--navy);font-size:12px}
 .flight-more p{margin:6px 0;color:var(--muted);font-size:10px;line-height:1.4}
 
 .hotel-hero{height:154px}
 .hotel-sheet{margin-top:-22px;padding:18px 20px calc(20px + var(--nav-height) + env(safe-area-inset-bottom));border-radius:22px 22px 0 0}
-.hotel-title-row h1{font-size:23px}
+.hotel-title-row h1{font-family:var(--font-display);font-size:23px}
 .hotel-stats{grid-template-columns:1fr 1fr .55fr;margin:14px 0 10px;border-radius:13px}
 .hotel-stats>div{padding:10px 9px}
 .hotel-stats strong{font-size:12px;line-height:1.4}
@@ -623,3 +648,1919 @@ button{border:0;background:none;color:inherit}
   .airport-code{font-size:42px}
   .hotel-sheet{padding-left:16px;padding-right:16px}
 }
+
+/* premium mobile interaction and state system */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+html.sheet-open,html.sheet-open body{overflow:hidden}
+.route-enter.route-forward{animation:screen-forward var(--motion-standard) var(--ease-standard) both}
+.route-enter.route-back{animation:screen-back var(--motion-standard) var(--ease-standard) both}
+.route-enter.route-tab{animation:screen-tab var(--motion-fast) var(--ease-standard) both}
+.route-exit{pointer-events:none}
+.route-exit-forward{animation:screen-exit-forward 90ms var(--ease-standard) both}
+.route-exit-back{animation:screen-exit-back 90ms var(--ease-standard) both}
+.route-exit-tab{animation:screen-exit-tab 70ms linear both}
+@keyframes screen-forward{from{opacity:.72}to{opacity:1}}
+@keyframes screen-back{from{opacity:.72}to{opacity:1}}
+@keyframes screen-tab{from{opacity:.68}to{opacity:1}}
+@keyframes screen-exit-forward{to{opacity:.82;transform:translate3d(-7px,0,0)}}
+@keyframes screen-exit-back{to{opacity:.82;transform:translate3d(7px,0,0)}}
+@keyframes screen-exit-tab{to{opacity:.78}}
+
+.primary-cta,.secondary-cta,.icon-button,.header-icon,.nav-item,.simple-row,.timeline-event,.booking-card,.info-card,.sheet-option,.contact-row,.text-action{
+  -webkit-tap-highlight-color:transparent;
+  transition:transform var(--motion-fast) var(--ease-standard),opacity var(--motion-fast) var(--ease-standard),background-color var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard);
+}
+.primary-cta:active,.secondary-cta:active,.icon-button:active,.header-icon:active,.simple-row:active,.timeline-event:active,.booking-card:active,.info-card[data-action]:active,.sheet-option:active,.contact-row:active{transform:scale(.98)}
+.primary-cta:disabled,.secondary-cta:disabled{opacity:.58;transform:none}
+@media(hover:hover){.header-icon:hover,.icon-button:hover{background:var(--paper)}.simple-row:hover,.booking-card:hover,.timeline-event:hover{background:#F8F9FC}.sheet-option:hover{border-color:#C8D0E4;background:#FAFBFE}}
+
+.nav-item svg,.nav-item>span,.nav-item>span svg,.nav-item>span+small{transition:transform var(--motion-fast) var(--ease-emphasized),color var(--motion-fast) var(--ease-standard),opacity var(--motion-fast) var(--ease-standard)}
+.nav-item.active svg{transform:translateY(-1px);stroke-width:2.15}
+.nav-item.active span{font-weight:850}
+.nav-add:active span{transform:scale(.97)}
+.ticket-status,.health-good,.health-warning,.offline-state,.info-status{transition:opacity var(--motion-fast) var(--ease-standard),transform var(--motion-fast) var(--ease-standard),background-color var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard)}
+.flight-ticket{animation:ticket-enter var(--motion-slow) var(--ease-emphasized) both}
+@keyframes ticket-enter{from{opacity:.72;transform:translate3d(0,8px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+
+.sheet-backdrop{animation:backdrop-in var(--motion-standard) var(--ease-standard) both}
+.bottom-sheet{--sheet-drag:0px;overflow:hidden;animation:sheet-in var(--motion-slow) var(--ease-sheet) both;transform:translate3d(-50%,var(--sheet-drag),0);transition:transform var(--motion-standard) var(--ease-sheet)}
+.bottom-sheet.is-dragging{transition:none}
+.bottom-sheet.is-closing{animation:sheet-out var(--motion-standard) var(--ease-standard) both}
+.sheet-backdrop.is-closing{animation:backdrop-out var(--motion-standard) var(--ease-standard) both}
+.sheet-scroll{max-height:calc(88dvh - 78px - env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;padding:2px 0 2px;scrollbar-width:none}
+.sheet-scroll::-webkit-scrollbar{display:none}
+.sheet-handle,[data-sheet-drag]{touch-action:none}
+@keyframes sheet-in{from{opacity:.6;transform:translate3d(-50%,28px,0)}to{opacity:1;transform:translate3d(-50%,var(--sheet-drag),0)}}
+@keyframes sheet-out{from{opacity:1;transform:translate3d(-50%,var(--sheet-drag),0)}to{opacity:0;transform:translate3d(-50%,32px,0)}}
+@keyframes backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes backdrop-out{from{opacity:1}to{opacity:0}}
+
+.toast-mobile{animation:toast-in var(--motion-standard) var(--ease-emphasized) both}
+.toast-mobile--alert{background:#8E2824}
+@keyframes toast-in{from{opacity:0;transform:translate3d(-50%,10px,0)}to{opacity:1;transform:translate3d(-50%,0,0)}}
+
+.timeline-event--current:before{background:var(--yellow);box-shadow:0 0 0 4px rgba(254,191,2,.15)}
+.timeline-event--current .timeline-symbol{color:var(--indigo);background:#EEF2FF}
+.timeline-event--current .timeline-card h3{color:var(--indigo)}
+.timeline-event--past{opacity:.68}
+.timeline-event--future{opacity:1}
+.timeline-event--current .timeline-card{animation:current-item-in var(--motion-slow) var(--ease-standard) both}
+@keyframes current-item-in{from{opacity:.72;transform:translate3d(0,4px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+
+.flight-more__chevron{display:grid;place-items:center;margin-left:auto;transition:transform var(--motion-standard) var(--ease-standard)}
+.flight-more-content{
+  opacity:0;
+  transform:translate3d(0,-5px,0);
+  transform-origin:top;
+  transition:opacity 180ms var(--ease-standard),transform 180ms var(--ease-standard);
+}
+.flight-more-content.is-open{opacity:1;transform:translate3d(0,0,0)}
+.missing-document-state{display:flex;align-items:flex-start;gap:8px;margin:0 0 10px;padding:10px 11px;border:1px solid #F1D06F;border-radius:11px;background:var(--amber-soft);color:#735500;font-size:11px;line-height:1.35}
+.missing-document-state svg{flex:0 0 auto}
+
+.hotel-hero{position:relative;overflow:hidden}
+.hotel-hero-image{width:100%;height:100%;object-fit:cover;animation:image-in var(--motion-slow) var(--ease-standard) both}
+@keyframes image-in{from{opacity:0}to{opacity:1}}
+.address span{min-width:0;overflow-wrap:anywhere}
+.contact-row{width:100%;text-align:left;text-decoration:none;color:inherit}
+.offline-refresh.is-loading svg{animation:refresh-once .8s linear infinite}
+@keyframes refresh-once{to{transform:rotate(360deg)}}
+
+.app-loading{display:block;padding:calc(18px + env(safe-area-inset-top)) 20px 24px}
+.loading-skeleton{width:100%;animation:skeleton-fade var(--motion-standard) var(--ease-standard) both}
+.skeleton-line,.skeleton-ticket,.skeleton-route i{background:linear-gradient(90deg,#E2E6ED 20%,#F4F6F9 45%,#E2E6ED 70%);background-size:220% 100%;animation:skeleton-shimmer 1.35s ease-in-out infinite}
+.skeleton-line{height:14px;border-radius:999px}
+.skeleton-brand{width:112px;height:28px;margin:12px 0 26px}.skeleton-context{width:58%;margin-bottom:12px}.skeleton-ticket{height:340px;padding:20px;border-radius:24px}.skeleton-chip{width:92px;height:30px}.skeleton-route{display:flex;justify-content:space-between;margin:74px 0 82px}.skeleton-route i{display:block;width:88px;height:44px;border-radius:10px}.skeleton-action{width:100%;height:50px}.skeleton-row{width:100%;height:58px;margin-top:18px}
+@keyframes skeleton-shimmer{to{background-position:-220% 0}}
+@keyframes skeleton-fade{from{opacity:0}to{opacity:1}}
+.recovery-safe{color:#3C6C54!important;font-weight:750}
+
+.screen,.hotel-sheet,.detail-content,.timeline-page,.bookings-list,.list-stack,.account-section{min-width:0}
+.screen{overflow-x:clip}
+.bottom-nav~*{max-width:100%}
+button,a,summary,input,select{touch-action:manipulation}
+.sheet-option,.contact-row,.text-action,.flight-more__toggle{min-height:44px}
+
+/* premium native typography and action finish */
+h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-primary-grid strong,.ticket-meta strong{font-family:var(--font-display)}
+.section-label,.ticket-meta span,.detail-primary-grid span,.detail-secondary-row span,.timeline-time,.row-date{font-family:var(--font-text);letter-spacing:.045em}
+.primary-cta{will-change:transform;transition:transform var(--motion-fast) var(--ease-emphasized),box-shadow var(--motion-fast) var(--ease-standard),filter var(--motion-fast) var(--ease-standard),opacity var(--motion-fast) var(--ease-standard)}
+.primary-cta:active{transform:translate3d(0,1px,0) scale(.985);box-shadow:0 4px 10px rgba(254,191,2,.12);filter:saturate(.96)}
+
+/* approved premium mobile visual system */
+.screen{background:linear-gradient(180deg,#fff 0%,#fff 58%,#F7F8FB 100%)}
+.home-screen .content{padding-bottom:18px}
+.home-screen .flight-ticket{border:1px solid rgba(255,255,255,.08);border-radius:27px;box-shadow:0 18px 34px rgba(11,24,66,.22),0 2px 5px rgba(11,24,66,.12)}
+.home-screen .flight-ticket:after,.home-screen .flight-ticket:before{background:#fff}
+.home-screen .route-primary{margin:18px 0 14px}
+.home-screen .route-center{gap:7px}
+.home-screen .route-center .route-arrow:before,.home-screen .route-center .route-arrow:after{width:14px;border-color:rgba(255,255,255,.28)}
+.home-summary-module{margin-top:12px;padding:0 14px 2px;border:1px solid rgba(20,25,72,.055);border-radius:20px;background:rgba(255,255,255,.96);box-shadow:0 8px 22px rgba(20,25,72,.055)}
+.home-summary-module+.home-summary-module{margin-top:10px}
+.home-summary-module .section-head{margin:0;min-height:39px;border-bottom:1px solid rgba(20,25,72,.055)}
+.home-summary-module .section-label{font-size:9px;color:#667392}
+.home-summary-module .text-action{min-height:38px;font-size:10px}
+.home-summary-module .simple-row{min-height:58px;border:0;background:transparent}
+.home-summary-module .row-icon{width:38px;height:38px;border-radius:13px;background:#F0F3FB;color:var(--indigo)}
+.home-health-module .row-icon{border-radius:50%;color:#fff}
+.home-health-module .row-icon.health-good{background:linear-gradient(135deg,#11C775,#2FD48C)}
+.home-health-module .row-icon.health-warning{background:linear-gradient(135deg,#F4A800,#FFC94A);color:var(--navy)}
+.ticket-chip--setup{background:rgba(111,128,224,.28);color:#E8ECFF}
+.next-action-card--setup{background:linear-gradient(145deg,#15235A,#253986)}
+.next-action-card--setup .next-action-primary{border-color:#FEBF02;background:#FEBF02;color:#141948}
+.home-health-module .row-icon.health-info{border-radius:13px;background:#EEF1FF;color:#2F3BAB}
+.home-health-module--setup .simple-row{min-height:70px}
+.health-summary .health-shield.setup{background:#EEF1FF;color:#2F3BAB}
+.trip-date-range{min-width:0;margin:0;padding:14px;border:1px solid rgba(20,25,72,.1);border-radius:18px;background:#F8F9FC}
+.trip-date-range legend{padding:0 6px;color:#141948;font-size:12px;font-weight:760}
+.trip-date-range .form-fields{gap:10px}
+@media(max-width:370px){.trip-date-range{padding:12px}.trip-date-range .form-fields--date-time{grid-template-columns:1fr}}
+
+.bottom-nav{border-top:0;background:rgba(255,255,255,.94);box-shadow:0 -10px 30px rgba(20,25,72,.08);backdrop-filter:blur(22px) saturate(1.2)}
+.nav-item{font-size:10px;letter-spacing:-.05px}
+.nav-item.active{color:var(--indigo)}
+.nav-add span{width:60px;height:60px;border-width:5px;background:linear-gradient(145deg,#3850C8,#1E309A);box-shadow:0 11px 24px rgba(47,59,171,.3)}
+
+.timeline-page{padding:10px 16px 28px;background:var(--paper)}
+.day-label{align-items:center;margin:13px 0 7px}
+.day-date{width:52px;color:#52658D;font-size:9px;letter-spacing:.06em}
+.day-line{border-color:#DCE2EE}
+.timeline-list{margin-left:38px}
+.timeline-list:before{left:7px;width:2px;background:linear-gradient(180deg,#8FA1CE,#D6DDEA)}
+.timeline-event{grid-template-columns:38px 1fr;gap:10px;padding:0 0 8px}
+.timeline-event:before{left:2px;top:23px;width:9px;height:9px;border-width:2px;box-shadow:0 0 0 4px var(--paper)}
+.timeline-symbol{width:38px;height:38px;margin:7px 0 0 -12px;border:1px solid #E1E6F0;background:#fff;box-shadow:0 6px 14px rgba(20,25,72,.08)}
+.timeline-card{min-height:70px;padding:12px 13px;border:1px solid rgba(20,25,72,.06);border-radius:16px;background:#fff;box-shadow:0 6px 16px rgba(20,25,72,.055)}
+.timeline-event--current .timeline-card{border-color:rgba(47,59,171,.2);box-shadow:0 8px 20px rgba(47,59,171,.1)}
+.timeline-event--current .timeline-symbol{border-color:rgba(47,59,171,.22);background:#EDF1FF}
+.timeline-time{font-size:10px;color:#536385}
+.timeline-card h3{margin-top:3px;font-size:15px;line-height:1.2}
+.timeline-card p{margin-top:4px;font-size:11px}
+
+.dark-detail{background:linear-gradient(155deg,#081536 0%,#141948 48%,#10245D 100%)}
+.dark-detail .app-bar--dark{background:rgba(8,21,54,.76);backdrop-filter:blur(20px)}
+.detail-content{padding:10px 16px 28px}
+.detail-pass{padding:15px 14px 12px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:linear-gradient(145deg,rgba(47,59,171,.28),rgba(8,21,58,.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 38px rgba(3,10,31,.2)}
+.detail-pass .ticket-chip{background:rgba(76,101,196,.58)}
+.detail-route{margin:18px 0 8px}
+.detail-route .airport-code{font-size:54px}
+.detail-route .route-arrow:before,.detail-route .route-arrow:after{width:17px;border-color:rgba(255,255,255,.3)}
+.event-local-times{margin:8px -2px 0;padding:10px 4px 1px;border-top:1px solid rgba(255,255,255,.1);border-bottom:0}
+.detail-panel{position:relative;margin-top:12px;padding:15px;border-radius:24px;box-shadow:0 16px 34px rgba(3,10,31,.26)}
+.detail-panel:before,.detail-panel:after{content:"";position:absolute;top:67px;width:16px;height:28px;border-radius:50%;background:#111C4B}
+.detail-panel:before{left:-9px}.detail-panel:after{right:-9px}
+.detail-primary-grid{border-bottom-color:rgba(20,25,72,.07)}
+.detail-primary-grid>div{padding:10px 10px 13px;border-right-color:rgba(20,25,72,.07)}
+.detail-secondary-row{margin-bottom:12px}
+.detail-secondary-row>div{padding:11px 9px}
+.detail-panel>.primary-cta{box-shadow:0 8px 18px rgba(254,191,2,.22)}
+.detail-panel>.secondary-cta{border-color:#D9DEEA;background:#FAFBFD}
+.flight-more{border-top-color:rgba(20,25,72,.07)}
+
+.hotel-hero{height:184px;background-color:#13152D;background-position:center 42%}
+.hotel-hero:after{content:"";position:absolute;inset:auto 0 0;height:70%;background:linear-gradient(180deg,transparent,rgba(10,15,39,.42));pointer-events:none}
+.hotel-hero-scrim{position:absolute;inset:0;box-shadow:inset 0 1px rgba(255,255,255,.08)}
+.hotel-sheet{margin-top:-25px;padding:18px 20px calc(24px + var(--nav-height) + env(safe-area-inset-bottom));border-radius:27px 27px 0 0;background:var(--paper)}
+.hotel-title-row{align-items:center;margin-bottom:12px}
+.hotel-title-row h1{font-size:24px}
+.hotel-title-row .confirmed{padding:5px 8px;border-radius:999px;background:var(--green-soft);font-size:10px}
+.hotel-title-row .status-dot-check{width:18px;height:18px}
+.hotel-stay-card{padding:0 12px 12px;border:1px solid rgba(20,25,72,.06);border-radius:20px;background:#fff;box-shadow:0 8px 22px rgba(20,25,72,.06)}
+.hotel-stats{margin:0;border:0;border-bottom:1px solid rgba(20,25,72,.07);border-radius:0}
+.hotel-stats>div{padding:12px 9px;border-right-color:rgba(20,25,72,.07)}
+.hotel-stats strong{margin-top:5px;font-size:13px}
+.hotel-stats small{display:block;margin-top:4px;color:var(--muted);font-size:9px}
+.hotel-actions{gap:8px;margin:10px 0 0}
+.hotel-actions .secondary-cta{min-height:46px;border-color:#D8DEEB;background:#fff;font-size:12px}
+.hotel-actions .hotel-action-primary{border-color:var(--navy);background:var(--navy);color:#fff}
+.address{margin:13px 2px 10px;font-size:12px}
+.map-card{height:98px;border:1px solid rgba(20,25,72,.05);border-radius:17px;box-shadow:0 6px 16px rgba(20,25,72,.05)}
+.hotel-contact-card{margin-top:10px;padding:0 13px;border:1px solid rgba(20,25,72,.06);border-radius:18px;background:#fff;box-shadow:0 6px 18px rgba(20,25,72,.045)}
+.hotel-contact-card .contact-row{min-height:47px;border-bottom-color:rgba(20,25,72,.07);font-size:12px}
+
+.ready-screen{background:var(--paper)}
+.offline-summary{display:flex;align-items:center;gap:13px;margin:13px 20px 12px;padding:16px;border-radius:21px;background:linear-gradient(145deg,#141948,#26377F);box-shadow:0 12px 28px rgba(20,25,72,.17);text-align:left}
+.offline-summary-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:50%;background:var(--green);color:#fff;box-shadow:0 7px 16px rgba(24,196,108,.22)}
+.offline-summary--attention .offline-summary-icon{background:var(--yellow);color:var(--navy)}
+.offline-summary-copy{min-width:0}
+.offline-summary-copy strong{color:#fff;font-size:23px;letter-spacing:-.5px}
+.offline-summary-copy span{color:#CBD3E8;font-size:11px;line-height:1.35}
+.ready-list{margin:0 20px;padding:0 13px 1px;border:1px solid rgba(20,25,72,.06);border-radius:21px;background:#fff;box-shadow:0 8px 22px rgba(20,25,72,.055)}
+.ready-list .info-card{min-height:61px;padding:9px 0;background:transparent}
+.ready-list .info-icon{width:38px;height:38px;border-radius:12px;background:#EEF2FF}
+.ready-list .info-copy strong{font-size:13px}
+.ready-list .info-copy span{margin-top:3px;font-size:10px}
+.ready-list .status-dot-check{width:22px;height:22px;box-shadow:none}
+.download-action{padding:12px 20px calc(20px + var(--nav-height) + env(safe-area-inset-bottom))}
+.offline-refresh{min-height:50px;border-color:#C9D1E4;background:#fff;box-shadow:0 7px 18px rgba(20,25,72,.05)}
+
+.bottom-sheet{padding:10px 20px calc(22px + env(safe-area-inset-bottom));border-radius:32px 32px 0 0;background:#F7F8FB;box-shadow:0 -24px 70px rgba(7,17,48,.26)}
+.sheet-handle{width:38px;height:5px;margin-bottom:12px;background:#B8C0D0}
+.sheet-title-row{min-height:48px;margin-bottom:8px}
+.sheet-title-row h2{font-size:22px;letter-spacing:-.45px}
+.sheet-title-row .icon-button{width:44px;height:44px;border-radius:50%;background:#ECEFF5}
+.sheet-options-group{overflow:hidden;border:1px solid rgba(20,25,72,.07);border-radius:21px;background:#fff;box-shadow:0 10px 26px rgba(20,25,72,.07)}
+.sheet-options-group .sheet-option{min-height:62px;padding:8px 13px;border:0;border-bottom:1px solid rgba(20,25,72,.07);border-radius:0;background:#fff}
+.sheet-options-group .sheet-option:last-child{border-bottom:0}
+.sheet-options-group .sheet-option+.sheet-option{margin-top:0}
+.sheet-options-group .info-icon{width:40px;height:40px;border-radius:13px;background:#EEF2FF}
+.sheet-option strong{font-size:14px;letter-spacing:-.1px}
+.sheet-option small{margin-top:3px;font-size:10px}
+.sheet-option:active{background:#F3F5FA}
+
+@media(max-width:375px){
+  .home-summary-module{padding-left:12px;padding-right:12px}
+  .detail-content{padding-left:13px;padding-right:13px}
+  .detail-route .airport-code{font-size:50px}
+  .offline-summary,.ready-list{margin-left:16px;margin-right:16px}
+}
+
+/* pixel-perfect approved-board fidelity pass */
+.brand{font-size:30px;font-weight:800;letter-spacing:-1.4px}
+.screen-title{font-size:32px;font-weight:700;line-height:1.1}
+.section-label{font-size:12px;font-weight:700;letter-spacing:.08em}
+.airport-code,.home-screen .airport-code,.detail-route .airport-code{font-size:60px;font-weight:800;line-height:.92;letter-spacing:-3.6px;font-variant-numeric:tabular-nums}
+.ticket-meta strong,.event-local-times strong,.detail-primary-grid strong,.detail-secondary-row strong,.timeline-time,.row-date{font-variant-numeric:tabular-nums}
+.primary-cta{min-height:56px;border-radius:16px}
+.primary-cta svg{width:16px;height:16px}
+.route-arrow:before,.route-arrow:after{width:20px;border-top-width:1.5px;border-color:rgba(255,255,255,.46)}
+.home-screen .route-center .route-arrow:before,.home-screen .route-center .route-arrow:after{width:17px;border-color:rgba(255,255,255,.46)}
+.route-duration,.event-local-duration strong{font-variant-numeric:tabular-nums}
+
+.home-screen .flight-ticket{padding:15px 16px 14px;border-radius:28px}
+.home-screen .route-primary{grid-template-columns:1fr 68px 1fr;margin:16px 0 13px}
+.home-screen .airport-name{font-size:10px}
+.ticket-meta--home{margin-bottom:13px}
+.ticket-meta--home strong{font-size:19px}
+.home-summary-module{box-shadow:0 7px 18px rgba(20,25,72,.045)}
+.home-summary-module .section-label{font-size:10px;font-weight:700;letter-spacing:.08em}
+.home-summary-module .row-copy strong{font-size:14px;font-weight:700}
+.home-summary-module .row-copy span{font-size:11px}
+
+.detail-pass{padding:16px 14px 13px;border-radius:28px}
+.detail-route{grid-template-columns:1fr 72px 1fr;margin:16px 0 7px}
+.detail-route .airport-name{font-size:10px}
+.event-local-times strong{font-size:21px}
+.detail-panel{padding:14px;border-radius:28px}
+.detail-panel:before,.detail-panel:after{top:73px}
+.detail-primary-grid{gap:8px;border:0}
+.detail-primary-grid>div{padding:11px 10px 12px;border:0;border-radius:13px;background:#F4F6FA}
+.detail-secondary-row{gap:8px;margin:8px 0 13px}
+.detail-secondary-row>div{padding:10px 9px;border-radius:12px;background:#F8F9FC}
+.detail-primary-grid span,.detail-secondary-row span{font-size:9px}
+.detail-primary-grid strong{font-size:20px}
+.detail-secondary-row strong{font-size:12px}
+.detail-panel>.primary-cta{margin-top:2px}
+
+.timeline-card{min-height:68px;padding:11px 12px;border:0;border-bottom:1px solid #DDE3EE;border-radius:0;background:transparent;box-shadow:none}
+.timeline-event--current .timeline-card{padding:12px;border:1px solid rgba(47,59,171,.16);border-radius:16px;background:#fff;box-shadow:0 7px 18px rgba(47,59,171,.08)}
+.timeline-event--past{opacity:.58}
+.timeline-event--future{opacity:1}
+.timeline-card h3{font-size:16px;font-weight:700}
+.timeline-card p{font-size:12px}
+.timeline-time{font-size:11px}
+.day-date{font-size:10px;font-weight:700;letter-spacing:.08em}
+
+.hotel-hero{height:165px}
+.hotel-sheet{margin-top:-24px}
+.hotel-title-row h1{font-size:28px;font-weight:700;line-height:1.1}
+.hotel-stay-card{border-radius:18px;box-shadow:0 6px 16px rgba(20,25,72,.045)}
+.hotel-stats strong{font-size:14px;font-variant-numeric:tabular-nums}
+.hotel-actions .secondary-cta{min-height:48px;border-radius:14px}
+.map-card{height:100px}
+
+.offline-summary{gap:14px;margin-top:10px;padding:12px 2px 14px;border:0;border-radius:0;background:transparent;box-shadow:none}
+.offline-summary-icon{flex-basis:48px;width:48px;height:48px;box-shadow:0 6px 14px rgba(24,196,108,.16)}
+.offline-summary-copy strong{color:var(--navy);font-size:28px;font-weight:700;line-height:1.05;letter-spacing:-.7px}
+.offline-summary-copy span{margin-top:5px;color:var(--muted);font-size:12px}
+.ready-list{border-radius:18px;box-shadow:0 6px 16px rgba(20,25,72,.04)}
+.ready-list .info-card{min-height:59px}
+.ready-list .info-copy strong{font-size:14px;font-weight:700}
+.ready-list .info-copy span{font-size:11px}
+.offline-refresh{min-height:52px;border-radius:16px}
+
+.bottom-sheet{border-radius:32px 32px 0 0}
+.sheet-handle{width:40px;height:5px}
+.sheet-title-row h2{font-size:24px;font-weight:700;line-height:1.1}
+.sheet-options-group .sheet-option{min-height:60px}
+.sheet-option strong{font-size:15px;font-weight:700}
+.sheet-option small{font-size:11px}
+.sheet-options-group .info-icon{width:40px;height:40px}
+
+.nav-item svg,.row-icon svg,.info-icon svg,.timeline-symbol svg,.secondary-cta svg,.contact-row svg{stroke-width:1.75}
+.nav-item.active svg{stroke-width:2}
+
+@media(max-width:375px){
+  .airport-code,.home-screen .airport-code,.detail-route .airport-code{font-size:56px}
+  .home-screen .route-primary{grid-template-columns:1fr 60px 1fr}
+  .detail-route{grid-template-columns:1fr 64px 1fr}
+}
+
+@media(prefers-reduced-motion:reduce){
+  :root{--motion-fast:1ms;--motion-standard:1ms;--motion-slow:1ms}
+  .route-enter,.route-exit,.flight-ticket,.sheet-backdrop,.bottom-sheet,.bottom-sheet.is-closing,.sheet-backdrop.is-closing,.toast-mobile,.timeline-event--current .timeline-card,.hotel-hero-image,.loading-skeleton{animation:reduced-fade 1ms linear both!important}
+  .flight-more-content{transition:none!important}
+  .primary-cta,.secondary-cta,.icon-button,.header-icon,.nav-item,.simple-row,.timeline-event,.booking-card,.info-card,.sheet-option,.contact-row,.text-action,.nav-item svg,.nav-item>span,.flight-more__chevron{transition:none!important}
+  .primary-cta:active,.secondary-cta:active,.icon-button:active,.header-icon:active,.simple-row:active,.timeline-event:active,.booking-card:active,.info-card[data-action]:active,.sheet-option:active,.contact-row:active{transform:none!important;filter:none!important}
+  .skeleton-line,.skeleton-ticket,.skeleton-route i,.offline-refresh.is-loading svg{animation:none!important;background:#EDF0F5}
+  @keyframes reduced-fade{from{opacity:.98}to{opacity:1}}
+}
+
+/* Smart Quick Add v1 — compact, recoverable, trip-scoped mobile entry. */
+.quick-add-screen .focused-page{gap:14px;padding-inline:20px;background:#F2F4F7}
+.quick-add-form{display:grid;align-content:start;gap:14px;min-height:calc(100dvh - 64px)}
+.quick-trip-context{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 12px;border:1px solid rgba(47,59,171,.10);border-radius:17px;background:#fff}
+.quick-trip-context__icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:rgba(47,59,171,.09);color:#2F3BAB}
+.quick-trip-context>span:nth-child(2){display:grid;min-width:0;gap:1px}.quick-trip-context small{color:#6D7690;font-size:10px;font-weight:720;text-transform:uppercase;letter-spacing:.06em}.quick-trip-context strong{overflow:hidden;color:#141948;font-size:15px;font-weight:790;text-overflow:ellipsis;white-space:nowrap}.quick-trip-context em{color:#6D7690;font-size:11px;font-style:normal}.quick-trip-context button{min-width:54px;min-height:44px;padding:0 8px;border:0;background:transparent;color:#2F3BAB;font:inherit;font-size:13px;font-weight:760}
+.quick-add-form .form-section{gap:14px}.quick-add-form .form-section>header{padding:0 2px}.quick-add-form .form-section>header h1{font-size:26px}.quick-add-form .form-section>header p{margin:5px 0 0;color:#69738A;font-size:13px;line-height:1.35}.quick-primary-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.form-more-panel>.form-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.quick-add-form .form-fields{gap:12px}.quick-add-form .form-fields--date-time,.quick-add-form .form-fields--activity-time{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.quick-add-form .form-field{display:grid;min-width:0;gap:6px}.quick-add-form .form-field>span,.quick-travelers legend,.time-mode legend{color:#39415D}.quick-add-form .field-helper{margin-top:-1px;color:#727B91;font-size:11px;line-height:1.35}.quick-add-form input,.quick-add-form select,.quick-add-form textarea{width:100%;box-sizing:border-box}.quick-add-form input::placeholder,.quick-add-form textarea::placeholder{color:#9299AA}
+.date-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin-top:-2px}.date-suggestions button{min-height:36px;padding:0 12px;border:1px solid rgba(47,59,171,.16);border-radius:999px;background:#fff;color:#2F3BAB;font:inherit;font-size:12px;font-weight:730}
+.quick-add-form .form-more{align-self:start}.form-more{overflow:visible;border:1px solid rgba(20,25,72,.08);border-radius:18px;background:#fff;box-shadow:none}.form-more-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;padding:0 15px;border:0;border-radius:18px;background:#fff;color:#141948;font:inherit;font-size:15px;font-weight:770;text-align:left}.form-more-toggle:focus-visible{outline:3px solid rgba(254,191,2,.78);outline-offset:2px}.form-more-chevron{display:grid;place-items:center;color:#2F3BAB}.form-more-panel{padding:0 15px 15px;border-top:1px solid transparent;opacity:0;transform:translateY(-4px);transition:opacity 160ms ease,transform 160ms ease}.form-more-panel.is-open{padding-top:15px;border-top-color:rgba(20,25,72,.07);opacity:1;transform:none}
+.quick-travelers,.time-mode{min-width:0;margin:0;padding:0;border:0}.quick-travelers>p{margin:3px 0 9px;color:#737B90;font-size:11px;line-height:1.35}.quick-travelers .traveler-pills{display:flex;flex-wrap:wrap;gap:8px}.quick-travelers .traveler-pill{min-height:44px}.time-mode-control{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.time-mode-control label{position:relative;display:grid;place-items:center;min-height:48px;padding:4px 9px;border:1px solid rgba(20,25,72,.10);border-radius:14px;background:#fff;color:#59637A;font-size:12px;font-weight:700;text-align:center}.time-mode-control input{position:absolute;opacity:0}.time-mode-control label:has(input:checked){border-color:#2F3BAB;background:rgba(47,59,171,.08);color:#2F3BAB}.time-mode-control label:has(input:focus-visible){outline:3px solid rgba(254,191,2,.78);outline-offset:2px}.form-fields--activity-time.is-time-unset{display:none}
+.is-derived-timezone{display:none!important}.timezone-derived{display:flex;align-items:center;gap:6px;margin:-5px 2px 0;color:#23865D;font-size:11px;font-weight:680}.timezone-derived svg{flex:0 0 auto}.quick-add-form .form-note{margin:0 3px;color:#6C758A}.quick-add-form .form-save-bar{margin-top:2px}.quick-add-form .mobile-primary-action{min-height:58px;border-radius:17px;font-weight:820}
+.sheet-import-action{display:grid;grid-template-columns:46px minmax(0,1fr) 22px;align-items:center;gap:12px;width:100%;min-height:70px;padding:10px 12px;border:1px solid rgba(47,59,171,.16);border-radius:18px;background:linear-gradient(145deg,#202A82,#2F3BAB);color:#fff;font:inherit;text-align:left;box-shadow:0 8px 22px rgba(20,25,72,.14)}.sheet-import-action .info-icon{background:rgba(255,255,255,.13);color:#fff}.sheet-import-action span:nth-child(2){display:grid;gap:3px;min-width:0}.sheet-import-action strong{font-size:15px}.sheet-import-action small{color:rgba(255,255,255,.76);font-size:11px;line-height:1.25}.sheet-manual-label{padding:15px 2px 7px;color:#747D91;font-size:11px;font-weight:780;letter-spacing:.07em;text-transform:uppercase}
+.quick-no-trip{display:grid;gap:13px;text-align:center}.quick-no-trip>svg{justify-self:center;color:#2F3BAB}.quick-no-trip h1{margin:0;color:#141948;font-size:25px}.quick-no-trip p{margin:0;color:#667087;font-size:14px;line-height:1.4}.quick-trip-list{display:grid;overflow:hidden;border:1px solid rgba(20,25,72,.08);border-radius:18px;background:#fff}.quick-trip-list button{display:grid;grid-template-columns:1fr 20px;align-items:center;gap:10px;min-height:62px;padding:10px 14px;border:0;border-bottom:1px solid rgba(20,25,72,.07);background:#fff;color:#141948;font:inherit;text-align:left}.quick-trip-list button:last-child{border-bottom:0}.quick-trip-list span{display:grid;gap:3px}.quick-trip-list strong{font-size:14px}.quick-trip-list small{color:#70798D;font-size:11px}
+.document-quick-add .document-file-picker{min-height:82px}.document-traveler-assignment[hidden]{display:none}.quick-document-file .document-file-meta{margin-top:2px;color:#141948;font-size:12px;font-weight:700}
+@media(max-width:370px){.quick-add-screen .focused-page{padding-inline:16px}.quick-add-form .form-fields--date-time,.quick-add-form .form-fields--activity-time{gap:9px}.quick-add-form input,.quick-add-form select{padding-inline:10px}.time-mode-control{grid-template-columns:1fr}.quick-trip-context{grid-template-columns:38px minmax(0,1fr) 52px;padding-inline:10px}.quick-trip-context__icon{width:38px;height:38px}}
+@media(prefers-reduced-motion:reduce){.form-more-panel{transition:none}}
+
+/* Remaining traveler-facing Mobile UI v1 screens. Locked Home, Flight, Timeline,
+   Hotel, driver and bottom-navigation selectors above remain the source of truth. */
+.mobile-v1-screen{background:var(--off-white,#f2f4f7)}
+.mobile-page{padding:12px 16px calc(var(--nav-height) + env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;gap:16px;min-width:0}
+.mobile-group{display:grid;gap:8px}.mobile-group>h2,.mobile-page>.section-label{margin:0 2px;color:#70768d;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.mobile-list,.travel-list,.detail-list{overflow:hidden;border:1px solid rgba(20,25,72,.09);border-radius:18px;background:#fff;box-shadow:0 7px 20px rgba(20,25,72,.045)}
+.trip-row,.travel-row,.detail-row{width:100%;min-height:68px;padding:12px 14px;border:0;border-bottom:1px solid rgba(20,25,72,.08);background:#fff;color:#141948;display:flex;align-items:center;gap:12px;text-align:left;font:inherit}.trip-row:last-child,.travel-row:last-child,.detail-row:last-child{border-bottom:0}.trip-row.is-current{background:linear-gradient(135deg,rgba(47,59,171,.09),rgba(47,59,171,.035))}.trip-row__mark,.travel-row__icon,.plan-hero__icon{width:44px;height:44px;border-radius:14px;background:rgba(47,59,171,.09);color:#2f3bab;display:grid;place-items:center;flex:0 0 auto}.trip-row__copy,.travel-row__body{min-width:0;flex:1;display:grid;gap:3px}.trip-row strong,.travel-row strong,.detail-row strong{font-size:15px;line-height:1.2}.trip-row small,.travel-row small,.detail-row small{font-size:12px;color:#727990;line-height:1.35}.trip-row__copy>span{font-size:11px;color:#2f3bab;font-weight:700}.chevron{flex:0 0 auto;color:#8b91a7}
+.mobile-secondary-action{width:100%;min-height:48px;border:1px solid rgba(47,59,171,.24);border-radius:14px;background:#fff;color:#25338f;font:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}.mobile-secondary-action:active{transform:scale(.985)}
+.mobile-empty{min-height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 20px;gap:10px}.mobile-empty__icon,.form-intro>span{width:58px;height:58px;border-radius:20px;background:rgba(47,59,171,.1);color:#2f3bab;display:grid;place-items:center}.mobile-empty h1,.form-intro h1{margin:4px 0 0;font-size:23px;letter-spacing:-.03em}.mobile-empty p,.form-intro p,.muted-copy{margin:0;max-width:280px;color:#727990;font-size:14px;line-height:1.45}
+.segmented-control{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:3px;border-radius:13px;background:rgba(20,25,72,.07)}.segmented-control button{min-height:38px;padding:0 6px;border:0;border-radius:10px;background:transparent;color:#6f758b;font:inherit;font-size:12px;font-weight:650}.segmented-control button.is-active{background:#fff;color:#141948;box-shadow:0 2px 8px rgba(20,25,72,.08)}
+.travel-state{justify-self:start;font-size:11px;font-style:normal;font-weight:750;color:#15845d}.travel-state--attention{color:#a66c00}.journey-pass{border-radius:26px;padding:20px;background:linear-gradient(155deg,#141948,#202c75);color:#fff;box-shadow:0 18px 38px rgba(20,25,72,.2);display:grid;gap:18px}.journey-pass>header{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px}.journey-pass>header>span{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}.journey-pass>header>strong{color:#68df9f;font-size:13px}.journey-pass>header>small{grid-column:2;color:rgba(255,255,255,.58);font-size:10px}.journey-route{display:grid;grid-template-columns:1fr 68px 1fr;align-items:center;text-align:center}.journey-route>div{display:grid;gap:4px}.journey-route>div:last-child{text-align:right}.journey-route>div:first-child{text-align:left}.journey-route strong{font-size:38px;line-height:1;letter-spacing:-.04em}.journey-route span{font-size:11px;color:rgba(255,255,255,.7)}.journey-route__line{position:relative;display:grid;place-items:center}.journey-route__line:before{content:"";position:absolute;width:100%;border-top:1px dashed rgba(255,255,255,.45)}.journey-route__line svg{position:relative;background:#1b2461;padding:5px;border-radius:50%;box-sizing:content-box}.journey-times,.journey-facts,.fact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:rgba(255,255,255,.12);border-radius:15px;overflow:hidden}.journey-times>div,.journey-facts>div,.fact-grid>div{padding:12px;background:rgba(255,255,255,.08);display:grid;gap:3px}.journey-times span,.journey-facts dt,.fact-grid span{font-size:10px;color:rgba(255,255,255,.62);text-transform:uppercase;letter-spacing:.04em}.journey-times strong,.journey-facts dd{margin:0;font-size:18px}.journey-times small{font-size:10px;color:rgba(255,255,255,.7)}.inline-recovery{display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:rgba(254,191,2,.12);color:#fff}.inline-recovery>span{display:grid;gap:2px}.inline-recovery small{color:rgba(255,255,255,.68)}.journey-pass .mobile-secondary-action{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.07);color:#fff}
+.plan-hero{padding:24px 4px 12px;display:grid;gap:7px}.plan-hero>span:not(.plan-hero__icon){font-size:12px;color:#2f3bab;font-weight:750;text-transform:uppercase}.plan-hero h1{margin:0;font-size:30px;letter-spacing:-.04em}.plan-hero p{margin:0;color:#727990}.detail-row>span:nth-child(2){flex:1;display:grid;gap:3px}.mobile-disclosure{border-top:1px solid rgba(20,25,72,.1)}.mobile-disclosure summary{min-height:48px;display:flex;align-items:center;justify-content:space-between;font-weight:700;cursor:pointer}.mobile-disclosure p{color:#727990;font-size:14px;line-height:1.5}
+.essentials-summary,.review-summary,.sync-summary{padding:16px;border-radius:18px;background:linear-gradient(135deg,rgba(47,59,171,.1),rgba(47,59,171,.04));display:flex;align-items:center;gap:12px;color:#141948}.essentials-summary>span,.review-summary>span,.sync-summary>span{width:44px;height:44px;border-radius:14px;background:#2f3bab;color:#fff;display:grid;place-items:center}.essentials-summary>div,.review-summary>div,.sync-summary>div{display:grid;gap:3px}.essentials-summary small,.review-summary small,.sync-summary small{color:#727990;font-size:12px}.checklist-row{min-height:64px;padding:10px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(20,25,72,.08);background:#fff}.checklist-row:last-child{border-bottom:0}.checklist-row>input{position:absolute;opacity:0}.checklist-box{width:28px;height:28px;border:2px solid rgba(47,59,171,.35);border-radius:9px;color:transparent;display:grid;place-items:center}.checklist-row input:checked+.checklist-box{background:#2f3bab;border-color:#2f3bab;color:#fff}.checklist-row input:focus-visible+.checklist-box{outline:3px solid #febf02;outline-offset:2px}.checklist-copy{flex:1;display:grid;gap:2px}.checklist-copy small{font-size:11px;color:#73798e}.checklist-row.is-complete strong{text-decoration:line-through;color:#7d8397}.checklist-row em{font-size:10px;color:#a66c00;font-style:normal;font-weight:750}.auto-badge{font-size:9px;color:#2f3bab;background:rgba(47,59,171,.08);padding:4px 6px;border-radius:999px}
+.traveler-avatar{width:42px;height:42px;border-radius:50%;background:#141948;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:800;flex:0 0 auto}.traveler-avatar--large{width:70px;height:70px;font-size:25px}.traveler-profile{text-align:center;display:grid;justify-items:center;gap:5px;padding:16px}.traveler-profile h1{margin:5px 0 0;font-size:25px}.traveler-profile p{margin:0;color:#727990}.fact-grid{background:rgba(20,25,72,.08)}.fact-grid>div{background:#fff}.fact-grid span{color:#727990}.fact-grid strong{color:#141948;font-size:14px}
+.form-intro{display:grid;justify-items:center;text-align:center;gap:8px;padding:12px}.mobile-form{display:grid;gap:14px}.mobile-form label{display:grid;gap:7px;color:#141948;font-size:13px;font-weight:700}.mobile-form input,.mobile-form select,.mobile-form textarea{width:100%;min-height:48px;padding:12px 13px;border:1px solid rgba(20,25,72,.16);border-radius:13px;background:#fff;color:#141948;font:inherit;font-size:16px;box-sizing:border-box}.mobile-form textarea{resize:vertical;line-height:1.4}.mobile-form input:focus-visible,.mobile-form select:focus-visible,.mobile-form textarea:focus-visible{outline:3px solid rgba(254,191,2,.8);outline-offset:1px;border-color:#2f3bab}.form-note{margin:0;color:#747a8f;font-size:12px;line-height:1.45}.review-card,.recovery-card{padding:16px;border:1px solid rgba(20,25,72,.1);border-radius:18px;background:#fff;box-shadow:0 7px 20px rgba(20,25,72,.04)}.review-card h2,.recovery-card h2{margin:10px 0 5px;font-size:18px}.review-card p,.recovery-card p{margin:5px 0 12px;color:#70768b;font-size:13px;display:flex;align-items:center;gap:6px}.sync-summary.has-conflict{background:rgba(254,191,2,.13)}.sync-summary.has-conflict>span{background:#febf02;color:#141948}.simple-row--danger .row-icon,.simple-row--danger strong{color:#a22f3e}.app-version{text-align:center;color:#8a8fa0;font-size:11px}
+@media(max-width:374px){.mobile-page{padding-left:12px;padding-right:12px}.segmented-control button{font-size:11px}.journey-route{grid-template-columns:1fr 56px 1fr}.journey-route strong{font-size:34px}.travel-row,.trip-row{padding-left:11px;padding-right:11px}}
+
+/* tripto.to Mobile Design Lock v1: Home flight pass + Flight Detail */
+.home-screen .content{padding-right:20px;padding-left:20px}
+
+.flight-pass{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 50% 5%,rgba(67,88,213,.25),transparent 38%),
+    linear-gradient(145deg,#061333 0%,#0A1C4C 52%,#07163A 100%);
+  box-shadow:0 18px 48px rgba(7,21,54,.18);
+}
+.flight-pass::before{
+  content:"";
+  position:absolute;
+  inset:94px 0 auto;
+  z-index:-1;
+  height:116px;
+  opacity:.25;
+  background-image:radial-gradient(circle,rgba(98,119,229,.8) 1.2px,transparent 1.5px);
+  background-size:12px 12px;
+  mask-image:linear-gradient(90deg,transparent,#000 25%,#000 75%,transparent);
+}
+.flight-pass__notch{
+  position:absolute;
+  top:36%;
+  z-index:2;
+  width:25px;
+  height:54px;
+  border-radius:50%;
+  background:#fff;
+}
+.flight-pass__notch--left{left:-14px}
+.flight-pass__notch--right{right:-14px}
+.flight-pass__inner{padding:20px 18px 18px}
+.flight-pass__header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.flight-pass__pill{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  height:48px;
+  padding:0 17px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#3D55BE,#293997);
+  color:#fff;
+  font-size:16px;
+  font-weight:780;
+  letter-spacing:.08em;
+  white-space:nowrap;
+}
+.flight-pass__status{padding-top:3px;text-align:right}
+.flight-pass__status strong{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  color:#DCE4FA;
+  font-size:17px;
+  font-weight:820;
+  white-space:nowrap;
+}
+.flight-pass__status.is-confirmed strong{color:#42E884}
+.flight-pass__status small{display:block;margin-top:5px;color:#BAC4E3;font-size:12px;font-weight:620}
+.flight-pass__status .status-dot-check{
+  width:22px;
+  height:22px;
+  background:#42E884;
+  color:#0B673C;
+  box-shadow:none;
+}
+.flight-pass__route{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr);
+  align-items:center;
+  margin-top:21px;
+}
+.flight-pass__airport{min-width:0}
+.flight-pass__airport--right{text-align:right}
+.flight-pass__airport-code{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  font-size:58px;
+  font-weight:780;
+  line-height:.88;
+  letter-spacing:-3.4px;
+  font-variant-numeric:tabular-nums;
+}
+.flight-pass__airport-name{
+  display:block;
+  overflow:hidden;
+  margin-top:8px;
+  color:#CED6EC;
+  font-size:12px;
+  line-height:1.2;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.flight-pass__route-center{display:grid;place-items:center;gap:7px}
+.flight-pass__route-line{display:flex;align-items:center;width:92px;gap:7px;color:#A7B5E2}
+.flight-pass__route-line::before,.flight-pass__route-line::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 8px);
+}
+.flight-pass__route-line svg{flex:0 0 auto;color:#fff;transform:rotate(-8deg)}
+.flight-pass__duration{
+  display:inline-flex;
+  align-items:center;
+  height:29px;
+  padding:0 11px;
+  border:1px solid rgba(160,175,231,.12);
+  border-radius:999px;
+  background:rgba(67,88,213,.2);
+  color:#DCE4FA;
+  font-size:12px;
+  font-weight:680;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.flight-pass__divider{height:1px;margin:17px 0;background:rgba(159,176,232,.2)}
+.flight-pass__facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.flight-pass__fact{min-width:0;padding:0 12px;border-right:1px solid rgba(146,162,219,.16)}
+.flight-pass__fact:first-child{padding-left:0}
+.flight-pass__fact:last-child{padding-right:0;border-right:0}
+.flight-pass__fact>span,.flight-pass__time>span{
+  display:block;
+  color:#7E91EA;
+  font-size:10px;
+  font-weight:790;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.flight-pass__fact strong{
+  display:block;
+  overflow:hidden;
+  margin-top:7px;
+  color:#fff;
+  font-size:25px;
+  font-weight:740;
+  line-height:1;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.flight-pass__fact small{
+  display:block;
+  overflow:hidden;
+  margin-top:7px;
+  color:#AEBBDB;
+  font-size:12px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.flight-pass__actions{
+  display:grid;
+  grid-template-columns:minmax(0,1.92fr) minmax(108px,1fr);
+  gap:12px;
+  margin-top:18px;
+}
+.flight-pass__actions--single{grid-template-columns:1fr}
+.flight-pass .primary-cta{
+  min-height:58px;
+  padding:0 17px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#FEBF02,#FFD83D);
+  box-shadow:0 10px 24px rgba(254,191,2,.22);
+  color:#071536;
+  font-size:17px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.flight-pass .primary-cta .cta-left{gap:10px;min-width:0}
+.flight-pass .primary-cta .cta-left span{overflow:hidden;text-overflow:ellipsis}
+.flight-pass .primary-cta svg{flex:0 0 auto;width:21px;height:21px}
+.flight-pass__secondary{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+  min-height:58px;
+  padding:0 9px;
+  border:1px solid rgba(157,171,222,.12);
+  border-radius:18px;
+  background:rgba(50,69,136,.34);
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.flight-pass__secondary svg{flex:0 0 auto}
+
+.flight-pass--home .flight-pass__route{margin-top:18px}
+.flight-pass--home .flight-pass__airport-code{font-size:55px}
+.flight-pass--home .flight-pass__divider{margin:15px 0}
+.flight-pass--home .flight-pass__fact strong{font-size:23px}
+.flight-pass--home .flight-pass__actions{margin-top:17px}
+
+.flight-detail-screen{min-height:100dvh;background:linear-gradient(180deg,#101D50 0%,#07163A 100%)}
+.flight-detail-screen .app-bar--dark{
+  position:relative;
+  min-height:70px;
+  background:transparent;
+  backdrop-filter:none;
+}
+.flight-detail-screen .detail-content{padding:8px 20px calc(24px + var(--nav-height) + env(safe-area-inset-bottom))}
+.flight-pass--detail{border-radius:28px;box-shadow:0 18px 48px rgba(3,10,31,.24)}
+.flight-pass--detail .primary-cta{padding:0 7px;font-size:13.5px}
+.flight-pass--detail .primary-cta .cta-left{gap:6px}
+.flight-pass--detail .primary-cta svg{width:17px;height:17px}
+.flight-pass--detail .flight-pass__times{
+  display:grid;
+  grid-template-columns:1fr 1px 1fr;
+  align-items:center;
+  gap:14px;
+}
+.flight-pass__time--right{text-align:right}
+.flight-pass__time strong{
+  display:block;
+  margin-top:5px;
+  color:#fff;
+  font-size:31px;
+  font-weight:740;
+  line-height:1.05;
+  font-variant-numeric:tabular-nums;
+}
+.flight-pass__time small{display:block;margin-top:5px;color:#BDC8E6;font-size:12px;white-space:nowrap}
+.flight-pass__time-separator{width:1px;height:50px;background:rgba(146,162,219,.34)}
+.flight-pass__divider--facts{margin:17px -18px}
+.flight-pass__missing{margin:14px 0 0}
+.flight-more--pass{
+  margin:220px 2px 0;
+  border-top:1px solid rgba(255,255,255,.13);
+  color:#fff;
+}
+.flight-more--pass .flight-more__toggle{color:#D5DCF0}
+.flight-more--pass dl{gap:0 18px}
+.flight-more--pass dt{color:#93A2CA}
+.flight-more--pass dd{color:#fff}
+.flight-more--pass p{color:#AEB9D4}
+
+@media(max-width:375px){
+  .home-screen .content{padding-right:16px;padding-left:16px}
+  .flight-detail-screen .detail-content{padding-right:16px;padding-left:16px}
+  .flight-pass__inner{padding-right:16px;padding-left:16px}
+  .flight-pass__airport-code,.flight-pass--home .flight-pass__airport-code{font-size:52px}
+  .flight-pass__route{grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr)}
+  .flight-pass__route-line{width:78px}
+  .flight-pass__airport-name{font-size:11px}
+  .flight-pass__actions{grid-template-columns:minmax(0,2.1fr) minmax(104px,1fr);gap:8px}
+  .flight-pass .primary-cta{padding:0 9px;font-size:14.5px}
+  .flight-pass .primary-cta .cta-left{gap:7px}
+  .flight-pass .primary-cta svg{width:18px;height:18px}
+  .flight-pass__secondary{padding:0 7px;font-size:11px}
+}
+
+@media(max-width:359px){
+  .flight-pass__airport-code,.flight-pass--home .flight-pass__airport-code{font-size:48px}
+  .flight-pass__route{grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr)}
+  .flight-pass__route-line{width:70px}
+  .flight-pass__airport-name{font-size:10px}
+  .flight-pass__pill{padding:0 13px;font-size:14px}
+  .flight-pass__status strong{font-size:15px}
+  .flight-pass__status small{font-size:11px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .flight-pass,.flight-pass .primary-cta,.flight-pass__secondary{animation:none!important;transition:none!important}
+}
+
+/* Approved Flight Detail finish — Home remains locked above. */
+.flight-detail-screen{padding-bottom:0}
+.flight-detail-screen .app-bar--dark{
+  min-height:52px;
+  padding:2px 10px;
+}
+.flight-detail-screen .detail-content{
+  display:block;
+  min-height:calc(100dvh - 52px - var(--nav-height) - env(safe-area-inset-bottom));
+  padding:14px 16px calc(24px + var(--nav-height) + env(safe-area-inset-bottom));
+}
+.flight-detail-stack{width:100%;margin:0}
+.flight-detail-screen .detail-content--expanded{
+  padding-top:14px;
+  padding-bottom:calc(24px + var(--nav-height) + env(safe-area-inset-bottom));
+}
+.flight-detail-screen .detail-content--expanded .flight-pass--detail{
+  --flight-pass-height:510px;
+}
+
+.flight-pass--detail{
+  --flight-pass-height:clamp(510px,calc(100dvh - 276px),568px);
+  min-height:var(--flight-pass-height);
+  border:1px solid rgba(145,162,220,.08);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 50% 9%,rgba(56,78,194,.24),transparent 34%),
+    linear-gradient(148deg,#050F2B 0%,#0A1B4A 52%,#061438 100%);
+  box-shadow:0 18px 46px rgba(2,10,34,.28);
+}
+.flight-pass--detail::before{
+  inset:96px 0 auto;
+  height:148px;
+  opacity:.22;
+}
+.flight-pass--detail .flight-pass__inner{
+  display:grid;
+  grid-template-rows:auto auto 1px auto 1px auto auto;
+  align-content:space-between;
+  min-height:var(--flight-pass-height);
+  padding:20px 12px 18px;
+}
+.flight-pass--detail .flight-pass__route,
+.flight-pass--detail .flight-pass__divider,
+.flight-pass--detail .flight-pass__divider--facts,
+.flight-pass--detail .flight-pass__actions{margin:0}
+
+.flight-pass--detail .flight-pass__header{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) 22px;
+  align-items:start;
+  gap:8px;
+}
+.flight-pass--detail .flight-pass__status{min-width:0}
+.flight-pass--detail .flight-pass__pill{
+  justify-self:start;
+  min-width:0;
+  max-width:100%;
+  height:auto;
+  min-height:48px;
+  line-height:1.12;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.flight-pass--detail .flight-pass__status strong{white-space:normal}
+.flight-pass__status-chevron{display:grid;place-items:center;width:22px;height:44px;color:#DCE4FA;opacity:.9}
+.flight-pass--detail .flight-pass__airport-code{max-width:100%;overflow-wrap:anywhere}
+.flight-pass--detail .flight-pass__airport-name{
+  overflow:visible;
+  min-height:2.3em;
+  text-overflow:clip;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.flight-pass--detail .flight-pass__route-line{color:#C2CEF2}
+.flight-pass--detail .flight-pass__route-line::before,.flight-pass--detail .flight-pass__route-line::after{
+  height:2px;
+  background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 8px);
+  opacity:.72;
+}
+.flight-pass--detail .flight-pass__route-line svg{width:30px;height:30px}
+.flight-pass--detail .flight-pass__airport-code{
+  font-size:61px;
+  font-weight:790;
+  line-height:.88;
+  letter-spacing:-3px;
+  white-space:nowrap;
+  overflow-wrap:normal;
+}
+.flight-pass--detail .flight-pass__airport-name{font-size:13px}
+.flight-pass--detail .flight-pass__duration{height:30px;font-size:12px}
+
+.flight-pass--detail .flight-pass__time{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  gap:7px;
+}
+.flight-pass--detail .flight-pass__time--right{justify-content:flex-end}
+.flight-pass--detail .flight-pass__event-icon{
+  display:grid;
+  flex:0 0 25px;
+  place-items:center;
+  width:25px;
+  height:34px;
+  color:#6678D6;
+  letter-spacing:0;
+  text-transform:none;
+}
+.flight-pass--detail .flight-pass__event-icon svg{width:22px;height:22px;stroke-width:1.85}
+.flight-pass--detail .flight-pass__event-icon--day{color:#FEBF02}
+.flight-pass--detail .flight-pass__time-copy{
+  display:block;
+  min-width:0;
+  color:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  letter-spacing:0;
+  text-transform:none;
+}
+.flight-pass--detail .flight-pass__time-copy>span{
+  display:block;
+  color:#7E91EA;
+  font-size:10px;
+  font-weight:790;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.flight-pass--detail .flight-pass__time strong{font-size:32px;font-variant-numeric:tabular-nums}
+.flight-pass--detail .flight-pass__time small{font-size:10.5px;letter-spacing:-.1px;white-space:nowrap}
+
+.flight-pass--detail .flight-pass__fact{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  padding-right:5px;
+  padding-left:5px;
+}
+.flight-pass--detail .flight-pass__fact:first-child{padding-left:0}
+.flight-pass--detail .flight-pass__fact:last-child{padding-right:0}
+.flight-pass--detail .flight-pass__fact-icon{
+  display:grid;
+  flex:0 0 20px;
+  place-items:center;
+  width:20px;
+  height:34px;
+  color:#8295F0;
+  font-size:inherit;
+  font-weight:inherit;
+  letter-spacing:0;
+  text-transform:none;
+}
+.flight-pass--detail .flight-pass__fact-icon svg{width:20px;height:20px;stroke-width:2.15}
+.flight-pass--detail .flight-pass__fact-copy{
+  display:block;
+  min-width:0;
+  color:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  letter-spacing:0;
+  text-transform:none;
+}
+.flight-pass--detail .flight-pass__fact-copy>span{
+  display:block;
+  color:#7E91EA;
+  font-size:10px;
+  font-weight:790;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.flight-pass--detail .flight-pass__fact strong{
+  overflow:visible;
+  margin-top:6px;
+  font-size:27px;
+  font-variant-numeric:tabular-nums;
+  text-overflow:clip;
+}
+.flight-pass--detail .flight-pass__fact small{
+  overflow:visible;
+  margin-top:6px;
+  font-size:12px;
+  line-height:1.15;
+  text-overflow:clip;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+
+.flight-pass--detail .flight-pass__actions{
+  grid-template-columns:minmax(0,64fr) minmax(0,36fr);
+  gap:12px;
+}
+.flight-pass--detail .primary-cta{
+  min-height:60px;
+  padding:0 7px;
+  font-size:14px;
+  letter-spacing:-.35px;
+  border-radius:18px;
+}
+.flight-pass--detail .primary-cta .cta-left{gap:6px}
+.flight-pass--detail .primary-cta .cta-left span{overflow:visible;text-overflow:clip}
+.flight-pass--detail .primary-cta svg{width:18px;height:18px}
+.flight-pass--detail .flight-pass__secondary{
+  min-height:60px;
+  gap:3px;
+  padding:0 5px;
+  border-radius:18px;
+  font-size:11px;
+  letter-spacing:-.35px;
+}
+.flight-pass--detail .flight-pass__secondary svg{width:16px;height:16px}
+
+.flight-more--pass{
+  margin:12px 4px 0;
+  overflow:hidden;
+  border:1px solid rgba(170,185,231,.18);
+  border-radius:15px;
+  background:rgba(20,33,82,.46);
+}
+.flight-more--pass .flight-more__toggle{min-height:46px;padding:0 13px;color:#D5DCF0}
+.flight-more--pass .flight-more__toggle:focus{outline:none}
+html[data-input-method="keyboard"] .flight-more--pass .flight-more__toggle:focus-visible{border-radius:12px;outline:2px solid #FEBF02;outline-offset:-3px}
+.flight-more--pass .flight-more__chevron{color:#BFC9E6}
+.flight-more--pass .flight-more__chevron svg{width:18px;height:18px;stroke-width:2}
+.flight-more--pass .flight-more-content{padding:0 13px 13px}
+
+@media(max-width:375px){
+  .flight-detail-screen .detail-content{padding-right:16px;padding-left:16px}
+  .flight-pass--detail .flight-pass__inner{padding-right:12px;padding-left:12px}
+  .flight-pass--detail .flight-pass__header{grid-template-columns:auto minmax(0,1fr) 18px;gap:6px}
+  .flight-pass--detail .flight-pass__pill{height:44px;padding:0 12px;font-size:13px}
+  .flight-pass--detail .flight-pass__status strong{font-size:14px}
+  .flight-pass--detail .flight-pass__status small{font-size:10px}
+  .flight-pass--detail .flight-pass__status-chevron{width:18px;height:42px}
+  .flight-pass--detail .flight-pass__route{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+  .flight-pass--detail .flight-pass__route-line{width:76px}
+  .flight-pass--detail .flight-pass__airport-code{font-size:54px;letter-spacing:-2.8px}
+  .flight-pass--detail .flight-pass__airport-name{font-size:11px}
+  .flight-pass--detail .flight-pass__times{gap:8px}
+  .flight-pass--detail .flight-pass__event-icon{flex-basis:21px;width:21px}
+  .flight-pass--detail .flight-pass__event-icon svg{width:21px;height:21px}
+  .flight-pass--detail .flight-pass__time{gap:5px}
+  .flight-pass--detail .flight-pass__time strong{font-size:29px}
+  .flight-pass--detail .flight-pass__time small{font-size:9.5px}
+  .flight-pass--detail .flight-pass__fact{gap:5px;padding-right:6px;padding-left:6px}
+  .flight-pass--detail .flight-pass__fact-icon{flex-basis:20px;width:20px}
+  .flight-pass--detail .flight-pass__fact-icon svg{width:18px;height:18px}
+  .flight-pass--detail .flight-pass__fact-copy>span{font-size:9px}
+  .flight-pass--detail .flight-pass__fact strong{font-size:24px}
+  .flight-pass--detail .flight-pass__fact small{font-size:10px}
+  .flight-pass--detail .primary-cta{padding:0 8px;font-size:13px}
+  .flight-pass--detail .primary-cta .cta-left{gap:5px}
+  .flight-pass--detail .primary-cta svg{width:18px;height:18px}
+  .flight-pass--detail .flight-pass__secondary{gap:2px;padding:0 2px;font-size:9.75px}
+  .flight-pass--detail .flight-pass__secondary svg{width:16px;height:16px}
+}
+
+/* Premium Timeline v1 — Home and Flight Detail remain locked. */
+.timeline-screen{
+  min-height:100dvh;
+  padding-bottom:0;
+  background:#F8F9FC;
+}
+.timeline-screen .app-bar{
+  min-height:52px;
+  padding:2px 10px;
+  border-bottom:1px solid rgba(20,25,72,.055);
+  background:rgba(255,255,255,.96);
+}
+.timeline-screen .app-bar .icon-button{width:44px;height:44px}
+.timeline-screen .app-bar-title strong{
+  color:var(--navy);
+  font-family:var(--font-display);
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:-.3px;
+}
+.timeline-screen .app-bar-title span{
+  margin-top:2px;
+  color:#7885A4;
+  font-size:12px;
+  font-variant-numeric:tabular-nums;
+}
+.timeline-page{
+  min-width:0;
+  padding:16px 20px calc(96px + env(safe-area-inset-bottom));
+  background:#F8F9FC;
+}
+.timeline-page--journey{animation:timeline-screen-in 200ms var(--ease-standard) both}
+.timeline-page--empty{padding-top:0}
+@keyframes timeline-screen-in{
+  from{opacity:0;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+.timeline-day{
+  position:relative;
+  min-width:0;
+}
+.timeline-day+.timeline-day{margin-top:22px}
+.timeline-day::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:79.5px;
+  top:46px;
+  bottom:36px;
+  width:1.5px;
+  border-radius:999px;
+  background:#B9C3DE;
+}
+.timeline-day__header{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:52px 40px minmax(0,1fr);
+  align-items:center;
+  column-gap:8px;
+  min-height:42px;
+  margin-bottom:4px;
+}
+.timeline-day__header time{
+  display:grid;
+  align-content:center;
+  min-height:42px;
+  color:#64749A;
+  font-size:10px;
+  font-weight:780;
+  line-height:1.2;
+  letter-spacing:.075em;
+  text-transform:uppercase;
+  font-variant-numeric:tabular-nums;
+}
+.timeline-day__header time strong{
+  display:block;
+  margin-top:3px;
+  color:#3F527F;
+  font-size:10px;
+  font-weight:800;
+}
+.timeline-day__rail{height:100%;background:#F8F9FC}
+.timeline-day__separator{height:1px;background:#E2E6EF}
+.timeline-journey{position:relative;z-index:1}
+.journey-event{
+  position:relative;
+  display:grid;
+  grid-template-columns:52px 40px minmax(0,1fr);
+  align-items:stretch;
+  column-gap:8px;
+  width:100%;
+  min-width:0;
+  min-height:72px;
+  padding:0;
+  border:0;
+  border-radius:18px;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  transition:transform 140ms var(--ease-emphasized),background-color 140ms var(--ease-standard);
+}
+.journey-event+.journey-event{margin-top:8px}
+.journey-event:active{transform:scale(.985)}
+.journey-event:focus-visible{
+  outline:3px solid rgba(47,59,171,.36);
+  outline-offset:2px;
+}
+.journey-time{
+  align-self:start;
+  padding-top:17px;
+  color:#172650;
+  font-size:13px;
+  font-weight:760;
+  line-height:1.15;
+  letter-spacing:-.15px;
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+}
+.journey-track{
+  position:relative;
+  display:grid;
+  justify-items:center;
+  padding-top:8px;
+}
+.journey-marker{
+  position:relative;
+  z-index:2;
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  border:1px solid #DDE3F2;
+  border-radius:50%;
+  background:#EEF2FF;
+  color:#2F3BAB;
+  box-shadow:0 0 0 4px #F8F9FC;
+}
+.journey-marker svg{width:19px;height:19px;stroke-width:1.8}
+.journey-content{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 20px;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  min-height:72px;
+  padding:10px 4px 10px 0;
+  border-bottom:1px solid #E4E8F0;
+}
+.journey-copy{display:block;min-width:0}
+.journey-copy strong{
+  display:block;
+  color:#101F49;
+  font-family:var(--font-display);
+  font-size:16px;
+  font-weight:780;
+  line-height:1.15;
+  letter-spacing:-.25px;
+  overflow-wrap:anywhere;
+}
+.journey-copy small{
+  display:-webkit-box;
+  overflow:hidden;
+  margin-top:5px;
+  color:#6B7897;
+  font-size:12.5px;
+  font-weight:500;
+  line-height:1.28;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow-wrap:anywhere;
+}
+.journey-chevron{display:grid;place-items:center;color:#8B98B4}
+.journey-chevron svg{width:18px;height:18px;stroke-width:1.8}
+.timeline-flags{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:5px;
+  margin-bottom:5px;
+}
+.timeline-flag{
+  display:inline-flex;
+  align-items:center;
+  min-height:20px;
+  padding:0 7px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:820;
+  line-height:1;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.timeline-flag--next,.timeline-flag--now{background:#2F3BAB;color:#fff}
+.timeline-flag--warning{background:#FFF3C4;color:#725300}
+.timeline-flag--danger{background:#FDE9E7;color:#B3312A}
+.timeline-flag--neutral{background:#EDF0F6;color:#566583}
+.journey-event--next .journey-content,
+.journey-event--active .journey-content{
+  min-height:84px;
+  padding:11px 12px;
+  border:1px solid rgba(47,59,171,.13);
+  border-radius:17px;
+  background:#F0F3FF;
+  box-shadow:0 7px 18px rgba(47,59,171,.07);
+}
+.journey-event--next .journey-marker,
+.journey-event--active .journey-marker{
+  border-color:#2F3BAB;
+  background:#2F3BAB;
+  color:#fff;
+  box-shadow:0 0 0 4px #E8ECFB;
+}
+.journey-event--active .journey-content{border-left:3px solid #2F3BAB}
+.journey-event--past{opacity:.68}
+.journey-event--past .journey-marker{background:#F1F3F7;color:#687694}
+.journey-event--past .journey-copy strong{color:#394667}
+.journey-event--danger .journey-marker{border-color:#F1C3BF;background:#FDEDEC;color:#C43A31}
+.journey-event--warning .journey-marker{border-color:#F4D77E;background:#FFF7DE;color:#8A6500}
+.timeline-empty{
+  display:grid;
+  justify-items:center;
+  align-content:center;
+  min-height:calc(100dvh - 52px - 96px - env(safe-area-inset-bottom));
+  padding:32px 0;
+  text-align:center;
+}
+.timeline-empty__icon{
+  display:grid;
+  place-items:center;
+  width:56px;
+  height:56px;
+  border-radius:18px;
+  background:#E9EEFF;
+  color:#2F3BAB;
+}
+.timeline-empty h1{
+  margin:16px 0 0;
+  color:#101F49;
+  font-family:var(--font-display);
+  font-size:24px;
+  font-weight:820;
+  letter-spacing:-.55px;
+}
+.timeline-empty p{margin:8px 0 20px;color:#6B7897;font-size:13px;line-height:1.35}
+.timeline-empty .primary-cta{width:100%;max-width:240px}
+@media(max-width:375px){
+  .timeline-page{padding-right:16px;padding-left:16px}
+  .timeline-day::before{left:79.5px}
+}
+@media(prefers-reduced-motion:reduce){
+  .timeline-page--journey{animation:reduced-fade 1ms linear both!important}
+  .journey-event{transition:none!important}
+  .journey-event:active{transform:none!important}
+}
+
+/* Premium Hotel Detail v1 — locked Home, Flight Detail and Timeline remain untouched. */
+.hotel-detail-screen{
+  min-height:100dvh;
+  padding-bottom:0;
+  background:#F2F4F7;
+}
+.hotel-detail-screen .app-bar{
+  min-height:52px;
+  padding:2px 10px;
+  border-bottom:1px solid rgba(20,25,72,.055);
+  background:#fff;
+}
+.hotel-detail-screen .app-bar .icon-button{width:44px;height:44px}
+.hotel-detail-screen .app-bar-title strong{
+  font-family:var(--font-display);
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:-.3px;
+}
+.hotel-detail-screen .hotel-hero{
+  position:relative;
+  height:184px;
+  overflow:hidden;
+  background:#E7E4DE url('/assets/mobile/hotel-fallback-premium.jpg') center 48%/cover no-repeat;
+}
+.hotel-detail-screen .hotel-hero:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:46%;
+  background:linear-gradient(180deg,transparent,rgba(7,15,46,.34));
+  pointer-events:none;
+}
+.hotel-detail-screen .hotel-hero-image{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  animation:hotel-image-in 180ms ease-out both;
+}
+@keyframes hotel-image-in{from{opacity:0}to{opacity:1}}
+.hotel-detail-screen .hotel-hero-scrim{position:absolute;inset:0;z-index:1}
+.hotel-offline-badge{
+  position:absolute;
+  z-index:2;
+  right:16px;
+  bottom:30px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:32px;
+  padding:0 10px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:999px;
+  background:rgba(7,21,54,.78);
+  color:#fff;
+  font-size:11px;
+  font-weight:750;
+  backdrop-filter:blur(12px);
+}
+.hotel-detail-screen .hotel-sheet{
+  position:relative;
+  z-index:3;
+  min-width:0;
+  margin-top:-22px;
+  padding:20px 20px calc(104px + env(safe-area-inset-bottom));
+  border-radius:28px 28px 0 0;
+  background:#fff;
+  animation:hotel-sheet-in 200ms var(--ease-standard) both;
+}
+@keyframes hotel-sheet-in{
+  from{opacity:0;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+.hotel-heading{min-width:0;margin-bottom:16px}
+.hotel-detail-screen .hotel-title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin:0;
+}
+.hotel-detail-screen .hotel-title-row h1{
+  min-width:0;
+  max-width:68%;
+  margin:0;
+  color:#141948;
+  font-family:var(--font-display);
+  font-size:26px;
+  font-weight:830;
+  line-height:1.06;
+  letter-spacing:-.7px;
+  overflow-wrap:anywhere;
+}
+.hotel-heading>p{margin:7px 0 0;color:#687697;font-size:13px;line-height:1.3}
+.hotel-status{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  min-height:28px;
+  padding:0 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.hotel-status svg{flex:0 0 auto;stroke-width:2.2}
+.hotel-status--confirmed{background:#E6F8EF;color:#087A42}
+.hotel-status--attention{background:#FFF3C4;color:#765600}
+.hotel-status--cancelled{background:#FDE9E7;color:#B3312A}
+.hotel-status--neutral{background:#EDF0F6;color:#566583}
+.hotel-detail-screen .hotel-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr .64fr;
+  min-height:76px;
+  margin:0;
+  overflow:hidden;
+  border:1px solid #E7EAF1;
+  border-radius:17px;
+  background:#FAFBFD;
+  box-shadow:none;
+}
+.hotel-detail-screen .hotel-stats>div{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  justify-content:center;
+  padding:10px 11px;
+  border-right:1px solid #E7EAF1;
+}
+.hotel-detail-screen .hotel-stats>div:last-child{border-right:0;text-align:center}
+.hotel-detail-screen .hotel-stats span{
+  color:#687697;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.hotel-detail-screen .hotel-stats strong{
+  margin-top:5px;
+  color:#141948;
+  font-size:14px;
+  font-weight:800;
+  line-height:1.1;
+  font-variant-numeric:tabular-nums;
+}
+.hotel-detail-screen .hotel-stats small{
+  margin-top:4px;
+  color:#687697;
+  font-size:10px;
+  font-weight:600;
+  line-height:1.15;
+  overflow-wrap:anywhere;
+}
+.hotel-detail-screen .hotel-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:12px 0 0;
+}
+.hotel-action{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+  min-height:52px;
+  margin:0;
+  padding:0 10px;
+  border:1px solid #CBD2E3;
+  border-radius:16px;
+  background:#fff;
+  color:#141948;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+  transition:transform 140ms var(--ease-emphasized),background-color 140ms var(--ease-standard);
+}
+.hotel-action svg{flex:0 0 auto;width:18px;height:18px}
+.hotel-action--primary{border-color:#141948;background:#141948;color:#fff}
+.hotel-action:active:not(:disabled){transform:scale(.98)}
+.hotel-action:focus-visible,.hotel-address-row:focus-visible,.hotel-map-panel:focus-visible,.hotel-info-row:focus-visible{
+  outline:3px solid rgba(47,59,171,.34);
+  outline-offset:2px;
+}
+.hotel-action:disabled{opacity:.48}
+.hotel-location{margin-top:16px}
+.hotel-address-row{
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:52px;
+  padding:5px 2px;
+  border:0;
+  background:transparent;
+  color:#141948;
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:620;
+  line-height:1.3;
+  text-align:left;
+}
+.hotel-address-row:disabled{opacity:.7}
+.hotel-address-row__icon{display:grid;place-items:center;color:#2F3BAB}
+.hotel-address-row>svg{color:#8A96B0}
+.hotel-map-panel{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+  min-height:128px;
+  padding:16px;
+  border:1px solid #DCE2F0;
+  border-radius:17px;
+  background:#EDF1FF;
+  color:#141948;
+  text-align:left;
+}
+.hotel-map-panel__marker{
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:#2F3BAB;
+  color:#fff;
+}
+.hotel-map-panel__copy strong,.hotel-map-panel__copy small{display:block}
+.hotel-map-panel__copy strong{font-size:14px;font-weight:800}
+.hotel-map-panel__copy small{margin-top:4px;color:#687697;font-size:11px}
+.hotel-map-panel--unavailable{border-style:dashed;background:#F6F7FA;color:#566583}
+.hotel-map-panel--unavailable .hotel-map-panel__marker{background:#E4E8F1;color:#667492}
+.hotel-contact-list{margin-top:12px;border-top:1px solid #E7EAF1}
+.hotel-info-row{
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:50px;
+  padding:6px 2px;
+  border:0;
+  border-bottom:1px solid #E7EAF1;
+  background:transparent;
+  color:#141948;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:650;
+  line-height:1.25;
+  text-align:left;
+  text-decoration:none;
+  overflow-wrap:anywhere;
+}
+.hotel-info-row__icon{display:grid;place-items:center;color:#2F3BAB}
+.hotel-info-row>svg{color:#8A96B0}
+.hotel-info-row small,.hotel-info-row strong{display:block}
+.hotel-info-row small{color:#687697;font-size:10px;font-weight:650}
+.hotel-info-row strong{margin-top:3px;font-size:13px;font-weight:780}
+@media(max-width:375px){
+  .hotel-detail-screen .hotel-sheet{padding-right:16px;padding-left:16px}
+  .hotel-detail-screen .hotel-title-row h1{font-size:25px}
+  .hotel-detail-screen .hotel-stats>div{padding-right:8px;padding-left:8px}
+  .hotel-action{gap:6px;padding:0 7px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .hotel-detail-screen .hotel-sheet,.hotel-detail-screen .hotel-hero-image{animation:reduced-fade 1ms linear both!important}
+  .hotel-action{transition:none!important}
+  .hotel-action:active:not(:disabled){transform:none!important}
+}
+
+/* Mobile UI v1 cohesion layer — secondary screens only. The approved Home,
+   Flight Detail, Timeline, Hotel, driver and bottom-navigation compositions
+   intentionally remain untouched. */
+.mobile-v1-screen,.ready-screen{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+}
+.mobile-v1-screen .mobile-page{
+  gap:24px;
+  padding:14px 20px calc(var(--nav-height) + env(safe-area-inset-bottom) + 32px);
+}
+.mobile-v1-screen .mobile-group{gap:10px}
+.mobile-v1-screen .mobile-group>h2,
+.mobile-v1-screen .section-label{
+  margin:0 3px;
+  color:#6e7691;
+  font-size:11px;
+  font-weight:780;
+  letter-spacing:.09em;
+}
+.mobile-v1-screen .mobile-list,
+.mobile-v1-screen .travel-list,
+.mobile-v1-screen .detail-list{
+  border-color:rgba(20,25,72,.075);
+  border-radius:20px;
+  box-shadow:0 6px 18px rgba(20,25,72,.035);
+}
+.mobile-v1-screen .trip-row{min-height:78px;padding:13px 15px}
+.mobile-v1-screen .travel-row{min-height:72px;padding:12px 14px}
+.mobile-v1-screen .detail-row{min-height:64px;padding:11px 14px}
+.mobile-v1-screen .trip-row strong,
+.mobile-v1-screen .travel-row strong,
+.mobile-v1-screen .detail-row strong{font-size:16px;font-weight:780;letter-spacing:-.015em}
+.mobile-v1-screen .trip-row small,
+.mobile-v1-screen .travel-row small,
+.mobile-v1-screen .detail-row small{font-size:12.5px;line-height:1.35}
+.mobile-v1-screen .trip-row__mark,
+.mobile-v1-screen .travel-row__icon{width:46px;height:46px;border-radius:15px}
+.mobile-v1-screen .travel-row__body em{color:#23815e;font-size:12px;font-style:normal;font-weight:700}
+.mobile-v1-screen .segmented-control{gap:4px;padding:4px;border-radius:16px}
+.mobile-v1-screen .segmented-control button{min-height:44px;border-radius:12px;font-size:13px;font-weight:720}
+.mobile-v1-screen .mobile-secondary-action,
+.mobile-v1-screen .mobile-primary-action{min-height:54px;border-radius:16px;font-size:16px;font-weight:790}
+.mobile-primary-action{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  min-height:54px;
+  padding:0 16px;
+  border:0;
+  border-radius:16px;
+  background:#FEBF02;
+  color:#141948;
+  font:inherit;
+  font-size:16px;
+  font-weight:800;
+  box-shadow:0 8px 20px rgba(254,191,2,.18);
+}
+.mobile-primary-action:active{transform:scale(.985)}
+.mobile-primary-action:focus-visible,.mobile-v1-screen button:focus-visible{outline:3px solid rgba(47,59,171,.34);outline-offset:2px}
+.screen-intro{display:grid;grid-template-columns:50px minmax(0,1fr);align-items:center;gap:14px}
+.screen-intro__icon{display:grid;place-items:center;width:50px;height:50px;border-radius:17px;background:#141948;color:#fff}
+.screen-intro h1{margin:0;color:#141948;font-size:24px;font-weight:820;letter-spacing:-.035em}
+.screen-intro p{margin:4px 0 0;color:#6f7892;font-size:13px;line-height:1.35}
+.document-list{overflow:hidden;border:1px solid rgba(20,25,72,.075);border-radius:20px;background:#fff}
+.document-row{display:grid;grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:12px;width:100%;min-height:82px;padding:12px 14px;border:0;border-bottom:1px solid rgba(20,25,72,.075);background:#fff;color:#141948;text-align:left}
+.document-row:last-child{border-bottom:0}
+.document-row__icon{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:#ecf0ff;color:#2F3BAB}
+.document-row__icon.green{background:#e8f8f0;color:#14875e}.document-row__icon.purple{background:#f1eaff;color:#6e3bb5}
+.document-row__copy{display:grid;gap:3px;min-width:0}.document-row__copy strong{font-size:16px;font-weight:780}.document-row__copy small{color:#707a94;font-size:12px;line-height:1.3}
+.document-row__status{display:flex;align-items:center;gap:4px;margin-top:2px;font-size:12px;font-weight:730}.document-row__status.is-ready{color:#14875e}.document-row__status.is-warning{color:#9a6500}
+.mobile-empty{min-height:310px}.mobile-empty--compact{min-height:220px}
+.journey-pass--train{gap:16px;padding:21px 20px;border-radius:28px;box-shadow:0 16px 34px rgba(20,25,72,.17)}
+.journey-pass--train .journey-route{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+.journey-pass--train .journey-route strong{font-size:46px;font-weight:790;letter-spacing:-.055em}
+.journey-pass--train .journey-route span{font-size:12px}
+.journey-pass--train .journey-times strong{font-size:22px;font-variant-numeric:tabular-nums}
+.journey-pass--train .journey-facts dd{font-size:16px;font-variant-numeric:tabular-nums}
+.plan-hero{padding:18px 4px 8px;grid-template-columns:52px minmax(0,1fr);column-gap:14px}
+.plan-hero__icon{grid-row:1/5}.plan-hero>span:not(.plan-hero__icon){font-size:11px}.plan-hero h1{font-size:29px;font-weight:820}.plan-hero p{font-size:15px;font-variant-numeric:tabular-nums}
+.essentials-summary,.review-summary,.sync-summary{padding:16px 17px;border-radius:20px}.essentials-summary strong,.review-summary strong,.sync-summary strong{font-size:16px;font-weight:790}.essentials-summary small,.review-summary small,.sync-summary small{font-size:12.5px}
+.checklist-group{margin-top:2px}.checklist-row{min-height:70px;padding:11px 14px}.checklist-box{width:32px;height:32px;border-radius:10px}.checklist-copy strong{font-size:15px;font-weight:760}.checklist-copy small{font-size:12px}.checklist-row em{font-size:11px}.auto-badge{font-size:10px}
+.traveler-row{min-height:80px!important}.traveler-avatar{width:46px;height:46px;font-size:17px}.traveler-avatar--large{width:76px;height:76px;font-size:28px}.traveler-profile{padding:10px 16px 2px}.traveler-profile h1{font-size:27px;font-weight:820}.traveler-checklist{overflow:hidden;border:1px solid rgba(20,25,72,.075);border-radius:18px;background:#fff}.traveler-checklist__row{display:flex;align-items:center;gap:12px;min-height:62px;padding:10px 14px;border-bottom:1px solid rgba(20,25,72,.075);color:#2F3BAB}.traveler-checklist__row:last-child{border-bottom:0}.traveler-checklist__row>span{display:grid;gap:2px}.traveler-checklist__row strong{color:#141948;font-size:15px}.traveler-checklist__row small{color:#707a94;font-size:12px}.traveler-checklist__row.is-complete{color:#14875e}
+.account-section.mobile-page{padding-top:8px}.account-card{padding:19px;border-radius:22px;box-shadow:0 8px 22px rgba(20,25,72,.05)}.account-profile .avatar{width:52px;height:52px}.account-profile strong{font-size:17px}.account-meta{font-size:13px}.mobile-v1-screen .simple-row{min-height:64px;padding:10px 12px;border-bottom-color:rgba(20,25,72,.075)}.mobile-v1-screen .simple-row strong{font-size:15px;font-weight:760}.mobile-v1-screen .simple-row .row-copy>span{font-size:12px}.app-version{margin-top:8px;font-size:12px}
+
+.focused-task{min-height:100dvh;background:#F2F4F7;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif}
+.focused-page{display:flex;flex-direction:column;gap:18px;min-width:0;padding:14px 20px calc(94px + env(safe-area-inset-bottom))}
+.premium-form{gap:16px}.form-section{display:grid;gap:16px}.form-section>header{padding:3px 2px}.form-section>header>span{color:#2F3BAB;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.form-section>header h1{margin:4px 0 0;color:#141948;font-size:25px;font-weight:840;letter-spacing:-.04em}
+.form-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form-field{display:grid;gap:6px;min-width:0}.form-field--wide{grid-column:1/-1}.form-field>span,.import-form label>span,.review-fields label>span{padding-left:2px;color:#69738d;font-size:11px;font-weight:780;letter-spacing:.045em;text-transform:uppercase}.form-field b{color:#A66C00}
+.premium-form input,.premium-form select,.premium-form textarea,.import-form textarea,.review-fields input{min-height:54px;padding:12px 13px;border:1px solid rgba(20,25,72,.13);border-radius:15px;background:#fff;color:#141948;font-family:inherit;font-size:16px;font-weight:590;line-height:1.25;box-shadow:0 2px 8px rgba(20,25,72,.025);font-variant-numeric:tabular-nums}.premium-form textarea{min-height:108px}
+.form-more{overflow:hidden;border:1px solid rgba(20,25,72,.09);border-radius:18px;background:#fff}.form-more summary{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 16px;color:#141948;font-size:15px;font-weight:770;cursor:pointer;list-style:none}.form-more summary::-webkit-details-marker{display:none}.form-more[open] summary{border-bottom:1px solid rgba(20,25,72,.075)}.form-more>.form-fields{padding:16px}
+.form-note{padding:0 3px;font-size:12px;line-height:1.45}.form-save-bar{position:sticky;bottom:0;z-index:4;margin-top:auto;padding:12px 0 calc(6px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(242,244,247,0),#F2F4F7 18px)}
+.form-intro{padding:6px 8px 2px}.form-intro h1{font-size:24px;font-weight:830}.form-intro p{font-size:14px}.import-form{display:contents}.import-form label{display:grid;gap:7px}.import-form textarea{min-height:300px;resize:none}.import-history-action{order:3}.import-task .form-save-bar{order:2;margin-top:0}.review-card{display:grid;gap:14px;padding:18px;border-radius:20px}.review-card header{display:flex;align-items:center;justify-content:space-between;gap:10px}.review-type{display:flex;align-items:center;gap:7px;color:#2F3BAB;font-size:12px;font-weight:800;text-transform:uppercase}.review-card h2{margin:0;font-size:21px;font-weight:820}.review-warnings{display:grid;gap:7px;padding:12px;border-radius:14px;background:rgba(254,191,2,.1)}.review-card .review-warnings p{margin:0;color:#735000}.review-fields{display:grid;gap:12px}.review-fields label{display:grid;gap:6px}.recovery-card{display:grid;gap:10px;padding:18px;border-radius:20px}.recovery-card h2{margin:0;font-size:19px}.recovery-card p{margin:0 0 4px;font-size:14px;line-height:1.45}
+.bottom-sheet--document{height:min(92dvh,780px);max-height:92dvh}.bottom-sheet--document .sheet-scroll{padding-bottom:calc(20px + env(safe-area-inset-bottom))}.document-form{gap:18px}.document-file-picker{display:grid!important;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:12px;min-height:76px;padding:12px 14px;border:1.5px dashed rgba(47,59,171,.35);border-radius:17px;background:#F7F8FE;color:#2F3BAB;cursor:pointer}.document-file-picker>svg{justify-self:center}.document-file-picker span{display:grid;gap:3px}.document-file-picker strong{color:#141948;font-size:15px}.document-file-picker small{color:#6d7894;font-size:12px}.document-file-meta{overflow-wrap:anywhere;color:#141948;font-size:13px;font-weight:720}.document-verify-state{color:#6e7791;font-size:12px;line-height:1.4}.bottom-sheet--document .sheet-submit{position:sticky;bottom:0;padding-top:12px;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 20px)}
+.loading-skeleton{padding-right:20px;padding-left:20px}.error-state{padding-right:20px;padding-left:20px}.error-state h1{font-size:24px;font-weight:830}.error-state p{font-size:14px}
+.ready-screen .offline-summary{margin-right:20px;margin-left:20px}.ready-screen .ready-list{margin-right:20px;margin-left:20px}.ready-screen .ready-list .info-card{min-height:68px;padding:10px 14px}.ready-screen .ready-list .info-copy strong{font-size:15px;font-weight:770}.ready-screen .ready-list .info-copy span{font-size:12px}.ready-screen .ready-list .needs-attention{background:rgba(254,191,2,.1)}.ready-screen .download-action{padding-right:20px;padding-left:20px}
+.health-summary{padding-right:20px;padding-left:20px}.health-summary h1{font-size:25px;font-weight:830}.health-summary p{font-size:14px}.health-summary+.list-stack{gap:12px;padding-right:20px;padding-left:20px}.health-card{min-height:86px;padding:15px;border-radius:18px}.health-card strong{font-size:16px;font-weight:790}.health-card p{font-size:13px;line-height:1.4}.health-card.warn{border-color:rgba(254,191,2,.48);background:#fffaf0}
+@media(max-width:375px){
+  .mobile-v1-screen .mobile-page,.focused-page{padding-right:16px;padding-left:16px}
+  .form-fields{gap:10px}.journey-pass--train .journey-route strong{font-size:42px}
+  .document-row{padding-right:12px;padding-left:12px}.import-form textarea{min-height:250px}
+  .ready-screen .offline-summary,.ready-screen .ready-list,.health-summary+.list-stack{margin-right:16px;margin-left:16px;padding-right:0;padding-left:0}.ready-screen .download-action,.health-summary{padding-right:16px;padding-left:16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .mobile-primary-action,.form-more,.document-file-picker{transition:none!important}
+  .mobile-primary-action:active{transform:none!important}
+}
+
+/* Final production readability and focused-task safety. This layer changes no
+   approved screen structure, color, route, or data behavior. */
+.nav-item,.nav-item>span,.nav-add small{font-size:11px}
+.trip-context-copy span,.context-chip,
+.ticket-meta--home span,
+.flight-pass--home .flight-pass__fact>span,
+.home-summary-module .section-label,
+.home-summary-module .text-action{font-size:11px}
+.flight-pass--detail .flight-pass__status small,
+.flight-pass--detail .flight-pass__time-copy>span,
+.flight-pass--detail .flight-pass__time small,
+.flight-pass--detail .flight-pass__fact-copy>span,
+.flight-pass--detail .flight-pass__fact small{font-size:11px}
+.flight-pass--detail .primary-cta,
+.flight-pass--detail .flight-pass__secondary{font-size:15px}
+.timeline-day__header time,
+.timeline-day__header time strong,
+.timeline-flag{font-size:11px}
+.hotel-detail-screen .hotel-stats span{font-size:11px}
+.hotel-detail-screen .hotel-stats small,
+.hotel-info-row small{font-size:11px}
+.journey-pass--train .journey-times span,
+.journey-pass--train .journey-times small,
+.journey-pass--train .journey-facts dt{font-size:11px}
+.journey-pass--train>header>small,.mobile-v1-screen .fact-grid span{font-size:11px}
+.auto-badge{font-size:11px}
+.ticket-meta strong,.flight-pass__time strong,.journey-time,
+.journey-times strong,.journey-facts dd,.fact-grid strong,
+.hotel-stats strong,.detail-row strong,.document-row__copy strong{
+  font-variant-numeric:tabular-nums;
+}
+
+.focused-task{scroll-padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+.focused-page{
+  min-height:calc(100dvh - 52px);
+  padding-bottom:calc(118px + env(safe-area-inset-bottom));
+  scroll-padding-bottom:calc(116px + env(safe-area-inset-bottom));
+}
+.premium-form input,.premium-form select,.premium-form textarea,
+.import-form textarea,.review-fields input{scroll-margin-block:104px}
+.form-save-bar{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  z-index:70;
+  width:min(calc(100% - 40px),390px);
+  margin:0;
+  padding:14px 0 calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(242,244,247,0),#F2F4F7 18px);
+  transform:translateX(-50%);
+}
+.form-save-bar .mobile-primary-action{min-height:56px;font-size:15px}
+.field-error,.form-submit-error{
+  margin:0;
+  color:#9F2F38;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.35;
+}
+.form-submit-error{
+  padding:11px 13px;
+  border:1px solid rgba(159,47,56,.24);
+  border-radius:13px;
+  background:#FFF2F2;
+}
+.premium-form [aria-invalid="true"],.import-form [aria-invalid="true"]{
+  border-color:#B83A43;
+  box-shadow:0 0 0 3px rgba(184,58,67,.1);
+}
+.bottom-sheet--document .sheet-field select{
+  min-height:54px;
+  font-family:inherit;
+  font-size:16px;
+}
+.bottom-sheet--document .traveler-pill span{min-height:44px;font-size:12px}
+.bottom-sheet--document .sheet-submit .primary-cta{min-height:56px;font-size:15px}
+
+@media(max-width:375px){
+  .form-save-bar{width:calc(100% - 32px)}
+  .flight-pass--detail .flight-pass__status small,
+  .flight-pass--detail .flight-pass__time-copy>span,
+  .flight-pass--detail .flight-pass__time small,
+  .flight-pass--detail .flight-pass__fact-copy>span,
+  .flight-pass--detail .flight-pass__fact small{font-size:11px}
+  .flight-pass--detail .primary-cta,
+  .flight-pass--detail .flight-pass__secondary{font-size:15px}
+}
+@media(max-height:620px){
+  .focused-page{gap:14px}
+  .import-form textarea{min-height:180px}
+}
+
+/* Mobile UI v1 production form, keyboard, dialog and loading-state hardening. */
+.form-note,.field-error,.form-submit-error,
+.document-file-picker small,.document-verify-state,
+.review-warnings p,.review-summary small,
+.import-form+.form-note{
+  min-height:0;
+  color:#626D86;
+  font-size:12px;
+  line-height:1.4;
+}
+.review-warnings p{color:#735000}
+.form-field>span,.import-form label>span,.review-fields label>span,
+.sheet-field>label{
+  min-width:0;
+  overflow-wrap:anywhere;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.3;
+  letter-spacing:.04em;
+}
+.premium-form input,.premium-form select,.premium-form textarea,
+.import-form textarea,.review-fields input,
+.bottom-sheet--document select{
+  min-width:0;
+  min-height:54px;
+  color:#141948;
+  font-size:16px;
+  line-height:1.3;
+}
+.import-review-form{display:grid;gap:18px;margin:0}
+.focused-task{overflow-x:hidden}
+html.sheet-open .bottom-nav{display:none}
+.focused-task .focused-page{
+  scroll-padding-bottom:calc(116px + var(--keyboard-offset) + env(safe-area-inset-bottom));
+}
+.form-save-bar{
+  bottom:var(--keyboard-offset);
+  transition:bottom var(--motion-fast) var(--ease-standard);
+}
+.keyboard-open .form-save-bar{padding-bottom:10px}
+.mobile-primary-action.is-loading{gap:10px}
+.button-spinner{
+  width:17px;
+  height:17px;
+  flex:0 0 17px;
+  border:2px solid rgba(20,25,72,.28);
+  border-top-color:#141948;
+  border-radius:50%;
+  animation:button-spin .75s linear infinite;
+}
+@keyframes button-spin{to{transform:rotate(360deg)}}
+
+.discard-dialog-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:220;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(8,15,48,.48);
+  backdrop-filter:blur(8px);
+}
+.discard-dialog{
+  width:min(100%,350px);
+  padding:22px;
+  border-radius:22px;
+  background:#fff;
+  box-shadow:0 24px 70px rgba(8,15,48,.28);
+  color:#141948;
+}
+.discard-dialog h2{margin:0;font-size:22px;line-height:1.2}
+.discard-dialog p{margin:8px 0 20px;color:#626D86;font-size:14px;line-height:1.4}
+.discard-dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.discard-dialog-actions button{min-height:52px;margin:0;font-size:15px}
+
+.loading-skeleton{
+  display:grid;
+  gap:18px;
+  width:100%;
+  min-height:100dvh;
+  padding:calc(8px + env(safe-area-inset-top)) 20px 28px;
+  background:#fff;
+}
+.loading-skeleton :is(.skeleton-appbar i,.skeleton-appbar b,.skeleton-heading,
+  .skeleton-home-pass>*,.skeleton-list-row i,.skeleton-list-row b,
+  .skeleton-list-row small,.skeleton-date,.skeleton-timeline i,
+  .skeleton-timeline b,.skeleton-timeline small,.skeleton-profile i,
+  .skeleton-profile b,.skeleton-profile small,.skeleton-detail-hero>div,
+  .skeleton-facts i){
+  display:block;
+  border-radius:12px;
+  background:linear-gradient(90deg,#E6E9EF 20%,#F5F7FA 45%,#E6E9EF 70%);
+  background-size:220% 100%;
+  animation:skeleton-shimmer 1.35s ease-in-out infinite;
+}
+.skeleton-appbar{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:14px;height:52px}
+.skeleton-appbar i{width:36px;height:36px;border-radius:50%}.skeleton-appbar b{width:112px;height:18px;justify-self:center}
+.skeleton-heading{width:58%;height:24px;margin-top:8px}
+.skeleton-list{display:grid;overflow:hidden;border:1px solid rgba(20,25,72,.06);border-radius:18px;background:#fff}
+.skeleton-list-row{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:13px;min-height:72px;padding:12px;border-bottom:1px solid rgba(20,25,72,.07)}
+.skeleton-list-row:last-child{border-bottom:0}.skeleton-list-row i{width:40px;height:40px}.skeleton-list-row span{display:grid;gap:8px}.skeleton-list-row b{width:68%;height:15px}.skeleton-list-row small{width:46%;height:11px}
+.skeleton-home-pass{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:228px;padding:20px;border-radius:24px;background:#141948}
+.skeleton-home-pass div,.skeleton-home-pass span{height:48px;margin-top:52px}.skeleton-home-pass i{grid-column:1/-1;height:52px;align-self:end;background:#FEBF02}
+.skeleton-date{width:92px;height:28px}.skeleton-timeline{display:grid;gap:2px;border-left:2px solid #E6E9EF;margin-left:19px;padding-left:22px}.skeleton-timeline>div{display:grid;grid-template-columns:36px 1fr;align-items:center;gap:12px;min-height:82px}.skeleton-timeline i{width:36px;height:36px;margin-left:-41px;border-radius:50%}.skeleton-timeline span{display:grid;gap:8px}.skeleton-timeline b{width:72%;height:15px}.skeleton-timeline small{width:52%;height:11px}
+.skeleton-profile{display:grid;grid-template-columns:56px 1fr;align-items:center;gap:14px;padding:16px;border-radius:20px;background:#F7F8FB}.skeleton-profile i{width:56px;height:56px;border-radius:50%}.skeleton-profile span{display:grid;gap:9px}.skeleton-profile b{width:56%;height:16px}.skeleton-profile small{width:72%;height:12px}
+.skeleton-detail-hero{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:220px;padding:20px;border-radius:24px;background:#141948}.skeleton-detail-hero>div{height:54px;align-self:center}.skeleton-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.skeleton-facts i{height:70px}
+
+@media(prefers-reduced-motion:reduce){
+  .form-save-bar{transition:none}
+  .button-spinner{animation:none}
+  .loading-skeleton :is(.skeleton-appbar i,.skeleton-appbar b,.skeleton-heading,
+    .skeleton-home-pass>*,.skeleton-list-row i,.skeleton-list-row b,
+    .skeleton-list-row small,.skeleton-date,.skeleton-timeline i,
+    .skeleton-timeline b,.skeleton-timeline small,.skeleton-profile i,
+    .skeleton-profile b,.skeleton-profile small,.skeleton-detail-hero>div,
+    .skeleton-facts i){animation:none;background:#EDF0F5}
+}
+
+/* Stable Create Trip date controls. The native input remains the interactive
+   picker while the visible shell avoids browser-specific placeholder fragments. */
+.trip-create-fields>.trip-date-range{grid-column:1/-1;width:100%;box-sizing:border-box}
+.trip-date-field>.trip-date-control{padding:0;color:inherit;font-size:inherit;font-weight:inherit;line-height:normal;letter-spacing:normal;text-transform:none}
+.trip-date-control{position:relative;display:block;min-width:0;min-height:56px}
+.trip-date-input{position:absolute;z-index:2;inset:0;width:100%;min-width:0;height:100%;min-height:56px!important;margin:0;padding:0!important;border:0!important;opacity:0;cursor:pointer;appearance:none;-webkit-appearance:none}
+.trip-date-shell{display:flex;align-items:center;gap:6px;min-width:0;min-height:56px;padding:0 8px;border:1px solid rgba(20,25,72,.13);border-radius:15px;background:#fff;color:#69738D;box-shadow:0 2px 8px rgba(20,25,72,.025);transition:border-color var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard),background-color var(--motion-fast) var(--ease-standard)}
+.trip-date-icon{display:grid;place-items:center;flex:0 0 20px;width:20px;height:22px;color:#2F3BAB}.trip-date-icon svg{width:20px;height:20px;stroke-width:1.9}
+.trip-date-value{min-width:0;overflow:hidden;color:#747E96;font-size:16px;font-weight:590;line-height:1.25;white-space:nowrap;text-overflow:clip}.trip-date-value.is-selected{color:#141948;font-variant-numeric:tabular-nums}
+.trip-date-input:hover+.trip-date-shell{border-color:rgba(47,59,171,.3)}
+.trip-date-input:focus-visible+.trip-date-shell{border-color:#2F3BAB;outline:3px solid rgba(47,59,171,.2);outline-offset:2px}
+.trip-date-input[aria-invalid="true"]+.trip-date-shell{border-color:#B83A43;box-shadow:0 0 0 3px rgba(184,58,67,.1)}
+.trip-date-field .field-error{grid-column:1/-1}
+@media(max-width:370px){.trip-date-range .form-fields--date-time{grid-template-columns:1fr}.trip-date-value{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.trip-date-shell{transition:none}}
+
+/* Approved one-screen first-run experience. This layer is intentionally
+   isolated from every traveler screen rendered after a trip exists. */
+html.first-run-open,
+html.first-run-open body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  overscroll-behavior:none;
+  background:#080D2E;
+}
+html.first-run-open #app,
+html.first-run-open .phone-app{
+  height:100dvh;
+  min-height:100svh;
+  overflow:hidden;
+}
+.first-run-screen{
+  position:relative;
+  isolation:isolate;
+  contain:layout paint;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  width:100%;
+  height:100dvh;
+  min-height:100svh;
+  overflow:hidden;
+  padding:calc(16px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom));
+  color:#fff;
+  background:
+    radial-gradient(circle at 96% 8%,rgba(103,91,246,.34),transparent 34%),
+    radial-gradient(circle at 5% 72%,rgba(47,59,171,.28),transparent 38%),
+    linear-gradient(155deg,#080D2E 0%,#10184A 48%,#141948 100%);
+  background-size:135% 135%;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  animation:first-run-ambient 20s ease-in-out infinite alternate;
+}
+.first-run-aurora{
+  position:absolute;
+  z-index:-3;
+  top:3%;
+  right:0;
+  width:88%;
+  height:48%;
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(87,74,226,.34),rgba(47,59,171,.08) 52%,transparent 72%);
+  filter:blur(16px);
+  transform:rotate(-18deg);
+  animation:first-run-aurora 16s ease-in-out infinite alternate;
+}
+.first-run-orbit{
+  position:absolute;
+  z-index:-1;
+  top:calc(58px + env(safe-area-inset-top));
+  right:0;
+  width:258px;
+  height:178px;
+  color:rgba(215,222,255,.7);
+  opacity:.76;
+  transform:rotate(-13deg);
+}
+.first-run-orbit__track{
+  position:absolute;
+  inset:17px 4px;
+  border:1px solid rgba(167,181,255,.22);
+  border-right-color:rgba(254,191,2,.46);
+  border-radius:50%;
+  box-shadow:0 0 25px rgba(77,91,228,.12);
+}
+.first-run-orbit__plane{
+  position:absolute;
+  right:58px;
+  top:21px;
+  color:#FEBF02;
+  filter:drop-shadow(0 8px 16px rgba(254,191,2,.2));
+  transform:rotate(7deg);
+  animation:first-run-plane-in 650ms cubic-bezier(.2,.8,.2,1) both;
+}
+.first-run-clouds{position:absolute;z-index:-2;inset:auto 0 0;height:34%;overflow:hidden;pointer-events:none}
+.first-run-clouds i{position:absolute;display:block;border-radius:50%;background:rgba(116,135,221,.09);filter:blur(3px)}
+.first-run-clouds i:nth-child(1){left:0;bottom:-42%;width:58%;height:82%}
+.first-run-clouds i:nth-child(2){right:0;bottom:-48%;width:64%;height:94%;background:rgba(170,182,239,.07)}
+.first-run-clouds i:nth-child(3){left:28%;bottom:-56%;width:55%;height:89%;background:rgba(255,255,255,.035)}
+.first-run-brand-row{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;min-height:36px}
+.first-run-brand{color:#fff;font-family:var(--font-display);font-size:30px;font-weight:850;line-height:1;letter-spacing:-1.5px}
+.first-run-brand span{color:#FEBF02}
+.first-run-offline{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 11px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(8,13,46,.34);color:#E3E7F7;font-size:12px;font-weight:720;backdrop-filter:blur(12px)}
+.first-run-main{position:relative;z-index:1;display:grid;grid-template-rows:auto auto auto auto;align-content:space-between;gap:clamp(9px,1.4dvh,13px);min-height:0;padding-top:clamp(10px,1.8dvh,16px)}
+.first-run-hero{align-self:start;max-width:350px}
+.first-run-hero h1{margin:0;color:#fff;font-family:var(--font-display);font-size:clamp(44px,13vw,60px);font-weight:840;line-height:.94;letter-spacing:-.058em}
+.first-run-hero h1 span{display:block;background:linear-gradient(108deg,#fff 10%,#F0F3FF 56%,#BEC9FF 100%);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.first-run-hero p{display:grid;gap:1px;margin:11px 0 0;color:#C7CFE7;font-size:clamp(15px,4.25vw,18px);font-weight:520;line-height:1.34;letter-spacing:-.012em}
+.first-run-hero p span{display:block;white-space:nowrap}
+.first-run-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.first-run-primary,.first-run-secondary{display:flex;align-items:center;justify-content:center;min-width:0;border-radius:19px;font:inherit;white-space:nowrap;transition:transform 160ms ease,filter 160ms ease,box-shadow 160ms ease}
+.first-run-primary{position:relative;overflow:hidden;gap:9px;min-height:60px;padding:0 14px;border:0;background:linear-gradient(105deg,#FEBF02,#FFD637);color:#141948;font-size:16px;font-weight:820;box-shadow:0 12px 28px rgba(254,191,2,.2)}
+.first-run-primary>svg:last-child{margin-left:auto;flex:0 0 auto}
+.first-run-primary:after{content:"";position:absolute;inset:-40% auto -40% -34%;width:24%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-17deg);animation:first-run-cta-shine 620ms 720ms ease-out both}
+.first-run-secondary{gap:8px;min-height:54px;padding:0 12px;border:1px solid rgba(205,214,255,.18);background:rgba(255,255,255,.075);color:#fff;font-size:14px;font-weight:720;box-shadow:inset 0 1px rgba(255,255,255,.06);backdrop-filter:blur(14px)}
+.first-run-primary:active,.first-run-secondary:active{transform:scale(.975);filter:brightness(.98)}
+.first-run-primary:focus-visible,.first-run-secondary:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.first-run-preview{position:relative;isolation:isolate;display:grid;grid-template-rows:auto 1fr auto auto;align-self:center;height:clamp(182px,24dvh,220px);min-height:0;padding:15px 16px 13px;border:1px solid rgba(180,194,255,.19);border-radius:25px;background:linear-gradient(145deg,rgba(43,56,136,.72),rgba(12,24,71,.74));box-shadow:0 20px 46px rgba(1,5,28,.24),inset 0 1px rgba(255,255,255,.08);backdrop-filter:blur(16px);transition:transform 200ms ease,box-shadow 200ms ease}
+.first-run-preview__layer{position:absolute;z-index:-1;inset:8px -7px -9px 11px;border:1px solid rgba(134,150,230,.11);border-radius:25px;background:rgba(27,37,102,.3);transform:rotate(1.2deg)}
+.first-run-preview__header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.first-run-preview__badge{display:inline-flex;align-items:center;min-height:27px;padding:0 10px;border:1px solid rgba(255,255,255,.13);border-radius:999px;background:rgba(255,255,255,.08);color:#DDE3F8;font-size:10px;font-weight:780;letter-spacing:.08em;text-transform:uppercase}
+.first-run-preview__ready{display:inline-flex;align-items:center;gap:5px;color:#74E2A7;font-size:11px;font-weight:750}
+.first-run-preview__route{display:grid;grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr);align-items:center;margin-top:1px}
+.first-run-preview__route>span:first-child{text-align:left}.first-run-preview__route>span:last-child{text-align:right}
+.first-run-preview__route strong{display:block;color:#fff;font-family:var(--font-display);font-size:clamp(34px,10vw,42px);font-weight:820;line-height:1;letter-spacing:-.05em}
+.first-run-preview__route small{display:block;margin-top:3px;color:#AEB9DC;font-size:10px;font-variant-numeric:tabular-nums}
+.first-run-preview__journey{display:flex;align-items:center;justify-content:center;color:#fff}
+.first-run-preview__journey i{flex:1;border-top:1px dashed rgba(212,220,255,.35)}
+.first-run-preview__journey svg{flex:0 0 auto;margin:0 6px;color:#FEBF02;transform:rotate(4deg)}
+.first-run-preview__progress{display:grid;grid-template-columns:auto 1fr auto 1fr auto;align-items:center;margin:0 3px 8px}
+.first-run-preview__progress i{display:block;width:7px;height:7px;border:1px solid rgba(221,228,255,.45);border-radius:50%;background:#26357F}
+.first-run-preview__progress i.is-complete{border-color:#6DE2A1;background:#6DE2A1}.first-run-preview__progress i.is-current{border-color:#FEBF02;background:#FEBF02;box-shadow:0 0 0 4px rgba(254,191,2,.1)}
+.first-run-preview__progress span{height:1px;background:linear-gradient(90deg,rgba(109,226,161,.55),rgba(167,181,241,.25))}
+.first-run-preview__footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:9px;border-top:1px solid rgba(255,255,255,.1)}
+.first-run-preview__footer>span:first-child{display:flex;align-items:center;gap:9px;color:#CBD3ED}
+.first-run-preview__footer>span>span{display:grid;gap:1px}.first-run-preview__footer strong{color:#F5F7FF;font-size:12px}.first-run-preview__footer small{color:#9DA9CE;font-size:10px}
+.first-run-preview__pass{display:grid;place-items:center;width:38px;height:32px;border:1px solid rgba(254,191,2,.24);border-radius:10px;background:rgba(254,191,2,.1);color:#FEBF02}
+.first-run-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.first-run-benefits article{display:grid;align-content:start;justify-items:start;min-width:0;min-height:98px;padding:10px 9px;border:1px solid rgba(192,202,248,.13);border-radius:17px;background:rgba(255,255,255,.055);box-shadow:inset 0 1px rgba(255,255,255,.035);backdrop-filter:blur(12px)}
+.first-run-benefits article>span{display:grid;place-items:center;width:31px;height:31px;margin-bottom:7px;border-radius:10px;background:rgba(89,105,218,.18);color:#DDE3FF}
+.first-run-benefits strong{color:#fff;font-size:clamp(11px,3.3vw,14px);font-weight:760;line-height:1.15;letter-spacing:-.015em}
+.first-run-benefits small{display:block;margin-top:3px;color:#AEB8D5;font-size:clamp(11px,2.9vw,12px);line-height:1.23}
+.bottom-sheet--first-run-how{height:auto;max-height:min(64dvh,450px);padding-bottom:calc(22px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#F8F9FC,#F2F4F7)}
+.bottom-sheet--first-run-how .sheet-title-row{margin-bottom:12px}.bottom-sheet--first-run-how .sheet-title-row h2{color:#141948;font-family:var(--font-display);font-size:25px;font-weight:820}
+.first-run-how-list{display:grid;overflow:hidden;margin:0;padding:0;border:1px solid rgba(20,25,72,.08);border-radius:20px;background:#fff;list-style:none;box-shadow:0 9px 28px rgba(20,25,72,.06)}
+.first-run-how-list li{display:grid;grid-template-columns:27px 42px minmax(0,1fr);align-items:center;gap:10px;min-height:72px;padding:9px 13px;border-bottom:1px solid rgba(20,25,72,.07)}
+.first-run-how-list li:last-child{border-bottom:0}.first-run-how-list__number{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#141948;color:#fff;font-size:11px;font-weight:800}.first-run-how-list__icon{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:#EEF1FF;color:#2F3BAB}.first-run-how-list strong{color:#141948;font-size:15px;font-weight:760;line-height:1.25}
+.first-run-how-done{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;margin-top:12px;border:0;border-radius:17px;background:#FEBF02;color:#141948;font:inherit;font-size:16px;font-weight:800;box-shadow:0 8px 20px rgba(254,191,2,.17)}
+.first-run-how-done:focus{outline:none}
+html[data-input-method="keyboard"] .first-run-how-done:focus-visible{outline:3px solid #2F3BAB;outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.first-run-preview:hover{transform:perspective(800px) rotateX(1deg) rotateY(-1.2deg) translateY(-2px);box-shadow:0 24px 54px rgba(1,5,28,.29),inset 0 1px rgba(255,255,255,.1)}}
+@media(max-width:370px){
+  .first-run-screen{padding-right:16px;padding-left:16px}
+  .first-run-primary{padding:0 13px;font-size:15px}.first-run-secondary{gap:7px;padding:0 10px;font-size:14px}
+  .first-run-preview{padding-right:14px;padding-left:14px}.first-run-preview__route{grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr)}
+  .first-run-benefits{gap:6px}.first-run-benefits article{padding-right:7px;padding-left:7px}.first-run-benefits article>span{width:29px;height:29px}
+}
+@media(max-height:820px){
+  .first-run-screen{padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  .first-run-main{gap:8px;padding-top:8px}.first-run-hero h1{font-size:clamp(43px,12vw,48px)}.first-run-hero p{margin-top:8px;font-size:15px}
+  .first-run-primary{min-height:58px}.first-run-secondary{min-height:52px}.first-run-preview{height:180px;padding-top:12px;padding-bottom:11px}
+  .first-run-benefits article{min-height:88px;padding-top:8px;padding-bottom:8px}.first-run-benefits article>span{margin-bottom:5px}
+}
+@media(max-height:790px){
+  .first-run-preview{height:154px}.first-run-preview__footer small{display:none}.first-run-preview__progress{margin-bottom:5px}
+  .first-run-benefits article{min-height:82px}.first-run-benefits article>span{width:27px;height:27px;margin-bottom:4px}.first-run-benefits small{line-height:1.15}
+}
+@media(prefers-reduced-motion:reduce){
+  .first-run-screen,.first-run-aurora,.first-run-orbit__plane,.first-run-primary:after{animation:none!important}
+  .first-run-primary,.first-run-secondary,.first-run-preview{transition:none!important}
+  .first-run-primary:active,.first-run-secondary:active,.first-run-preview:hover{transform:none!important}
+}
+.first-run-reduced-motion .first-run-screen,
+.first-run-reduced-motion .first-run-aurora,
+.first-run-reduced-motion .first-run-orbit__plane,
+.first-run-reduced-motion .first-run-primary:after{animation:none!important}
+.first-run-reduced-motion .first-run-primary,
+.first-run-reduced-motion .first-run-secondary,
+.first-run-reduced-motion .first-run-preview{transition:none!important}
+.first-run-reduced-motion .first-run-primary:active,
+.first-run-reduced-motion .first-run-secondary:active,
+.first-run-reduced-motion .first-run-preview:hover{transform:none!important}
+@keyframes first-run-ambient{from{background-position:0 0}to{background-position:80% 45%}}
+@keyframes first-run-aurora{from{opacity:.72;transform:rotate(-18deg) translate3d(0,0,0)}to{opacity:.9;transform:rotate(-13deg) translate3d(-12px,8px,0)}}
+@keyframes first-run-plane-in{from{opacity:0;transform:translate3d(62px,36px,0) rotate(7deg)}to{opacity:1;transform:translate3d(0,0,0) rotate(7deg)}}
+@keyframes first-run-cta-shine{from{opacity:0;transform:translateX(0) skewX(-17deg)}25%{opacity:1}to{opacity:0;transform:translateX(560%) skewX(-17deg)}}
