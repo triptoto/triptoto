@@ -2206,10 +2206,8 @@
       control = `<input type="${type}" ${base} autocomplete="off" placeholder="${esc(placeholder)}">`;
     return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
   }
-  function tripDateField(name, label) {
-    const id = `form-${name}`,
-      statusId = `${id}-status`;
-    return `<label class="form-field trip-date-field form-field--${name}" for="${id}"><span>${esc(label)} <b aria-hidden="true">*</b></span><span class="trip-date-control"><input class="trip-date-input" type="date" name="${esc(name)}" id="${id}" required autocomplete="off" aria-describedby="${statusId}" data-date-label="${esc(label)}"><span class="trip-date-shell" aria-hidden="true"><span class="trip-date-icon">${icon("calendar", 20)}</span><span class="trip-date-value">Select date</span></span></span><span class="sr-only trip-date-status" id="${statusId}" aria-live="polite">${esc(label)} is not selected.</span></label>`;
+  function dateRangeField(startName, endName, rangeLabel, startLabel, endLabel) {
+    return `<div class="form-field form-field--wide date-range-field"><span>${esc(rangeLabel)} <b aria-hidden="true">*</b></span><div class="date-range-control" data-date-range data-range-label="${esc(rangeLabel)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}"><input type="hidden" name="${esc(startName)}" id="form-${esc(startName)}" data-range-start><input type="hidden" name="${esc(endName)}" id="form-${esc(endName)}" data-range-end><button type="button" class="date-range-trigger" aria-haspopup="dialog"><span><strong class="date-range-trigger__value">Choose dates</strong><small class="date-range-trigger__hint">Tap start, then end</small></span><span class="date-range-trigger__icon">${icon("calendar", 22)}</span></button></div></div>`;
   }
   function quickTripContext() {
     if (!state.trip) return "";
@@ -2244,13 +2242,13 @@
   }
   function basicMobileForm(kind) {
     const configs = {
-        trip: { title:"Create Trip", lead:"Trip basics", fields:[["title","Trip name","text",true,true],["startsOn","Start date","date",true,false],["endsOn","End date","date",true,false]] },
+        trip: { title:"Create Trip", lead:"Trip basics", fields:[["title","Trip name","text",true,true]] },
         traveler: { title:"Add Traveler", lead:"Traveler", fields:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
         checklist: { title:"Add Essential", lead:"Travel essential", fields:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
       }, cfg = configs[kind] || configs.trip;
-    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; if(type==="select")choices='<option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option>'; if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? tripDateField(name, label) : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices}); });
+    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; if(type==="select")choices='<option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option>'; if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices}); });
     const fields = kind === "trip"
-      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<fieldset class="trip-date-range"><legend>Trip dates</legend><div class="form-fields form-fields--date-time">${mappedFields.slice(1).join("")}</div></fieldset></div>`
+      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}${dateRangeField("startsOn","endsOn","Trip dates","Start","End")}</div>`
       : `<div class="form-fields">${mappedFields.join("")}</div>`;
     return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}" novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">Save ${esc(statusText(kind))}</button></div></form>`, "form-screen");
   }
@@ -2267,7 +2265,7 @@
       more = quickMore(kind,"More flight details",`<div class="form-fields">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'data-timezone-role="arrival"'})}${quickField("carrierName","Marketing airline",{})}${quickField("operatingAirlineCode","Operating airline",{})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Departure uses the event-local timezone. Arrival stays unavailable until you add it.";
     } else if (kind === "hotel") {
-      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name"})}<div class="form-fields form-fields--date-time">${quickField("checkInDate","Check-in date",{type:"date",required:true,wide:false})}${quickField("checkOutDate","Check-out date",{type:"date",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name"})}${dateRangeField("checkInDate","checkOutDate","Stay dates","Check-in","Check-out")}${quickDateSuggestions(kind)}`;
       more = quickMore(kind,"More stay details",`<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Check-in and check-out times remain unavailable unless you enter them.";
     } else if (kind === "train") {
@@ -2593,6 +2591,8 @@
   }
   function showFieldError(form, control, message) {
     if (!control) return;
+    if (control.matches?.("[data-range-start],[data-range-end]"))
+      control = control.closest("[data-date-range]")?.querySelector(".date-range-trigger") || control;
     const field = control.closest("label") || control.parentElement,
       id = `${control.id || control.name || "field"}-error`,
       error = document.createElement("span");
@@ -2637,13 +2637,26 @@
       });
       if (!result?.valid) {
         const field = result?.field || "title";
-        showFieldError(form, form.elements[field], result?.message || "Complete the required trip details.");
+        const rangeError = field === "startsOn" || field === "endsOn";
+        showFieldError(
+          form,
+          form.elements[field],
+          rangeError ? "Choose your start and end dates." : result?.message || "Complete the required trip details.",
+        );
         return false;
       }
     }
     if (kind === "hotel") {
       const checkIn = form.elements.checkInDate,
         checkOut = form.elements.checkOutDate;
+      if (!checkIn?.value || !checkOut?.value) {
+        showFieldError(
+          form,
+          !checkIn?.value ? checkIn : checkOut,
+          "Choose check-in and check-out dates.",
+        );
+        return false;
+      }
       if (checkIn?.value && checkOut?.value && checkOut.value < checkIn.value) {
         showFieldError(form, checkOut, "Check-out cannot be before check-in.");
         return false;
