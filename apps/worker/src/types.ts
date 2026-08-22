@@ -25,6 +25,7 @@ export interface Env {
   GMAIL_SYNC_ENABLED?: string;
   R2_DOCUMENTS_ENABLED?: string;
   ACCOUNT_AUTH_ENABLED?: string;
+  GOOGLE_CLIENT_ID?: string;
   SHARING_ENABLED?: string;
   DEMO_TOOLS_ENABLED?: string;
   DEMO_TOOLS_SECRET?: string;
