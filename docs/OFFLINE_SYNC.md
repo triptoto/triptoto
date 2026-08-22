@@ -1,5 +1,9 @@
 # Offline / Sync v1
 
+## Smart Import
+
+The selected original remains in the existing IndexedDB document store and is checksum-verified. Text, EML, ICS, DOCX and PKPASS recognition can run offline after the mobile shell is cached. PDF/OCR support files are cached on first use; a device that has never loaded them cannot perform that fallback while fully offline. A recognized structured preview created offline is placed in the existing pending-mutation store and submitted after reconnect. Submission creates only a pending import review—never a confirmed booking—so sync cannot bypass explicit user confirmation.
+
 ## Offline cache
 Automatically cache the active/upcoming window: timeline, travelers, locations, hotel contacts, scheduled flight information, last-known status metadata, selected documents, QR/boarding passes, checklists, alerts, and Trip Brain state.
 

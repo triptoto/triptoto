@@ -108,6 +108,9 @@
     syncStatus: null,
     localDocs: [],
     account: null,
+    importReview: null,
+    importLocalDocumentId: null,
+    importUploadRequest: null,
     imports: [],
     importReview: null,
     bookingFilter: "all",
@@ -313,6 +316,10 @@
       return [];
     }
   }
+  function queuePendingMutation(row) {
+    const rows=pendingMutations();rows.push({id:`pending_${crypto.randomUUID()}`,createdAt:Date.now(),status:"pending",...row});localStorage.setItem(PENDING_KEY,JSON.stringify(rows));
+  }
+  async function flushSmartImportQueue(){if(PREVIEW_MODE||!navigator.onLine||!state.token)return;const rows=pendingMutations(),keep=[];for(const row of rows){if(row.kind!=="smart-import-preview"||row.status==="done"){keep.push(row);continue;}try{await api(row.path,{method:"POST",body:JSON.stringify(row.body)});}catch{keep.push({...row,status:"retry"});}}localStorage.setItem(PENDING_KEY,JSON.stringify(keep));}
   function ageLabel(timestamp) {
     if (!timestamp) return "Not cached";
     const age = Math.max(0, Date.now() - Number(timestamp));
@@ -760,6 +767,15 @@
     if (file.size > 10 * 1024 * 1024)
       throw new Error("The beta limit is 10 MB per local document.");
     const existing = await listLocalDocs(state.trip.id);
+    const checksum = await sha256Blob(file),
+      duplicate = existing.find(
+        (document) =>
+          document.checksum === checksum && document.integrity === "verified",
+      );
+    if (duplicate) {
+      showToast("This document is already saved on this phone.");
+      return duplicate;
+    }
     if (existing.length >= 20)
       throw new Error(
         "The beta limit is 20 local documents per trip on this phone.",
@@ -774,7 +790,7 @@
       travelerIds: Array.isArray(travelerIds) ? travelerIds : [],
       relatedBookingId: relatedBookingId || null,
       savedAt: Date.now(),
-      checksum: await sha256Blob(file),
+      checksum,
       integrity: "verified",
       blob: file,
     };
@@ -788,6 +804,7 @@
     state.localDocs = await listLocalDocs(state.trip.id);
     showToast("Document saved offline on this phone.");
     render();
+    return row;
   }
   async function linkLocalDocument(documentId, relatedBookingId) {
     if (!documentId || !relatedBookingId || PREVIEW_MODE) return;
@@ -2156,12 +2173,17 @@
     return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(transportIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
   }
   function importScreen() {
-    return focusedTaskPage("Import Booking", `<section class="form-intro"><span>${icon("mail",28)}</span><h1>Paste a booking confirmation</h1><p>No AI guessing. You review every field before it is added.</p></section><form class="mobile-form import-form" id="import-form" novalidate><label><span>Forwarded email</span><textarea name="body" rows="12" required placeholder="Paste the full airline, hotel, train, or activity confirmation here"></textarea></label><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon("document",19)} Preview Booking</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
+    // No AI guessing. You review every field before it is added.
+    return focusedTaskPage("Smart Import", `<section class="form-intro smart-import-intro"><span>${icon("document",28)}</span><h1>Add a booking document</h1><p>Recognition stays on this phone. Review every field before saving.</p></section><form class="mobile-form import-form" id="import-form" novalidate><label class="smart-import-file"><span>Booking document</span><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,.eml,.docx,.ics,.pkpass,application/pdf,image/*,text/plain,message/rfc822,text/calendar"><small>PDF, image, TXT, EML, DOCX, ICS, or PKPASS · 10 MB max</small></label><div class="form-divider"><span>or paste an email</span></div><label><span>Forwarded email</span><textarea name="body" rows="6" placeholder="Paste a booking confirmation"></textarea></label><p class="form-error" hidden></p><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon("document",19)} Review recognized fields</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
   }
   function importReviewScreen() {
-    const candidates = state.importReview?.candidates || (PREVIEW_MODE ? [{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing","Date is ambiguous"]}] : []);
-    return focusedTaskPage("Import Review", `<form id="import-review-form" class="import-review-form"><section class="review-summary"><span>${icon("warning",25)}</span><div><strong>${candidates.some((c)=>String(c.confidence).toLowerCase() === "low") ? "Needs confirmation" : "Ready to import"}</strong><small>Nothing is added until you confirm.</small></div></section>${candidates.map((c)=>{ const warnings=c.warnings||[], payload=c.payload||{}; return `<section class="review-card"><header><span class="review-type">${icon(transportIcon(val(c,"type")||"flight"),19)} ${esc(statusText(val(c,"type")||"Booking"))}</span><span class="travel-state ${String(c.confidence).toLowerCase()==="low"?"travel-state--attention":""}">${String(c.confidence).toLowerCase()==="low"?"Needs confirmation":"Ready to import"}</span></header><h2>${esc(val(c,"title") || statusText(val(c,"type")||"Booking"))}</h2>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",15)} ${esc(w)}</p>`).join("")}</div>`:""}<div class="review-fields">${warnings.some((w)=>/timezone/i.test(w))?`<label><span>Timezone</span><input type="text" name="candidate-timezone" value="${esc(payload.departureTimezone||payload.timezone||"")}" placeholder="Europe/Rome"></label>`:""}${warnings.some((w)=>/date|time/i.test(w))?`<label><span>Travel date and time</span><input type="datetime-local" name="candidate-date" value="${esc(payload.localDateTime||payload.departureLocalDatetime||"")}"></label>`:""}</div><button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">Confirm and Import</button></section>`; }).join("") || `<section class="mobile-empty"><h1>No booking candidates</h1><p>This format could not be imported safely.</p></section>`}</form>`, "import-review-task");
+    const candidates = state.importReview?.candidates || [];
+    const duplicate=Boolean(state.importReview?.duplicate);
+    return focusedTaskPage("Import Review", `<form id="import-review-form" class="import-review-form"><section class="review-summary ${duplicate?"review-summary--duplicate":""}"><span>${icon(duplicate?"warning":"check",25)}</span><div><strong>${duplicate?"Possible duplicate":"Review before adding"}</strong><small>${duplicate?"This document was imported before. Review the existing import or add another copy intentionally.":"Nothing is added until you confirm."}</small></div></section>${candidates.map((c)=>reviewCandidate(c,duplicate)).join("") || `<section class="mobile-empty"><h1>No booking candidates</h1><p>This format could not be imported safely. Add the booking manually instead.</p></section>`}</form>`, "import-review-task");
   }
+
+  function reviewCandidate(c,duplicate){const payload=c.payload||{},type=val(c,"candidate_type","type")||"reservation",warnings=payload.warnings||c.warnings||[],confidence=Number(c.confidence||0),ignored=new Set(["warnings","fieldMeta","documentKind","filename","checksum"]),fields=new Map(Object.entries(payload).filter(([key,value])=>!ignored.has(key)&&(typeof value==="string"||typeof value==="number")));for(const key of reviewRequiredFields(type))if(!fields.has(key))fields.set(key,"");const control=([key,value])=>{const date=key.endsWith("LocalDatetime"),tz=key.toLowerCase().includes("timezone");return `<label><span>${esc(statusText(key.replace(/([A-Z])/g," $1")))}</span><input type="${date?"datetime-local":"text"}" name="field-${esc(c.id)}-${esc(key)}" value="${esc(value)}" data-field-name="${esc(key)}" ${tz?'placeholder="Europe/Rome"':""}></label>`;};return `<section class="review-card"><header><span class="review-type">${icon(transportIcon(type),19)} ${esc(statusText(type))}</span><span class="travel-state ${confidence<.7?"travel-state--attention":""}">${confidence<.7?"Check carefully":"Recognized"}</span></header>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",15)} ${esc(w)}</p>`).join("")}</div>`:""}<label><span>Booking type</span><select name="field-${esc(c.id)}-candidateType">${["flight","hotel","train","car","transfer","ferry","activity","restaurant","reservation","generic_ticket"].map(x=>`<option value="${x}" ${x===type?"selected":""}>${esc(statusText(x))}</option>`).join("")}</select></label><div class="review-fields">${[...fields].map(control).join("")}</div><div class="review-actions">${duplicate?`<button type="button" class="mobile-secondary-action" data-action="add-duplicate-import" data-id="${esc(c.id)}">Add anyway</button>`:`<button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">Confirm and Import</button>`}<button type="button" class="text-action" data-action="reject-import" data-id="${esc(c.id)}">Reject</button></div></section>`;}
+  function reviewRequiredFields(type){if(type==="flight")return["airlineCode","flightNumber","departureIata","arrivalIata","departureLocalDatetime","departureTimezone","arrivalLocalDatetime","arrivalTimezone"];if(type==="hotel")return["propertyName","checkInDate","checkOutDate"];return["title"];}
   function importHistoryScreen() {
     const rows = (state.imports || []).map((row)=>`<button class="travel-row" data-action="review-import" data-id="${esc(row.id)}"><span class="travel-row__icon">${icon(row.candidate_type==="hotel"?"hotel":row.candidate_type==="train"?"train":"plane",20)}</span><span class="travel-row__body"><strong>${esc(row.subject || statusText(row.candidate_type || "Booking"))}</strong><small>${esc(row.created_at ? formatDateTime(Number(row.created_at)) : "Date unavailable")}</small><em class="travel-state ${row.status==="imported"?"":"travel-state--attention"}">${esc(row.status==="imported"?"Imported":"Needs confirmation")}</em></span>${icon("chevron",18)}</button>`).join("");
     return mobilePage("Import History", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No imports yet</h1><p>Forwarded bookings you review will appear here.</p></section>`}</div><button class="mobile-secondary-action" data-screen="import">${icon("plus",19)} Import booking</button>`, "account");
@@ -2185,8 +2207,14 @@
           .toUpperCase() || "GT";
     const bytes = state.localDocs.reduce((sum,d)=>sum+Number(d.size||0),0), pending = pendingMutations().filter((x)=>x.status!=="done").length + Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
     const row = (ic,title,sub,screen,action="") => `<button class="simple-row" ${screen?`data-screen="${screen}"`:`data-action="${action}"`}><span class="row-icon">${icon(ic,22)}</span><span class="row-copy"><strong>${title}</strong><span>${esc(sub)}</span></span>${icon("chevron",22,"chevron")}</button>`;
-    return `<div class="phone-app"><section class="screen mobile-v1-screen">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? "Signed in" : "Using this device without an account"}</div></div></div></div><div class="section-label">Your trip</div>${row("user","Travelers",`${state.travelers.length} traveler${state.travelers.length===1?"":"s"}`,"travelers")}${row("document","Documents",`${state.localDocs.length} saved on this phone`,"documents")}${row("download","Offline storage",`${state.localDocs.length} files · ${Math.max(0.1,bytes/1048576).toFixed(1)} MB`,"ready")}${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}<div class="section-label">Tools</div>${row("mail","Import booking","Paste a forwarded confirmation","import")}${row("check","Smart Essentials",`${state.checklist.filter((x)=>!x.completed).length} incomplete`,"checklist")}${row("shield","Trip Health","Review what needs attention","health")}${row("trips","Switch trip",`${state.trips.length} trip${state.trips.length===1?"":"s"} available`,"","switch-trip")}<div class="section-label">Privacy & help</div>${row("share","Export trip","Download your trip data","","export-trip")}${row("info","Help & support","Beta support bundle","","support")}<button class="simple-row simple-row--danger" data-action="remove-local-data"><span class="row-icon">${icon("close",22)}</span><span class="row-copy"><strong>Remove local data</strong><span>${pending?"Pending changes must be reviewed first":"Deletes files stored on this phone"}</span></span>${icon("chevron",22)}</button><p class="app-version">tripto.to Mobile UI v1</p><a class="legacy-link" href="/legacy.html">Advanced beta tools</a></main>${bottomNav("account")}</section></div>`;
+    const google=state.account?.providers?.find((provider)=>provider.provider==="google"&&provider.enabled),identity=state.account?.identities?.find((item)=>item.provider==="google");
+    const authBlock=mode==="guest"&&google?`<section class="account-signin"><h2>Keep your trips across devices</h2><p>Continue with Google to attach this phone's trips to your verified account.</p><div id="google-signin-button" data-client-id="${esc(google.clientId)}"></div><p class="signin-error" role="alert" hidden></p></section>`:mode==="account"?`<section class="account-signin account-signin--active"><div><strong>${identity?"Google account connected":"Account connected"}</strong><small>${esc(state.account?.user?.primary_email||identity?.email||"")}</small></div><button class="mobile-secondary-action" data-action="sign-out">Sign out</button></section>`:"";
+    return `<div class="phone-app"><section class="screen mobile-v1-screen">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? "Signed in" : "Using this device without an account"}</div></div></div></div>${authBlock}<div class="section-label">Your trip</div>${row("user","Travelers",`${state.travelers.length} traveler${state.travelers.length===1?"":"s"}`,"travelers")}${row("document","Documents",`${state.localDocs.length} saved on this phone`,"documents")}${row("download","Offline storage",`${state.localDocs.length} files · ${Math.max(0.1,bytes/1048576).toFixed(1)} MB`,"ready")}${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}<div class="section-label">Tools</div>${row("mail","Smart Import","Recognize a booking document on this phone","import")}${row("check","Smart Essentials",`${state.checklist.filter((x)=>!x.completed).length} incomplete`,"checklist")}${row("shield","Trip Health","Review what needs attention","health")}${row("trips","Switch trip",`${state.trips.length} trip${state.trips.length===1?"":"s"} available`,"","switch-trip")}<div class="section-label">Privacy & help</div>${row("share","Export trip","Download your trip data","","export-trip")}${row("info","Help & support","Beta support bundle","","support")}<button class="simple-row simple-row--danger" data-action="remove-local-data"><span class="row-icon">${icon("close",22)}</span><span class="row-copy"><strong>Remove local data</strong><span>${pending?"Pending changes must be reviewed first":"Deletes files stored on this phone"}</span></span>${icon("chevron",22)}</button><p class="app-version">tripto.to Mobile UI v1</p><a class="legacy-link" href="/legacy.html">Advanced beta tools</a></main>${bottomNav("account")}</section></div>`;
   }
+
+  let googleScriptPromise=null;
+  function loadGoogleIdentityScript(){if(globalThis.google?.accounts?.id)return Promise.resolve();if(googleScriptPromise)return googleScriptPromise;googleScriptPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error("Google sign-in could not load."));document.head.appendChild(script);});return googleScriptPromise;}
+  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{const challenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});await loadGoogleIdentityScript();globalThis.google.accounts.id.initialize({client_id:challenge.clientId,nonce:challenge.nonce,use_fedcm_for_prompt:true,callback:async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||null})});state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}}});globalThis.google.accounts.id.renderButton(container,{type:"standard",theme:"outline",size:"large",shape:"pill",text:"continue_with",width:Math.min(350,container.clientWidth||350)});}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}}
   function quickField(name, label, options = {}) {
     const {
         type = "text",
@@ -3033,6 +3061,7 @@
         previewImportForm(importForm);
       });
     }
+    setupGoogleSignIn();
     document.querySelectorAll('input[data-action="toggle-checklist"]').forEach((input) => input.addEventListener("change", () => toggleChecklistItem(input)));
     setupSheet();
   }
@@ -3159,8 +3188,27 @@
   async function previewImportForm(form) {
     if (form.getAttribute("aria-busy") === "true") return;
     setFormSaving(form, true, "Preparing preview…");
-    try { if (PREVIEW_MODE) state.importReview={candidates:[{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing","Date is ambiguous"]}]}; else state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/forwarded-email/preview`,{method:"POST",body:JSON.stringify({body:new FormData(form).get("body")})}); formHasMeaningfulChanges=false; route("import-review"); } catch(error){ showFormSubmissionError(form,error.message); } finally { if(document.contains(form)) setFormSaving(form,false); }
+    try {
+      const fd=new FormData(form),file=form.elements.document?.files?.[0],pasted=String(fd.get("body")||"").trim();
+      if(!file&&!pasted)throw new Error("Choose a booking document or paste a confirmation email.");
+      if(file){
+        if(!globalThis.TriptoSmartImport)throw new Error("Local document recognition is unavailable. Reload and try again.");
+        const local=await saveLocalDocument(file,"other",[]),result=await globalThis.TriptoSmartImport.recognizeFile(file);
+        state.importLocalDocumentId=local.id;
+        if(!result.candidates.length){state.importReview={candidates:[],localOnly:true,warnings:result.warnings};formHasMeaningfulChanges=false;route("import-review");return;}
+        const candidate=result.candidates[0],safeFields=Object.fromEntries(Object.entries(candidate.fields).filter(([key])=>key!=="barcodeValue")),requestBody={checksum:result.checksum,filename:file.name,documentKind:result.kind,candidate:{type:candidate.type,confidence:candidate.confidence,fields:safeFields,warnings:candidate.warnings}};
+        state.importUploadRequest=requestBody;
+        if(PREVIEW_MODE)state.importReview={duplicate:false,import:{id:"preview-upload"},candidates:[{id:"candidate-1",candidate_type:candidate.type,payload:{...Object.fromEntries(Object.entries(candidate.fields).map(([k,v])=>[k,v.value])),fieldMeta:Object.fromEntries(Object.entries(candidate.fields).map(([k,v])=>[k,{confidence:v.confidence,source:v.source}])),warnings:candidate.warnings},confidence:candidate.confidence}]};
+        else if(!navigator.onLine){queuePendingMutation({kind:"smart-import-preview",tripId:state.trip.id,path:`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,body:requestBody});showToast("Document saved on this phone. Recognition will sync when you reconnect.");route("import-history");return;}
+        else state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,{method:"POST",body:JSON.stringify(requestBody)});
+      } else if(PREVIEW_MODE)state.importReview={import:{id:"preview-email"},candidates:[{id:"candidate-1",candidate_type:"flight",payload:{title:"Example booking",warnings:["Timezone missing","Date is ambiguous"]},confidence:.55}]};
+      else state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/forwarded-email/preview`,{method:"POST",body:JSON.stringify({body:pasted})});
+      formHasMeaningfulChanges=false;route("import-review");
+    } catch(error){ showFormSubmissionError(form,error.message); } finally { if(document.contains(form)) setFormSaving(form,false); }
   }
+
+  function reviewedImportPayload(candidateId){const form=document.getElementById("import-review-form"),payload={};for(const input of form?.querySelectorAll(`[name^="field-${CSS.escape(candidateId)}-"]`)||[]){const key=input.dataset.fieldName||input.name.slice(`field-${candidateId}-`.length);payload[key]=input.value||null;}const type=form?.querySelector(`[name="field-${CSS.escape(candidateId)}-candidateType"]`)?.value;if(type)payload.candidateType=type;if(payload.departureLocalDatetime&&payload.departureTimezone)payload.scheduledDepartureUtc=resolveEventLocalDateTime(payload.departureLocalDatetime,payload.departureTimezone);if(payload.arrivalLocalDatetime&&payload.arrivalTimezone)payload.scheduledArrivalUtc=resolveEventLocalDateTime(payload.arrivalLocalDatetime,payload.arrivalTimezone);delete payload.departureLocalDatetime;delete payload.arrivalLocalDatetime;return payload;}
+  async function resolveImport(candidateId,action){if(PREVIEW_MODE){showToast(action==="confirm"?"Import confirmed in preview.":"Import rejected in preview.");route("bookings");return;}const importId=state.importReview?.import?.id;if(!importId)throw new Error("Import is unavailable.");const result=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/${encodeURIComponent(importId)}/resolve`,{method:"POST",body:JSON.stringify({candidateId,action,payload:action==="confirm"?reviewedImportPayload(candidateId):undefined})});if(action==="confirm"&&state.importLocalDocumentId&&result.entityId)await linkLocalDocument(state.importLocalDocumentId,result.entityId);await loadTripDetails();showToast(action==="confirm"?"Booking imported.":"Import rejected.");route(action==="confirm"?"bookings":"import-history");}
   async function toggleChecklistItem(input) {
     const item=state.checklist.find((row)=>String(row.id)===String(input.dataset.id)); if(!item)return;
     if(PREVIEW_MODE){item.completed=input.checked;render();return;}
@@ -3378,7 +3426,11 @@
         if(PREVIEW_MODE){state.importReview={candidates:[{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing"]}]};route("import-review");}
         else {try{state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/${encodeURIComponent(target.dataset.id)}`);route("import-review");}catch(error){showToast(error.message,"alert");}}
         break;
-      case "confirm-import": showToast(PREVIEW_MODE?"Import confirmed in preview.":"Review the confirmed fields before import."); break;
+      case "confirm-import": try{await resolveImport(target.dataset.id,"confirm");}catch(error){showToast(error.message,"alert");} break;
+      case "reject-import": try{await resolveImport(target.dataset.id,"reject");}catch(error){showToast(error.message,"alert");} break;
+      case "add-duplicate-import": {
+        try{if(PREVIEW_MODE){state.importReview.duplicate=false;render();break;}const response=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,{method:"POST",body:JSON.stringify({...state.importUploadRequest,duplicateDisposition:"add_anyway"})});state.importReview=response;render();showToast("A separate review was created.");}catch(error){showToast(error.message,"alert");}break;
+      }
       case "sync-retry": if(PREVIEW_MODE){state.syncStatus={pendingOperations:0,openConflicts:0};render();showToast("Pending changes synced in preview.");}else await loadApp(); break;
       case "sync-review": showToast("Conflict remains visible until you choose a safe resolution in advanced beta tools."); break;
       case "export-trip": if(PREVIEW_MODE)showToast("Trip export is available outside preview mode."); else window.open(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/export/json`,`_blank`,`noopener`); break;
@@ -3388,6 +3440,11 @@
         if(pending){showToast("Review pending changes before removing local data.","alert");break;}
         if(confirm("Remove locally stored documents and cached trip data from this phone? Your server trip will not be deleted.")) showToast("Local-data removal is available in advanced beta tools.");
         break;
+      }
+      case "sign-out": {
+        const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+        if(pending&&!confirm(`${pending} change${pending===1?" is":"s are"} still pending. Sign out anyway? The changes and local documents will stay on this phone.`))break;
+        try{const result=await api("/api/v1/auth/signout",{method:"POST",body:"{}"});globalThis.google?.accounts?.id?.disableAutoSelect?.();state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed out. Local documents remain on this phone.");}catch(error){showToast(error.message,"alert");}break;
       }
       case "show-driver":
         state.selectedId = target.dataset.id || state.selectedId;
@@ -3607,8 +3664,9 @@
     const restore = scrollPositions.get(next.screen) || 0;
     requestAnimationFrame(() => window.scrollTo({ top: restore, behavior: "instant" }));
   });
-  window.addEventListener("online", () => {
+  window.addEventListener("online", async () => {
     state.offline = false;
+    await flushSmartImportQueue();
     loadApp();
   });
   window.addEventListener("offline", () => {

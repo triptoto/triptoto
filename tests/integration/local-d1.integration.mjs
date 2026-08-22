@@ -14,7 +14,8 @@ const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, u
 const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-auth.js');
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
 const { refreshSession }=await load('apps/worker/src/routes/session.js');
-const { previewForwardedEmail, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
+const { previewForwardedEmail, previewUploadedDocument, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
+const { createGoogleChallenge, signOut }=await load('apps/worker/src/routes/google-auth.js');
 const { betaStatus, recordClientBetaEvent }=await load('apps/worker/src/routes/beta.js');
 const { enforceActorRateLimit, enforcePublicRateLimit }=await load('apps/worker/src/rate-limit.js');
 const { deletionPreview, deleteMyData }=await load('apps/worker/src/routes/privacy.js');
@@ -165,6 +166,27 @@ const importsAfter=await body(await listImports(req('https://test/api/v1/trips/x
 assert(importsAfter.imports.some(x=>x.id===previewImport.import.id&&x.status==='completed'),'import completes after confirmation');
 assert(!Object.keys(db.prepare(`SELECT * FROM import_messages WHERE import_id=?`).get(previewImport.import.id)).some(k=>/body|raw|content/i.test(k)),'import message schema stores no raw body');
 
+// Smart upload import receives structured fields and checksum only, detects duplicates, and materializes after review.
+const checksum='a'.repeat(64),uploadBody={checksum,filename:'hotel-confirmation.pdf',documentKind:'pdf',candidate:{type:'hotel',confidence:.86,fields:{propertyName:{value:'Hotel Test',confidence:.9,source:'embedded_text'},checkInDate:{value:'2026-09-01',confidence:.8,source:'embedded_text'},checkOutDate:{value:'2026-09-03',confidence:.8,source:'embedded_text'},confirmationNumber:{value:'HOT123',confidence:.8,source:'barcode'}},warnings:[]}};
+const upload=await body(await previewUploadedDocument(req('https://test/api/v1/trips/x/imports/upload/preview','POST',uploadBody),env,owner,tripId));
+assert(upload.privacy.rawBytesReceived===false&&upload.privacy.extractedTextReceived===false,'upload endpoint receives no bytes or OCR text');
+assert(upload.candidates[0].candidate_type==='hotel','hotel upload candidate created');
+const uploadDuplicate=await body(await previewUploadedDocument(req('https://test/api/v1/trips/x/imports/upload/preview','POST',uploadBody),env,owner,tripId));
+assert(uploadDuplicate.duplicate===true&&uploadDuplicate.actions.includes('add_anyway'),'upload duplicate offers explicit choices');
+const uploadResolved=await body(await resolveImportCandidate(req('https://test/api/v1/trips/x/imports/y/resolve','POST',{candidateId:upload.candidates[0].id,action:'confirm',payload:{candidateType:'hotel'}}),env,owner,tripId,upload.import.id));
+assert(uploadResolved.candidateType==='hotel','reviewed upload type preserved');
+assert(db.prepare(`SELECT source_type FROM trip_items WHERE id=?`).get(uploadResolved.entityId).source_type==='upload','confirmed upload materializes upload-sourced item');
+assert(db.prepare(`SELECT COUNT(*) c FROM import_messages WHERE import_id=? AND normalized_hash=?`).get(upload.import.id,checksum).c===1,'only checksum metadata is stored');
+
+// Google account controls are gated and sign-out rotates to a new guest device without deleting account data.
+env.GOOGLE_CLIENT_ID='test-client.apps.googleusercontent.com';
+const challenge=await body(await createGoogleChallenge(req('https://test/api/v1/auth/google/challenge','POST',{}),env,owner));
+assert(challenge.nonce&&challenge.clientId===env.GOOGLE_CLIENT_ID,'Google challenge created only when configured');
+const signedOut=await body(await signOut(req('https://test/api/v1/auth/signout','POST',{}),env,owner));
+assert(signedOut.localDataPreserved===true&&signedOut.accountMode==='guest','sign-out preserves local-data contract');
+assert(db.prepare(`SELECT revoked_at FROM devices WHERE id='guest-device'`).get().revoked_at!=null,'signed-out account device revoked');
+assert(db.prepare(`SELECT COUNT(*) c FROM users WHERE id=?`).get(login.userId).c===1,'sign-out does not delete account');
+
 
 // Milestone 4: privacy-safe beta events and activation status.
 await recordClientBetaEvent(req('https://test/api/v1/beta/events','POST',{eventName:'timeline_opened',tripId}),env,owner);
@@ -222,4 +244,3 @@ assert(db.prepare(`SELECT COUNT(*) c FROM usage_counters WHERE scope_id IN (?,?)
 assert(Number(db.prepare(`SELECT COUNT(*) c FROM privacy_deletions`).get().c)>=2,'anonymous privacy deletion counters recorded');
 
 console.log('Local D1 integration suite passed: auth, migration, sharing, imports, beta metrics, rate limits, ops privacy and data deletion.');
-

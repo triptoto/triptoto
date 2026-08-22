@@ -37,7 +37,7 @@ assert(app.includes('formatTripBoundDate(val(stay, "check_in_date"), state.trip)
 assert(app.includes('${bottomNav("trips")}</section></div>'),'Ready Offline must highlight the Trip navigation item');
 assert(!app.includes('pulse-dot'),'online UI must not show an unexplained connectivity dot');
 assert(app.includes('class="offline-state" role="status"')&&app.includes('${icon("info", 16)} Offline'),'offline state must be visibly labeled');
-assert(sw.includes('tripto-shell-trip-date-controls-v1')&&index.includes('?v=trip-date-controls-v1'),'current trip-create mobile cache namespace is missing');
+assert(sw.includes('tripto-shell-smart-import-auth-v1')&&index.includes('?v=smart-import-auth-v1'),'current Smart Import mobile cache namespace is missing');
 assert(index.indexOf('/mobile-trip-rules.js')<index.indexOf('/mobile-app.js')&&sw.includes('/mobile-trip-rules.js'),'manual-trip validation helper is not loaded before the app or cached offline');
 assert(sw.includes('/assets/mobile/hotel-fallback-premium.jpg')&&!sw.includes('/assets/mobile/hotel-room.svg'),'service worker must precache the current hotel fallback asset');
 assert(sw.includes("url.pathname.startsWith('/api/')"),'service worker must not cache API responses');
@@ -116,7 +116,7 @@ const productionCreateSource=app.slice(app.indexOf('if (kind === "trip")',app.in
 assert(previewCreateSource.includes('saved in preview.')&&!productionCreateSource.includes('saved in preview.'),'preview-only success copy can appear during normal trip creation');
 assert(!previewCreateSource.includes('api(')&&!previewCreateSource.includes('localStorage')&&productionCreateSource.includes('api("/api/v1/trips"'),'preview mode can persist data or normal mode can skip the real trip API');
 assert(!productionCreateSource.includes('preview-created-trip')&&!productionCreateSource.includes('TLV')&&!productionCreateSource.includes('FCO'),'example preview data can enter normal trip state');
-assert(index.includes('trip-date-controls-v1')&&sw.includes("tripto-shell-trip-date-controls-v1"),'mobile shell cache version was not advanced for the date-control release');
+assert(index.includes('smart-import-auth-v1')&&sw.includes("tripto-shell-smart-import-auth-v1"),'mobile shell cache version was not advanced for the Smart Import release');
 assert(!index.match(/https?:\/\/[^"']+\.(?:js|css|woff2?)/i),'external scripts, fonts, or icon dependencies were introduced');
 assert(css.includes('-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif'),'Apple system typography stack is missing');
 assert(!css.includes('"Inter"')&&!css.includes("'Inter'"),'Inter must not be the primary mobile font');
@@ -159,7 +159,7 @@ assert(app.includes('resolveEventLocalDateTime')&&app.includes('ambiguous or una
 assert(app.includes('focusedTaskPage(cfg.title')&&app.includes('class="form-save-bar"'),'mobile add/edit forms are not focused tasks with a safe-area action');
 assert(app.includes('class="form-more"')&&app.includes('More flight details')&&app.includes('More stay details')&&app.includes('More train details'),'mobile forms do not preserve progressive disclosure');
 assert(app.includes('bottom-sheet--${esc(id)}')&&app.includes('document-file-meta')&&app.includes('Ready to verify when saved on this phone.'),'Add Document does not expose a focused verified-file workflow');
-assert(app.includes('focusedTaskPage("Import Booking"')&&app.includes('focusedTaskPage("Import Review"')&&app.includes('focusedTaskPage("Pending Changes"'),'focused import or conflict recovery tasks still expose bottom navigation');
+assert(app.includes('focusedTaskPage("Smart Import"')&&app.includes('focusedTaskPage("Import Review"')&&app.includes('focusedTaskPage("Pending Changes"'),'focused import or conflict recovery tasks still expose bottom navigation');
 assert(app.includes('Nothing was overwritten.')&&app.includes('Review pending changes before removing local data.'),'sync conflict and local-data recovery safety are missing');
 assert(app.includes('if (direct || !type) return direct || null;')&&!app.includes('state.contacts.find((x) => !type || x.contact_type === type)'),'unrelated contacts can leak into an activity or reservation');
 assert(app.includes('Using this device without an account')&&!app.includes('Device-bound guest beta'),'Account exposes technical guest terminology');

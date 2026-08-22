@@ -10,34 +10,37 @@ export async function accountStatus(request: Request, env: Env, auth: AuthContex
     return json({
       account: {
         mode: 'guest',
-        accountAuthEnabled: env.ACCOUNT_AUTH_ENABLED === 'true',
+        accountAuthEnabled: googleEnabled(env),
         migrationReady: true,
         migrationPreview: preview,
         device: device ? { id: device.id, platform: device.platform, createdAt: device.created_at } : null,
         providers: [
           { provider: 'apple', enabled: false },
-          { provider: 'google', enabled: false },
+          { provider: 'google', enabled: googleEnabled(env), clientId: googleEnabled(env) ? env.GOOGLE_CLIENT_ID : undefined },
           { provider: 'email', enabled: false },
         ],
       },
     }, {}, request, env);
   }
 
-  const user = await env.DB.prepare(`SELECT id,display_name,primary_email,locale,timezone,created_at,updated_at FROM users WHERE id=? AND deleted_at IS NULL`)
+  const user = await env.DB.prepare(`SELECT id,display_name,primary_email,locale,timezone,avatar_url,created_at,updated_at FROM users WHERE id=? AND deleted_at IS NULL`)
     .bind(auth.userId).first<Record<string,unknown>>();
   const identities = (await env.DB.prepare(`SELECT provider,email,email_verified,last_used_at FROM auth_identities WHERE user_id=? ORDER BY created_at`).bind(auth.userId).all()).results ?? [];
   return json({
     account: {
       mode: 'account',
-      accountAuthEnabled: env.ACCOUNT_AUTH_ENABLED === 'true',
+      accountAuthEnabled: googleEnabled(env),
       migrationReady: false,
       migrationPreview: { trips: 0, travelers: 0, timelineItems: 0, checklistItems: 0 },
       user,
       identities,
+      providers: [{ provider:'google', enabled:googleEnabled(env), clientId:googleEnabled(env)?env.GOOGLE_CLIENT_ID:undefined }],
       device: device ? { id: device.id, platform: device.platform, createdAt: device.created_at } : null,
     },
   }, {}, request, env);
 }
+
+function googleEnabled(env:Env):boolean{return env.ACCOUNT_AUTH_ENABLED==='true'&&typeof env.GOOGLE_CLIENT_ID==='string'&&env.GOOGLE_CLIENT_ID.length>20;}
 
 export async function accountMigrationPreview(request: Request, env: Env, auth: AuthContext): Promise<Response> {
   if (auth.userId) {
