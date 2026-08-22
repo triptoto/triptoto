@@ -46,6 +46,82 @@ No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the requested
 
 final result: passed
 
+# tripto.to approved first-run production implementation — final visual QA
+
+**Comparison Target**
+
+- Source visual truth: the approved 390 x 844 screenshots in `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/trip-create-transition-v1/`.
+- Browser-rendered implementation: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/approved-first-run-final/`.
+- Normalized side-by-side comparison: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/approved-first-run-final/source-implementation-comparison.png`.
+- Final seven-state contact sheet: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/approved-first-run-final/contact-sheet.png`.
+- Viewport: 390 x 844 CSS px at device scale 1. Source and implementation captures are both 390 x 844 pixels; no density normalization was required.
+- States compared: first-run, Create Trip, newly created empty trip. Validation, How It Works, populated trip, and offline first-run were captured as additional browser states.
+
+**Full-View Comparison Evidence**
+
+- Source and implementation preserve the same full-screen first-run composition, Apple system typography, hero wrapping, CTA geometry, example-trip preview, benefit tiles, palette, radii, and one-page vertical rhythm.
+- Create Trip preserves the approved focused light form, required name/date range, and fixed yellow Save Trip action without bottom navigation.
+- The post-create Home preserves the approved `START BUILDING`, empty-itinerary copy, Add booking/Timeline actions, setup-oriented Trip Health, and standard five-item navigation.
+- Focused crops were not needed because the source and implementation are equal-size 390 x 844 captures and all relevant copy, controls, spacing, and state indicators remain readable in the normalized comparison.
+
+**Required Fidelity Surfaces**
+
+- Fonts and typography: the locked Apple system stack, weights, line height, letter spacing, wrapping, and hierarchy are unchanged. No external fonts or Inter dependency are present.
+- Spacing and layout rhythm: viewport fit, safe-area treatment, CTA placement, form grouping, card radii, section spacing, and bottom-navigation clearance match the approved captures.
+- Colors and tokens: deep navy, indigo, yellow, off-white, and restrained semantic status colors match the locked palette.
+- Image and asset quality: the approved local visual treatments and icons remain unchanged; no new remote asset, emoji, placeholder, or external icon dependency was introduced.
+- Copy and content: hero, actions, three How It Works steps, empty-trip copy, setup Health copy, and navigation labels match the approved wording exactly.
+
+**Interaction and Responsive Evidence**
+
+- First-run passed at 360 x 800, 390 x 844, and 430 x 932 with document height equal to viewport height, visible CTA, readable benefit tiles, no bottom navigation, and no page scrolling.
+- Browser Back returns from Create Trip to first-run. Meaningful unsaved input opens the ARIA-modal discard warning; Keep editing preserves the entered value.
+- How It Works uses the exact three steps, traps focus, closes with Escape, backdrop, close button, and Got it, then restores trigger focus.
+- Successful local QA creation returned to standard Home with the entered name and dates, zero preview flight/stay/transport data, `START BUILDING`, setup Health, and normal bottom navigation.
+- Reduced-motion QA reported `animation-name: none` for the first-run screen, aircraft, and CTA shine.
+- Browser console inspection returned no warnings or errors.
+
+**Findings**
+
+- No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the approved scope.
+
+**Comparison History**
+
+- The prior approved screenshots were treated as immutable source truth. The final implementation comparison found no new P0/P1/P2 issue, so no visual correction iteration was required.
+
+**Implementation Checklist**
+
+- [x] Locked first-run and Create Trip visuals preserved.
+- [x] Truthful empty-trip transition preserved.
+- [x] Populated Home and flight pass unchanged.
+- [x] Responsive, accessibility, recovery, offline, reduced-motion, and console checks passed.
+- [x] Exact staged snapshot passed `check:ui` and `validate:candidate`.
+
+final result: passed
+
+# tripto.to locked first-run transition — visual QA
+
+**Comparison Target**
+
+- Locked approved first-run: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/first-run-v1/first-run-390x844.png`.
+- Current first-run: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/trip-create-transition-v1/01-first-run-390x844.png`.
+- Side-by-side comparison: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/trip-create-transition-v1/locked-first-run-comparison.png`.
+- Transition-state contact sheet: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/trip-create-transition-v1/contact-sheet.png`.
+
+**Findings**
+
+- The locked first-run layout, typography, palette, card geometry, benefits, controls, safe-area treatment, and one-page composition are visually unchanged. The only visible comparison variance is the expected sampled position of the approved ambient plane/gradient animation.
+- The focused Create Trip screen contains only Trip name and the required start/end date range. Inline errors remain in place without clearing valid entered fields.
+- Successful local QA creation transitions to the standard Home with the entered name and dates, bottom navigation, zero itinerary items, `START BUILDING`, `No plans yet`, `Add booking`, and neutral setup-oriented Trip Health.
+- Legacy trips without dates continue to display `Dates not set`. A populated active trip with no future event uses the separate `No upcoming plan` lifecycle copy.
+- How It Works contains exactly the three approved steps, traps focus, closes through Escape and visible controls, and restores focus to the trigger.
+- First-run viewport checks passed at 360 x 800, 375 x 812, 390 x 844, 393 x 852, and 430 x 932 without document scrolling, bottom navigation, duplicate branding, or console warnings/errors.
+- Offline and reduced-motion states remain legible and preserve the locked hierarchy.
+
+No actionable P0, P1, P2, or P3 visual-fidelity finding remains in this transition scope.
+
+final result: passed
+
 # Mobile UI v1 final cohesion pass — visual QA
 
 ## Evidence
@@ -146,5 +222,59 @@ final result: passed
 - Home, Flight Detail, other screens, navigation structure, palette, and backend behavior were not changed in this pass.
 
 No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the requested Timeline scope.
+
+final result: passed
+
+# tripto.to one-screen first-run v1 — visual QA
+
+**Comparison Target**
+
+- Source visual truth: `/Users/arthurberlin/.codex/attachments/4512c66f-eff2-4c70-86c4-d94bb4353b60/pasted-text.txt` for the first-run composition and copy; `design/tripto-mobile-design-lock-v1/reference/approved-home.png` for the locked tripto.to mobile brand language.
+- Implementation: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/first-run-v1/first-run-390x844.png`.
+- Combined comparison: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/first-run-v1/design-comparison-390x844.png`.
+- Viewport: 390 x 844 CSS px.
+- Source pixels: 853 x 1844, normalized to 390 x 844 with Lanczos scaling. Implementation pixels: 390 x 844 at device scale 1. Combined pixels: 780 x 844.
+- State: the reference image is the approved real-trip Home and the implementation is the successful-empty first-run state. The visual comparison therefore evaluates brand language, type hierarchy, palette, control treatment, density, and finish; the exact first-run hierarchy and copy are evaluated against the supplied implementation specification.
+
+**Full-View Comparison Evidence**
+
+- The implementation carries the approved deep-navy, indigo, yellow, and off-white palette into an immersive navless first-run state.
+- The Apple system display hierarchy, compact tripto.to mark, yellow primary action, restrained glass surfaces, and mobile-only 390 px composition are consistent with the approved product direction.
+- The complete composition fits the viewport with no document or internal vertical scrolling. Separate browser checks passed at 360 x 800, 375 x 812, 393 x 852, and 430 x 932.
+- No focused crop was needed: the normalized side-by-side comparison keeps the logo, hero, actions, product preview, icons, and benefit copy readable at 1:1 implementation density.
+
+**Required Fidelity Surfaces**
+
+- Fonts and typography: Apple system stack is primary; display and body weights, line height, letter spacing, wrapping, and one-line action labels match the requested hierarchy. No external font files are requested.
+- Spacing and layout rhythm: the five-part hierarchy is distributed across one dynamic viewport; safe-area padding, CTA heights, preview scale, three-column benefit grid, radii, borders, and elevation remain consistent at all required sizes.
+- Colors and tokens: navy `#141948`, indigo `#2F3BAB`, yellow `#FEBF02`, and off-white `#F2F4F7` remain the visual foundation. Green appears only for the explicit offline-ready preview state; online connectivity has no unexplained dot.
+- Image and asset quality: the decorative plane, orbit, atmosphere, and preview treatments use the existing lightweight local icon/CSS system requested for this screen. There are no remote images, external scripts, emoji, font assets, or functional fake QR codes.
+- Copy and content: hero, supporting copy, actions, preview label, benefit titles, subtitles, and the three How It Works steps match the approved wording. Preview content is explicitly labeled and isolated from user state.
+- Accessibility and interaction: primary and secondary controls meet the 44 px minimum; the How It Works sheet is an ARIA modal with a focus trap, Escape handling, focus restoration, and keyboard-visible focus. Reduced motion removes ambient, plane, parallax, and shine animation while preserving the final state.
+
+**Findings**
+
+- No actionable P0, P1, or P2 visual mismatch remains.
+
+**Comparison History**
+
+- Iteration 1 identified that the sheet's completion control reused the generic close action and was excluded from initial focus. It was given a dedicated semantic action, retained shared sheet closing/focus restoration, and its focus outline was restricted to keyboard navigation. Post-fix browser evidence shows initial pointer-open without a permanent ring, Tab/Shift+Tab wrapping between the two controls, and Escape restoring focus to `See how it works`.
+- Final visual pass used the combined reference/implementation image. No additional P0, P1, or P2 fix was required.
+
+**Open Questions**
+
+- None blocking. Physical-device Safari/Firefox testing remains a release-environment check; browser-rendered responsive, safe-area, focus, offline, reduced-motion, recovery, and first-trip transition states passed locally.
+
+**Implementation Checklist**
+
+- [x] Successful-empty state gate; loading and recovery remain separate.
+- [x] Native Create Trip flow and post-create standard Home transition.
+- [x] Accessible three-step How It Works sheet.
+- [x] Isolated labeled product preview with no API or persistence path.
+- [x] Required viewport, offline, reduced-motion, console, and validation checks.
+
+**Follow-up Polish**
+
+- No P3 visual change is recommended before user review.
 
 final result: passed

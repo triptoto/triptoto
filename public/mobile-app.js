@@ -12,6 +12,7 @@
   const QA_STATE = LOCAL_QA_MODE
     ? new URLSearchParams(location.search).get("qaState")
     : null;
+  const tripRules = globalThis.TriptoTripRules;
 
   const ICONS = {
     user: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
@@ -111,6 +112,7 @@
     importReview: null,
     bookingFilter: "all",
     formDraft: null,
+    tripsLoaded: false,
   };
   let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
@@ -124,6 +126,14 @@
     discardReturnFocus = null;
   const scrollPositions = new Map();
   const DIRTY_TASK_SCREENS = new Set(["form", "import", "import-review"]);
+  const QUICK_ADD_KINDS = new Set([
+    "flight",
+    "hotel",
+    "train",
+    "activity",
+    "reservation",
+    "document",
+  ]);
   function icon(name, size = 24, extra = "") {
     return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${extra}">${ICONS[name] || ""}</svg>`;
   }
@@ -165,6 +175,18 @@
     const [screen, id] = raw.split(":");
     return { screen: screen || "home", id: id ? decodeURIComponent(id) : null };
   }
+  function quickDraftKey(kind = state.selectedId) {
+    return `tripto_quick_add_draft:${state.trip?.id || "no-trip"}:${kind || "unknown"}`;
+  }
+  function clearQuickDraft(kind = state.selectedId) {
+    if (!QUICK_ADD_KINDS.has(String(kind || ""))) return;
+    try {
+      sessionStorage.removeItem(quickDraftKey(kind));
+    } catch (_) {}
+  }
+  function clearActiveFormDraft() {
+    if (state.screen === "form") clearQuickDraft(state.selectedId);
+  }
   function closeDiscardDialog(discard = false) {
     const backdrop = document.querySelector(".discard-dialog-backdrop"),
       continuation = discardDialogOpen;
@@ -172,6 +194,7 @@
     backdrop.remove();
     discardDialogOpen = false;
     if (discard) {
+      clearActiveFormDraft();
       formHasMeaningfulChanges = false;
       if (typeof continuation === "function") continuation();
       return;
@@ -725,7 +748,7 @@
       return [];
     }
   }
-  async function saveLocalDocument(file, type, travelerIds) {
+  async function saveLocalDocument(file, type, travelerIds, relatedBookingId = null) {
     if (!state.trip) throw new Error("Open a trip first.");
     if (!file) throw new Error("Choose a file.");
     if (file.size > 10 * 1024 * 1024)
@@ -743,6 +766,7 @@
       size: file.size,
       type: type || "other",
       travelerIds: Array.isArray(travelerIds) ? travelerIds : [],
+      relatedBookingId: relatedBookingId || null,
       savedAt: Date.now(),
       checksum: await sha256Blob(file),
       integrity: "verified",
@@ -758,6 +782,21 @@
     state.localDocs = await listLocalDocs(state.trip.id);
     showToast("Document saved offline on this phone.");
     render();
+  }
+  async function linkLocalDocument(documentId, relatedBookingId) {
+    if (!documentId || !relatedBookingId || PREVIEW_MODE) return;
+    const row = state.localDocs.find(
+      (document) => String(document.id) === String(documentId),
+    );
+    if (!row) return;
+    const db = await openLocalDocDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("docs", "readwrite");
+      tx.objectStore("docs").put({ ...row, relatedBookingId });
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    state.localDocs = await listLocalDocs(state.trip.id);
   }
   async function removeLocalDocument(id) {
     const db = await openLocalDocDb();
@@ -794,13 +833,14 @@
   }
   async function loadApp() {
     state.loading = true;
+    state.tripsLoaded = false;
     state.error = null;
     state.requestId = null;
     render();
     if (PREVIEW_MODE) {
       if (QA_STATE === "loading") return;
       applyPreviewData();
-      if (QA_STATE === "offline") state.offline = true;
+      if (["offline", "empty-offline"].includes(QA_STATE)) state.offline = true;
       if (QA_STATE === "timeline-empty") {
         state.timeline = [];
         state.brain = { ...state.brain, nextItem: null };
@@ -863,7 +903,22 @@
       if (QA_STATE === "sync-conflict") {
         state.syncStatus = { pendingOperations: 2, openConflicts: 1, lastSuccessfulSyncAt: Date.now() - 7200000 };
       }
-      if (QA_STATE === "empty") {
+      if (QA_STATE === "legacy-no-dates") {
+        state.trip = { ...state.trip, title: "Legacy trip", starts_on: null, ends_on: null };
+        state.trips = [state.trip];
+      }
+      if (QA_STATE === "active-no-upcoming") {
+        const past = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        state.trip = { ...state.trip, lifecycle_state: "active" };
+        state.trips = [state.trip];
+        state.timeline = state.timeline.map((item, index) => ({
+          ...item,
+          starts_at_utc: past - index * 60 * 60 * 1000,
+          ends_at_utc: past - index * 30 * 60 * 1000,
+        }));
+        state.brain = { ...state.brain, nextItem: null };
+      }
+      if (["empty", "empty-offline", "empty-reduced-motion"].includes(QA_STATE)) {
         state.trip = null;
         state.trips = [];
         await loadTripDetails();
@@ -875,6 +930,7 @@
           "Trip data could not be reached. Your saved trip data remains safe.";
         state.requestId = "local-preview";
       }
+      state.tripsLoaded = !state.error;
       state.loading = false;
       render();
       return;
@@ -894,7 +950,9 @@
       if (state.trip)
         localStorage.setItem("tripto_selected_trip", state.trip.id);
       await loadTripDetails();
+      state.tripsLoaded = true;
     } catch (error) {
+      state.tripsLoaded = false;
       state.error = error instanceof Error ? error.message : String(error);
       state.requestId = error?.requestId || null;
     } finally {
@@ -1273,7 +1331,21 @@
     );
   }
   function healthSummary() {
+    if (isEmptyTripSetup())
+      return {
+        title: "Finish setting up your trip",
+        subtitle: "Add your first booking to build the itinerary.",
+        kind: "setup",
+        icon: "plus",
+      };
     const issues = activeHealthIssues();
+    if (!state.health)
+      return {
+        title: "Trip Health not available yet",
+        subtitle: "Add itinerary details to assess this trip.",
+        kind: "info",
+        icon: "info",
+      };
     if (!issues.length)
       return {
         title: "Everything looks good",
@@ -1289,6 +1361,49 @@
       kind: ["critical", "high"].includes(first.severity) ? "warning" : "info",
       icon: "warning",
     };
+  }
+  function meaningfulBookingCount() {
+    const ids = new Set();
+    for (const item of [...state.timeline, ...state.transport, ...state.stays]) {
+      if (!item || isCancelled(item)) continue;
+      const id = itemId(item);
+      if (id) ids.add(String(id));
+    }
+    return ids.size;
+  }
+  function isEmptyTripSetup() {
+    return Boolean(state.trip) && meaningfulBookingCount() === 0;
+  }
+  function tripLifecycleState() {
+    return String(val(state.trip, "lifecycle_state", "lifecycleState") || "upcoming").toLowerCase();
+  }
+  function noUpcomingTripState() {
+    const lifecycle = tripLifecycleState();
+    if (isEmptyTripSetup())
+      return {
+        label: "Start building",
+        title: "No plans yet",
+        copy: "Add your first flight, stay, train, or activity.",
+        icon: "plus",
+        setup: true,
+      };
+    if (["completed", "archived"].includes(lifecycle))
+      return {
+        label: "Completed",
+        title: "Trip completed",
+        copy: "Preserve the itinerary and documents for reference.",
+        icon: "check",
+      };
+    return {
+      label: "What’s next",
+      title: "No upcoming plan",
+      copy: "Add the next booking or complete the trip when travel is finished.",
+      icon: "clock",
+    };
+  }
+  function noUpcomingCard() {
+    const view = noUpcomingTripState();
+    return `<section class="next-action-card ${view.setup ? "next-action-card--setup" : ""}"><span class="ticket-chip ${view.setup ? "ticket-chip--setup" : ""}">${icon(view.icon, 18)} ${esc(view.label)}</span><h2>${esc(view.title)}</h2><p>${esc(view.copy)}</p><div class="next-action-actions"><button class="secondary-cta ${view.setup ? "next-action-primary" : ""}" data-action="open-add">${icon("plus", 19)} Add booking</button><button class="secondary-cta" data-screen="trips">${icon("trips", 19)} Timeline</button></div></section>`;
   }
   function nextItem() {
     return (
@@ -1470,10 +1585,10 @@
           ? flightTicket(flight)
           : next
             ? genericNextCard(next)
-            : `<section class="next-action-card"><span class="ticket-chip">${icon("check", 18)} Trip ready</span><h2>No upcoming plan</h2><p>Add the next booking or mark the trip completed when travel is finished.</p><div class="next-action-actions"><button class="secondary-cta" data-action="open-add">${icon("plus", 19)} Add booking</button><button class="secondary-cta" data-screen="trips">${icon("trips", 19)} Timeline</button></div></section>`
+            : noUpcomingCard()
         : emptyTripCard(),
       summaries = state.trip
-        ? `<section class="home-summary-module">${sectionHead("Upcoming journey", "open-timeline")}<div>${upcomingRows()}</div></section><section class="home-summary-module home-health-module">${sectionHead("Trip health", "open-health", "Review")}<button class="simple-row" data-screen="health"><span class="row-icon ${health.kind === "warning" ? "health-warning" : "health-good"}">${icon(health.icon, 22)}</span><span class="row-copy"><strong>${esc(health.title)}</strong><span>${esc(health.subtitle)}</span></span>${icon("chevron", 22, "chevron")}</button></section>`
+        ? `<section class="home-summary-module">${sectionHead("Upcoming journey", "open-timeline")}<div>${upcomingRows()}</div></section><section class="home-summary-module home-health-module ${health.kind === "setup" ? "home-health-module--setup" : ""}">${sectionHead("Trip health", "open-health", "Review")}<button class="simple-row" ${health.kind === "setup" ? 'data-action="open-add"' : 'data-screen="health"'}><span class="row-icon ${health.kind === "warning" ? "health-warning" : health.kind === "good" ? "health-good" : "health-info"}">${icon(health.icon, 22)}</span><span class="row-copy"><strong>${esc(health.title)}</strong><span>${esc(health.subtitle)}</span></span>${icon("chevron", 22, "chevron")}</button></section>`
         : "";
     return `<div class="phone-app"><section class="screen home-screen">${topbar()}${mobileAlert()}<main class="content">${tripContext()}${nextCard}${summaries}</main>${bottomNav("home")}</section></div>`;
   }
@@ -1487,6 +1602,34 @@
   }
   function emptyTripCard() {
     return `<div class="empty-mobile"><div class="empty-mobile-icon">${icon("trips", 31)}</div><h1>Your first trip starts here</h1><p>Create a trip, then add transport, stays and documents.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div>`;
+  }
+  function shouldShowFirstRun() {
+    return Boolean(
+      state.tripsLoaded &&
+        !state.loading &&
+        !state.error &&
+        state.screen === "home" &&
+        !state.trip &&
+        state.trips.length === 0,
+    );
+  }
+  function syncFirstRunPresentation(active) {
+    document.documentElement.classList.toggle("first-run-open", active);
+    document.documentElement.classList.toggle(
+      "first-run-reduced-motion",
+      active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
+    );
+    const theme = document.querySelector('meta[name="theme-color"]');
+    if (theme) theme.setAttribute("content", active ? "#141948" : "#ffffff");
+  }
+  function firstRunProductPreview() {
+    return `<section class="first-run-preview" aria-label="Example trip product preview"><div class="first-run-preview__layer" aria-hidden="true"></div><header class="first-run-preview__header"><span class="first-run-preview__badge">Preview</span><span class="first-run-preview__ready">${icon("check", 14)} Offline ready</span></header><div class="first-run-preview__route"><span><strong>TLV</strong><small>Aug 20</small></span><span class="first-run-preview__journey" aria-hidden="true"><i></i>${icon("plane", 24)}<i></i></span><span><strong>FCO</strong><small>Aug 26</small></span></div><div class="first-run-preview__progress" aria-hidden="true"><i class="is-complete"></i><span></span><i class="is-current"></i><span></span><i></i></div><footer class="first-run-preview__footer"><span>${icon("calendar", 18)}<span><strong>3 plans organized</strong><small>In travel order</small></span></span><span class="first-run-preview__pass" aria-hidden="true">${icon("ticket", 20)}</span></footer></section>`;
+  }
+  function firstRunScreen() {
+    const offline = state.offline
+      ? `<span class="first-run-offline" role="status">${icon("info", 14)} Offline</span>`
+      : "";
+    return `<div class="phone-app"><section class="first-run-screen screen--navless" aria-labelledby="first-run-title"><div class="first-run-aurora" aria-hidden="true"></div><div class="first-run-orbit" aria-hidden="true"><span class="first-run-orbit__track"></span><span class="first-run-orbit__plane">${icon("plane", 46)}</span></div><div class="first-run-clouds" aria-hidden="true"><i></i><i></i><i></i></div><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to">tripto<span>.</span>to</div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><h1 id="first-run-title"><span>Your trip.</span><span>Ready before</span><span>you need it.</span></h1><p><span>Organize everything in one place.</span><span>Travel calm, prepared and offline-ready.</span></p></section><div class="first-run-actions"><button class="first-run-primary" data-action="create-trip">${icon("plus", 18)}<span>Create my first trip</span>${icon("chevron", 19)}</button><button class="first-run-secondary" data-action="open-first-run-how">${icon("info", 18)}<span>See how it works</span></button></div>${firstRunProductPreview()}<section class="first-run-benefits" aria-label="tripto.to benefits"><article><span>${icon("calendar", 18)}</span><strong>Timeline</strong><small>Your trip, in order.</small></article><article><span>${icon("download", 18)}</span><strong>Offline Ready</strong><small>Plans and documents anywhere.</small></article><article><span>${icon("shield", 18)}</span><strong>Smart Essentials</strong><small>Only what still needs attention.</small></article></section></main></section></div>`;
   }
   function timelineScreen() {
     if (!state.trip)
@@ -1964,6 +2107,7 @@
   function healthScreen() {
     const issues = activeHealthIssues(),
       top = healthSummary(),
+      setup = top.kind === "setup",
       shieldClass = issues.some((i) => i.severity === "critical")
         ? "critical"
         : issues.length
@@ -1976,8 +2120,10 @@
                 `<div class="health-card ${issueKind(issue)}"><span>${icon(["critical", "high"].includes(issue.severity) ? "warning" : "info", 26)}</span><span><strong>${esc(issue.title || statusText(issue.code))}</strong><p>${esc(issue.explanation || issue.message || "Review this item.")}${issue.suggestedAction ? ` ${esc(issue.suggestedAction)}` : ""}</p></span></div>`,
             )
             .join("")
-        : `<div class="health-card good"><span>${icon("check", 26)}</span><span><strong>No known issues</strong><p>Trip Health found no current problems in the information available.</p></span></div>`;
-    return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 23)}</button>`)}<div class="health-summary"><div class="health-shield ${shieldClass}">${icon(issues.length ? "warning" : "check", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><main class="list-stack">${rows}<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button></main>${bottomNav("home")}</section></div>`;
+        : setup
+          ? `<div class="health-card info"><span>${icon("plus", 26)}</span><span><strong>Trip setup</strong><p>Add your first booking to build the itinerary.</p><button class="text-action" data-action="open-add">Add booking</button></span></div>`
+          : `<div class="health-card ${top.kind === "good" ? "good" : "info"}"><span>${icon(top.kind === "good" ? "check" : "info", 26)}</span><span><strong>${top.kind === "good" ? "No known issues" : "Not enough information"}</strong><p>${esc(top.subtitle)}</p></span></div>`;
+    return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 23)}</button>`)}<div class="health-summary"><div class="health-shield ${shieldClass} ${setup ? "setup" : ""}">${icon(issues.length ? "warning" : setup ? "plus" : top.kind === "good" ? "check" : "info", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><main class="list-stack">${rows}${setup ? "" : `<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button>`}</main>${bottomNav("home")}</section></div>`;
   }
   function checklistScreen() {
     const groups = [["Documents", "documents"], ["Before You Leave", "before_you_leave"], ["Packing", "packing"]],
@@ -2035,20 +2181,109 @@
     const row = (ic,title,sub,screen,action="") => `<button class="simple-row" ${screen?`data-screen="${screen}"`:`data-action="${action}"`}><span class="row-icon">${icon(ic,22)}</span><span class="row-copy"><strong>${title}</strong><span>${esc(sub)}</span></span>${icon("chevron",22,"chevron")}</button>`;
     return `<div class="phone-app"><section class="screen mobile-v1-screen">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? "Signed in" : "Using this device without an account"}</div></div></div></div><div class="section-label">Your trip</div>${row("user","Travelers",`${state.travelers.length} traveler${state.travelers.length===1?"":"s"}`,"travelers")}${row("document","Documents",`${state.localDocs.length} saved on this phone`,"documents")}${row("download","Offline storage",`${state.localDocs.length} files · ${Math.max(0.1,bytes/1048576).toFixed(1)} MB`,"ready")}${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}<div class="section-label">Tools</div>${row("mail","Import booking","Paste a forwarded confirmation","import")}${row("check","Smart Essentials",`${state.checklist.filter((x)=>!x.completed).length} incomplete`,"checklist")}${row("shield","Trip Health","Review what needs attention","health")}${row("trips","Switch trip",`${state.trips.length} trip${state.trips.length===1?"":"s"} available`,"","switch-trip")}<div class="section-label">Privacy & help</div>${row("share","Export trip","Download your trip data","","export-trip")}${row("info","Help & support","Beta support bundle","","support")}<button class="simple-row simple-row--danger" data-action="remove-local-data"><span class="row-icon">${icon("close",22)}</span><span class="row-copy"><strong>Remove local data</strong><span>${pending?"Pending changes must be reviewed first":"Deletes files stored on this phone"}</span></span>${icon("chevron",22)}</button><p class="app-version">tripto.to Mobile UI v1</p><a class="legacy-link" href="/legacy.html">Advanced beta tools</a></main>${bottomNav("account")}</section></div>`;
   }
+  function quickField(name, label, options = {}) {
+    const {
+        type = "text",
+        required = false,
+        wide = true,
+        placeholder = "",
+        attrs = "",
+        choices = "",
+        helper = "",
+      } = options,
+      base = `name="${name}" id="form-${name}" ${required ? "required" : ""} ${attrs}`;
+    let control;
+    if (type === "textarea")
+      control = `<textarea ${base} rows="4" placeholder="${esc(placeholder)}"></textarea>`;
+    else if (type === "select") control = `<select ${base}>${choices}</select>`;
+    else
+      control = `<input type="${type}" ${base} autocomplete="off" placeholder="${esc(placeholder)}">`;
+    return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
+  }
+  function quickTripContext() {
+    if (!state.trip) return "";
+    return `<section class="quick-trip-context" aria-label="Selected trip"><span class="quick-trip-context__icon">${icon("trips", 20)}</span><span><small>Adding to</small><strong>${esc(state.trip.title || "Current trip")}</strong><em>${esc(formatTripDates(state.trip))}</em></span><button type="button" data-action="switch-trip" aria-label="Choose another trip">Change</button></section>`;
+  }
+  function quickLocationList(kind) {
+    const allowed = kind === "flight" ? ["airport"] : kind === "train" ? ["station"] : ["venue", "hotel", "city", "address"],
+      rows = state.locations.filter((location) => allowed.includes(String(val(location, "type") || "")));
+    if (!rows.length) return "";
+    return `<datalist id="quick-${kind}-locations">${rows.map((location) => { const code = val(location, kind === "flight" ? "iata_code" : "station_code"); return `<option value="${esc(`${code ? `${code} — ` : ""}${val(location, "display_name", "local_name") || code || "Location"}`)}"></option>`; }).join("")}</datalist>`;
+  }
+  function quickTravelerField() {
+    if (!state.travelers.length) return "";
+    const one = state.travelers.length === 1;
+    return `<fieldset class="quick-travelers form-field--wide"><legend>Travelers</legend><p>${one ? "Preselected for this booking. You can change it." : "Choose only the travelers on this booking."}</p><div class="traveler-pills">${state.travelers.map((traveler) => `<label class="traveler-pill"><input type="checkbox" name="travelerIds" value="${esc(traveler.id)}" ${one ? "checked" : ""}><span>${esc(traveler.display_name || "Traveler")}</span></label>`).join("")}</div></fieldset>`;
+  }
+  function quickMore(kind, label, content) {
+    const id = `quick-more-${kind}`;
+    return `<section class="form-more"><button type="button" class="form-more-toggle" data-action="toggle-form-more" aria-expanded="false" aria-controls="${id}"><span>${esc(label)}</span><span class="form-more-chevron">${icon("chevronDown", 18)}</span></button><div class="form-more-panel" id="${id}" hidden>${content}</div></section>`;
+  }
+  function quickDateSuggestions(kind) {
+    if (!state.trip) return "";
+    const start = val(state.trip, "starts_on", "startsOn"), end = val(state.trip, "ends_on", "endsOn");
+    if (kind === "hotel" && start && end)
+      return `<div class="date-suggestions" aria-label="Date suggestions"><button type="button" data-action="apply-trip-dates" data-start="${esc(start)}" data-end="${esc(end)}">Use trip dates</button></div>`;
+    const target = kind === "activity" || kind === "reservation" ? `${kind}Date` : "departureDate",
+      chips = [["Use trip start date", start], ["Use trip end date", end]].filter(([, value]) => value);
+    return chips.length ? `<div class="date-suggestions" aria-label="Date suggestions">${chips.map(([label, value]) => `<button type="button" data-action="apply-date-suggestion" data-field="${target}" data-value="${esc(value)}">${esc(label)}</button>`).join("")}</div>` : "";
+  }
+  function noTripQuickAdd(kind, title) {
+    return focusedTaskPage(title, `<section class="quick-no-trip"><span>${icon("trips", 30)}</span><h1>Choose a trip first</h1><p>This ${esc(kind)} needs a trip so it cannot become an orphan booking.</p><div class="quick-trip-list">${state.trips.map((trip) => `<button type="button" data-action="select-trip-for-add" data-id="${esc(trip.id)}"><span><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small></span>${icon("chevron", 19)}</button>`).join("")}</div><button class="mobile-primary-action" type="button" data-action="create-trip">Create trip</button></section>`, "form-screen quick-add-screen");
+  }
+  function basicMobileForm(kind) {
+    const configs = {
+        trip: { title:"Create Trip", lead:"Trip basics", fields:[["title","Trip name","text",true,true],["startsOn","Start date","date",true,false],["endsOn","End date","date",true,false]] },
+        traveler: { title:"Add Traveler", lead:"Traveler", fields:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
+        checklist: { title:"Add Essential", lead:"Travel essential", fields:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
+      }, cfg = configs[kind] || configs.trip;
+    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; if(type==="select")choices='<option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option>'; if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices}); });
+    const fields = kind === "trip"
+      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<fieldset class="trip-date-range"><legend>Trip dates</legend><div class="form-fields form-fields--date-time">${mappedFields.slice(1).join("")}</div></fieldset></div>`
+      : `<div class="form-fields">${mappedFields.join("")}</div>`;
+    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}" novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">Save ${esc(statusText(kind))}</button></div></form>`, "form-screen");
+  }
   function mobileFormScreen() {
-    const kind = String(state.selectedId || "trip"), configs = {
-      trip: { title:"Create Trip", lead:"Trip basics", primary:[["title","Trip name","text",true,true],["startsOn","Start date","date",false,false],["endsOn","End date","date",false,false]] },
-      flight: { title:"Add Flight", lead:"Flight", primary:[["marketingAirlineCode","Airline code","text",false,false],["marketingFlightNumber","Flight number","text",false,false],["fromName","Origin airport","text",true,false],["fromCode","IATA","text",true,false],["toName","Destination airport","text",true,false],["toCode","IATA","text",true,false],["departureTime","Departure date and time","datetime-local",true,true],["departureTimezone","Departure timezone","text",true,true]], more:"More flight details", secondary:[["arrivalTime","Arrival date and time","datetime-local",false,true],["arrivalTimezone","Arrival timezone","text",false,true],["departureTerminal","Departure terminal","text",false,false],["arrivalTerminal","Arrival terminal","text",false,false],["bookingReference","PNR","text",false,false],["operatingAirlineCode","Operating airline","text",false,false]] },
-      hotel: { title:"Add Hotel", lead:"Stay", primary:[["propertyName","Hotel name","text",true,true],["checkInDate","Check-in date","date",true,false],["checkOutDate","Check-out date","date",true,false],["address","Address","text",false,true]], more:"More stay details", secondary:[["checkInFrom","Check-in from","time",false,false],["checkOutBy","Check-out by","time",false,false],["confirmationNumber","Confirmation number","text",false,true],["roomName","Room","text",false,true]] },
-      train: { title:"Add Train", lead:"Train", primary:[["carrierName","Operator","text",false,false],["serviceNumber","Service number","text",false,false],["fromName","Origin station","text",true,true],["toName","Destination station","text",true,true],["departureTime","Departure date and time","datetime-local",true,true],["departureTimezone","Departure timezone","text",true,true]], more:"More train details", secondary:[["arrivalTime","Arrival date and time","datetime-local",false,true],["arrivalTimezone","Arrival timezone","text",false,true],["bookingReference","Booking reference","text",false,true]] },
-      activity: { title:"Add Activity", lead:"Plan", primary:[["title","Activity name","text",true,true],["startsAt","Date and time","datetime-local",true,true],["timezone","Timezone","text",true,true],["location","Location","text",false,true],["activityType","Activity type","text",false,true]], more:"More details", secondary:[["confirmationNumber","Confirmation number","text",false,true],["provider","Provider","text",false,true],["notes","Notes","textarea",false,true]] },
-      reservation: { title:"Add Reservation", lead:"Reservation", primary:[["title","Reservation name","text",true,true],["startsAt","Date and time","datetime-local",true,true],["timezone","Timezone","text",true,true],["location","Location","text",false,true]], more:"More details", secondary:[["confirmationNumber","Confirmation number","text",false,true],["provider","Provider","text",false,true],["notes","Notes","textarea",false,true]] },
-      traveler: { title:"Add Traveler", lead:"Traveler", primary:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
-      checklist: { title:"Add Essential", lead:"Travel essential", primary:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
-    }, cfg = configs[kind] || configs.trip;
-    const renderFields = (fields) => `<div class="form-fields">${(fields || []).map(([name,label,type,required,wide]) => { const attrs = `name="${name}" id="form-${name}" ${required?"required":""}`; let control; if(type==="textarea") control=`<textarea ${attrs} rows="4"></textarea>`; else if(type==="select") control=`<select ${attrs}><option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option></select>`; else if(type==="select-checklist") control=`<select ${attrs}><option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option></select>`; else if(type==="select-priority") control=`<select ${attrs}><option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option></select>`; else control=`<input type="${type}" ${attrs} autocomplete="off">`; return `<label class="form-field form-field--${name} ${wide?"form-field--wide":""}" for="form-${name}"><span>${label}${required?" <b aria-hidden=\"true\">*</b>":""}</span>${control}</label>`; }).join("")}</div>`;
-    const form = `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}" novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header>${renderFields(cfg.primary)}</section>${cfg.secondary?.length ? `<details class="form-more"><summary><span>${esc(cfg.more)}</span>${icon("chevronDown",18)}</summary>${renderFields(cfg.secondary)}</details>` : ""}<p class="form-note">Event times use the saved local timezone. Ambiguous daylight-saving times are never guessed.</p><div class="form-save-bar"><button type="submit" class="mobile-primary-action">Save ${esc(statusText(kind))}</button></div></form>`;
-    return focusedTaskPage(cfg.title, form, "form-screen");
+    const kind = String(state.selectedId || "trip");
+    if (!QUICK_ADD_KINDS.has(kind)) return basicMobileForm(kind);
+    const titles = {flight:"Add Flight",hotel:"Add Hotel",train:"Add Train",activity:"Add Activity",reservation:"Add Reservation",document:"Add Document"}, title=titles[kind];
+    if (!state.trip) return noTripQuickAdd(kind, title);
+    const localDocumentOptions = `<option value="">No related document</option>${state.localDocs.map((document) => `<option value="${esc(document.id)}">${esc(document.name || statusText(document.type || "Document"))}</option>`).join("")}`;
+    let primary="", more="", note="", list="", extraClass="";
+    if (kind === "flight") {
+      list = quickLocationList("flight");
+      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"TLV — Ben Gurion Airport",attrs:'list="quick-flight-locations" data-location-role="departure"'})}${quickField("toLocation","Destination airport",{required:true,placeholder:"FCO — Rome Fiumicino",attrs:'list="quick-flight-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Asia/Jerusalem",attrs:'data-timezone-role="departure"',helper:"Required when the origin airport does not supply a reliable timezone."})}`;
+      more = quickMore(kind,"More flight details",`<div class="form-fields">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'data-timezone-role="arrival"'})}${quickField("carrierName","Marketing airline",{})}${quickField("operatingAirlineCode","Operating airline",{})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      note = "Departure uses the event-local timezone. Arrival stays unavailable until you add it.";
+    } else if (kind === "hotel") {
+      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name"})}<div class="form-fields form-fields--date-time">${quickField("checkInDate","Check-in date",{type:"date",required:true,wide:false})}${quickField("checkOutDate","Check-out date",{type:"date",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      more = quickMore(kind,"More stay details",`<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      note = "Check-in and check-out times remain unavailable unless you enter them.";
+    } else if (kind === "train") {
+      list = quickLocationList("train");
+      primary = `${quickField("fromLocation","Origin station",{required:true,placeholder:"Roma Termini",attrs:'list="quick-train-locations" data-location-role="departure"'})}${quickField("toLocation","Destination station",{required:true,placeholder:"Firenze S. M. Novella",attrs:'list="quick-train-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("serviceNumber","Train or service number",{placeholder:"Optional"})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure"',helper:"Required when the station does not supply a reliable timezone."})}`;
+      more = quickMore(kind,"More train details",`<div class="form-fields">${quickField("carrierName","Operator",{})}${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome"})}${quickField("platform","Platform",{wide:false})}${quickField("coach","Coach",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","Booking reference",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      note = "Departure uses the event-local timezone. Platform, arrival, coach, and seat are never guessed.";
+    } else if (kind === "activity") {
+      primary = `${quickField("title","Activity name",{required:true,placeholder:"Vatican Museums"})}${quickField("activityDate","Date",{type:"date",required:true})}${quickDateSuggestions(kind)}<fieldset class="time-mode form-field--wide"><legend>Time</legend><div class="time-mode-control"><label><input type="radio" name="timeMode" value="specific" checked><span>Has a specific time</span></label><label><input type="radio" name="timeMode" value="unset"><span>Time not set yet</span></label></div></fieldset><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome"})}</div>${quickField("location","Location",{placeholder:"Optional",attrs:'list="quick-activity-locations" data-location-role="activity"'})}`;
+      list = quickLocationList("activity");
+      more = quickMore(kind,"More details",`<div class="form-fields">${quickField("activityType","Activity type",{})}${quickField("endTime","End time",{type:"time",wide:false})}${quickField("reservationWindow","Reservation window",{wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document or ticket",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      note = "A date is always required. Choose Time not set yet explicitly if the booking has no confirmed time.";
+    } else if (kind === "reservation") {
+      primary = `${quickField("title","Reservation name",{required:true,placeholder:"Dinner at Roscioli"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Date",{type:"date",required:true,wide:false})}${quickField("reservationTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome"})}${quickField("location","Location",{placeholder:"Optional",attrs:'list="quick-reservation-locations" data-location-role="reservation"'})}`;
+      list = quickLocationList("reservation");
+      more = quickMore(kind,"More details",`<div class="form-fields">${quickField("reservationType","Reservation type",{})}${quickField("endTime","End time or window",{type:"time"})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      note = "Reservation time uses the event-local timezone and is required.";
+    } else {
+      const bookingOptions = bookingRows().map(({item}) => `<option value="${esc(itemId(item))}">${esc(val(item,"title","property_name")||"Booking")}</option>`).join(""),
+        travelerSpecific = state.travelers.length ? quickTravelerField() : "";
+      primary = `<div class="form-field form-field--wide quick-document-file"><span>File <b aria-hidden="true">*</b></span><label class="document-file-picker" for="form-documentFile">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="form-documentFile" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div><div class="document-verify-state">Ready offline appears only after checksum verification succeeds.</div></div>${quickField("documentType","Document type",{type:"select",required:true,choices:'<option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="passport_copy">Passport copy</option><option value="other">Other</option>'})}<div class="document-traveler-assignment">${travelerSpecific}</div>`;
+      more = quickMore(kind,"More details",`<div class="form-fields">${quickField("relatedBooking","Related booking",{type:"select",choices:`<option value="">No related booking</option>${bookingOptions}`})}</div>`);
+      note = "The file stays on this phone. It is not marked Ready until its checksum is verified.";
+      extraClass = " document-quick-add";
+    }
+    const form = `<form class="mobile-form premium-form quick-add-form${extraClass}" id="native-form" data-kind="${esc(kind)}" novalidate>${quickTripContext()}<section class="form-section"><header><span>Quick add</span><h1>${esc(title)}</h1><p>Add the essentials now. Everything else can wait.</p></header><div class="quick-primary-fields">${primary}</div>${list}</section>${more}<p class="form-note">${esc(note)}</p><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${kind === "document" ? "Save on This Phone" : `Save ${esc(statusText(kind))}`}</button></div></form>`;
+    return focusedTaskPage(title, form, `form-screen quick-add-screen quick-add-screen--${kind}`);
   }
   function driverScreen() {
     const stay = selectedStay(),
@@ -2077,7 +2312,7 @@
     return bottomSheet(
       "add",
       "Add to trip",
-      `<div class="sheet-options-group">${options
+      `<button class="sheet-import-action" data-screen="import"><span class="info-icon">${icon("mail", 22)}</span><span><strong>Import booking</strong><small>Paste a forwarded booking confirmation</small></span>${icon("chevron", 22, "chevron")}</button><div class="sheet-manual-label">Or add manually</div><div class="sheet-options-group">${options
         .map(
           ([ic, title, sub, type]) =>
             `<button class="sheet-option sheet-option--${type}" data-action="add-type" data-type="${type}"><span class="info-icon">${icon(ic, 22)}</span><span><strong>${title}</strong><small>${sub}</small></span>${icon("chevron", 22, "chevron")}</button>`,
@@ -2105,6 +2340,23 @@
             `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small></span>${String(trip.id) === String(state.trip?.id) ? checkDot() : icon("chevron", 22, "chevron")}</button>`,
         )
         .join(""),
+    );
+  }
+  function firstRunHowSheet() {
+    const steps = [
+      ["calendar", "Add your bookings"],
+      ["download", "Keep documents ready offline"],
+      ["shield", "See what matters next"],
+    ];
+    return bottomSheet(
+      "first-run-how",
+      "How it works",
+      `<ol class="first-run-how-list">${steps
+        .map(
+          ([iconName, label], index) =>
+            `<li><span class="first-run-how-list__number">${index + 1}</span><span class="first-run-how-list__icon">${icon(iconName, 21)}</span><strong>${esc(label)}</strong></li>`,
+        )
+        .join("")}</ol><button class="first-run-how-done" data-action="finish-first-run-how">Got it</button>`,
     );
   }
 
@@ -2162,6 +2414,8 @@
   }
   function render() {
     if (!app) return;
+    const firstRun = shouldShowFirstRun();
+    syncFirstRunPresentation(firstRun);
     document.documentElement.classList.toggle(
       "sheet-open",
       Boolean(state.sheet && state.sheet !== "driver"),
@@ -2177,6 +2431,7 @@
     }
     let html;
     if (state.sheet === "driver") html = driverScreen();
+    else if (firstRun) html = firstRunScreen();
     else
       switch (state.screen) {
         case "home":
@@ -2226,6 +2481,7 @@
     if (state.sheet === "add") html += addSheet();
     if (state.sheet === "document") html += documentSheet();
     if (state.sheet === "trips") html += tripSwitchSheet();
+    if (state.sheet === "first-run-how") html += firstRunHowSheet();
     app.innerHTML = html + toast();
     bindDynamic();
   }
@@ -2334,8 +2590,18 @@
     field?.append(error);
     control.setAttribute("aria-invalid", "true");
     control.setAttribute("aria-describedby", id);
-    const disclosure = control.closest("details");
-    if (disclosure) disclosure.open = true;
+    const disclosure = control.closest(".form-more-panel");
+    if (disclosure?.hidden) {
+      disclosure.hidden = false;
+      disclosure.classList.add("is-open");
+      const toggle = form.querySelector(`[aria-controls="${disclosure.id}"]`);
+      toggle?.setAttribute("aria-expanded", "true");
+      if (toggle)
+        toggle.querySelector(".form-more-chevron").innerHTML = icon(
+          "chevronUp",
+          18,
+        );
+    }
     control.scrollIntoView({
       block: "center",
       behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -2346,6 +2612,74 @@
   }
   function validateFocusedForm(form) {
     clearFieldErrors(form);
+    const kind = form.dataset.kind;
+    if (kind === "trip") {
+      const result = tripRules?.validateManualTrip({
+        title: form.elements.title?.value,
+        startsOn: form.elements.startsOn?.value,
+        endsOn: form.elements.endsOn?.value,
+      });
+      if (!result?.valid) {
+        const field = result?.field || "title";
+        showFieldError(form, form.elements[field], result?.message || "Complete the required trip details.");
+        return false;
+      }
+    }
+    if (kind === "hotel") {
+      const checkIn = form.elements.checkInDate,
+        checkOut = form.elements.checkOutDate;
+      if (checkIn?.value && checkOut?.value && checkOut.value < checkIn.value) {
+        showFieldError(form, checkOut, "Check-out cannot be before check-in.");
+        return false;
+      }
+    }
+    if (["flight", "train"].includes(kind)) {
+      const date = form.elements.arrivalDate,
+        time = form.elements.arrivalLocalTime,
+        timezone = form.elements.arrivalTimezone,
+        hasDate = Boolean(String(date?.value || "").trim()),
+        hasTime = Boolean(String(time?.value || "").trim());
+      if (hasDate !== hasTime || ((hasDate || hasTime) && !String(timezone?.value || "").trim())) {
+        const missing = !hasDate ? date : !hasTime ? time : timezone;
+        showFieldError(
+          form,
+          missing,
+          "Add arrival date, local time, and timezone together—or leave all three unavailable.",
+        );
+        return false;
+      }
+      if (kind === "flight" && !hasDate && !hasTime) {
+        const flightOnly = [
+          "operatingAirlineCode",
+          "departureTerminal",
+          "departureGate",
+          "boardingTime",
+          "gateCloseTime",
+        ]
+          .map((name) => form.elements[name])
+          .find((control) => String(control?.value || "").trim());
+        if (flightOnly) {
+          showFieldError(
+            form,
+            flightOnly,
+            "Add arrival details before saving this flight-only field, or leave it unavailable for now.",
+          );
+          return false;
+        }
+      }
+    }
+    if (
+      kind === "activity" &&
+      form.elements.timeMode?.value === "specific" &&
+      !form.elements.activityTime?.value
+    ) {
+      showFieldError(
+        form,
+        form.elements.activityTime,
+        "Add the local time or choose Time not set yet.",
+      );
+      return false;
+    }
     const invalid = form.querySelector(":invalid");
     if (!invalid) return true;
     const message = invalid.validity?.valueMissing
@@ -2386,13 +2720,142 @@
     const update = () => {
       formHasMeaningfulChanges = [...form.elements].some((control) => {
         if (!control.name || control.disabled) return false;
+        if (control.type === "file") return Boolean(control.files?.length);
         if (["checkbox", "radio"].includes(control.type))
-          return control.checked;
-        return String(control.value || "").trim() !== "";
+          return control.checked !== control.defaultChecked;
+        return String(control.value || "") !== String(control.defaultValue || "");
       });
+      if (QUICK_ADD_KINDS.has(form.dataset.kind)) saveQuickDraft(form);
     };
     form.addEventListener("input", update);
     form.addEventListener("change", update);
+    update();
+  }
+  function saveQuickDraft(form) {
+    const kind = form.dataset.kind;
+    if (!QUICK_ADD_KINDS.has(kind)) return;
+    const values = {};
+    for (const control of form.elements) {
+      if (!control.name || control.type === "file" || control.disabled) continue;
+      if (control.type === "checkbox") {
+        if (!Array.isArray(values[control.name])) values[control.name] = [];
+        if (control.checked) values[control.name].push(control.value);
+      } else if (control.type === "radio") {
+        if (control.checked) values[control.name] = control.value;
+      } else values[control.name] = control.value;
+    }
+    values.__moreOpen =
+      form.querySelector(".form-more-toggle")?.getAttribute("aria-expanded") ===
+      "true";
+    try {
+      sessionStorage.setItem(quickDraftKey(kind), JSON.stringify(values));
+    } catch (_) {}
+  }
+  function restoreQuickDraft(form) {
+    let draft = null;
+    try {
+      draft = JSON.parse(sessionStorage.getItem(quickDraftKey(form.dataset.kind)) || "null");
+    } catch (_) {}
+    if (!draft) return false;
+    for (const control of form.elements) {
+      if (!control.name || control.type === "file") continue;
+      const saved = draft[control.name];
+      if (control.type === "checkbox")
+        control.checked = Array.isArray(saved) && saved.includes(control.value);
+      else if (control.type === "radio") control.checked = saved === control.value;
+      else if (saved !== undefined) control.value = saved;
+    }
+    if (draft.__moreOpen) setQuickMoreOpen(form, true);
+    return true;
+  }
+  function setQuickMoreOpen(form, open) {
+    const toggle = form.querySelector(".form-more-toggle"),
+      panel = toggle
+        ? document.getElementById(toggle.getAttribute("aria-controls"))
+        : null;
+    if (!toggle || !panel) return;
+    toggle.setAttribute("aria-expanded", String(open));
+    panel.hidden = !open;
+    panel.classList.toggle("is-open", open);
+    toggle.querySelector(".form-more-chevron").innerHTML = icon(
+      open ? "chevronUp" : "chevronDown",
+      18,
+    );
+  }
+  function normalizedLocationInput(value) {
+    return String(value || "")
+      .trim()
+      .replace(/\s+[—-]\s+/, " ")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  }
+  function knownLocationForInput(value, kind) {
+    const wanted = normalizedLocationInput(value);
+    if (!wanted) return null;
+    return (
+      state.locations.find((location) => {
+        const code = String(
+            val(location, kind === "flight" ? "iata_code" : "station_code") ||
+              "",
+          ),
+          name = String(val(location, "display_name", "local_name") || ""),
+          combined = `${code} ${name}`.trim();
+        return [code, name, combined]
+          .map(normalizedLocationInput)
+          .filter(Boolean)
+          .includes(wanted);
+      }) || null
+    );
+  }
+  function syncQuickTimezone(form, input) {
+    const kind = form.dataset.kind,
+      role = input.dataset.locationRole,
+      locationKind = kind === "flight" ? "flight" : kind === "train" ? "train" : "activity",
+      location = knownLocationForInput(input.value, locationKind),
+      timezone = String(val(location, "timezone") || ""),
+      timezoneName = role === "arrival" ? "arrivalTimezone" : kind === "activity" || kind === "reservation" ? "timezone" : "departureTimezone",
+      control = form.elements[timezoneName],
+      field = control?.closest(".form-field");
+    if (!control || !field) return;
+    field.querySelector(".timezone-derived")?.remove();
+    if (timezone) {
+      control.value = timezone;
+      control.dataset.derived = "true";
+      field.classList.add("is-derived-timezone");
+      field.insertAdjacentHTML(
+        "afterend",
+        `<p class="timezone-derived" data-timezone-status="${esc(role)}">${icon("check", 15)} ${esc(timezone)} from the selected ${kind === "train" ? "station" : kind === "flight" ? "airport" : "location"}</p>`,
+      );
+    } else {
+      if (control.dataset.derived === "true") control.value = "";
+      delete control.dataset.derived;
+      field.classList.remove("is-derived-timezone");
+    }
+  }
+  function syncQuickConditionalFields(form) {
+    if (form.dataset.kind === "activity") {
+      const unset = form.elements.timeMode?.value === "unset",
+        group = form.querySelector(".form-fields--activity-time"),
+        time = form.elements.activityTime,
+        timezone = form.elements.timezone;
+      group?.classList.toggle("is-time-unset", unset);
+      group?.setAttribute("aria-hidden", String(unset));
+      if (time) {
+        time.disabled = unset;
+        time.required = !unset;
+      }
+      if (timezone) {
+        timezone.disabled = unset;
+        timezone.required = !unset;
+      }
+    }
+    if (form.dataset.kind === "document") {
+      const type = form.elements.documentType?.value,
+        travelerSpecific = ["boarding_pass", "ticket", "passport_copy"].includes(type),
+        assignment = form.querySelector(".document-traveler-assignment");
+      if (assignment)
+        assignment.hidden = state.travelers.length <= 1 && !travelerSpecific;
+    }
   }
   function setFormSaving(form, saving, label = "Saving…") {
     if (!form) return;
@@ -2457,6 +2920,47 @@
     const nativeForm = document.getElementById("native-form");
     if (nativeForm && !nativeForm.dataset.bound) {
       nativeForm.dataset.bound = "1";
+      restoreQuickDraft(nativeForm);
+      syncQuickConditionalFields(nativeForm);
+      nativeForm
+        .querySelectorAll("[data-location-role]")
+        .forEach((input) => {
+          const sync = () => {
+            syncQuickTimezone(nativeForm, input);
+            saveQuickDraft(nativeForm);
+          };
+          input.addEventListener("input", sync);
+          input.addEventListener("change", sync);
+          sync();
+        });
+      nativeForm
+        .querySelectorAll('input[name="timeMode"],select[name="documentType"]')
+        .forEach((control) =>
+          control.addEventListener("change", () => {
+            syncQuickConditionalFields(nativeForm);
+            saveQuickDraft(nativeForm);
+          }),
+        );
+      const nativeFile = nativeForm.elements.documentFile;
+      if (nativeFile) {
+        const fileMeta = nativeForm.querySelector(".document-file-meta"),
+          verifyState = nativeForm.querySelector(".document-verify-state");
+        nativeFile.addEventListener("change", () => {
+          const file = nativeFile.files?.[0];
+          if (!file) {
+            fileMeta.textContent = "No file selected";
+            verifyState.textContent =
+              "Ready offline appears only after checksum verification succeeds.";
+            return;
+          }
+          fileMeta.textContent = `${file.name} · ${
+            file.size < 1048576
+              ? `${Math.max(1, Math.round(file.size / 1024))} KB`
+              : `${(file.size / 1048576).toFixed(1)} MB`
+          }`;
+          verifyState.textContent = "Ready to verify when saved on this phone.";
+        });
+      }
       bindMeaningfulChanges(nativeForm);
       nativeForm.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -2498,27 +3002,101 @@
     const result = await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/locations`, { method:"POST", body:JSON.stringify({ type, displayName:name, ...extra }) });
     return result.location;
   }
+  function quickLocationParts(value, kind) {
+    const known = knownLocationForInput(value, kind);
+    if (known) return { known, name: String(val(known, "display_name", "local_name") || value), code: String(val(known, kind === "flight" ? "iata_code" : "station_code") || "") };
+    const text = String(value || "").trim(), match = text.match(/^([A-Z0-9]{2,12})\s+[—-]\s+(.+)$/i);
+    return { known: null, name: match ? match[2].trim() : text, code: match ? match[1].toUpperCase() : "" };
+  }
+  async function quickLocation(value, kind, timezone = "") {
+    const parts = quickLocationParts(value, kind);
+    if (parts.known) return parts.known;
+    const type = kind === "flight" ? "airport" : kind === "train" ? "station" : kind === "hotel" ? "hotel" : kind === "reservation" ? "restaurant" : "attraction";
+    return createMobileLocation(type, parts.name, {
+      ...(timezone ? { timezone } : {}),
+      ...(kind === "flight" && parts.code ? { iataCode: parts.code } : {}),
+      ...(kind === "train" && parts.code ? { stationCode: parts.code } : {}),
+    });
+  }
+  function selectedTravelerIds(fd) {
+    return fd.getAll("travelerIds").map(String).filter(Boolean);
+  }
+  function localDateTime(fd, dateName, timeName) {
+    const date = String(fd.get(dateName) || ""), time = String(fd.get(timeName) || "");
+    return date && time ? `${date}T${time}` : "";
+  }
+  function parseFlightNumber(value) {
+    const raw = String(value || "").trim().toUpperCase(), match = raw.match(/^([A-Z0-9]{2,3})\s*[- ]?\s*(\d{1,4}[A-Z]?)$/);
+    if (!match) throw new Error("Enter a flight number such as LY 383.");
+    return { raw: `${match[1]} ${match[2]}`, code: match[1], number: match[2] };
+  }
+  async function saveTravelerFacts(tripId, itemId, travelerIds, fd) {
+    if (!itemId || travelerIds.length !== 1) return;
+    const values = {
+      seat: fd.get("seat") || null,
+      cabinClass: fd.get("cabin") || null,
+      ticketNumber: fd.get("ticketNumber") || null,
+      checkedBags: fd.get("checkedBags") === "" ? null : Number(fd.get("checkedBags")),
+    };
+    if (!Object.values(values).some((value) => value !== null && value !== "")) return;
+    await api(`/api/v1/trips/${tripId}/booking-details`, { method: "PUT", body: JSON.stringify({ tripItemId: itemId, travelerId: travelerIds[0], ...values }) });
+  }
+  async function saveItemContact(tripId, itemId, type, displayName, fd) {
+    const phone = String(fd.get("phone") || ""), email = String(fd.get("email") || ""), notes = String(fd.get("notes") || "");
+    if (!displayName && !phone && !email && !notes) return;
+    await api(`/api/v1/trips/${tripId}/contacts`, { method: "POST", body: JSON.stringify({ contactType: type, displayName: displayName || statusText(type), phone: phone || null, email: email || null, notes: notes || null, tripItemId: itemId }) });
+  }
   async function saveNativeForm(form) {
-    const kind=form.dataset.kind, fd=new FormData(form), tripId=encodeURIComponent(state.trip?.id || "");
+    const kind=form.dataset.kind, fd=new FormData(form), tripId=encodeURIComponent(state.trip?.id || ""), isFirstTripCreation=kind==="trip"&&state.trips.length===0;
     if (form.getAttribute("aria-busy") === "true") return;
     setFormSaving(form, true);
     try {
-      if (PREVIEW_MODE) { formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true); return; }
+      if (QUICK_ADD_KINDS.has(kind) && !state.trip) throw new Error("Choose a trip before saving this booking.");
+      if (PREVIEW_MODE) {
+        if (isFirstTripCreation) {
+          const values=tripRules.validateManualTrip({title:fd.get("title"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
+          const trip={id:"preview-created-trip",title:values.title,lifecycle_state:"upcoming",starts_on:values.startsOn,ends_on:values.endsOn};
+          Object.assign(state,{trips:[trip],trip,timeline:[],checklist:[],brain:null,impacts:[],transport:[],stays:[],locations:[],travelers:[],connections:[],health:null,bookingDetails:[],contacts:[],syncStatus:null,localDocs:[],tripsLoaded:true});
+        }
+        clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(kind==="document"?"documents":kind==="trip"&&isFirstTripCreation?"home":kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true); return;
+      }
       if (kind === "trip") {
-        const result=await api("/api/v1/trips",{method:"POST",body:JSON.stringify({title:fd.get("title"),startsOn:fd.get("startsOn")||null,endsOn:fd.get("endsOn")||null,lifecycleState:"upcoming"})}); state.trips.unshift(result.trip); state.trip=result.trip;
+        const values=tripRules.validateManualTrip({title:fd.get("title"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
+        const result=await api("/api/v1/trips",{method:"POST",body:JSON.stringify({title:values.title,startsOn:values.startsOn,endsOn:values.endsOn,lifecycleState:"upcoming"})}); state.trips.unshift(result.trip); state.trip=result.trip; state.tripsLoaded=true; localStorage.setItem("tripto_selected_trip",result.trip.id);
       } else if (kind === "hotel") {
         let locationId=null; if(fd.get("address")){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:fd.get("address")}); locationId=location.id; }
-        await api(`/api/v1/trips/${tripId}/stays`,{method:"POST",body:JSON.stringify({propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,travelerIds:state.travelers.map((t)=>t.id)})});
+        const result=await api(`/api/v1/trips/${tripId}/stays`,{method:"POST",body:JSON.stringify({propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,travelerIds:selectedTravelerIds(fd)})});
+        await saveItemContact(tripId, result.stay?.id, "hotel", String(fd.get("propertyName")||""), fd);
       } else if (["flight","train"].includes(kind)) {
-        const depTz=String(fd.get("departureTimezone")||""), arrivalValue=String(fd.get("arrivalTime")||""), arrTz=String(fd.get("arrivalTimezone")||""), dep=resolveEventLocalDateTime(fd.get("departureTime"),depTz), arr=arrivalValue ? resolveEventLocalDateTime(arrivalValue,arrTz) : null; if(kind==="flight" && arr==null) throw new Error("Flights require an arrival date, time, and timezone."); if(arr!=null&&arr<dep) throw new Error("Arrival cannot be before departure.");
-        const from=await createMobileLocation(kind==="flight"?"airport":"station",fd.get("fromName"),{timezone:depTz,...(kind==="flight"?{iataCode:String(fd.get("fromCode")||"").toUpperCase()}:{})}), to=await createMobileLocation(kind==="flight"?"airport":"station",fd.get("toName"),{timezone:arrTz,...(kind==="flight"?{iataCode:String(fd.get("toCode")||"").toUpperCase()}:{})});
-        await api(`/api/v1/trips/${tripId}/transport`,{method:"POST",body:JSON.stringify({transportType:kind,title:kind==="flight"?`${String(fd.get("marketingAirlineCode")||"Flight").toUpperCase()} ${fd.get("marketingFlightNumber")||""}`.trim():`${fd.get("carrierName")||"Train"} ${fd.get("serviceNumber")||""}`.trim(),carrierName:fd.get("carrierName")||null,serviceNumber:fd.get("serviceNumber")||null,marketingAirlineCode:fd.get("marketingAirlineCode")||null,marketingFlightNumber:fd.get("marketingFlightNumber")||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,arrivalTerminal:fd.get("arrivalTerminal")||null,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:state.travelers.map((t)=>t.id)})});
+        const depTz=String(fd.get("departureTimezone")||""), arrTz=String(fd.get("arrivalTimezone")||""), dep=resolveEventLocalDateTime(localDateTime(fd,"departureDate","departureLocalTime"),depTz), arrivalLocal=localDateTime(fd,"arrivalDate","arrivalLocalTime"), arr=arrivalLocal ? resolveEventLocalDateTime(arrivalLocal,arrTz) : null;
+        if(arr!=null&&arr<dep) throw new Error("Arrival cannot be before departure.");
+        const from=await quickLocation(fd.get("fromLocation"),kind,depTz), to=await quickLocation(fd.get("toLocation"),kind,arrTz), travelers=selectedTravelerIds(fd), flight=kind==="flight"?parseFlightNumber(fd.get("flightNumber")):null;
+        const boarding=fd.get("boardingTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("boardingTime")}`,depTz):null, gateClose=fd.get("gateCloseTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("gateCloseTime")}`,depTz):null;
+        const title=flight?flight.raw:`${fd.get("carrierName")||"Train"}${fd.get("serviceNumber")?` ${fd.get("serviceNumber")}`:""}`;
+        const result=await api(`/api/v1/trips/${tripId}/transport`,{method:"POST",body:JSON.stringify({transportType:kind,title,carrierName:fd.get("carrierName")||null,serviceNumber:kind==="flight"?flight.number:(fd.get("serviceNumber")||null),marketingAirlineCode:flight?.code||null,marketingFlightNumber:flight?.number||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,departureGate:fd.get("departureGate")||null,boardingTimeUtc:boarding,gateCloseTimeUtc:gateClose,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers})});
+        await saveTravelerFacts(tripId,result.item?.id,travelers,fd);
+        if (kind === "train") {
+          const structured = [
+            fd.get("platform") ? `Platform: ${fd.get("platform")}` : "",
+            fd.get("coach") ? `Coach: ${fd.get("coach")}` : "",
+            fd.get("notes") || "",
+          ].filter(Boolean).join("\n");
+          fd.set("notes", structured);
+        }
+        await saveItemContact(tripId,result.item?.id,kind==="flight"?"airline":"other",String(fd.get("carrierName")||title),fd);
       } else if (["activity","reservation"].includes(kind)) {
-        const ms=resolveEventLocalDateTime(fd.get("startsAt"),fd.get("timezone")), locationName=String(fd.get("location")||""), location=locationName ? await createMobileLocation("venue",locationName,{timezone:String(fd.get("timezone")||"")}) : null, result=await api(`/api/v1/trips/${tripId}/activities`,{method:"POST",body:JSON.stringify({kind,status:"confirmed",title:fd.get("title"),startsAtUtc:ms,timezone:fd.get("timezone"),locationId:location?.id||null,activityType:kind==="activity"?(fd.get("activityType")||null):null,reservationType:kind==="reservation"?"reservation":null,reference:fd.get("confirmationNumber")||null,notes:fd.get("notes")||null,confidence:"confirmed"})});
-        if(fd.get("provider") && result.item?.id) await api(`/api/v1/trips/${tripId}/contacts`,{method:"POST",body:JSON.stringify({contactType:"tour_operator",displayName:fd.get("provider"),tripItemId:result.item.id})});
+        const dateName=kind==="activity"?"activityDate":"reservationDate", timeName=kind==="activity"?"activityTime":"reservationTime", unset=kind==="activity"&&fd.get("timeMode")==="unset", timezone=unset?"":String(fd.get("timezone")||""), local=unset?"":localDateTime(fd,dateName,timeName), ms=unset?null:resolveEventLocalDateTime(local,timezone), locationName=String(fd.get("location")||""), location=locationName ? await quickLocation(locationName,kind,timezone) : null;
+        const end=fd.get("endTime")&&!unset?resolveEventLocalDateTime(`${fd.get(dateName)}T${fd.get("endTime")}`,timezone):null;
+        if(ms!=null&&end!=null&&end<ms) throw new Error("End time cannot be before the start time.");
+        const explicitDate=String(fd.get(dateName)||""), contactNote=fd.get("contact")?`Contact: ${fd.get("contact")}`:"", windowNote=fd.get("reservationWindow")?`Reservation window: ${fd.get("reservationWindow")}`:"", userNotes=String(fd.get("notes")||""), notes=[...(unset?[`Date: ${explicitDate}`,"Time not set yet"]:[]),windowNote,contactNote,userNotes].filter(Boolean).join(" · ")||null, travelers=selectedTravelerIds(fd);
+        const result=await api(`/api/v1/trips/${tripId}/activities`,{method:"POST",body:JSON.stringify({kind,status:"confirmed",title:fd.get("title"),startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,activityType:kind==="activity"?(fd.get("activityType")||null):null,reservationType:kind==="reservation"?(fd.get("reservationType")||"reservation"):null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",travelerIds:travelers})});
+        if(fd.get("provider") && result.item?.id) await api(`/api/v1/trips/${tripId}/contacts`,{method:"POST",body:JSON.stringify({contactType:"tour_operator",displayName:fd.get("provider"),notes:contactNote||null,tripItemId:result.item.id})});
+        await linkLocalDocument(fd.get("relatedDocument"),result.item?.id);
+      } else if (kind === "document") {
+        await saveLocalDocument(form.elements.documentFile.files?.[0],fd.get("documentType"),selectedTravelerIds(fd),fd.get("relatedBooking")||null);
       } else if (kind === "traveler") await api(`/api/v1/trips/${tripId}/travelers`,{method:"POST",body:JSON.stringify({displayName:fd.get("displayName"),travelerType:fd.get("travelerType")})});
       else if (kind === "checklist") { location.href=legacyUrl("add","checklist"); return; }
-      await loadTripDetails(); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved.`); route(kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true);
+      await loadTripDetails(); clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved.`); route(kind==="document"?"documents":kind==="trip"&&isFirstTripCreation?"home":kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true);
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
@@ -2612,6 +3190,12 @@
       case "open-add":
         openSheet("add", target);
         break;
+      case "open-first-run-how":
+        openSheet("first-run-how", target);
+        break;
+      case "finish-first-run-how":
+        closeSheet();
+        break;
       case "close-sheet":
         closeSheet();
         break;
@@ -2627,6 +3211,54 @@
       case "switch-trip":
         openSheet("trips", target);
         break;
+      case "toggle-form-more": {
+        const form = target.closest("form"),
+          open = target.getAttribute("aria-expanded") !== "true";
+        if (form) {
+          setQuickMoreOpen(form, open);
+          saveQuickDraft(form);
+        }
+        break;
+      }
+      case "apply-date-suggestion": {
+        const form = target.closest("form"),
+          control = form?.elements[target.dataset.field];
+        if (control) {
+          control.value = target.dataset.value || "";
+          control.dispatchEvent(new Event("input", { bubbles: true }));
+          control.focus();
+        }
+        break;
+      }
+      case "apply-trip-dates": {
+        const form = target.closest("form"),
+          start = form?.elements.checkInDate,
+          end = form?.elements.checkOutDate;
+        if (start && end) {
+          start.value = target.dataset.start || "";
+          end.value = target.dataset.end || "";
+          start.dispatchEvent(new Event("input", { bubbles: true }));
+          end.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        break;
+      }
+      case "select-trip-for-add": {
+        const trip = state.trips.find(
+          (row) => String(row.id) === String(target.dataset.id),
+        );
+        if (!trip) return;
+        const kind = state.selectedId;
+        state.trip = trip;
+        localStorage.setItem("tripto_selected_trip", trip.id);
+        if (!PREVIEW_MODE) {
+          state.loading = true;
+          render();
+          await loadTripDetails();
+          state.loading = false;
+        }
+        route("form", kind, true);
+        break;
+      }
       case "select-trip": {
         const trip = state.trips.find(
           (row) => String(row.id) === String(target.dataset.id),
@@ -2639,14 +3271,14 @@
         render();
         await loadTripDetails();
         state.loading = false;
-        route("home", null, true);
+        if (state.screen === "form" && QUICK_ADD_KINDS.has(state.selectedId))
+          route("form", state.selectedId, true);
+        else route("home", null, true);
         break;
       }
       case "add-type": {
         const type = target.dataset.type;
-        if (type === "document") {
-          openSheet("document", target);
-        } else route("form", type);
+        route("form", type);
         break;
       }
       case "open-form":
@@ -2660,14 +3292,10 @@
       case "filter-bookings": state.bookingFilter=target.dataset.filter||"all"; render(); break;
       case "document-sheet":
       case "add-document":
-        openSheet("document", target);
+        route("form", "document");
         break;
       case "add-boarding-pass":
-        openSheet("document", target);
-        setTimeout(() => {
-          const select = document.getElementById("document-type");
-          if (select) select.value = "boarding_pass";
-        }, 0);
+        route("form", "document");
         break;
       case "open-document":
       case "boarding-pass":
