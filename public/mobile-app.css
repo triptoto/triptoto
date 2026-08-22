@@ -707,8 +707,13 @@ html.sheet-open,html.sheet-open body{overflow:hidden}
 @keyframes current-item-in{from{opacity:.72;transform:translate3d(0,4px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 
 .flight-more__chevron{display:grid;place-items:center;margin-left:auto;transition:transform var(--motion-standard) var(--ease-standard)}
-.flight-more-content{transform-origin:top;animation:disclosure-in var(--motion-standard) var(--ease-standard) both}
-@keyframes disclosure-in{from{opacity:0;transform:translate3d(0,-5px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.flight-more-content{
+  opacity:0;
+  transform:translate3d(0,-5px,0);
+  transform-origin:top;
+  transition:opacity 180ms var(--ease-standard),transform 180ms var(--ease-standard);
+}
+.flight-more-content.is-open{opacity:1;transform:translate3d(0,0,0)}
 .missing-document-state{display:flex;align-items:flex-start;gap:8px;margin:0 0 10px;padding:10px 11px;border:1px solid #F1D06F;border-radius:11px;background:var(--amber-soft);color:#735500;font-size:11px;line-height:1.35}
 .missing-document-state svg{flex:0 0 auto}
 
@@ -942,7 +947,8 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
 
 @media(prefers-reduced-motion:reduce){
   :root{--motion-fast:1ms;--motion-standard:1ms;--motion-slow:1ms}
-  .route-enter,.route-exit,.flight-ticket,.sheet-backdrop,.bottom-sheet,.bottom-sheet.is-closing,.sheet-backdrop.is-closing,.toast-mobile,.timeline-event--current .timeline-card,.flight-more-content,.hotel-hero-image,.loading-skeleton{animation:reduced-fade 1ms linear both!important}
+  .route-enter,.route-exit,.flight-ticket,.sheet-backdrop,.bottom-sheet,.bottom-sheet.is-closing,.sheet-backdrop.is-closing,.toast-mobile,.timeline-event--current .timeline-card,.hotel-hero-image,.loading-skeleton{animation:reduced-fade 1ms linear both!important}
+  .flight-more-content{transition:none!important}
   .primary-cta,.secondary-cta,.icon-button,.header-icon,.nav-item,.simple-row,.timeline-event,.booking-card,.info-card,.sheet-option,.contact-row,.text-action,.nav-item svg,.nav-item>span,.flight-more__chevron{transition:none!important}
   .primary-cta:active,.secondary-cta:active,.icon-button:active,.header-icon:active,.simple-row:active,.timeline-event:active,.booking-card:active,.info-card[data-action]:active,.sheet-option:active,.contact-row:active{transform:none!important;filter:none!important}
   .skeleton-line,.skeleton-ticket,.skeleton-route i,.offline-refresh.is-loading svg{animation:none!important;background:#EDF0F5}
@@ -1224,18 +1230,50 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
 
 /* Approved Flight Detail finish — Home remains locked above. */
 .flight-detail-screen{padding-bottom:0}
+.flight-detail-screen .app-bar--dark{
+  min-height:52px;
+  padding:2px 10px;
+}
 .flight-detail-screen .detail-content{
-  display:grid;
-  align-content:center;
-  min-height:calc(100dvh - 70px - var(--nav-height) - env(safe-area-inset-bottom));
-  padding:0 20px;
+  display:block;
+  min-height:calc(100dvh - 52px - var(--nav-height) - env(safe-area-inset-bottom));
+  padding:14px 16px calc(24px + var(--nav-height) + env(safe-area-inset-bottom));
 }
 .flight-detail-stack{width:100%;margin:0}
 .flight-detail-screen .detail-content--expanded{
-  align-content:start;
-  padding-top:16px;
-  padding-bottom:calc(18px + var(--nav-height) + env(safe-area-inset-bottom));
+  padding-top:14px;
+  padding-bottom:calc(24px + var(--nav-height) + env(safe-area-inset-bottom));
 }
+.flight-detail-screen .detail-content--expanded .flight-pass--detail{
+  --flight-pass-height:510px;
+}
+
+.flight-pass--detail{
+  --flight-pass-height:clamp(510px,calc(100dvh - 276px),568px);
+  min-height:var(--flight-pass-height);
+  border:1px solid rgba(145,162,220,.08);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 50% 9%,rgba(56,78,194,.24),transparent 34%),
+    linear-gradient(148deg,#050F2B 0%,#0A1B4A 52%,#061438 100%);
+  box-shadow:0 18px 46px rgba(2,10,34,.28);
+}
+.flight-pass--detail::before{
+  inset:96px 0 auto;
+  height:148px;
+  opacity:.22;
+}
+.flight-pass--detail .flight-pass__inner{
+  display:grid;
+  grid-template-rows:auto auto 1px auto 1px auto auto;
+  align-content:space-between;
+  min-height:var(--flight-pass-height);
+  padding:20px 12px 18px;
+}
+.flight-pass--detail .flight-pass__route,
+.flight-pass--detail .flight-pass__divider,
+.flight-pass--detail .flight-pass__divider--facts,
+.flight-pass--detail .flight-pass__actions{margin:0}
 
 .flight-pass--detail .flight-pass__header{
   display:grid;
@@ -1270,7 +1308,17 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
   background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 8px);
   opacity:.72;
 }
-.flight-pass--detail .flight-pass__route-line svg{width:29px;height:29px}
+.flight-pass--detail .flight-pass__route-line svg{width:30px;height:30px}
+.flight-pass--detail .flight-pass__airport-code{
+  font-size:61px;
+  font-weight:790;
+  line-height:.88;
+  letter-spacing:-3px;
+  white-space:nowrap;
+  overflow-wrap:normal;
+}
+.flight-pass--detail .flight-pass__airport-name{font-size:13px}
+.flight-pass--detail .flight-pass__duration{height:30px;font-size:12px}
 
 .flight-pass--detail .flight-pass__time{
   display:flex;
@@ -1289,7 +1337,7 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
   letter-spacing:0;
   text-transform:none;
 }
-.flight-pass--detail .flight-pass__event-icon svg{width:25px;height:25px;stroke-width:1.65}
+.flight-pass--detail .flight-pass__event-icon svg{width:22px;height:22px;stroke-width:1.85}
 .flight-pass--detail .flight-pass__event-icon--day{color:#FEBF02}
 .flight-pass--detail .flight-pass__time-copy{
   display:block;
@@ -1308,8 +1356,8 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
   letter-spacing:.12em;
   text-transform:uppercase;
 }
-.flight-pass--detail .flight-pass__time strong{font-size:29px}
-.flight-pass--detail .flight-pass__time small{font-size:9.5px;white-space:nowrap}
+.flight-pass--detail .flight-pass__time strong{font-size:32px;font-variant-numeric:tabular-nums}
+.flight-pass--detail .flight-pass__time small{font-size:10.5px;letter-spacing:-.1px;white-space:nowrap}
 
 .flight-pass--detail .flight-pass__fact{
   display:flex;
@@ -1332,7 +1380,7 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
   letter-spacing:0;
   text-transform:none;
 }
-.flight-pass--detail .flight-pass__fact-icon svg{width:18px;height:18px;stroke-width:2}
+.flight-pass--detail .flight-pass__fact-icon svg{width:20px;height:20px;stroke-width:2.15}
 .flight-pass--detail .flight-pass__fact-copy{
   display:block;
   min-width:0;
@@ -1353,13 +1401,14 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
 .flight-pass--detail .flight-pass__fact strong{
   overflow:visible;
   margin-top:6px;
-  font-size:23px;
+  font-size:27px;
+  font-variant-numeric:tabular-nums;
   text-overflow:clip;
 }
 .flight-pass--detail .flight-pass__fact small{
   overflow:visible;
   margin-top:6px;
-  font-size:10.5px;
+  font-size:12px;
   line-height:1.15;
   text-overflow:clip;
   white-space:normal;
@@ -1367,41 +1416,46 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
 }
 
 .flight-pass--detail .flight-pass__actions{
-  grid-template-columns:minmax(0,63fr) minmax(0,37fr);
+  grid-template-columns:minmax(0,64fr) minmax(0,36fr);
   gap:12px;
 }
 .flight-pass--detail .primary-cta{
-  min-height:58px;
-  padding:0 8px;
-  font-size:13px;
+  min-height:60px;
+  padding:0 7px;
+  font-size:14px;
+  letter-spacing:-.35px;
+  border-radius:18px;
 }
 .flight-pass--detail .primary-cta .cta-left{gap:6px}
 .flight-pass--detail .primary-cta .cta-left span{overflow:visible;text-overflow:clip}
-.flight-pass--detail .primary-cta svg{width:16px;height:16px}
+.flight-pass--detail .primary-cta svg{width:18px;height:18px}
 .flight-pass--detail .flight-pass__secondary{
-  min-height:58px;
-  gap:4px;
-  padding:0 4px;
-  font-size:9.5px;
+  min-height:60px;
+  gap:3px;
+  padding:0 5px;
+  border-radius:18px;
+  font-size:11px;
+  letter-spacing:-.35px;
 }
-.flight-pass--detail .flight-pass__secondary svg{width:14px;height:14px}
+.flight-pass--detail .flight-pass__secondary svg{width:16px;height:16px}
 
 .flight-more--pass{
-  margin:14px 4px 0;
+  margin:12px 4px 0;
   overflow:hidden;
   border:1px solid rgba(170,185,231,.18);
   border-radius:15px;
   background:rgba(20,33,82,.46);
 }
 .flight-more--pass .flight-more__toggle{min-height:46px;padding:0 13px;color:#D5DCF0}
-.flight-more--pass .flight-more__toggle:focus-visible{border-radius:12px;outline:2px solid #FEBF02;outline-offset:-3px}
+.flight-more--pass .flight-more__toggle:focus{outline:none}
+html[data-input-method="keyboard"] .flight-more--pass .flight-more__toggle:focus-visible{border-radius:12px;outline:2px solid #FEBF02;outline-offset:-3px}
 .flight-more--pass .flight-more__chevron{color:#BFC9E6}
 .flight-more--pass .flight-more__chevron svg{width:18px;height:18px;stroke-width:2}
 .flight-more--pass .flight-more-content{padding:0 13px 13px}
 
 @media(max-width:375px){
   .flight-detail-screen .detail-content{padding-right:16px;padding-left:16px}
-  .flight-pass--detail .flight-pass__inner{padding-right:14px;padding-left:14px}
+  .flight-pass--detail .flight-pass__inner{padding-right:12px;padding-left:12px}
   .flight-pass--detail .flight-pass__header{grid-template-columns:auto minmax(0,1fr) 18px;gap:6px}
   .flight-pass--detail .flight-pass__pill{height:44px;padding:0 12px;font-size:13px}
   .flight-pass--detail .flight-pass__status strong{font-size:14px}
@@ -1409,23 +1463,23 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
   .flight-pass--detail .flight-pass__status-chevron{width:18px;height:42px}
   .flight-pass--detail .flight-pass__route{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
   .flight-pass--detail .flight-pass__route-line{width:76px}
-  .flight-pass--detail .flight-pass__airport-code{font-size:50px}
-  .flight-pass--detail .flight-pass__airport-name{font-size:10px}
+  .flight-pass--detail .flight-pass__airport-code{font-size:54px;letter-spacing:-2.8px}
+  .flight-pass--detail .flight-pass__airport-name{font-size:11px}
   .flight-pass--detail .flight-pass__times{gap:8px}
   .flight-pass--detail .flight-pass__event-icon{flex-basis:21px;width:21px}
   .flight-pass--detail .flight-pass__event-icon svg{width:21px;height:21px}
   .flight-pass--detail .flight-pass__time{gap:5px}
-  .flight-pass--detail .flight-pass__time strong{font-size:27px}
-  .flight-pass--detail .flight-pass__time small{font-size:8.5px}
+  .flight-pass--detail .flight-pass__time strong{font-size:29px}
+  .flight-pass--detail .flight-pass__time small{font-size:9.5px}
   .flight-pass--detail .flight-pass__fact{gap:5px;padding-right:6px;padding-left:6px}
   .flight-pass--detail .flight-pass__fact-icon{flex-basis:20px;width:20px}
   .flight-pass--detail .flight-pass__fact-icon svg{width:18px;height:18px}
   .flight-pass--detail .flight-pass__fact-copy>span{font-size:9px}
-  .flight-pass--detail .flight-pass__fact strong{font-size:21px}
-  .flight-pass--detail .flight-pass__fact small{font-size:9px}
-  .flight-pass--detail .primary-cta{padding:0 6px;font-size:11.5px}
+  .flight-pass--detail .flight-pass__fact strong{font-size:24px}
+  .flight-pass--detail .flight-pass__fact small{font-size:10px}
+  .flight-pass--detail .primary-cta{padding:0 8px;font-size:13px}
   .flight-pass--detail .primary-cta .cta-left{gap:5px}
-  .flight-pass--detail .primary-cta svg{width:15px;height:15px}
-  .flight-pass--detail .flight-pass__secondary{gap:3px;padding:0 3px;font-size:9px}
-  .flight-pass--detail .flight-pass__secondary svg{width:13px;height:13px}
+  .flight-pass--detail .primary-cta svg{width:18px;height:18px}
+  .flight-pass--detail .flight-pass__secondary{gap:2px;padding:0 2px;font-size:9.75px}
+  .flight-pass--detail .flight-pass__secondary svg{width:16px;height:16px}
 }

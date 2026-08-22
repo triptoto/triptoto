@@ -108,6 +108,7 @@
     localDocs: [],
     account: null,
   };
+  let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
   let toastTimer = null,
     sessionRefreshPromise = null,
@@ -1382,7 +1383,7 @@
       disclosureId = "flight-details-panel",
       disclosureButtonId = "flight-details-toggle",
       disclosure = disclosureRows.length
-        ? `<section class="flight-more flight-more--pass"><button type="button" class="flight-more__toggle" id="${disclosureButtonId}" data-action="toggle-flight-details" aria-expanded="${state.flightDetailsOpen}" aria-controls="${disclosureId}"><span>More flight details</span><span class="flight-more__chevron" aria-hidden="true">${icon(state.flightDetailsOpen ? "chevronUp" : "chevronDown", 18)}</span></button><div class="flight-more-content" id="${disclosureId}" role="region" aria-labelledby="${disclosureButtonId}"${state.flightDetailsOpen ? "" : " hidden"}><dl>${disclosureRows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section>`
+        ? `<section class="flight-more flight-more--pass"><button type="button" class="flight-more__toggle" id="${disclosureButtonId}" data-action="toggle-flight-details" aria-expanded="${state.flightDetailsOpen}" aria-controls="${disclosureId}"><span>Flight details</span><span class="flight-more__chevron" aria-hidden="true">${icon(state.flightDetailsOpen ? "chevronUp" : "chevronDown", 18)}</span></button><div class="flight-more-content${state.flightDetailsOpen ? " is-open" : ""}" id="${disclosureId}" role="region" aria-labelledby="${disclosureButtonId}"${state.flightDetailsOpen ? "" : " hidden"}><dl>${disclosureRows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section>`
         : "";
     return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, `<button class="icon-button" data-action="share-flight" aria-label="Share flight">${icon("share", 23)}</button>`)}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div></main>${bottomNav("bookings")}</section></div>`;
   }
@@ -1895,7 +1896,7 @@
   function legacyUrl(action, type = "") {
     return `/legacy.html?action=${encodeURIComponent(action)}${type ? `&type=${encodeURIComponent(type)}` : ""}`;
   }
-  async function handleAction(action, target) {
+  async function handleAction(action, target, inputMethod = "pointer") {
     switch (action) {
       case "back":
         state.routeMotion = "back";
@@ -2019,11 +2020,42 @@
         break;
       }
       case "toggle-flight-details":
+        if (flightDetailsCloseTimer) {
+          clearTimeout(flightDetailsCloseTimer);
+          flightDetailsCloseTimer = null;
+        }
         state.flightDetailsOpen = !state.flightDetailsOpen;
-        render();
-        requestAnimationFrame(() =>
-          document.getElementById("flight-details-toggle")?.focus(),
+        target.setAttribute("aria-expanded", String(state.flightDetailsOpen));
+        target.querySelector(".flight-more__chevron").innerHTML = icon(
+          state.flightDetailsOpen ? "chevronUp" : "chevronDown",
+          18,
         );
+        {
+          const panel = document.getElementById("flight-details-panel"),
+            content = target.closest(".detail-content"),
+            stack = target.closest(".flight-detail-stack"),
+            keyboardActivation = inputMethod === "keyboard",
+            reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (!panel || !content || !stack) break;
+          if (state.flightDetailsOpen) {
+            content.classList.add("detail-content--expanded");
+            stack.classList.add("is-expanded");
+            panel.hidden = false;
+            requestAnimationFrame(() => panel.classList.add("is-open"));
+          } else {
+            panel.classList.remove("is-open");
+            panel.classList.add("is-closing");
+            flightDetailsCloseTimer = setTimeout(
+              () => {
+                flightDetailsCloseTimer = null;
+                render();
+                if (keyboardActivation)
+                  document.getElementById("flight-details-toggle")?.focus();
+              },
+              reducedMotion ? 0 : 180,
+            );
+          }
+        }
         break;
       case "directions-item": {
         const item = state.timeline.find(
@@ -2128,10 +2160,17 @@
       );
       return;
     }
-    handleAction(target.dataset.action, target).catch((error) =>
+    handleAction(target.dataset.action, target, "pointer").catch((error) =>
       showToast(error instanceof Error ? error.message : String(error), "alert"),
     );
   });
+  window.addEventListener(
+    "pointerdown",
+    () => {
+      document.documentElement.dataset.inputMethod = "pointer";
+    },
+    { capture: true },
+  );
   window.addEventListener("hashchange", () => {
     const next = parseRoute();
     scrollPositions.set(state.screen, window.scrollY);
@@ -2157,6 +2196,7 @@
     render();
   });
   window.addEventListener("keydown", (event) => {
+    document.documentElement.dataset.inputMethod = "keyboard";
     const disclosureButton = event.target?.closest?.(
       '[data-action="toggle-flight-details"]',
     );
@@ -2165,7 +2205,11 @@
       ["Enter", " ", "Spacebar"].includes(event.key)
     ) {
       event.preventDefault();
-      handleAction("toggle-flight-details", disclosureButton).catch((error) =>
+      handleAction(
+        "toggle-flight-details",
+        disclosureButton,
+        "keyboard",
+      ).catch((error) =>
         showToast(
           error instanceof Error ? error.message : String(error),
           "alert",

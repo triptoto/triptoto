@@ -20,8 +20,13 @@ for(const iconName of ['night','day','terminal','gate','seat'])assert(app.includ
 assert(app.includes('flight-pass__status-chevron')&&app.includes('Not assigned'),'Flight Detail status affordance or complete unavailable label is missing');
 assert(app.includes('function flightLocationCode(')&&app.includes('function compactFlightNumber('),'Flight Detail does not safely constrain dynamic airport-code or flight-number presentation');
 assert(css.includes('.flight-pass--detail .flight-pass__airport-name')&&css.includes('overflow-wrap:anywhere'),'Flight Detail dynamic labels can truncate or overflow');
-assert(app.includes('flight-detail-stack')&&css.includes('minmax(0,63fr) minmax(0,37fr)'),'Flight Detail balance or approximate 64/36 action ratio is missing');
+assert(app.includes('flight-detail-stack')&&css.includes('minmax(0,64fr) minmax(0,36fr)'),'Flight Detail balance or approximate 64/36 action ratio is missing');
 assert(app.includes('data-action="toggle-flight-details"')&&app.includes('aria-expanded="${state.flightDetailsOpen}"')&&app.includes('aria-controls="${disclosureId}"'),'Flight Detail disclosure is not a semantic accessible button');
+assert(app.includes('<span>Flight details</span>')&&!app.includes('<span>More flight details</span>'),'Flight Detail disclosure label does not match the approved composition');
+assert(css.includes('html[data-input-method="keyboard"] .flight-more--pass .flight-more__toggle:focus-visible')&&css.includes('.flight-more--pass .flight-more__toggle:focus{outline:none}')&&!css.includes('.is-expanded .flight-more__toggle{outline'),'Flight Detail focus ring is not keyboard-only');
+assert(app.includes('document.documentElement.dataset.inputMethod = "pointer"')&&app.includes('document.documentElement.dataset.inputMethod = "keyboard"'),'Flight Detail input-modality tracking is missing');
+assert(app.includes('inputMethod === "keyboard"')&&!app.includes('requestAnimationFrame(() =>\n          document.getElementById("flight-details-toggle")?.focus()'),'Flight Detail disclosure still forces focus after pointer activation');
+assert(css.includes('transition:opacity 180ms')&&css.includes('.flight-more-content.is-open')&&css.includes('.flight-more-content{transition:none!important}'),'Flight Detail disclosure transition or reduced-motion behavior is missing');
 assert(app.includes('["Enter", " ", "Spacebar"].includes(event.key)'),'Flight Detail disclosure keyboard handling is missing');
 assert(app.includes('chevronDown')&&app.includes('chevronUp')&&!css.includes('.flight-more summary:after{content:"+"'),'Flight Detail disclosure chevron states are missing');
 assert(app.includes('disclosureRows.map')&&!app.includes('<dd>${esc(formatTime(boarding, departureZone))}</dd>'),'Flight Detail disclosure must omit unavailable facts instead of rendering placeholders');
