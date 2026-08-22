@@ -726,6 +726,24 @@
       if (QA_STATE === "loading") return;
       applyPreviewData();
       if (QA_STATE === "offline") state.offline = true;
+      if (QA_STATE === "timeline-empty") {
+        state.timeline = [];
+        state.brain = { ...state.brain, nextItem: null };
+      }
+      if (QA_STATE === "timeline-warning" && state.timeline[1]) {
+        state.timeline[1] = {
+          ...state.timeline[1],
+          status: "cancelled",
+        };
+      }
+      if (QA_STATE === "timeline-now" && state.timeline[0]) {
+        const previewNow = Date.now();
+        state.timeline[0] = {
+          ...state.timeline[0],
+          starts_at_utc: previewNow - 30 * 60 * 1000,
+          ends_at_utc: previewNow + 2 * 60 * 60 * 1000,
+        };
+      }
       if (QA_STATE === "empty") {
         state.trip = null;
         state.trips = [];
@@ -932,7 +950,7 @@
         },
         {
           id: "transfer",
-          type: "transport",
+          type: "transfer",
           status: "confirmed",
           title: "Airport to hotel",
           subtitle: "Private transfer",
@@ -1307,31 +1325,138 @@
   }
   function timelineScreen() {
     if (!state.trip)
-      return `<div class="phone-app"><section class="screen">${appBar("Trip")}<div class="empty-mobile"><h1>No trip selected</h1><p>Create or select a trip first.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div>${bottomNav("trips")}</section></div>`;
-    let previousDay = "";
-    const currentId = itemId(nextItem() || {});
-    const content = state.timeline.length
-      ? state.timeline
-          .map((item) => {
-            const starts =
-                Number(val(item, "starts_at_utc", "startsAtUtc")) || null,
-              zone = val(item, "start_timezone", "startTimezone"),
-              day = formatDay(starts, zone) || "Date unavailable",
-              showDay = day !== previousDay;
-            previousDay = day;
-            const type = timelineType(item),
-              transport = transportForItem(itemId(item)),
-              subtitle = transport
-                ? `${locationLabel(val(transport, "departure_location_id"))} → ${locationLabel(val(transport, "arrival_location_id"))}`
-                : item.subtitle || statusText(item.status),
-              status = statusText(item.status),
-              routine = ["Confirmed", "Planned", "Scheduled"].includes(status),
-              phase = itemId(item) === currentId ? "current" : starts && starts < Date.now() ? "past" : "future";
-            return `${showDay ? `<div class="day-label"><div class="day-date">${esc(day)}</div><div class="day-line"></div></div>` : ""}<div class="timeline-list"><button class="timeline-event timeline-event--${phase}" data-action="timeline-detail" data-id="${esc(itemId(item))}" ${phase === "current" ? 'aria-current="step"' : ""}><span class="timeline-symbol">${icon(type === "flight" ? "plane" : type === "train" ? "train" : type === "hotel" ? "hotel" : type === "activity" ? "star" : "calendar", 20)}</span><span class="timeline-card"><span class="timeline-card-top"><span><span class="timeline-time">${esc(formatTime(starts, zone))}</span><h3>${esc(item.title || "Trip item")}</h3><p>${esc(subtitle)}</p></span>${routine ? "" : `<span class="timeline-status ${isCancelled(item) ? "bad" : ""}">${esc(status)}</span>`}</span></span></button></div>`;
-          })
+      return `<div class="phone-app"><section class="screen timeline-screen">${appBar("Trip")}<main class="timeline-page timeline-page--empty"><div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No trip selected</h1><p>Create or select a trip first.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div></main>${bottomNav("trips")}</section></div>`;
+    const now = Date.now(),
+      highlightedNextId =
+        QA_STATE === "timeline-normal" ? "" : itemId(nextItem() || {}),
+      groups = [];
+    for (const item of state.timeline) {
+      const starts =
+          Number(val(item, "starts_at_utc", "startsAtUtc")) || null,
+        zone = val(item, "start_timezone", "startTimezone"),
+        day = timelineDay(starts, zone),
+        key = day.key;
+      let group = groups[groups.length - 1];
+      if (!group || group.key !== key) {
+        group = { key, day, items: [] };
+        groups.push(group);
+      }
+      group.items.push(item);
+    }
+    const content = groups.length
+      ? groups
+          .map(
+            (group) =>
+              `<section class="timeline-day" aria-labelledby="timeline-day-${esc(group.key)}"><header class="timeline-day__header"><time id="timeline-day-${esc(group.key)}"><span>${esc(group.day.weekday)}</span><strong>${esc(group.day.date)}</strong></time><span class="timeline-day__rail" aria-hidden="true"></span><span class="timeline-day__separator" aria-hidden="true"></span></header><div class="timeline-journey">${group.items
+                .map((item) => {
+                  const starts =
+                      Number(val(item, "starts_at_utc", "startsAtUtc")) ||
+                      null,
+                    ends =
+                      Number(val(item, "ends_at_utc", "endsAtUtc")) || null,
+                    zone = val(item, "start_timezone", "startTimezone"),
+                    type = timelineType(item),
+                    transport = transportForItem(itemId(item)),
+                    subtitle =
+                      item.subtitle ||
+                      (transport
+                        ? `${locationLabel(val(transport, "departure_location_id"))} → ${locationLabel(val(transport, "arrival_location_id"))}`
+                        : statusText(item.status)),
+                    exception = timelineException(item),
+                    active =
+                      !isCancelled(item) &&
+                      starts != null &&
+                      ends != null &&
+                      starts <= now &&
+                      ends > now,
+                    next = !active && itemId(item) === highlightedNextId,
+                    past = !active && !next && starts != null && starts < now,
+                    phase = active
+                      ? "active"
+                      : next
+                        ? "next"
+                        : past
+                          ? "past"
+                          : "future",
+                    eventTime = starts != null
+                      ? formatTime(starts, zone)
+                      : "Time unavailable",
+                    flags = `${active ? '<span class="timeline-flag timeline-flag--now">Now</span>' : ""}${next ? '<span class="timeline-flag timeline-flag--next">Next</span>' : ""}${exception ? `<span class="timeline-flag timeline-flag--${esc(exception.tone)}">${esc(exception.label)}</span>` : ""}`,
+                    title = item.title || "Trip item",
+                    aria = [eventTime, title, subtitle, exception?.label]
+                      .filter(Boolean)
+                      .join(". ");
+                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker">${icon(timelineIcon(type), 19)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small></span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 19)}</span></span></button>`;
+                })
+                .join("")}</div></section>`,
+          )
           .join("")
-      : `<div class="empty-mobile"><div class="empty-mobile-icon">${icon("calendar", 30)}</div><h2>No timeline yet</h2><p>Add a flight, hotel, train or activity.</p>${primaryCta("Add Booking", "open-add", "plus")}</div>`;
-    return `<div class="phone-app"><section class="screen">${appBar(state.trip.title || "Trip", formatTripDates(state.trip))}${mobileAlert()}<main class="timeline-page">${content}</main>${bottomNav("trips")}</section></div>`;
+      : `<div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${primaryCta("Add to trip", "open-add", "plus")}</div>`;
+    return `<div class="phone-app"><section class="screen timeline-screen">${appBar(state.trip.title || "Trip", formatTripDates(state.trip))}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${content}</main>${bottomNav("trips")}</section></div>`;
+  }
+
+  function timelineDay(ms, timeZone) {
+    if (ms == null)
+      return { key: "unavailable", weekday: "Date", date: "Unavailable" };
+    try {
+      const parts = new Intl.DateTimeFormat("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+          timeZone: timeZone || undefined,
+        }).formatToParts(new Date(Number(ms))),
+        get = (type) => parts.find((part) => part.type === type)?.value || "";
+      return {
+        key: `${get("year")}-${get("month")}-${get("day")}`,
+        weekday: get("weekday").toUpperCase(),
+        date: `${get("month")} ${get("day")}`.toUpperCase(),
+      };
+    } catch (_) {
+      return { key: "unavailable", weekday: "Date", date: "Unavailable" };
+    }
+  }
+
+  function timelineException(item) {
+    const status = String(val(item, "status", "booking_status") || "")
+        .toLowerCase()
+        .replace(/_/g, " "),
+      confidence = String(val(item, "confidence", "import_confidence") || "")
+        .toLowerCase()
+        .replace(/_/g, " ");
+    if (["cancelled", "skipped"].includes(status))
+      return { label: "Cancelled", tone: "danger" };
+    if (status.includes("delayed"))
+      return { label: "Delayed", tone: "warning" };
+    if (status.includes("tight connection"))
+      return { label: "Tight connection", tone: "warning" };
+    if (status.includes("missing document"))
+      return { label: "Missing document", tone: "warning" };
+    if (status.includes("pending sync"))
+      return { label: "Pending sync", tone: "neutral" };
+    if (status.includes("needs confirmation"))
+      return { label: "Needs confirmation", tone: "warning" };
+    if (status === "unavailable")
+      return { label: "Unavailable", tone: "neutral" };
+    if (["low", "uncertain", "ambiguous"].includes(confidence))
+      return { label: "Needs confirmation", tone: "warning" };
+    return null;
+  }
+
+  function timelineIcon(type) {
+    return (
+      {
+        flight: "plane",
+        train: "train",
+        hotel: "hotel",
+        stay: "hotel",
+        car: "car",
+        transfer: "car",
+        activity: "star",
+        reservation: "restaurant",
+        document: "document",
+      }[String(type || "").toLowerCase()] || "calendar"
+    );
   }
 
   function flightScreen() {

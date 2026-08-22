@@ -51,4 +51,10 @@ assert(!index.match(/https?:\/\/[^"']+\.(?:js|css|woff2?)/i),'external scripts, 
 assert(!app.includes('pulse-dot')&&!app.includes('Online</span>'),'online UI must remain visually quiet');
 assert(app.includes('Scheduled booking data is never presented as live')&&!app.includes('Live status'),'scheduled data is presented safely');
 assert(app.includes('documentRequirementRows()')&&app.includes("doc.integrity === \"verified\""),'Ready Offline is not using semantic verified-document requirements');
+assert(app.includes('class="screen timeline-screen"')&&app.includes('timeline-day__header')&&app.includes('journey-event journey-event--${phase}'),'premium Timeline journey structure is missing');
+assert(app.includes('timelineDay(starts, zone)')&&app.includes('timeZone: timeZone || undefined'),'Timeline is not grouped by event-local calendar date');
+assert(app.includes('QA_STATE === "timeline-normal"')&&app.includes('QA_STATE === "timeline-warning"')&&app.includes('QA_STATE === "timeline-now"')&&app.includes('QA_STATE === "timeline-empty"'),'Timeline visual QA states are missing');
+assert(app.includes('timelineException(item)')&&app.includes('return { label: "Needs confirmation", tone: "warning" }'),'Timeline exception truth labeling is missing');
+assert(app.includes('No plans yet')&&app.includes('Add your first flight, stay, train, or activity.')&&app.includes('primaryCta("Add to trip"'),'Timeline empty state is incomplete');
+assert(!app.includes('timeline-status ${isCancelled(item)'),'legacy repeated Timeline status markup is still active');
 console.log('Premium mobile UI contract passed.');

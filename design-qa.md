@@ -45,3 +45,33 @@ The implementation intentionally renders the current preview trip's event-local 
 No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the requested Flight Detail scope.
 
 final result: passed
+
+# tripto.to Premium Timeline v1 — visual QA
+
+## Evidence
+
+- Design system: `design/tripto-mobile-design-lock-v1/docs/TRIPTO_MOBILE_DESIGN_SYSTEM_V1.md`
+- Browser-rendered states:
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/timeline-premium-v1/timeline-normal-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/timeline-premium-v1/timeline-next-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/timeline-lock-final/timeline-now-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/timeline-premium-v1/timeline-360x800.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/timeline-premium-v1/timeline-warning-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/timeline-premium-v1/timeline-empty-390x844.png`
+- Verified viewports: 360 × 800, 375 × 812, 390 × 844, and 430 × 932 CSS pixels.
+
+## Findings
+
+- Events form one connected journey with local-time labels, restrained outline icons, flat rows, and compact date groups.
+- Grouping uses each event's stored timezone and resolved local calendar date. Preview flight, transfer, and hotel events correctly share one day even when their stored timezones differ.
+- Routine `Confirmed` labels are absent. `Next` and `Cancelled` appear only in their relevant states.
+- The factual in-progress state uses a compact `Now` pill and stronger indigo marker without animation or live-data implications.
+- The highlighted next event remains compact; past and exception states remain readable without becoming heavy cards.
+- Pointer activation opens the existing Flight Detail route and browser Back returns to the Timeline.
+- Rows are native semantic buttons with meaningful labels, at least 72px high, `:focus-visible` treatment, and reduced-motion overrides.
+- All tested widths match the viewport without horizontal overflow, clipped text, or bottom-navigation overlap. The empty state also fits without page scrolling.
+- Home, Flight Detail, other screens, navigation structure, palette, and backend behavior were not changed in this pass.
+
+No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the requested Timeline scope.
+
+final result: passed
