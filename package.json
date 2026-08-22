@@ -17,7 +17,8 @@
     "smoke:major": "bash scripts/smoke-major-milestone.sh",
     "validate:major": "bash scripts/validate-major.sh",
     "validate:candidate": "bash scripts/validate-candidate.sh",
-    "validate:smart-import-auth": "bash scripts/validate-smart-import-auth.sh"
+    "validate:smart-import-auth": "bash scripts/validate-smart-import-auth.sh",
+    "validate:v2": "bash scripts/validate-v2.sh"
   },
   "devDependencies": {
     "esbuild": "^0.25.10",

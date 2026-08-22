@@ -18,7 +18,7 @@
     "ACCOUNT_AUTH_ENABLED": "false",
     "SHARING_ENABLED": "false",
     "DEMO_TOOLS_ENABLED": "false",
-    "BETA_RELEASE": "beta-candidate-1",
+    "BETA_RELEASE": "product-v2",
     "BETA_METRICS_ENABLED": "true",
     "OPS_ENABLED": "false"
   },

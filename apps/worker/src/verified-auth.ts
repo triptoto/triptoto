@@ -113,6 +113,10 @@ export async function completeVerifiedIdentityLogin(
   } else {
     statements.push(env.DB.prepare(`UPDATE devices SET last_seen_at=? WHERE id=?`).bind(now, deviceId));
   }
+  if (email && input.emailVerified) {
+    statements.push(env.DB.prepare(`INSERT OR IGNORE INTO verified_sender_emails(id,user_id,email,email_normalized,source,verified_at,created_at) VALUES (?,?,?,?,?,?,?)`)
+      .bind(uuid(),userId,email,email,'google_identity',now,now));
+  }
 
   try {
     await env.DB.batch(statements);

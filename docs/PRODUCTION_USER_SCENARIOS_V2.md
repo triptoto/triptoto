@@ -2,6 +2,12 @@
 
 Status: release-gate specification. Initial status is **NOT TESTED** until the implemented V2 candidate passes both automated checks and required real-browser QA.
 
+## Current candidate evidence
+
+- **Automated V2, auth, import, offline, migration, and baseline suites:** PASS (`npm run validate:v2`)
+- **Local in-app browser at 360×800, 375×812, 390×844, 393×852, and 430×932:** PASS for Welcome, Tour, Create Trip controls, Timeline, Add Booking choices, Upload, Forward, Manual categories, booking details, documents, trip list, Bookings, and Account; no horizontal overflow or console errors were observed.
+- **Real Google sign-in, real inbound forwarding, iPhone Safari, Android Chrome, and live production smoke:** NOT TESTED. These remain release gates and must not be inferred from local or automated results.
+
 ## Release rule
 
 All ten scenarios must be **PASS**. A single **FAIL** or **NOT TESTED** means V2 is not production-ready. Screenshots and unit tests are supporting evidence, not substitutes for critical-flow interaction in a real browser.

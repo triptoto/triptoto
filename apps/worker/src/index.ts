@@ -34,6 +34,7 @@ import { listTimeMarkers, createTimeMarker, updateTimeMarker, deleteTimeMarker }
 import { expandedTripHealth } from './routes/intelligence.ts';
 import { syncStatus, syncChanges, acknowledgeSync, queueSyncOperation, listSyncConflicts } from './routes/sync-v2.ts';
 import { readiness } from './routes/readiness.ts';
+import { receiveBookingEmail, type InboundEmailMessage } from './inbound-email.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -207,5 +208,8 @@ export default {
     } catch (error) {
       return errorResponse(error, request, env);
     }
+  },
+  async email(message: InboundEmailMessage, env: Env): Promise<void> {
+    await receiveBookingEmail(message, env);
   },
 };

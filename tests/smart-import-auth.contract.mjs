@@ -5,7 +5,7 @@ for(const value of ['.pdf','.heic','.eml','.docx','.ics','.pkpass'])assert(app.i
 for(const value of ['TriptoSmartImport.recognizeFile','saveLocalDocument(file','duplicateDisposition:"add_anyway"','resolveImport'])assert(app.includes(value),`missing Smart Import contract ${value}`);
 assert(imports.includes('rawBytesReceived:false')&&imports.includes('extractedTextReceived:false'),'upload privacy response missing');
 assert(html.indexOf('/smart-import.js')<html.indexOf('/mobile-app.js'),'recognizer loads before app');
-assert(sw.includes('/smart-import.js')&&sw.includes('smart-import-auth-v1'),'service worker cache updated');
+assert(sw.includes('/smart-import.js')&&sw.includes('tripto-shell-product-v2'),'service worker cache updated');
 assert(headers.includes('https://accounts.google.com/gsi/client')&&headers.includes('frame-src https://accounts.google.com'),'Google CSP is narrow');
 assert(worker.includes("'/api/v1/auth/google/challenge'")&&worker.includes("'/api/v1/auth/google'")&&worker.includes("'/api/v1/auth/signout'"),'auth endpoints wired');
 assert(worker.includes('imports\\/upload\\/preview')&&worker.includes('previewUploadedDocument'),'upload preview endpoint wired');
