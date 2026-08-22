@@ -1,5 +1,9 @@
 # Data Model v1
 
+## Migration 0016
+
+`0016_google_auth_smart_import.sql` adds optional `users.avatar_url` and the short-lived `auth_challenges` table used for device-bound Google nonces. Smart Import reuses the existing `imports`, `import_messages` and `import_candidates` tables with `source_type='upload'`; raw files and extracted text are not stored in D1.
+
 ## Identity
 `users`, `auth_identities`, `devices`.
 Internal user IDs never depend on email. Guest-created entities use client-generated UUIDs and can later be claimed by a cloud user.

@@ -1,5 +1,13 @@
 # Backend API v1
 
+## Smart Import and Google identity additions
+
+- `POST /api/v1/trips/:tripId/imports/upload/preview` accepts checksum plus structured local-recognition fields; it never accepts file bytes or OCR text.
+- `POST /api/v1/trips/:tripId/imports/:importId/resolve` confirms or rejects a reviewed candidate.
+- `POST /api/v1/auth/google/challenge` creates a short-lived device-bound nonce.
+- `POST /api/v1/auth/google` verifies a GIS credential and migrates or attaches the current device.
+- `POST /api/v1/auth/signout` rotates the device back to a guest session without deleting local documents.
+
 ## Security model
 
 V1 uses signed 30-day guest sessions so write endpoints are not publicly writable. The signing secret is a Cloudflare Worker secret and MUST NOT be committed.

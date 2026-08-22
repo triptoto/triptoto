@@ -7,7 +7,8 @@
     "typecheck": "tsc --noEmit",
     "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts",
     "smoke:api": "bash scripts/smoke-api.sh",
-    "check:ui": "node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node --check public/legacy-bridge.js && node --check public/app.js && node --check public/major-workspace.js && node tests/mobile-ui.contract.mjs",
+    "build:smart-import": "esbuild packages/document-recognition/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --external:/vendor/* --outfile=public/smart-import.js",
+    "check:ui": "npm run build:smart-import && node --check public/smart-import.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node --check public/legacy-bridge.js && node --check public/app.js && node --check public/major-workspace.js && node tests/mobile-ui.contract.mjs",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",
     "test:integration": "bash scripts/test-local-d1.sh",
     "validate:beta": "npm run check:ui && npm run typecheck && npm run test:scenarios && npm run test:integration",
@@ -15,14 +16,22 @@
     "test:major-integration": "bash scripts/test-major-local-d1.sh",
     "smoke:major": "bash scripts/smoke-major-milestone.sh",
     "validate:major": "bash scripts/validate-major.sh",
-    "validate:candidate": "bash scripts/validate-candidate.sh"
+    "validate:candidate": "bash scripts/validate-candidate.sh",
+    "validate:smart-import-auth": "bash scripts/validate-smart-import-auth.sh"
   },
   "devDependencies": {
-    "typescript": "^5.9.0",
+    "esbuild": "^0.25.10",
     "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
     "wrangler": "^4.0.0"
   },
   "engines": {
     "node": ">=22 <26"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "jsqr": "^1.4.0",
+    "pdfjs-dist": "^6.2.108",
+    "tesseract.js": "^7.0.0"
   }
 }

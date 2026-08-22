@@ -19,7 +19,8 @@ import { exportTripJson, exportTripCalendar } from './routes/export.ts';
 import { tripSupportBundle } from './routes/support.ts';
 import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
 import { createDemoTrip } from './routes/demo.ts';
-import { previewForwardedEmail, listImports, getImport, resolveImportCandidate } from './routes/imports.ts';
+import { previewForwardedEmail, previewUploadedDocument, listImports, getImport, resolveImportCandidate } from './routes/imports.ts';
+import { createGoogleChallenge, googleSignIn, signOut } from './routes/google-auth.ts';
 import { betaStatus, recordClientBetaEvent } from './routes/beta.ts';
 import { opsSummary } from './routes/ops.ts';
 import { deletionPreview, deleteMyData } from './routes/privacy.ts';
@@ -54,6 +55,15 @@ export default {
       if (request.method === 'POST' && path === '/api/v1/session/refresh') return refreshSession(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account') return accountStatus(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account/migration-preview') return accountMigrationPreview(request, env, auth);
+      if (request.method === 'POST' && path === '/api/v1/auth/google/challenge') {
+        await enforceActorRateLimit(env,auth,{action:'google_auth',limit:PRODUCT_LIMITS.googleAuthAttemptsPerHour,windowMs:60*60*1000});
+        return createGoogleChallenge(request,env,auth);
+      }
+      if (request.method === 'POST' && path === '/api/v1/auth/google') {
+        await enforceActorRateLimit(env,auth,{action:'google_auth',limit:PRODUCT_LIMITS.googleAuthAttemptsPerHour,windowMs:60*60*1000});
+        return googleSignIn(request,env,auth);
+      }
+      if (request.method === 'POST' && path === '/api/v1/auth/signout') return signOut(request,env,auth);
       if (request.method === 'GET' && path === '/api/v1/account/deletion-preview') return deletionPreview(request,env,auth);
       if (request.method === 'DELETE' && path === '/api/v1/account') return deleteMyData(request,env,auth);
       if (request.method === 'GET' && path === '/api/v1/diagnostics') return diagnostics(request, env, auth);
@@ -142,6 +152,8 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listImports(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/forwarded-email\/preview$/);
       if (match && request.method==='POST') return previewForwardedEmail(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/upload\/preview$/);
+      if (match && request.method==='POST') return previewUploadedDocument(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/([^/]+)$/);
       if (match && request.method==='GET') return getImport(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/([^/]+)\/resolve$/);
