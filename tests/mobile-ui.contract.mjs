@@ -37,7 +37,7 @@ assert(app.includes('formatTripBoundDate(val(stay, "check_in_date"), state.trip)
 assert(app.includes('${bottomNav("trips")}</section></div>'),'Ready Offline must highlight the Trip navigation item');
 assert(!app.includes('pulse-dot'),'online UI must not show an unexplained connectivity dot');
 assert(app.includes('class="offline-state" role="status"')&&app.includes('${icon("info", 16)} Offline'),'offline state must be visibly labeled');
-assert(sw.includes('tripto-shell-date-range-v1')&&index.includes('?v=date-range-v1'),'current date-range mobile cache namespace is missing');
+assert(sw.includes('tripto-shell-date-range-v2')&&index.includes('?v=date-range-v2'),'current date-range mobile cache namespace is missing');
 assert(index.includes('/date-range-picker.css')&&index.includes('/date-range-picker.js')&&legacy.includes('/date-range-picker.css')&&legacy.includes('/date-range-picker.js'),'shared date-range assets are not loaded by both interfaces');
 assert(sw.includes('/date-range-picker.css')&&sw.includes('/date-range-picker.js'),'shared date-range assets are not cached for offline use');
 assert(index.indexOf('/mobile-trip-rules.js')<index.indexOf('/mobile-app.js')&&sw.includes('/mobile-trip-rules.js'),'manual-trip validation helper is not loaded before the app or cached offline');
@@ -119,7 +119,7 @@ const productionCreateSource=app.slice(app.indexOf('if (kind === "trip")',app.in
 assert(previewCreateSource.includes('saved in preview.')&&!productionCreateSource.includes('saved in preview.'),'preview-only success copy can appear during normal trip creation');
 assert(!previewCreateSource.includes('api(')&&!previewCreateSource.includes('localStorage')&&productionCreateSource.includes('api("/api/v1/trips"'),'preview mode can persist data or normal mode can skip the real trip API');
 assert(!productionCreateSource.includes('preview-created-trip')&&!productionCreateSource.includes('TLV')&&!productionCreateSource.includes('FCO'),'example preview data can enter normal trip state');
-assert(index.includes('date-range-v1')&&sw.includes("tripto-shell-date-range-v1"),'mobile shell cache version was not advanced for the date-range release');
+assert(index.includes('date-range-v2')&&sw.includes("tripto-shell-date-range-v2"),'mobile shell cache version was not advanced for the repaired date-range release');
 assert(!index.match(/https?:\/\/[^"']+\.(?:js|css|woff2?)/i),'external scripts, fonts, or icon dependencies were introduced');
 assert(css.includes('-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif'),'Apple system typography stack is missing');
 assert(!css.includes('"Inter"')&&!css.includes("'Inter'"),'Inter must not be the primary mobile font');
