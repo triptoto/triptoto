@@ -107,6 +107,10 @@
     syncStatus: null,
     localDocs: [],
     account: null,
+    imports: [],
+    importReview: null,
+    bookingFilter: "all",
+    formDraft: null,
   };
   let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
@@ -114,8 +118,12 @@
     sessionRefreshPromise = null,
     sheetReturnFocus = null,
     sheetPointer = null,
-    routeTimer = null;
+    routeTimer = null,
+    formHasMeaningfulChanges = false,
+    discardDialogOpen = false,
+    discardReturnFocus = null;
   const scrollPositions = new Map();
+  const DIRTY_TASK_SCREENS = new Set(["form", "import", "import-review"]);
   function icon(name, size = 24, extra = "") {
     return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${extra}">${ICONS[name] || ""}</svg>`;
   }
@@ -157,8 +165,62 @@
     const [screen, id] = raw.split(":");
     return { screen: screen || "home", id: id ? decodeURIComponent(id) : null };
   }
+  function closeDiscardDialog(discard = false) {
+    const backdrop = document.querySelector(".discard-dialog-backdrop"),
+      continuation = discardDialogOpen;
+    if (!backdrop) return;
+    backdrop.remove();
+    discardDialogOpen = false;
+    if (discard) {
+      formHasMeaningfulChanges = false;
+      if (typeof continuation === "function") continuation();
+      return;
+    }
+    discardReturnFocus?.focus?.();
+  }
+  function requestDiscardChanges(continuation) {
+    if (!formHasMeaningfulChanges) return false;
+    if (discardDialogOpen) return true;
+    discardReturnFocus = document.activeElement;
+    discardDialogOpen = continuation;
+    const backdrop = document.createElement("div");
+    backdrop.className = "discard-dialog-backdrop";
+    backdrop.innerHTML = `<section class="discard-dialog" role="dialog" aria-modal="true" aria-labelledby="discard-dialog-title" aria-describedby="discard-dialog-copy"><h2 id="discard-dialog-title">Discard changes?</h2><p id="discard-dialog-copy">Your entered details will be lost.</p><div class="discard-dialog-actions"><button type="button" class="mobile-secondary-action" data-discard-action="keep">Keep editing</button><button type="button" class="mobile-primary-action" data-discard-action="discard">Discard</button></div></section>`;
+    const dialog = backdrop.querySelector(".discard-dialog"),
+      keep = backdrop.querySelector('[data-discard-action="keep"]'),
+      discard = backdrop.querySelector('[data-discard-action="discard"]');
+    keep.addEventListener("click", () => closeDiscardDialog(false));
+    discard.addEventListener("click", () => closeDiscardDialog(true));
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) closeDiscardDialog(false);
+    });
+    backdrop.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeDiscardDialog(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const controls = [keep, discard],
+        index = controls.indexOf(document.activeElement);
+      event.preventDefault();
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+    });
+    document.body.append(backdrop);
+    requestAnimationFrame(() => keep.focus());
+    return true;
+  }
   function route(screen, id, replace = false, kind = "forward") {
-    scrollPositions.set(state.screen, window.scrollY);
+    if (
+      formHasMeaningfulChanges &&
+      DIRTY_TASK_SCREENS.has(state.screen) &&
+      screen !== state.screen
+    ) {
+      requestDiscardChanges(() => route(screen, id, replace, kind));
+      return;
+    }
+    const previousScreen = state.screen;
+    scrollPositions.set(previousScreen, window.scrollY);
     if (
       screen !== "flight" ||
       String(id || "") !== String(state.selectedId || "")
@@ -172,6 +234,11 @@
     state.screen = screen;
     state.selectedId = id || null;
     state.sheet = null;
+    if (
+      DIRTY_TASK_SCREENS.has(screen) &&
+      screen !== previousScreen
+    )
+      formHasMeaningfulChanges = false;
     transitionRender();
     const restore =
       kind === "back" &&
@@ -320,10 +387,12 @@
     );
   }
   function selectedStay() {
-    const stays = state.stays.filter((x) => !isCancelled(x));
-    return (
-      stays.find((x) => itemId(x) === state.selectedId) || stays[0] || null
+    const selected = state.stays.find(
+      (x) => itemId(x) === String(state.selectedId || ""),
     );
+    if (selected) return selected;
+    const stays = state.stays.filter((x) => !isCancelled(x));
+    return stays[0] || state.stays[0] || null;
   }
   function detailFor(item) {
     const id = itemId(item);
@@ -333,15 +402,18 @@
   }
   function contactFor(item, type) {
     const id = item ? itemId(item) : null;
-    return (
-      state.contacts.find(
-        (x) =>
-          (!type || x.contact_type === type) &&
-          (!id || String(x.trip_item_id || "") === id),
-      ) ||
-      state.contacts.find((x) => !type || x.contact_type === type) ||
-      null
+    const direct = id
+      ? state.contacts.find(
+          (contact) =>
+            String(contact.trip_item_id || "") === id &&
+            (!type || contact.contact_type === type),
+        )
+      : null;
+    if (direct || !type) return direct || null;
+    const typed = state.contacts.filter(
+      (contact) => contact.contact_type === type,
     );
+    return typed.length === 1 ? typed[0] : null;
   }
   function formatDateOnly(date) {
     if (!date) return "Date unavailable";
@@ -550,7 +622,10 @@
         const payload = await response.json();
         message = payload.error?.message || message;
       } catch (_) {}
-      throw Object.assign(new Error(message), { requestId });
+      throw Object.assign(new Error(message), {
+        requestId,
+        status: response.status,
+      });
     }
     if (response.status === 204) return null;
     return response.json();
@@ -744,6 +819,50 @@
           ends_at_utc: previewNow + 2 * 60 * 60 * 1000,
         };
       }
+      if (QA_STATE === "hotel-missing-image" && state.stays[0]) {
+        state.stays[0] = {
+          ...state.stays[0],
+          property_image_url: null,
+          image_url: null,
+        };
+      }
+      if (QA_STATE === "hotel-missing-location") {
+        state.locations = state.locations.map((location) =>
+          location.id === "hotel"
+            ? {
+                ...location,
+                local_address: null,
+                formatted_address: null,
+                latitude: null,
+                longitude: null,
+              }
+            : location,
+        );
+      }
+      if (QA_STATE === "hotel-cancelled" && state.stays[0]) {
+        state.stays[0] = {
+          ...state.stays[0],
+          status: "cancelled",
+          booking_status: "cancelled",
+        };
+      }
+      if (QA_STATE === "ready-missing") {
+        state.localDocs = [];
+      }
+      if (QA_STATE === "health-issues") {
+        state.health = {
+          highestSeverity: "high",
+          issueCount: 2,
+          calculatedAt: Date.now(),
+          issues: [
+            { severity: "high", title: "Connection needs attention", explanation: "The saved connection leaves less time than recommended.", suggestedAction: "Review connection" },
+            { severity: "medium", title: "Boarding pass missing offline", explanation: "Arthur’s boarding pass is not saved on this phone.", suggestedAction: "Add document" },
+          ],
+        };
+      }
+      if (QA_STATE === "sync-conflict") {
+        state.syncStatus = { pendingOperations: 2, openConflicts: 1, lastSuccessfulSyncAt: Date.now() - 7200000 };
+      }
       if (QA_STATE === "empty") {
         state.trip = null;
         state.trips = [];
@@ -816,6 +935,7 @@
       `/api/v1/trips/${id}/booking-details`,
       `/api/v1/trips/${id}/contacts`,
       `/api/v1/trips/${id}/sync/status`,
+      `/api/v1/trips/${id}/activities`,
     ];
     const results = await Promise.allSettled(paths.map(apiGet));
     const take = (index, key, fallback) =>
@@ -839,6 +959,9 @@
       "sync",
       results[12].status === "fulfilled" ? results[12].value : null,
     );
+    const activityDetails = take(13, "activities", []),
+      activityById = new Map(activityDetails.map((item) => [String(item.id), item]));
+    state.timeline = state.timeline.map((item) => activityById.has(String(item.id)) ? { ...item, ...activityById.get(String(item.id)) } : item);
     state.localDocs = await listLocalDocs(state.trip.id);
   }
 
@@ -856,6 +979,20 @@
           ends_on: new Date(departure + 6 * 86400000)
             .toISOString()
             .slice(0, 10),
+        },
+        {
+          id: "preview-trip-next",
+          title: "Athens Weekend",
+          lifecycle_state: "upcoming",
+          starts_on: new Date(departure + 28 * 86400000).toISOString().slice(0, 10),
+          ends_on: new Date(departure + 31 * 86400000).toISOString().slice(0, 10),
+        },
+        {
+          id: "preview-trip-past",
+          title: "Paris Spring",
+          lifecycle_state: "completed",
+          starts_on: "2026-04-03",
+          ends_on: "2026-04-08",
         },
       ],
       trip: {
@@ -889,8 +1026,11 @@
           local_address: "Via Nazionale 22, Roma",
           timezone: "Europe/Rome",
         },
+        { id: "termini", type: "station", display_name: "Roma Termini", station_code: "ROM", formatted_address: "Piazza dei Cinquecento, Rome", timezone: "Europe/Rome" },
+        { id: "florence", type: "station", display_name: "Firenze S. M. Novella", station_code: "FIR", timezone: "Europe/Rome" },
+        { id: "vatican", type: "venue", display_name: "Vatican Museums", formatted_address: "Viale Vaticano, Rome", timezone: "Europe/Rome" },
       ],
-      travelers: [{ id: "traveler", display_name: "Arthur" }],
+      travelers: [{ id: "traveler", display_name: "Arthur", traveler_type: "adult", version: 1 }, { id: "traveler-2", display_name: "Maya", traveler_type: "adult", version: 1 }],
       transport: [
         {
           id: "flight",
@@ -914,6 +1054,9 @@
           booking_reference: "ABC123",
           booking_status: "confirmed",
           traveler_ids: "traveler",
+        },
+        {
+          id: "train", trip_item_id: "train", type: "transport", transport_type: "train", title: "Frecciarossa 9512", status: "confirmed", booking_status: "confirmed", carrier_name: "Trenitalia", service_number: "9512", departure_location_id: "termini", arrival_location_id: "florence", scheduled_departure_utc: departure + 3 * 86400000, scheduled_arrival_utc: departure + 3 * 86400000 + 5700000, departure_timezone: "Europe/Rome", arrival_timezone: "Europe/Rome", departure_platform: "8", booking_reference: "TRN48291", traveler_ids: "traveler,traveler-2",
         },
       ],
       stays: [
@@ -977,7 +1120,10 @@
           starts_at_utc: departure + 86400000 + 4 * 3600000,
           start_timezone: "Europe/Rome",
           confidence: "confirmed",
+          start_location_id: "vatican",
+          confirmation_number: "VAT-29184",
         },
+        { id: "train", type: "transport", status: "confirmed", title: "Train to Florence", subtitle: "Frecciarossa 9512", starts_at_utc: departure + 3 * 86400000, ends_at_utc: departure + 3 * 86400000 + 5700000, start_timezone: "Europe/Rome", end_timezone: "Europe/Rome", confidence: "confirmed" },
       ],
       brain: {
         nextItem: {
@@ -1031,6 +1177,16 @@
         },
       ],
       syncStatus: { pendingOperations: 0, openConflicts: 0 },
+      checklist: [
+        { id: "check-passport", title: "Passport", category: "documents", priority: "critical", completed: true, completion_source: "user", traveler_id: "traveler", version: 1 },
+        { id: "check-pass", title: "Save boarding pass offline", category: "documents", priority: "high", completed: true, completion_source: "system", traveler_id: "traveler", version: 1 },
+        { id: "check-adapter", title: "Pack power adapter", category: "packing", priority: "medium", completed: false, version: 1 },
+        { id: "check-med", title: "Pack medication", category: "packing", priority: "high", completed: false, traveler_id: "traveler", version: 1 },
+      ],
+      imports: [
+        { id: "import-1", created_at: Date.now() - 86400000, source_type: "forwarded_email", candidate_type: "flight", status: "needs_confirmation", subject: "Your flight to Rome" },
+        { id: "import-2", created_at: Date.now() - 3 * 86400000, source_type: "forwarded_email", candidate_type: "hotel", status: "imported", subject: "Hotel Artemide confirmation" },
+      ],
       documents: [
         {
           id: "boarding",
@@ -1049,6 +1205,15 @@
           status: "Ready",
           date: "Saved offline",
           travelerIds: [],
+        },
+        {
+          id: "train-ticket",
+          title: "Frecciarossa 9512 Tickets",
+          type: "ticket",
+          subtitle: "Arthur and Maya · Rome → Florence",
+          status: "Ready",
+          date: "Saved offline",
+          travelerIds: ["traveler", "traveler-2"],
         },
       ],
     };
@@ -1261,7 +1426,7 @@
       return `<section class="flight-pass flight-pass--home" aria-label="Next scheduled flight"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span>Departure</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)}</small>` : ""}</div><div class="flight-pass__fact"><span>Terminal</span><strong>${esc(terminal || "—")}</strong>${terminal ? "<small>Departure</small>" : ""}</div><div class="flight-pass__fact"><span>Seat</span><strong>${esc(seat || "—")}</strong>${cabin ? `<small>${esc(cabin)}</small>` : ""}</div></div><div class="flight-pass__actions flight-pass__actions--single">${primaryAction}</div></div></section>`;
     }
 
-    return `<section class="flight-pass flight-pass--detail" aria-label="Scheduled flight details"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__times" aria-label="Scheduled departure and arrival in event-local time"><div class="flight-pass__time"><span class="flight-pass__event-icon">${icon("night", 30)}</span><span class="flight-pass__time-copy"><span>Departs</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)} · Local time</small>` : ""}</span></div><div class="flight-pass__time-separator"></div><div class="flight-pass__time flight-pass__time--right"><span class="flight-pass__time-copy"><span>Arrives</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong>${arrivalDay ? `<small>${esc(arrivalDay)} · Local time</small>` : ""}</span><span class="flight-pass__event-icon flight-pass__event-icon--day">${icon("day", 30)}</span></div></div><div class="flight-pass__divider flight-pass__divider--facts"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("terminal", 27)}</span><span class="flight-pass__fact-copy"><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("gate", 27)}</span><span class="flight-pass__fact-copy"><span>Gate</span><strong>${esc(gate || "—")}</strong><small>${gate ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("seat", 27)}</span><span class="flight-pass__fact-copy"><span>Seat</span><strong>${esc(seat || "—")}</strong>${seat ? (cabin ? `<small>${esc(cabin)}</small>` : "") : "<small>Not assigned</small>"}</span></div></div><div class="flight-pass__actions">${primaryAction}<button class="flight-pass__secondary" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 18)}<span>Airport directions</span></button></div></div></section>`;
+    return `<section class="flight-pass flight-pass--detail" aria-label="Scheduled flight details"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__times" aria-label="Scheduled departure and arrival in event-local time"><div class="flight-pass__time"><span class="flight-pass__event-icon">${icon("night", 30)}</span><span class="flight-pass__time-copy"><span>Departs</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)} · Local time</small>` : ""}</span></div><div class="flight-pass__time-separator"></div><div class="flight-pass__time flight-pass__time--right"><span class="flight-pass__time-copy"><span>Arrives</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong>${arrivalDay ? `<small>${esc(arrivalDay)} · Local time</small>` : ""}</span><span class="flight-pass__event-icon flight-pass__event-icon--day">${icon("day", 30)}</span></div></div><div class="flight-pass__divider flight-pass__divider--facts"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("terminal", 27)}</span><span class="flight-pass__fact-copy"><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("gate", 27)}</span><span class="flight-pass__fact-copy"><span>Gate</span><strong>${esc(gate || "—")}</strong><small>${gate ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("seat", 27)}</span><span class="flight-pass__fact-copy"><span>Seat</span><strong>${esc(seat || "—")}</strong>${seat ? (cabin ? `<small>${esc(cabin)}</small>` : "") : "<small>Not assigned</small>"}</span></div></div><div class="flight-pass__actions">${primaryAction}<button class="flight-pass__secondary" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 18)}<span>Directions</span></button></div></div></section>`;
   }
 
   function flightTicket(flight) {
@@ -1533,11 +1698,37 @@
       ),
       contact = contactFor(stay, "hotel"),
       imageUrl = localImageUrl(val(stay, "property_image_url", "image_url")),
-      address =
-        val(location, "local_address", "formatted_address") ||
-        "Address unavailable";
-    const contactRows = `${val(contact, "phone") ? `<button class="contact-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone", 19)} ${esc(contact.phone)}</span>${icon("phone", 18)}</button>` : ""}${val(contact, "email") ? `<a class="contact-row" href="mailto:${encodeURIComponent(contact.email)}"><span>${icon("mail", 19)} ${esc(contact.email)}</span></a>` : ""}<button class="contact-row" data-action="copy" data-value="${esc(val(stay, "confirmation_number") || "")}"><span>Confirmation # ${esc(val(stay, "confirmation_number") || "Unavailable")}</span>${val(stay, "confirmation_number") ? icon("copy", 18) : ""}</button>`;
-    return `<div class="phone-app"><section class="screen">${appBar("Hotel")}<div class="hotel-hero" role="img" aria-label="Hotel property image">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span></div><main class="hotel-sheet"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="confirmed">${esc(statusText(val(stay, "booking_status", "status")))} ${checkDot()}</span></div><section class="hotel-stay-card"><div class="hotel-stats"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong><small>Stay</small></div></div><div class="hotel-actions"><button class="secondary-cta hotel-action-primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}">${icon("navigation", 20)} Directions</button><button class="secondary-cta" data-action="show-driver" data-id="${esc(itemId(stay))}">${icon("car", 20)} Show to Driver</button></div></section><div class="address">${icon("pin", 21)}<span>${esc(address)}</span></div><div class="map-card" aria-label="Hotel location"><button data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel directions"></button></div><section class="hotel-contact-card" aria-label="Hotel contact and confirmation">${contactRows}</section></main>${bottomNav("bookings")}</section></div>`;
+      address = val(location, "local_address", "formatted_address"),
+      latitude = val(location, "latitude"),
+      longitude = val(location, "longitude"),
+      hasCoordinates = latitude != null && longitude != null,
+      mapQuery = hasCoordinates ? `${latitude},${longitude}` : address || "",
+      roomName = val(stay, "room_name", "room_type"),
+      rawStatus = String(
+        val(stay, "booking_status", "status") || "unavailable",
+      ).toLowerCase(),
+      statusLabel = statusText(rawStatus),
+      statusTone =
+        rawStatus === "confirmed"
+          ? "confirmed"
+          : ["cancelled", "skipped"].includes(rawStatus)
+            ? "cancelled"
+            : ["needs_confirmation", "pending", "changed"].includes(rawStatus)
+              ? "attention"
+              : "neutral",
+      directionsDisabled = !mapQuery,
+      driverDisabled = !address,
+      confirmation = val(stay, "confirmation_number");
+    const contactRows = `${val(contact, "phone") ? `<a class="hotel-info-row" href="tel:${esc(contact.phone)}" aria-label="Call hotel at ${esc(contact.phone)}"><span class="hotel-info-row__icon">${icon("phone", 20)}</span><span>${esc(contact.phone)}</span>${icon("chevron", 18)}</a>` : ""}${val(contact, "email") ? `<a class="hotel-info-row" href="mailto:${encodeURIComponent(contact.email)}" aria-label="Email hotel at ${esc(contact.email)}"><span class="hotel-info-row__icon">${icon("mail", 20)}</span><span>${esc(contact.email)}</span>${icon("chevron", 18)}</a>` : ""}${confirmation ? `<button class="hotel-info-row" data-action="copy" data-value="${esc(confirmation)}" aria-label="Copy hotel confirmation number ${esc(confirmation)}"><span class="hotel-info-row__icon">${icon("copy", 20)}</span><span><small>Confirmation</small><strong>${esc(confirmation)}</strong></span>${icon("copy", 18)}</button>` : ""}`,
+      statusIcon =
+        statusTone === "confirmed"
+          ? icon("check", 14)
+          : statusTone === "cancelled"
+            ? icon("close", 14)
+            : statusTone === "attention"
+              ? icon("warning", 14)
+              : icon("info", 14);
+    return `<div class="phone-app"><section class="screen hotel-detail-screen">${appBar("Hotel")}<div class="hotel-hero ${imageUrl ? "hotel-hero--image" : "hotel-hero--fallback"}" role="img" aria-label="${imageUrl ? "Hotel property image" : "Hotel image unavailable; showing a generic local hotel-room fallback"}">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span>${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 15)} Offline · saved details</span>` : ""}</div><main class="hotel-sheet"><header class="hotel-heading"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="hotel-status hotel-status--${statusTone}">${statusIcon}<span>${esc(statusLabel)}</span></span></div>${roomName ? `<p>${esc(roomName)}</p>` : ""}</header><section class="hotel-stats" aria-label="Stay dates"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></section><div class="hotel-actions"><button class="hotel-action hotel-action--primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}>${icon("navigation", 18)}<span>Directions</span></button><button class="hotel-action" data-action="show-driver" data-id="${esc(itemId(stay))}"${driverDisabled ? " disabled" : ""}>${icon("car", 18)}<span>Show to Driver</span></button></div><section class="hotel-location" aria-label="Hotel location"><button class="hotel-address-row" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""} aria-label="${address ? `Open directions to ${esc(address)}` : "Hotel address unavailable"}"><span class="hotel-address-row__icon">${icon("pin", 21)}</span><span>${esc(address || "Location unavailable")}</span>${directionsDisabled ? "" : icon("chevron", 18)}</button>${hasCoordinates ? `<button class="hotel-map-panel" data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel location in Maps"><span class="hotel-map-panel__marker">${icon("pin", 22)}</span><span class="hotel-map-panel__copy"><strong>Saved location</strong><small>Open in Maps</small></span></button>` : `<div class="hotel-map-panel hotel-map-panel--unavailable" role="status"><span class="hotel-map-panel__marker">${icon("map", 22)}</span><span class="hotel-map-panel__copy"><strong>Map unavailable</strong><small>No saved coordinates</small></span></div>`}</section>${contactRows ? `<section class="hotel-contact-list" aria-label="Hotel contact and confirmation">${contactRows}</section>` : ""}</main>${bottomNav("bookings")}</section></div>`;
   }
   function bookingsScreen() {
     const rows = [];
@@ -1568,10 +1759,81 @@
     const rows = state.localDocs
       .map((document) => {
         const integrity = document.integrity || "unverified";
-        return `<button class="info-card" data-action="open-document" data-id="${esc(document.id)}"><span class="info-icon ${document.type === "hotel_confirmation" ? "purple" : document.type === "boarding_pass" ? "green" : ""}">${icon(document.type === "boarding_pass" ? "qr" : document.type === "hotel_confirmation" ? "hotel" : "document", 23)}</span><span class="info-copy"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><span>${esc(docTypeLabel(document.type))} · ${Math.max(1, Math.round(Number(document.size || 0) / 1024))} KB</span><span class="doc-integrity">${integrity === "verified" ? icon("check", 13) : icon("warning", 13)} ${esc(statusText(integrity))}</span></span><span class="info-status ${integrity === "verified" ? "" : integrity === "corrupt" ? "bad" : "warning"}">${integrity === "verified" ? "Ready" : statusText(integrity)}</span>${icon("chevron", 22, "chevron")}</button>`;
+        const travelerNames = (document.travelerIds || []).map((id) => state.travelers.find((traveler) => String(traveler.id) === String(id))?.display_name).filter(Boolean).join(", "), status = integrity === "verified" ? "Ready offline" : statusText(integrity);
+        return `<button class="document-row" data-action="open-document" data-id="${esc(document.id)}"><span class="document-row__icon ${document.type === "hotel_confirmation" ? "purple" : document.type === "boarding_pass" ? "green" : ""}">${icon(document.type === "boarding_pass" ? "qr" : document.type === "hotel_confirmation" ? "hotel" : "document", 24)}</span><span class="document-row__copy"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${esc(travelerNames || document.subtitle || docTypeLabel(document.type))}</small><span class="document-row__status ${integrity === "verified" ? "is-ready" : "is-warning"}">${integrity === "verified" ? icon("check", 14) : icon("warning", 14)} ${esc(status)}</span></span>${icon("chevron", 20, "chevron")}</button>`;
       })
       .join("");
-    return `<div class="phone-app"><section class="screen">${appBar("Documents")}<div class="intro-block"><h1>Your travel documents</h1><p>Files are stored only on this phone while cloud documents are disabled.</p></div><main class="list-stack">${rows || `<div class="empty-mobile"><div class="empty-mobile-icon">${icon("document", 30)}</div><h2>No offline documents</h2><p>Add a ticket, boarding pass or confirmation before travel.</p></div>`}<button class="secondary-cta" data-action="document-sheet">${icon("plus", 20)} Add Document</button></main>${bottomNav("bookings")}</section></div>`;
+    const verified = state.localDocs.filter((document) => document.integrity === "verified").length;
+    return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Your travel documents</h1><p>${verified} of ${state.localDocs.length} ready offline on this phone</p></div></header><section class="mobile-group"><h2>Saved documents</h2><div class="document-list">${rows || `<div class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon("document", 30)}</span><h1>No offline documents</h1><p>Add a ticket, boarding pass, or confirmation.</p></div>`}</div></section><button class="mobile-primary-action" data-action="document-sheet">${icon("plus", 20)} Add Document</button>`, "bookings");
+  }
+
+  function mobilePage(title, body, active = "trips", right = "") {
+    return `<div class="phone-app"><section class="screen mobile-v1-screen">${appBar(title, "", false, right)}${mobileAlert()}<main class="mobile-page">${body}</main>${bottomNav(active)}</section></div>`;
+  }
+  function focusedTaskPage(title, body, className = "") {
+    return `<div class="phone-app"><section class="screen mobile-v1-screen focused-task ${esc(className)}">${appBar(title)}${mobileAlert()}<main class="focused-page">${body}</main></section></div>`;
+  }
+  function lifecycleLabel(value) {
+    const key = String(value || "upcoming").toLowerCase();
+    return ({ upcoming: "Upcoming", active: "Current", during: "Current", completed: "Past", past: "Past", cancelled: "Cancelled", draft: "Draft" })[key] || statusText(key);
+  }
+  function tripListScreen() {
+    if (!state.trips.length) return mobilePage("Trips", `<section class="mobile-empty"><span class="mobile-empty__icon">${icon("luggage", 30)}</span><h1>No trips yet</h1><p>Create your first trip and keep everything in one place.</p>${primaryCta("Create trip", "create-trip", "plus")}</section>`, "trips", `<button class="icon-button" data-action="create-trip" aria-label="Create trip">${icon("plus", 23)}</button>`);
+    const groups = [
+      ["Current", (t) => String(t.id) === String(state.trip?.id)],
+      ["Upcoming", (t) => String(t.id) !== String(state.trip?.id) && ["upcoming", "draft"].includes(String(t.lifecycle_state || t.lifecycleState))],
+      ["Past", (t) => ["completed", "past"].includes(String(t.lifecycle_state || t.lifecycleState))],
+      ["Cancelled", (t) => String(t.lifecycle_state || t.lifecycleState) === "cancelled"],
+    ];
+    const content = groups.map(([label, test]) => {
+      const trips = state.trips.filter(test);
+      if (!trips.length) return "";
+      return `<section class="mobile-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => `<button class="trip-row ${String(trip.id) === String(state.trip?.id) ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon("trips", 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small><span>${esc(lifecycleLabel(trip.lifecycle_state || trip.lifecycleState))}</span></span>${icon("chevron", 21, "chevron")}</button>`).join("")}</div></section>`;
+    }).join("");
+    return mobilePage("Trips", `${content}<button class="mobile-secondary-action" data-action="create-trip">${icon("plus", 20)} Create trip</button>`, "trips", `<button class="icon-button" data-action="create-trip" aria-label="Create trip">${icon("plus", 23)}</button>`);
+  }
+  function meaningfulBookingStatus(item) {
+    const raw = String(val(item, "booking_status", "status") || "").toLowerCase();
+    if (["confirmed", "scheduled", "active"].includes(raw)) return "";
+    if (!raw) return "Time unavailable";
+    return statusText(raw);
+  }
+  function bookingRows() {
+    const rows = [];
+    state.transport.forEach((item) => rows.push({ kind: String(val(item, "transport_type") || "transport"), item, at: Number(val(item, "scheduled_departure_utc", "starts_at_utc")) || 0 }));
+    state.stays.forEach((item) => rows.push({ kind: "hotel", item, at: Date.parse(`${val(item, "check_in_date") || ""}T00:00:00Z`) || 0 }));
+    state.timeline.filter((item) => ["activity", "reservation", "plan", "tour", "restaurant"].includes(String(val(item, "type")))).forEach((item) => rows.push({ kind: String(val(item, "type")), item, at: Number(val(item, "starts_at_utc")) || 0 }));
+    return rows.sort((a, b) => a.at - b.at);
+  }
+  function premiumBookingsScreen() {
+    const filters = [["all", "All"], ["transport", "Transport"], ["stays", "Stays"], ["plans", "Plans"]],
+      rows = bookingRows().filter((row) => state.bookingFilter === "all" || (state.bookingFilter === "transport" && ["flight", "train", "car"].includes(row.kind)) || (state.bookingFilter === "stays" && row.kind === "hotel") || (state.bookingFilter === "plans" && !["flight", "train", "car", "hotel"].includes(row.kind)));
+    const list = rows.map(({ kind, item, at }) => {
+      const transport = ["flight", "train", "car"].includes(kind),
+        zone = val(item, "departure_timezone", "start_timezone"),
+        title = kind === "flight" ? `${flightNumber(item)} · ${flightRoute(item).fromCode} → ${flightRoute(item).toCode}` : kind === "train" ? val(item, "title", "service_number") || "Train" : kind === "hotel" ? val(item, "property_name", "title") || "Stay" : val(item, "title") || statusText(kind),
+        subtitle = kind === "hotel" ? `${formatDateOnly(val(item, "check_in_date"))} – ${formatDateOnly(val(item, "check_out_date"))}` : transport ? formatDateTime(at, zone) : `${formatDateTime(at, zone)}${val(item, "subtitle") ? ` · ${val(item, "subtitle")}` : ""}`,
+        status = meaningfulBookingStatus(item);
+      return `<button class="travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="travel-row__icon">${icon(transportIcon(kind), 22)}</span><span class="travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? `<em class="travel-state travel-state--attention">${esc(status)}</em>` : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
+    }).join("");
+    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add" aria-label="Add booking">${icon("plus", 23)}</button>`);
+  }
+  function selectedTrain() { return state.transport.find((row) => itemId(row) === String(state.selectedId) && String(val(row, "transport_type")) === "train") || state.transport.find((row) => String(val(row, "transport_type")) === "train"); }
+  function trainScreen() {
+    const train = selectedTrain();
+    if (!train) return missingDetailScreen("Train unavailable", "No train booking is available.");
+    const from = locationById(val(train, "departure_location_id", "start_location_id")), to = locationById(val(train, "arrival_location_id", "end_location_id")), dep = Number(val(train, "scheduled_departure_utc", "starts_at_utc")) || null, arr = Number(val(train, "scheduled_arrival_utc", "ends_at_utc")) || null, detail = detailFor(train) || {}, doc = state.localDocs.find((d) => d.integrity === "verified" && d.type === "ticket" && (!d.travelerIds?.length || d.travelerIds.some((id) => String(val(train,"traveler_ids")||"").split(",").includes(id))));
+    const facts = [["Platform", val(train, "departure_platform", "platform")], ["Coach", val(detail, "coach")], ["Seat", val(detail, "seat")], ["Booking", val(train, "booking_reference")]].filter(([,v]) => v);
+    return mobilePage("Train Detail", `<section class="journey-pass journey-pass--train"><header><span>${icon("train", 20)} ${esc(val(train,"carrier_name") || "Train")}</span><strong>${statusText(val(train,"booking_status","status") || "confirmed")}</strong><small>Scheduled data</small></header><div class="journey-route"><div><strong>${esc(val(from,"station_code","iata_code") || "—")}</strong><span>${esc(val(from,"display_name") || "Origin unavailable")}</span></div><span class="journey-route__line">${icon("train", 25)}</span><div><strong>${esc(val(to,"station_code","iata_code") || "—")}</strong><span>${esc(val(to,"display_name") || "Destination unavailable")}</span></div></div><div class="journey-times"><div><span>Departs</span><strong>${esc(formatTime(dep,val(train,"departure_timezone")))}</strong><small>${esc(formatDay(dep,val(train,"departure_timezone")))}</small></div><div><span>Arrives</span><strong>${esc(formatTime(arr,val(train,"arrival_timezone")))}</strong><small>${esc(formatDay(arr,val(train,"arrival_timezone")))}</small></div></div><dl class="journey-facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>${doc ? primaryCta("Open Ticket","open-document","ticket",`data-id="${esc(doc.id)}"`) : `<div class="inline-recovery">${icon("warning",18)}<span><strong>Ticket not saved offline</strong><small>Add a verified ticket before travel.</small></span></div><button class="mobile-secondary-action" data-action="add-document">${icon("plus",18)} Add ticket</button>`}<button class="mobile-secondary-action" data-action="directions-item" data-id="${esc(itemId(train))}">${icon("navigation",18)} Directions to station</button></section>`, "bookings");
+  }
+  function selectedPlan() { return state.timeline.find((row) => itemId(row) === String(state.selectedId)) || null; }
+  function planScreen() {
+    const item = selectedPlan();
+    if (!item) return missingDetailScreen("Plan unavailable", "This plan is not available.");
+    const location = locationById(val(item,"start_location_id")), contact = contactFor(item), doc = state.localDocs.find((d)=>d.integrity==="verified" && ["reservation","voucher","ticket","qr_code"].includes(d.type));
+    const primary = doc ? `<button class="primary-cta" data-action="open-document" data-id="${esc(doc.id)}">${icon("ticket",19)} Open Ticket</button>` : location ? `<button class="primary-cta" data-action="directions-item" data-id="${esc(itemId(item))}">${icon("navigation",19)} Directions</button>` : val(contact,"phone") ? `<button class="primary-cta" data-action="call" data-value="${esc(contact.phone)}">${icon("phone",19)} Call</button>` : "";
+    const confirmation = val(item,"confirmation_number","reservation_reference"), notes = val(item,"activity_notes","reservation_notes","notes"), kind = val(item,"activity_type","reservation_type","type") || "Plan";
+    return mobilePage(statusText(val(item,"type") || "Plan"), `<section class="plan-hero"><span class="plan-hero__icon">${icon(transportIcon(val(item,"type") || "activity"),28)}</span><span>${esc(statusText(kind))}</span><h1>${esc(val(item,"title") || "Plan")}</h1><p>${esc(formatDateTime(Number(val(item,"starts_at_utc"))||null,val(item,"start_timezone")))}</p></section><section class="detail-list">${location ? `<button class="detail-row" data-action="directions-item" data-id="${esc(itemId(item))}"><span>${icon("pin",20)}</span><span><small>Location</small><strong>${esc(val(location,"display_name") || val(location,"formatted_address"))}</strong></span>${icon("chevron",18)}</button>` : ""}${confirmation ? `<button class="detail-row" data-action="copy" data-value="${esc(confirmation)}"><span>${icon("copy",20)}</span><span><small>Confirmation</small><strong>${esc(confirmation)}</strong></span>${icon("copy",18)}</button>` : ""}${val(contact,"phone") ? `<button class="detail-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone",20)}</span><span><small>Contact</small><strong>${esc(val(contact,"display_name") || contact.phone)}</strong></span>${icon("chevron",18)}</button>` : ""}</section>${primary}${notes ? `<details class="mobile-disclosure"><summary>Notes ${icon("chevronDown",18)}</summary><p>${esc(notes)}</p></details>` : ""}`, "bookings");
   }
 
   function documentRequirements() {
@@ -1717,6 +1979,45 @@
         : `<div class="health-card good"><span>${icon("check", 26)}</span><span><strong>No known issues</strong><p>Trip Health found no current problems in the information available.</p></span></div>`;
     return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 23)}</button>`)}<div class="health-summary"><div class="health-shield ${shieldClass}">${icon(issues.length ? "warning" : "check", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><main class="list-stack">${rows}<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button></main>${bottomNav("home")}</section></div>`;
   }
+  function checklistScreen() {
+    const groups = [["Documents", "documents"], ["Before You Leave", "before_you_leave"], ["Packing", "packing"]],
+      rows = state.checklist || [];
+    const content = groups.map(([label,key]) => {
+      const items = rows.filter((item) => String(val(item,"category","group") || "packing").toLowerCase().replace(/\s+/g,"_") === key);
+      if (!items.length) return "";
+      return `<section class="mobile-group checklist-group"><h2>${label}</h2><div class="mobile-list">${items.map((item) => { const traveler = state.travelers.find((t)=>String(t.id)===String(val(item,"traveler_id"))); const completed = Boolean(val(item,"completed")); return `<label class="checklist-row ${completed ? "is-complete" : ""}"><input type="checkbox" data-action="toggle-checklist" data-id="${esc(item.id)}" data-version="${esc(item.version || 1)}" ${completed ? "checked" : ""}><span class="checklist-box">${icon("check",18)}</span><span class="checklist-copy"><strong>${esc(val(item,"title") || "Travel item")}</strong>${traveler ? `<small>${esc(traveler.display_name)}</small>` : ""}${val(item,"due_at_utc") ? `<small>Due ${esc(formatDateTime(Number(item.due_at_utc),val(item,"timezone")))}</small>` : ""}</span>${["critical","high"].includes(String(val(item,"priority"))) ? `<em>${esc(statusText(item.priority))}</em>` : ""}${val(item,"completion_source") === "system" ? `<span class="auto-badge">Automatic</span>` : ""}</label>`; }).join("")}</div></section>`;
+    }).join("");
+    return mobilePage("Smart Essentials", `<section class="essentials-summary"><span>${icon("check",26)}</span><div><strong>${rows.filter((x)=>x.completed).length} of ${rows.length} complete</strong><small>Highest-priority travel essentials</small></div></section>${content || `<section class="mobile-empty"><h1>No essentials yet</h1><p>Add only what matters for this trip.</p></section>`}<button class="mobile-secondary-action" data-action="open-form" data-form="checklist">${icon("plus",19)} Add essential</button>`, "trips");
+  }
+  function travelerDocumentSummary(traveler) {
+    const docs = state.localDocs.filter((d)=>d.integrity==="verified" && d.travelerIds?.includes(String(traveler.id))).length;
+    return docs ? `${docs} verified document${docs===1?"":"s"}` : "No verified documents";
+  }
+  function travelersScreen() {
+    const rows = state.travelers.map((traveler)=>{ const assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))).length; return `<button class="travel-row traveler-row" data-screen="traveler" data-id="${esc(traveler.id)}"><span class="traveler-avatar">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><span class="travel-row__body"><strong>${esc(val(traveler,"display_name") || "Traveler")}</strong><small>${esc(statusText(val(traveler,"traveler_type") || "Traveler"))} · ${assigned} booking${assigned===1?"":"s"}</small><em>${esc(travelerDocumentSummary(traveler))}</em></span>${icon("chevron",20)}</button>`; }).join("");
+    return mobilePage("Travelers", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No travelers yet</h1><p>Add a traveler to assign bookings and documents correctly.</p></section>`}</div><button class="mobile-secondary-action" data-action="open-form" data-form="traveler">${icon("plus",19)} Add traveler</button>`, "account");
+  }
+  function travelerScreen() {
+    const traveler = state.travelers.find((t)=>String(t.id)===String(state.selectedId));
+    if (!traveler) return missingDetailScreen("Traveler unavailable", "This traveler is not available.");
+    const details = state.bookingDetails.filter((d)=>String(val(d,"traveler_id"))===String(traveler.id)), docs = state.localDocs.filter((d)=>d.travelerIds?.includes(String(traveler.id))), assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))), checklist = state.checklist.filter((item)=>String(val(item,"traveler_id"))===String(traveler.id));
+    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(transportIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
+  }
+  function importScreen() {
+    return focusedTaskPage("Import Booking", `<section class="form-intro"><span>${icon("mail",28)}</span><h1>Paste a booking confirmation</h1><p>No AI guessing. You review every field before it is added.</p></section><form class="mobile-form import-form" id="import-form" novalidate><label><span>Forwarded email</span><textarea name="body" rows="12" required placeholder="Paste the full airline, hotel, train, or activity confirmation here"></textarea></label><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon("document",19)} Preview Booking</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
+  }
+  function importReviewScreen() {
+    const candidates = state.importReview?.candidates || (PREVIEW_MODE ? [{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing","Date is ambiguous"]}] : []);
+    return focusedTaskPage("Import Review", `<form id="import-review-form" class="import-review-form"><section class="review-summary"><span>${icon("warning",25)}</span><div><strong>${candidates.some((c)=>String(c.confidence).toLowerCase() === "low") ? "Needs confirmation" : "Ready to import"}</strong><small>Nothing is added until you confirm.</small></div></section>${candidates.map((c)=>{ const warnings=c.warnings||[], payload=c.payload||{}; return `<section class="review-card"><header><span class="review-type">${icon(transportIcon(val(c,"type")||"flight"),19)} ${esc(statusText(val(c,"type")||"Booking"))}</span><span class="travel-state ${String(c.confidence).toLowerCase()==="low"?"travel-state--attention":""}">${String(c.confidence).toLowerCase()==="low"?"Needs confirmation":"Ready to import"}</span></header><h2>${esc(val(c,"title") || statusText(val(c,"type")||"Booking"))}</h2>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",15)} ${esc(w)}</p>`).join("")}</div>`:""}<div class="review-fields">${warnings.some((w)=>/timezone/i.test(w))?`<label><span>Timezone</span><input type="text" name="candidate-timezone" value="${esc(payload.departureTimezone||payload.timezone||"")}" placeholder="Europe/Rome"></label>`:""}${warnings.some((w)=>/date|time/i.test(w))?`<label><span>Travel date and time</span><input type="datetime-local" name="candidate-date" value="${esc(payload.localDateTime||payload.departureLocalDatetime||"")}"></label>`:""}</div><button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">Confirm and Import</button></section>`; }).join("") || `<section class="mobile-empty"><h1>No booking candidates</h1><p>This format could not be imported safely.</p></section>`}</form>`, "import-review-task");
+  }
+  function importHistoryScreen() {
+    const rows = (state.imports || []).map((row)=>`<button class="travel-row" data-action="review-import" data-id="${esc(row.id)}"><span class="travel-row__icon">${icon(row.candidate_type==="hotel"?"hotel":row.candidate_type==="train"?"train":"plane",20)}</span><span class="travel-row__body"><strong>${esc(row.subject || statusText(row.candidate_type || "Booking"))}</strong><small>${esc(row.created_at ? formatDateTime(Number(row.created_at)) : "Date unavailable")}</small><em class="travel-state ${row.status==="imported"?"":"travel-state--attention"}">${esc(row.status==="imported"?"Imported":"Needs confirmation")}</em></span>${icon("chevron",18)}</button>`).join("");
+    return mobilePage("Import History", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No imports yet</h1><p>Forwarded bookings you review will appear here.</p></section>`}</div><button class="mobile-secondary-action" data-screen="import">${icon("plus",19)} Import booking</button>`, "account");
+  }
+  function syncScreen() {
+    const pending = Number(val(state.syncStatus,"pendingOperations","pending_operations")||0) + pendingMutations().filter((x)=>x.status!=="done").length, conflicts = Number(val(state.syncStatus,"openConflicts","open_conflicts")||0), last = val(state.syncStatus,"lastSuccessfulSyncAt","last_successful_sync_at");
+    return focusedTaskPage("Pending Changes", `<section class="sync-summary ${conflicts?"has-conflict":""}"><span>${icon(conflicts?"warning":"refresh",27)}</span><div><strong>${conflicts ? `${conflicts} change${conflicts===1?"":"s"} need review` : pending ? `${pending} change${pending===1?"":"s"} waiting` : "Everything is synced"}</strong><small>${last ? `Last synced ${ageLabel(Number(last))}` : "Last sync time unavailable"}</small></div></section>${conflicts ? `<section class="recovery-card"><h2>Changes requiring review</h2><p>A newer saved version exists. Nothing was overwritten.</p><button class="mobile-primary-action" data-action="sync-review">Review Conflict</button></section>` : ""}${pending ? `<section class="recovery-card"><h2>Pending local changes</h2><p>Your changes remain safely on this phone until sync succeeds.</p><button class="mobile-secondary-action" data-action="sync-retry">${icon("refresh",19)} Retry</button></section>` : ""}`, "sync-task");
+  }
   function accountScreen() {
     const mode = state.account?.mode || "guest",
       name =
@@ -1730,7 +2031,24 @@
           .join("")
           .slice(0, 2)
           .toUpperCase() || "GT";
-    return `<div class="phone-app"><section class="screen">${appBar("Account")}<main class="account-section"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? "Verified account" : "Device-bound guest beta"}</div></div></div></div><div class="section-label">Trip tools</div><button class="simple-row" data-screen="documents"><span class="row-icon">${icon("document", 22)}</span><span class="row-copy"><strong>Documents</strong><span>Offline files stored on this phone</span></span>${icon("chevron", 22, "chevron")}</button><button class="simple-row" data-screen="ready"><span class="row-icon">${icon("download", 22)}</span><span class="row-copy"><strong>Ready Offline</strong><span>Review saved trip data</span></span>${icon("chevron", 22, "chevron")}</button><button class="simple-row" data-screen="health"><span class="row-icon">${icon("shield", 22)}</span><span class="row-copy"><strong>Trip Health</strong><span>Warnings and recommendations</span></span>${icon("chevron", 22, "chevron")}</button><button class="simple-row" data-action="switch-trip"><span class="row-icon">${icon("trips", 22)}</span><span class="row-copy"><strong>Switch trip</strong><span>${state.trips.length} trip${state.trips.length === 1 ? "" : "s"} available</span></span>${icon("chevron", 22, "chevron")}</button><a class="legacy-link" href="/legacy.html">Open advanced beta tools</a></main>${bottomNav("account")}</section></div>`;
+    const bytes = state.localDocs.reduce((sum,d)=>sum+Number(d.size||0),0), pending = pendingMutations().filter((x)=>x.status!=="done").length + Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+    const row = (ic,title,sub,screen,action="") => `<button class="simple-row" ${screen?`data-screen="${screen}"`:`data-action="${action}"`}><span class="row-icon">${icon(ic,22)}</span><span class="row-copy"><strong>${title}</strong><span>${esc(sub)}</span></span>${icon("chevron",22,"chevron")}</button>`;
+    return `<div class="phone-app"><section class="screen mobile-v1-screen">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? "Signed in" : "Using this device without an account"}</div></div></div></div><div class="section-label">Your trip</div>${row("user","Travelers",`${state.travelers.length} traveler${state.travelers.length===1?"":"s"}`,"travelers")}${row("document","Documents",`${state.localDocs.length} saved on this phone`,"documents")}${row("download","Offline storage",`${state.localDocs.length} files · ${Math.max(0.1,bytes/1048576).toFixed(1)} MB`,"ready")}${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}<div class="section-label">Tools</div>${row("mail","Import booking","Paste a forwarded confirmation","import")}${row("check","Smart Essentials",`${state.checklist.filter((x)=>!x.completed).length} incomplete`,"checklist")}${row("shield","Trip Health","Review what needs attention","health")}${row("trips","Switch trip",`${state.trips.length} trip${state.trips.length===1?"":"s"} available`,"","switch-trip")}<div class="section-label">Privacy & help</div>${row("share","Export trip","Download your trip data","","export-trip")}${row("info","Help & support","Beta support bundle","","support")}<button class="simple-row simple-row--danger" data-action="remove-local-data"><span class="row-icon">${icon("close",22)}</span><span class="row-copy"><strong>Remove local data</strong><span>${pending?"Pending changes must be reviewed first":"Deletes files stored on this phone"}</span></span>${icon("chevron",22)}</button><p class="app-version">tripto.to Mobile UI v1</p><a class="legacy-link" href="/legacy.html">Advanced beta tools</a></main>${bottomNav("account")}</section></div>`;
+  }
+  function mobileFormScreen() {
+    const kind = String(state.selectedId || "trip"), configs = {
+      trip: { title:"Create Trip", lead:"Trip basics", primary:[["title","Trip name","text",true,true],["startsOn","Start date","date",false,false],["endsOn","End date","date",false,false]] },
+      flight: { title:"Add Flight", lead:"Flight", primary:[["marketingAirlineCode","Airline code","text",false,false],["marketingFlightNumber","Flight number","text",false,false],["fromName","Origin airport","text",true,false],["fromCode","IATA","text",true,false],["toName","Destination airport","text",true,false],["toCode","IATA","text",true,false],["departureTime","Departure date and time","datetime-local",true,true],["departureTimezone","Departure timezone","text",true,true]], more:"More flight details", secondary:[["arrivalTime","Arrival date and time","datetime-local",false,true],["arrivalTimezone","Arrival timezone","text",false,true],["departureTerminal","Departure terminal","text",false,false],["arrivalTerminal","Arrival terminal","text",false,false],["bookingReference","PNR","text",false,false],["operatingAirlineCode","Operating airline","text",false,false]] },
+      hotel: { title:"Add Hotel", lead:"Stay", primary:[["propertyName","Hotel name","text",true,true],["checkInDate","Check-in date","date",true,false],["checkOutDate","Check-out date","date",true,false],["address","Address","text",false,true]], more:"More stay details", secondary:[["checkInFrom","Check-in from","time",false,false],["checkOutBy","Check-out by","time",false,false],["confirmationNumber","Confirmation number","text",false,true],["roomName","Room","text",false,true]] },
+      train: { title:"Add Train", lead:"Train", primary:[["carrierName","Operator","text",false,false],["serviceNumber","Service number","text",false,false],["fromName","Origin station","text",true,true],["toName","Destination station","text",true,true],["departureTime","Departure date and time","datetime-local",true,true],["departureTimezone","Departure timezone","text",true,true]], more:"More train details", secondary:[["arrivalTime","Arrival date and time","datetime-local",false,true],["arrivalTimezone","Arrival timezone","text",false,true],["bookingReference","Booking reference","text",false,true]] },
+      activity: { title:"Add Activity", lead:"Plan", primary:[["title","Activity name","text",true,true],["startsAt","Date and time","datetime-local",true,true],["timezone","Timezone","text",true,true],["location","Location","text",false,true],["activityType","Activity type","text",false,true]], more:"More details", secondary:[["confirmationNumber","Confirmation number","text",false,true],["provider","Provider","text",false,true],["notes","Notes","textarea",false,true]] },
+      reservation: { title:"Add Reservation", lead:"Reservation", primary:[["title","Reservation name","text",true,true],["startsAt","Date and time","datetime-local",true,true],["timezone","Timezone","text",true,true],["location","Location","text",false,true]], more:"More details", secondary:[["confirmationNumber","Confirmation number","text",false,true],["provider","Provider","text",false,true],["notes","Notes","textarea",false,true]] },
+      traveler: { title:"Add Traveler", lead:"Traveler", primary:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
+      checklist: { title:"Add Essential", lead:"Travel essential", primary:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
+    }, cfg = configs[kind] || configs.trip;
+    const renderFields = (fields) => `<div class="form-fields">${(fields || []).map(([name,label,type,required,wide]) => { const attrs = `name="${name}" id="form-${name}" ${required?"required":""}`; let control; if(type==="textarea") control=`<textarea ${attrs} rows="4"></textarea>`; else if(type==="select") control=`<select ${attrs}><option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option></select>`; else if(type==="select-checklist") control=`<select ${attrs}><option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option></select>`; else if(type==="select-priority") control=`<select ${attrs}><option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option></select>`; else control=`<input type="${type}" ${attrs} autocomplete="off">`; return `<label class="form-field form-field--${name} ${wide?"form-field--wide":""}" for="form-${name}"><span>${label}${required?" <b aria-hidden=\"true\">*</b>":""}</span>${control}</label>`; }).join("")}</div>`;
+    const form = `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}" novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header>${renderFields(cfg.primary)}</section>${cfg.secondary?.length ? `<details class="form-more"><summary><span>${esc(cfg.more)}</span>${icon("chevronDown",18)}</summary>${renderFields(cfg.secondary)}</details>` : ""}<p class="form-note">Event times use the saved local timezone. Ambiguous daylight-saving times are never guessed.</p><div class="form-save-bar"><button type="submit" class="mobile-primary-action">Save ${esc(statusText(kind))}</button></div></form>`;
+    return focusedTaskPage(cfg.title, form, "form-screen");
   }
   function driverScreen() {
     const stay = selectedStay(),
@@ -1745,7 +2063,7 @@
     return `<div class="phone-app"><section class="driver-screen"><div class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close" style="color:#fff">${icon("close", 26)}</button><strong>Show to Driver</strong><span></span></div><div class="driver-label">${icon("car", 34)} <span>Please drive to</span></div><h1 class="driver-name">${esc(name)}</h1><p class="driver-local">${esc(localName)}</p><div class="driver-rule"></div><div class="driver-address">${icon("pin", 30)}<span>${esc(address)}</span></div><div class="driver-cta">${primaryCta("Navigate", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</div></section></div>`;
   }
   function bottomSheet(id, title, content) {
-    return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
+    return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
   }
   function addSheet() {
     const options = [
@@ -1774,7 +2092,7 @@
             `<label class="traveler-pill"><input type="checkbox" name="documentTraveler" value="${esc(traveler.id)}"><span>${esc(traveler.display_name || "Traveler")}</span></label>`,
         )
         .join(""),
-      form = `<form class="sheet-form" id="document-form"><div class="sheet-field"><label for="document-type">Document type</label><select id="document-type" name="documentType"><option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="other">Other document</option></select></div>${travelers ? `<div class="sheet-field"><label>Assign to traveler</label><div class="traveler-pills">${travelers}</div></div>` : ""}<div class="sheet-field"><label for="document-file">File</label><input id="document-file" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required></div><div class="sheet-submit">${primaryCta("Save on This Phone", "save-document", "download")}</div></form>`;
+      form = `<form class="sheet-form document-form" id="document-form"><div class="sheet-field"><label for="document-type">Document type</label><select id="document-type" name="documentType"><option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="other">Other document</option></select></div>${travelers ? `<div class="sheet-field"><label>Assign to traveler</label><div class="traveler-pills">${travelers}</div></div>` : ""}<div class="sheet-field"><label for="document-file">File</label><label class="document-file-picker" for="document-file">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="document-file" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div><div class="document-verify-state">Verification starts after you choose a file.</div></div><div class="sheet-submit">${primaryCta("Save on This Phone", "save-document", "download")}</div></form>`;
     return bottomSheet("document", "Save offline document", form);
   }
   function tripSwitchSheet() {
@@ -1790,8 +2108,24 @@
     );
   }
 
-  function loadingSkeleton() {
-    return `<div class="loading-skeleton" role="status" aria-label="Opening your trip"><div class="skeleton-line skeleton-brand"></div><div class="skeleton-line skeleton-context"></div><div class="skeleton-ticket"><div class="skeleton-line skeleton-chip"></div><div class="skeleton-route"><i></i><i></i></div><div class="skeleton-line skeleton-action"></div></div><div class="skeleton-line skeleton-row"></div><div class="skeleton-line skeleton-row"></div><span class="sr-only">Opening your trip…</span></div>`;
+  function skeletonRows(count = 4) {
+    return `<div class="skeleton-list">${Array.from({ length: count }, () => `<div class="skeleton-list-row"><i></i><span><b></b><small></small></span></div>`).join("")}</div>`;
+  }
+  function loadingSkeleton(screen = state.screen) {
+    const common = `<div class="skeleton-appbar"><i></i><b></b><i></i></div>`,
+      listing = ["trips", "bookings", "documents", "travelers", "import-history"].includes(screen),
+      detail = ["flight", "hotel", "train", "plan", "traveler"].includes(screen);
+    let body;
+    if (screen === "timeline")
+      body = `<div class="skeleton-date"></div><div class="skeleton-timeline">${Array.from({ length: 4 }, () => `<div><i></i><span><b></b><small></small></span></div>`).join("")}</div>`;
+    else if (screen === "account")
+      body = `<div class="skeleton-profile"><i></i><span><b></b><small></small></span></div>${skeletonRows(5)}`;
+    else if (listing) body = `<div class="skeleton-heading"></div>${skeletonRows(4)}`;
+    else if (detail)
+      body = `<div class="skeleton-detail-hero"><div></div><div></div></div><div class="skeleton-facts">${Array.from({ length: 3 }, () => `<i></i>`).join("")}</div>${skeletonRows(2)}`;
+    else
+      body = `<div class="skeleton-heading"></div><div class="skeleton-home-pass"><div></div><span></span><i></i></div>${skeletonRows(2)}`;
+    return `<div class="loading-skeleton loading-skeleton--${esc(screen)}" role="status" aria-label="Opening your trip">${common}${body}<span class="sr-only">Opening your trip…</span></div>`;
   }
   function loadingScreen() {
     return `<div class="phone-app"><div class="app-loading">${loadingSkeleton()}</div></div>`;
@@ -1849,6 +2183,9 @@
           html = homeScreen();
           break;
         case "trips":
+          html = tripListScreen();
+          break;
+        case "timeline":
           html = timelineScreen();
           break;
         case "flight":
@@ -1858,8 +2195,10 @@
           html = hotelScreen();
           break;
         case "bookings":
-          html = bookingsScreen();
+          html = premiumBookingsScreen();
           break;
+        case "train": html = trainScreen(); break;
+        case "plan": html = planScreen(); break;
         case "documents":
           html = documentsScreen();
           break;
@@ -1872,6 +2211,14 @@
         case "account":
           html = accountScreen();
           break;
+        case "checklist": html = checklistScreen(); break;
+        case "travelers": html = travelersScreen(); break;
+        case "traveler": html = travelerScreen(); break;
+        case "import": html = importScreen(); break;
+        case "import-review": html = importReviewScreen(); break;
+        case "import-history": html = importHistoryScreen(); break;
+        case "sync": html = syncScreen(); break;
+        case "form": html = mobileFormScreen(); break;
         default:
           html = homeScreen();
       }
@@ -1890,6 +2237,7 @@
           key,
           value: element.dataset[key],
           id: element.dataset.id || "",
+          label: element.getAttribute("aria-label") || "",
         };
     return null;
   }
@@ -1898,13 +2246,14 @@
     sheetReturnFocus = null;
     if (!saved) return;
     requestAnimationFrame(() => {
-      const selector = `[data-${saved.key}="${CSS.escape(saved.value)}"]${saved.id ? `[data-id="${CSS.escape(saved.id)}"]` : ""}`,
+      const selector = `[data-${saved.key}="${CSS.escape(saved.value)}"]${saved.id ? `[data-id="${CSS.escape(saved.id)}"]` : ""}${saved.label ? `[aria-label="${CSS.escape(saved.label)}"]` : ""}`,
         control = document.querySelector(selector);
       if (control) control.focus();
     });
   }
   function openSheet(name, opener) {
-    sheetReturnFocus = focusKeyFor(opener || document.activeElement);
+    if (!state.sheet)
+      sheetReturnFocus = focusKeyFor(opener || document.activeElement);
     state.sheet = name;
     state.routeMotion = "";
     render();
@@ -1966,16 +2315,228 @@
       sheet.style.removeProperty("--sheet-drag");
     });
   }
+  function clearFieldErrors(form) {
+    form.querySelectorAll(".field-error").forEach((row) => row.remove());
+    form.querySelectorAll('[aria-invalid="true"]').forEach((control) => {
+      control.removeAttribute("aria-invalid");
+      control.removeAttribute("aria-describedby");
+    });
+  }
+  function showFieldError(form, control, message) {
+    if (!control) return;
+    const field = control.closest("label") || control.parentElement,
+      id = `${control.id || control.name || "field"}-error`,
+      error = document.createElement("span");
+    error.className = "field-error";
+    error.id = id;
+    error.setAttribute("role", "alert");
+    error.textContent = message;
+    field?.append(error);
+    control.setAttribute("aria-invalid", "true");
+    control.setAttribute("aria-describedby", id);
+    const disclosure = control.closest("details");
+    if (disclosure) disclosure.open = true;
+    control.scrollIntoView({
+      block: "center",
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
+    requestAnimationFrame(() => control.focus({ preventScroll: true }));
+  }
+  function validateFocusedForm(form) {
+    clearFieldErrors(form);
+    const invalid = form.querySelector(":invalid");
+    if (!invalid) return true;
+    const message = invalid.validity?.valueMissing
+      ? "This field is required."
+      : "Check this value and try again.";
+    showFieldError(form, invalid, message);
+    return false;
+  }
+  function showFormSubmissionError(form, message) {
+    clearFieldErrors(form);
+    const text = String(message || "The change was not saved."),
+      timezoneError = /timezone/i.test(text),
+      arrivalError = /arrival/i.test(text),
+      timeError = /local time|daylight|ambiguous|date and time/i.test(text),
+      control = timezoneError
+        ? form.elements.arrivalTimezone ||
+          form.elements.departureTimezone ||
+          form.elements.timezone
+        : arrivalError
+          ? form.elements.arrivalTime
+          : timeError
+            ? form.elements.departureTime || form.elements.startsAt
+            : null;
+    if (control) {
+      showFieldError(form, control, text);
+      return;
+    }
+    form.querySelector(".form-submit-error")?.remove();
+    const alert = document.createElement("p"),
+      saveBar = form.querySelector(".form-save-bar");
+    alert.className = "form-submit-error";
+    alert.setAttribute("role", "alert");
+    alert.textContent = `${text} Existing trip data is unchanged.`;
+    form.insertBefore(alert, saveBar || null);
+    alert.scrollIntoView({ block: "center" });
+  }
+  function bindMeaningfulChanges(form) {
+    const update = () => {
+      formHasMeaningfulChanges = [...form.elements].some((control) => {
+        if (!control.name || control.disabled) return false;
+        if (["checkbox", "radio"].includes(control.type))
+          return control.checked;
+        return String(control.value || "").trim() !== "";
+      });
+    };
+    form.addEventListener("input", update);
+    form.addEventListener("change", update);
+  }
+  function setFormSaving(form, saving, label = "Saving…") {
+    if (!form) return;
+    const submit = form.querySelector('button[type="submit"]');
+    if (!submit) return;
+    if (!submit.dataset.defaultLabel)
+      submit.dataset.defaultLabel = submit.innerHTML;
+    form.setAttribute("aria-busy", String(saving));
+    submit.disabled = saving;
+    submit.toggleAttribute("aria-busy", saving);
+    submit.classList.toggle("is-loading", saving);
+    submit.innerHTML = saving
+      ? `<span class="button-spinner" aria-hidden="true"></span>${esc(label)}`
+      : submit.dataset.defaultLabel;
+  }
+  function keepFocusedFieldVisible() {
+    const focused = document.activeElement;
+    if (!focused?.matches?.("input,select,textarea")) return;
+    requestAnimationFrame(() =>
+      focused.scrollIntoView({
+        block: "center",
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+      }),
+    );
+  }
+  function syncVisualViewport() {
+    const viewport = window.visualViewport,
+      obscured = viewport
+        ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+        : 0;
+    document.documentElement.style.setProperty(
+      "--keyboard-offset",
+      `${Math.round(obscured)}px`,
+    );
+    document.documentElement.classList.toggle("keyboard-open", obscured > 80);
+    if (obscured > 80) keepFocusedFieldVisible();
+  }
   function bindDynamic() {
     const form = document.getElementById("document-form");
     if (form && !form.dataset.bound) {
       form.dataset.bound = "1";
+      const fileInput = form.elements.documentFile,
+        fileMeta = form.querySelector(".document-file-meta"),
+        verifyState = form.querySelector(".document-verify-state");
+      fileInput?.addEventListener("change", () => {
+        const file = fileInput.files?.[0];
+        if (!file) {
+          fileMeta.textContent = "No file selected";
+          verifyState.textContent = "Verification starts after you choose a file.";
+          return;
+        }
+        fileMeta.textContent = `${file.name} · ${file.size < 1048576 ? `${Math.max(1, Math.round(file.size / 1024))} KB` : `${(file.size / 1048576).toFixed(1)} MB`}`;
+        verifyState.textContent = "Ready to verify when saved on this phone.";
+      });
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         saveDocumentForm(form);
       });
     }
+    const nativeForm = document.getElementById("native-form");
+    if (nativeForm && !nativeForm.dataset.bound) {
+      nativeForm.dataset.bound = "1";
+      bindMeaningfulChanges(nativeForm);
+      nativeForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!validateFocusedForm(nativeForm)) return;
+        saveNativeForm(nativeForm);
+      });
+    }
+    const importReviewForm = document.getElementById("import-review-form");
+    if (importReviewForm && !importReviewForm.dataset.bound) {
+      importReviewForm.dataset.bound = "1";
+      bindMeaningfulChanges(importReviewForm);
+    }
+    const importForm = document.getElementById("import-form");
+    if (importForm && !importForm.dataset.bound) {
+      importForm.dataset.bound = "1";
+      bindMeaningfulChanges(importForm);
+      importForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!validateFocusedForm(importForm)) return;
+        previewImportForm(importForm);
+      });
+    }
+    document.querySelectorAll('input[data-action="toggle-checklist"]').forEach((input) => input.addEventListener("change", () => toggleChecklistItem(input)));
     setupSheet();
+  }
+  function resolveEventLocalDateTime(localValue, timeZone) {
+    if (!localValue || !timeZone) throw new Error("Local time and IANA timezone are required.");
+    const match = String(localValue).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!match) throw new Error("Enter a valid local date and time.");
+    try { new Intl.DateTimeFormat("en-US", { timeZone }).format(new Date()); } catch (_) { throw new Error("Use a valid IANA timezone, for example Europe/Rome."); }
+    const target = Date.UTC(+match[1], +match[2]-1, +match[3], +match[4], +match[5]), offsets = new Set();
+    for (let h=-36; h<=36; h+=3) { const instant=target+h*3600000, parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(instant)), row={}; parts.forEach((part)=>{if(part.type!=="literal")row[part.type]=part.value;}); offsets.add(Math.round((Date.UTC(+row.year,+row.month-1,+row.day,+row.hour,+row.minute)-instant)/60000)); }
+    const wanted=`${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}`, candidates=[...offsets].map((offset)=>target-offset*60000).filter((instant)=>{ const parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(instant)), row={}; parts.forEach((part)=>{if(part.type!=="literal")row[part.type]=part.value;}); return `${row.year}-${row.month}-${row.day}T${row.hour}:${row.minute}`===wanted; });
+    if (new Set(candidates).size !== 1) throw new Error("That local time is ambiguous or unavailable because of a timezone change. Verify the booking time.");
+    return candidates[0];
+  }
+  async function createMobileLocation(type, name, extra={}) {
+    if (PREVIEW_MODE) return { id: `preview-${type}-${Date.now()}` };
+    const result = await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/locations`, { method:"POST", body:JSON.stringify({ type, displayName:name, ...extra }) });
+    return result.location;
+  }
+  async function saveNativeForm(form) {
+    const kind=form.dataset.kind, fd=new FormData(form), tripId=encodeURIComponent(state.trip?.id || "");
+    if (form.getAttribute("aria-busy") === "true") return;
+    setFormSaving(form, true);
+    try {
+      if (PREVIEW_MODE) { formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true); return; }
+      if (kind === "trip") {
+        const result=await api("/api/v1/trips",{method:"POST",body:JSON.stringify({title:fd.get("title"),startsOn:fd.get("startsOn")||null,endsOn:fd.get("endsOn")||null,lifecycleState:"upcoming"})}); state.trips.unshift(result.trip); state.trip=result.trip;
+      } else if (kind === "hotel") {
+        let locationId=null; if(fd.get("address")){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:fd.get("address")}); locationId=location.id; }
+        await api(`/api/v1/trips/${tripId}/stays`,{method:"POST",body:JSON.stringify({propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,travelerIds:state.travelers.map((t)=>t.id)})});
+      } else if (["flight","train"].includes(kind)) {
+        const depTz=String(fd.get("departureTimezone")||""), arrivalValue=String(fd.get("arrivalTime")||""), arrTz=String(fd.get("arrivalTimezone")||""), dep=resolveEventLocalDateTime(fd.get("departureTime"),depTz), arr=arrivalValue ? resolveEventLocalDateTime(arrivalValue,arrTz) : null; if(kind==="flight" && arr==null) throw new Error("Flights require an arrival date, time, and timezone."); if(arr!=null&&arr<dep) throw new Error("Arrival cannot be before departure.");
+        const from=await createMobileLocation(kind==="flight"?"airport":"station",fd.get("fromName"),{timezone:depTz,...(kind==="flight"?{iataCode:String(fd.get("fromCode")||"").toUpperCase()}:{})}), to=await createMobileLocation(kind==="flight"?"airport":"station",fd.get("toName"),{timezone:arrTz,...(kind==="flight"?{iataCode:String(fd.get("toCode")||"").toUpperCase()}:{})});
+        await api(`/api/v1/trips/${tripId}/transport`,{method:"POST",body:JSON.stringify({transportType:kind,title:kind==="flight"?`${String(fd.get("marketingAirlineCode")||"Flight").toUpperCase()} ${fd.get("marketingFlightNumber")||""}`.trim():`${fd.get("carrierName")||"Train"} ${fd.get("serviceNumber")||""}`.trim(),carrierName:fd.get("carrierName")||null,serviceNumber:fd.get("serviceNumber")||null,marketingAirlineCode:fd.get("marketingAirlineCode")||null,marketingFlightNumber:fd.get("marketingFlightNumber")||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,arrivalTerminal:fd.get("arrivalTerminal")||null,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:state.travelers.map((t)=>t.id)})});
+      } else if (["activity","reservation"].includes(kind)) {
+        const ms=resolveEventLocalDateTime(fd.get("startsAt"),fd.get("timezone")), locationName=String(fd.get("location")||""), location=locationName ? await createMobileLocation("venue",locationName,{timezone:String(fd.get("timezone")||"")}) : null, result=await api(`/api/v1/trips/${tripId}/activities`,{method:"POST",body:JSON.stringify({kind,status:"confirmed",title:fd.get("title"),startsAtUtc:ms,timezone:fd.get("timezone"),locationId:location?.id||null,activityType:kind==="activity"?(fd.get("activityType")||null):null,reservationType:kind==="reservation"?"reservation":null,reference:fd.get("confirmationNumber")||null,notes:fd.get("notes")||null,confidence:"confirmed"})});
+        if(fd.get("provider") && result.item?.id) await api(`/api/v1/trips/${tripId}/contacts`,{method:"POST",body:JSON.stringify({contactType:"tour_operator",displayName:fd.get("provider"),tripItemId:result.item.id})});
+      } else if (kind === "traveler") await api(`/api/v1/trips/${tripId}/travelers`,{method:"POST",body:JSON.stringify({displayName:fd.get("displayName"),travelerType:fd.get("travelerType")})});
+      else if (kind === "checklist") { location.href=legacyUrl("add","checklist"); return; }
+      await loadTripDetails(); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved.`); route(kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true);
+    } catch (error) {
+      const message = error?.status === 409
+        ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
+        : error.message || "The change was not saved.";
+      showFormSubmissionError(form,message);
+    } finally {
+      if (document.contains(form)) setFormSaving(form, false);
+    }
+  }
+  async function previewImportForm(form) {
+    if (form.getAttribute("aria-busy") === "true") return;
+    setFormSaving(form, true, "Preparing preview…");
+    try { if (PREVIEW_MODE) state.importReview={candidates:[{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing","Date is ambiguous"]}]}; else state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/forwarded-email/preview`,{method:"POST",body:JSON.stringify({body:new FormData(form).get("body")})}); formHasMeaningfulChanges=false; route("import-review"); } catch(error){ showFormSubmissionError(form,error.message); } finally { if(document.contains(form)) setFormSaving(form,false); }
+  }
+  async function toggleChecklistItem(input) {
+    const item=state.checklist.find((row)=>String(row.id)===String(input.dataset.id)); if(!item)return;
+    if(PREVIEW_MODE){item.completed=input.checked;render();return;}
+    try{await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/checklist/${encodeURIComponent(item.id)}`,{method:"PATCH",body:JSON.stringify({version:Number(item.version),completed:input.checked})});await loadTripDetails();render();}catch(error){input.checked=!input.checked;showToast("The checklist change was not saved. Review the latest version.","alert");}
   }
   async function saveDocumentForm(form) {
     try {
@@ -1983,12 +2544,18 @@
         type = form.elements.documentType.value,
         travelerIds = [
           ...form.querySelectorAll('input[name="documentTraveler"]:checked'),
-        ].map((input) => input.value);
-      state.sheet = null;
-      render();
+        ].map((input) => input.value),
+        status = form.querySelector(".document-verify-state"),
+        submit = form.querySelector('button[data-action="save-document"]');
+      if (status) status.textContent = "Verifying file integrity…";
+      if (submit) { submit.disabled = true; submit.setAttribute("aria-busy", "true"); }
       await saveLocalDocument(file, type, travelerIds);
+      state.sheet = null;
       route("documents", null, true);
     } catch (error) {
+      const status = form.querySelector(".document-verify-state"), submit = form.querySelector('button[data-action="save-document"]');
+      if (status) status.textContent = "Verification failed. Choose the file again or try another file.";
+      if (submit) { submit.disabled = false; submit.removeAttribute("aria-busy"); }
       showToast(error instanceof Error ? error.message : String(error), "alert");
     }
   }
@@ -2024,9 +2591,20 @@
   async function handleAction(action, target, inputMethod = "pointer") {
     switch (action) {
       case "back":
-        state.routeMotion = "back";
-        if (history.length > 1) history.back();
-        else route("home", null, false, "back");
+        {
+          const goBack = () => {
+            formHasMeaningfulChanges = false;
+            state.routeMotion = "back";
+            if (history.length > 1) history.back();
+            else route("home", null, false, "back");
+          };
+          if (
+            formHasMeaningfulChanges &&
+            DIRTY_TASK_SCREENS.has(state.screen)
+          )
+            requestDiscardChanges(goBack);
+          else goBack();
+        }
         break;
       case "retry":
         await loadApp();
@@ -2038,10 +2616,10 @@
         closeSheet();
         break;
       case "create-trip":
-        location.href = legacyUrl("create-trip");
+        route("form", "trip");
         break;
       case "open-timeline":
-        route("trips");
+        route("timeline");
         break;
       case "open-health":
         route("health");
@@ -2068,9 +2646,18 @@
         const type = target.dataset.type;
         if (type === "document") {
           openSheet("document", target);
-        } else location.href = legacyUrl("add", type);
+        } else route("form", type);
         break;
       }
+      case "open-form":
+        if (target.dataset.id) location.href = `${legacyUrl("edit", target.dataset.form || "trip")}&id=${encodeURIComponent(target.dataset.id)}`;
+        else route("form", target.dataset.form || "trip");
+        break;
+      case "open-trip": {
+        const trip=state.trips.find((row)=>String(row.id)===String(target.dataset.id));
+        if(!trip)return; state.trip=trip; localStorage.setItem("tripto_selected_trip",trip.id); if(!PREVIEW_MODE){state.loading=true;render();await loadTripDetails();state.loading=false;} route("timeline"); break;
+      }
+      case "filter-bookings": state.bookingFilter=target.dataset.filter||"all"; render(); break;
       case "document-sheet":
       case "add-document":
         openSheet("document", target);
@@ -2095,8 +2682,9 @@
           stay = stayForItem(id);
         if (transport && String(val(transport, "transport_type")) === "flight")
           route("flight", id);
+        else if (transport && String(val(transport, "transport_type")) === "train") route("train", id);
         else if (stay) route("hotel", id);
-        else showToast("Open advanced beta tools to edit this itinerary item.");
+        else route("plan", id);
         break;
       }
       case "booking-detail": {
@@ -2104,7 +2692,23 @@
           id = target.dataset.id;
         if (kind === "flight") route("flight", id);
         else if (kind === "hotel") route("hotel", id);
-        else route("trips");
+        else if (kind === "train") route("train", id);
+        else route("plan", id);
+        break;
+      }
+      case "review-import":
+        if(PREVIEW_MODE){state.importReview={candidates:[{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing"]}]};route("import-review");}
+        else {try{state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/${encodeURIComponent(target.dataset.id)}`);route("import-review");}catch(error){showToast(error.message,"alert");}}
+        break;
+      case "confirm-import": showToast(PREVIEW_MODE?"Import confirmed in preview.":"Review the confirmed fields before import."); break;
+      case "sync-retry": if(PREVIEW_MODE){state.syncStatus={pendingOperations:0,openConflicts:0};render();showToast("Pending changes synced in preview.");}else await loadApp(); break;
+      case "sync-review": showToast("Conflict remains visible until you choose a safe resolution in advanced beta tools."); break;
+      case "export-trip": if(PREVIEW_MODE)showToast("Trip export is available outside preview mode."); else window.open(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/export/json`,`_blank`,`noopener`); break;
+      case "support": if(PREVIEW_MODE)showToast("Support bundle is available outside preview mode."); else window.open(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/support`,`_blank`,`noopener`); break;
+      case "remove-local-data": {
+        const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+        if(pending){showToast("Review pending changes before removing local data.","alert");break;}
+        if(confirm("Remove locally stored documents and cached trip data from this phone? Your server trip will not be deleted.")) showToast("Local-data removal is available in advanced beta tools.");
         break;
       }
       case "show-driver":
@@ -2298,6 +2902,19 @@
   );
   window.addEventListener("hashchange", () => {
     const next = parseRoute();
+    if (
+      formHasMeaningfulChanges &&
+      DIRTY_TASK_SCREENS.has(state.screen) &&
+      next.screen !== state.screen
+    ) {
+      history.pushState(
+        null,
+        "",
+        `#${state.screen}${state.selectedId ? `:${encodeURIComponent(state.selectedId)}` : ""}`,
+      );
+      requestDiscardChanges(() => history.back());
+      return;
+    }
     scrollPositions.set(state.screen, window.scrollY);
     if (
       next.screen !== "flight" ||
@@ -2319,6 +2936,18 @@
   window.addEventListener("offline", () => {
     state.offline = true;
     render();
+  });
+  window.addEventListener("beforeunload", (event) => {
+    if (!formHasMeaningfulChanges) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+  window.visualViewport?.addEventListener("resize", syncVisualViewport);
+  window.visualViewport?.addEventListener("scroll", syncVisualViewport);
+  window.addEventListener("resize", syncVisualViewport);
+  document.addEventListener("focusin", (event) => {
+    if (event.target?.matches?.("input,select,textarea"))
+      setTimeout(keepFocusedFieldVisible, 80);
   });
   window.addEventListener("keydown", (event) => {
     document.documentElement.dataset.inputMethod = "keyboard";
@@ -2351,7 +2980,7 @@
     if (event.key !== "Tab") return;
     const sheet = document.querySelector(".bottom-sheet"),
       focusable = sheet
-        ? [...sheet.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')]
+        ? [...sheet.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')]
         : [];
     if (!focusable.length) return;
     const first = focusable[0],
@@ -2364,6 +2993,7 @@
       first.focus();
     }
   });
+  syncVisualViewport();
   if ("serviceWorker" in navigator && !PREVIEW_MODE)
     window.addEventListener("load", () =>
       navigator.serviceWorker.register("/sw.js").catch(() => {}),

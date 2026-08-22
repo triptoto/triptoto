@@ -46,6 +46,79 @@ No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the requested
 
 final result: passed
 
+# Mobile UI v1 final cohesion pass — visual QA
+
+## Evidence
+
+- Twenty-three required secondary screens and states were rendered at 390 × 844 in `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/mobile-ui-v1-cohesion-390x844`.
+- The combined review sheet is `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/mobile-ui-v1-cohesion-contact-sheet.jpg`.
+- Add Flight, Hotel, Train, and Activity were also rendered at 360 × 800 and 430 × 932 in `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/mobile-ui-v1-cohesion-responsive-forms`.
+- A browser layout matrix covered 95 route and viewport combinations at 360 × 800, 375 × 812, 390 × 844, 393 × 852, and 430 × 932.
+
+## Findings
+
+- Secondary screens now share the approved Apple system stack, 20px mobile margins, 12/16/24px spacing rhythm, 44px minimum controls, restrained separators, and the locked tripto.to palette.
+- Trips and Bookings use larger, grouped rows. Normal confirmations remain quiet; exceptional status remains explicit.
+- Train Detail keeps its distinct dark rail-pass treatment, makes the station route dominant, and preserves verified-ticket and unavailable states.
+- Activity Detail uses one factual hero, flat detail rows, and only a real supported primary action.
+- Documents shows traveler or booking context and only labels checksum-verified files `Ready offline`. Add Document keeps the sheet open while verification is in progress.
+- Ready Offline, Trip Health, and Smart Essentials preserve their existing semantic structures while improving type, contrast, row size, and action hierarchy.
+- Add/Edit forms are focused full-screen mobile tasks without bottom navigation. They use grouped 54px fields, 16px values, progressive disclosure, sticky safe-area Save actions, native date/time inputs, and existing DST safety checks.
+- Activity/Reservation creation now uses the existing activities API so location, type, confirmation, notes, and provider data are retained without a backend change.
+- Import input/review and conflict recovery are focused tasks. Import Review exposes only ambiguous date/timezone corrections and never imports automatically.
+- Account, Travelers, Traveler Detail, import history, pending changes, loading, empty, and error states use the same secondary-screen component language.
+- All 95 responsive checks matched viewport width with no horizontal overflow or action-label wrapping. The rendered routes completed without an error state.
+- `npm run check:ui` and the complete `npm run validate:candidate` suite pass.
+- Locked Home, Flight Detail, Timeline, Hotel, Show to Driver, and bottom-navigation structure were not redesigned in this pass.
+
+No actionable P0, P1, P2, or P3 cohesion finding remains in the requested scope.
+
+final result: passed
+
+# Remaining traveler-facing Mobile UI v1 — visual QA
+
+- 29 requested screens and states were rendered at 390 × 844; the contact sheet is stored in the Codex outputs folder.
+- Trips, Bookings, Train Detail, Plan Detail, Documents, Ready Offline, Trip Health, Smart Essentials, Add flows, Account, Travelers, deterministic import, sync recovery, and shared states use the locked palette and Apple system typography.
+- A responsive matrix covered 76 route/viewport combinations at 360 × 800, 375 × 812, 393 × 852, and 430 × 932. No document-level horizontal scrolling was found.
+- Browser diagnostics reported no console errors during the matrix.
+- Ready Offline preview states are semantically distinct: all-ready includes verified traveler train tickets; the missing state removes local documents.
+- The service worker precaches the premium hotel fallback and no longer references the deleted hotel SVG.
+- `npm run check:ui` and `npm run validate:candidate` pass.
+
+final result: passed
+
+# tripto.to Premium Hotel Detail v2 — visual QA
+
+## Evidence
+
+- Visual direction: the approved tripto.to mobile reference and `design/tripto-mobile-design-lock-v1/docs/TRIPTO_MOBILE_DESIGN_SYSTEM_V1.md`.
+- Browser-rendered states:
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/hotel-premium-hero-v2/hotel-confirmed-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/hotel-premium-hero-v2/hotel-offline-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/hotel-premium-hero-v2/hotel-cancelled-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/hotel-premium-hero-v2/hotel-missing-location-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/hotel-premium-hero-v2/show-to-driver-390x844.png`
+  - `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/hotel-premium-hero-v2/hotel-hero-close-390x184.png`
+- Verified viewports: 360 × 800, 375 × 812, 390 × 844, and 430 × 932 CSS pixels.
+
+## Findings
+
+- The 184px hero uses only a stored local image URL or the new local premium hospitality fallback photograph. The fallback is explicitly generic and is not presented as a real property image.
+- Confirmed and Cancelled are explicit text statuses with distinct icons; color is not the only signal.
+- Stay dates omit the year inside the displayed trip and never synthesize missing check-in or check-out times.
+- Directions uses the existing real address/coordinate flow. Missing location disables both affected actions and displays a clear unavailable state.
+- The location panel shows no marker when coordinates are absent. It explicitly reports `Map unavailable` and `No saved coordinates`.
+- Phone and email are semantic links. Confirmation is omitted when absent and copied through the existing concise toast behavior when present.
+- Show to Driver opens from Hotel using cached local address data and remains available in offline preview mode.
+- At every tested width there is no horizontal overflow, clipped hotel name, or wrapped action label. After scrolling, the final confirmation row ends 30px above navigation at 360 × 800.
+- Browser navigation from Bookings to Hotel and Back is preserved. Console diagnostics contain no errors or warnings.
+- Reduced-motion overrides remove sheet/image movement and press transforms.
+- Home, Flight Detail, Timeline, Ready Offline, Add to Trip, backend, API, D1, sync, and document-integrity behavior were not modified.
+
+No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the requested Hotel Detail scope.
+
+final result: passed
+
 # tripto.to Premium Timeline v1 — visual QA
 
 ## Evidence

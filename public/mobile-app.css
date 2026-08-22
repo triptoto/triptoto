@@ -34,6 +34,7 @@
   --ease-standard:cubic-bezier(.2,0,0,1);
   --ease-emphasized:cubic-bezier(.2,.8,.2,1);
   --ease-sheet:cubic-bezier(.22,1,.36,1);
+  --keyboard-offset:0px;
   --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
   --font-text:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
 }
@@ -367,7 +368,7 @@ svg{display:block}
 .secondary-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:10px;border:1px solid #CBD2E3;border-radius:14px;background:#fff;color:var(--navy);font-weight:800}
 
 /* hotel */
-.hotel-hero{height:220px;background:#111 url('/assets/mobile/hotel-room.svg') center/cover no-repeat}
+.hotel-hero{height:220px;background:#E7E4DE url('/assets/mobile/hotel-fallback-premium.jpg') center/cover no-repeat}
 .hotel-sheet{position:relative;margin-top:-30px;padding:22px;border-radius:26px 26px 0 0;background:#fff}
 .hotel-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .hotel-title-row h1{margin:0;color:var(--navy);font-size:27px;letter-spacing:-.7px}
@@ -954,6 +955,23 @@ h1,h2,h3,.next-action-time,.offline-summary strong,.hotel-title-row h1,.detail-p
   .skeleton-line,.skeleton-ticket,.skeleton-route i,.offline-refresh.is-loading svg{animation:none!important;background:#EDF0F5}
   @keyframes reduced-fade{from{opacity:.98}to{opacity:1}}
 }
+
+/* Remaining traveler-facing Mobile UI v1 screens. Locked Home, Flight, Timeline,
+   Hotel, driver and bottom-navigation selectors above remain the source of truth. */
+.mobile-v1-screen{background:var(--off-white,#f2f4f7)}
+.mobile-page{padding:12px 16px calc(var(--nav-height) + env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;gap:16px;min-width:0}
+.mobile-group{display:grid;gap:8px}.mobile-group>h2,.mobile-page>.section-label{margin:0 2px;color:#70768d;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.mobile-list,.travel-list,.detail-list{overflow:hidden;border:1px solid rgba(20,25,72,.09);border-radius:18px;background:#fff;box-shadow:0 7px 20px rgba(20,25,72,.045)}
+.trip-row,.travel-row,.detail-row{width:100%;min-height:68px;padding:12px 14px;border:0;border-bottom:1px solid rgba(20,25,72,.08);background:#fff;color:#141948;display:flex;align-items:center;gap:12px;text-align:left;font:inherit}.trip-row:last-child,.travel-row:last-child,.detail-row:last-child{border-bottom:0}.trip-row.is-current{background:linear-gradient(135deg,rgba(47,59,171,.09),rgba(47,59,171,.035))}.trip-row__mark,.travel-row__icon,.plan-hero__icon{width:44px;height:44px;border-radius:14px;background:rgba(47,59,171,.09);color:#2f3bab;display:grid;place-items:center;flex:0 0 auto}.trip-row__copy,.travel-row__body{min-width:0;flex:1;display:grid;gap:3px}.trip-row strong,.travel-row strong,.detail-row strong{font-size:15px;line-height:1.2}.trip-row small,.travel-row small,.detail-row small{font-size:12px;color:#727990;line-height:1.35}.trip-row__copy>span{font-size:11px;color:#2f3bab;font-weight:700}.chevron{flex:0 0 auto;color:#8b91a7}
+.mobile-secondary-action{width:100%;min-height:48px;border:1px solid rgba(47,59,171,.24);border-radius:14px;background:#fff;color:#25338f;font:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}.mobile-secondary-action:active{transform:scale(.985)}
+.mobile-empty{min-height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 20px;gap:10px}.mobile-empty__icon,.form-intro>span{width:58px;height:58px;border-radius:20px;background:rgba(47,59,171,.1);color:#2f3bab;display:grid;place-items:center}.mobile-empty h1,.form-intro h1{margin:4px 0 0;font-size:23px;letter-spacing:-.03em}.mobile-empty p,.form-intro p,.muted-copy{margin:0;max-width:280px;color:#727990;font-size:14px;line-height:1.45}
+.segmented-control{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:3px;border-radius:13px;background:rgba(20,25,72,.07)}.segmented-control button{min-height:38px;padding:0 6px;border:0;border-radius:10px;background:transparent;color:#6f758b;font:inherit;font-size:12px;font-weight:650}.segmented-control button.is-active{background:#fff;color:#141948;box-shadow:0 2px 8px rgba(20,25,72,.08)}
+.travel-state{justify-self:start;font-size:11px;font-style:normal;font-weight:750;color:#15845d}.travel-state--attention{color:#a66c00}.journey-pass{border-radius:26px;padding:20px;background:linear-gradient(155deg,#141948,#202c75);color:#fff;box-shadow:0 18px 38px rgba(20,25,72,.2);display:grid;gap:18px}.journey-pass>header{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px}.journey-pass>header>span{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}.journey-pass>header>strong{color:#68df9f;font-size:13px}.journey-pass>header>small{grid-column:2;color:rgba(255,255,255,.58);font-size:10px}.journey-route{display:grid;grid-template-columns:1fr 68px 1fr;align-items:center;text-align:center}.journey-route>div{display:grid;gap:4px}.journey-route>div:last-child{text-align:right}.journey-route>div:first-child{text-align:left}.journey-route strong{font-size:38px;line-height:1;letter-spacing:-.04em}.journey-route span{font-size:11px;color:rgba(255,255,255,.7)}.journey-route__line{position:relative;display:grid;place-items:center}.journey-route__line:before{content:"";position:absolute;width:100%;border-top:1px dashed rgba(255,255,255,.45)}.journey-route__line svg{position:relative;background:#1b2461;padding:5px;border-radius:50%;box-sizing:content-box}.journey-times,.journey-facts,.fact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:rgba(255,255,255,.12);border-radius:15px;overflow:hidden}.journey-times>div,.journey-facts>div,.fact-grid>div{padding:12px;background:rgba(255,255,255,.08);display:grid;gap:3px}.journey-times span,.journey-facts dt,.fact-grid span{font-size:10px;color:rgba(255,255,255,.62);text-transform:uppercase;letter-spacing:.04em}.journey-times strong,.journey-facts dd{margin:0;font-size:18px}.journey-times small{font-size:10px;color:rgba(255,255,255,.7)}.inline-recovery{display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:rgba(254,191,2,.12);color:#fff}.inline-recovery>span{display:grid;gap:2px}.inline-recovery small{color:rgba(255,255,255,.68)}.journey-pass .mobile-secondary-action{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.07);color:#fff}
+.plan-hero{padding:24px 4px 12px;display:grid;gap:7px}.plan-hero>span:not(.plan-hero__icon){font-size:12px;color:#2f3bab;font-weight:750;text-transform:uppercase}.plan-hero h1{margin:0;font-size:30px;letter-spacing:-.04em}.plan-hero p{margin:0;color:#727990}.detail-row>span:nth-child(2){flex:1;display:grid;gap:3px}.mobile-disclosure{border-top:1px solid rgba(20,25,72,.1)}.mobile-disclosure summary{min-height:48px;display:flex;align-items:center;justify-content:space-between;font-weight:700;cursor:pointer}.mobile-disclosure p{color:#727990;font-size:14px;line-height:1.5}
+.essentials-summary,.review-summary,.sync-summary{padding:16px;border-radius:18px;background:linear-gradient(135deg,rgba(47,59,171,.1),rgba(47,59,171,.04));display:flex;align-items:center;gap:12px;color:#141948}.essentials-summary>span,.review-summary>span,.sync-summary>span{width:44px;height:44px;border-radius:14px;background:#2f3bab;color:#fff;display:grid;place-items:center}.essentials-summary>div,.review-summary>div,.sync-summary>div{display:grid;gap:3px}.essentials-summary small,.review-summary small,.sync-summary small{color:#727990;font-size:12px}.checklist-row{min-height:64px;padding:10px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(20,25,72,.08);background:#fff}.checklist-row:last-child{border-bottom:0}.checklist-row>input{position:absolute;opacity:0}.checklist-box{width:28px;height:28px;border:2px solid rgba(47,59,171,.35);border-radius:9px;color:transparent;display:grid;place-items:center}.checklist-row input:checked+.checklist-box{background:#2f3bab;border-color:#2f3bab;color:#fff}.checklist-row input:focus-visible+.checklist-box{outline:3px solid #febf02;outline-offset:2px}.checklist-copy{flex:1;display:grid;gap:2px}.checklist-copy small{font-size:11px;color:#73798e}.checklist-row.is-complete strong{text-decoration:line-through;color:#7d8397}.checklist-row em{font-size:10px;color:#a66c00;font-style:normal;font-weight:750}.auto-badge{font-size:9px;color:#2f3bab;background:rgba(47,59,171,.08);padding:4px 6px;border-radius:999px}
+.traveler-avatar{width:42px;height:42px;border-radius:50%;background:#141948;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:800;flex:0 0 auto}.traveler-avatar--large{width:70px;height:70px;font-size:25px}.traveler-profile{text-align:center;display:grid;justify-items:center;gap:5px;padding:16px}.traveler-profile h1{margin:5px 0 0;font-size:25px}.traveler-profile p{margin:0;color:#727990}.fact-grid{background:rgba(20,25,72,.08)}.fact-grid>div{background:#fff}.fact-grid span{color:#727990}.fact-grid strong{color:#141948;font-size:14px}
+.form-intro{display:grid;justify-items:center;text-align:center;gap:8px;padding:12px}.mobile-form{display:grid;gap:14px}.mobile-form label{display:grid;gap:7px;color:#141948;font-size:13px;font-weight:700}.mobile-form input,.mobile-form select,.mobile-form textarea{width:100%;min-height:48px;padding:12px 13px;border:1px solid rgba(20,25,72,.16);border-radius:13px;background:#fff;color:#141948;font:inherit;font-size:16px;box-sizing:border-box}.mobile-form textarea{resize:vertical;line-height:1.4}.mobile-form input:focus-visible,.mobile-form select:focus-visible,.mobile-form textarea:focus-visible{outline:3px solid rgba(254,191,2,.8);outline-offset:1px;border-color:#2f3bab}.form-note{margin:0;color:#747a8f;font-size:12px;line-height:1.45}.review-card,.recovery-card{padding:16px;border:1px solid rgba(20,25,72,.1);border-radius:18px;background:#fff;box-shadow:0 7px 20px rgba(20,25,72,.04)}.review-card h2,.recovery-card h2{margin:10px 0 5px;font-size:18px}.review-card p,.recovery-card p{margin:5px 0 12px;color:#70768b;font-size:13px;display:flex;align-items:center;gap:6px}.sync-summary.has-conflict{background:rgba(254,191,2,.13)}.sync-summary.has-conflict>span{background:#febf02;color:#141948}.simple-row--danger .row-icon,.simple-row--danger strong{color:#a22f3e}.app-version{text-align:center;color:#8a8fa0;font-size:11px}
+@media(max-width:374px){.mobile-page{padding-left:12px;padding-right:12px}.segmented-control button{font-size:11px}.journey-route{grid-template-columns:1fr 56px 1fr}.journey-route strong{font-size:34px}.travel-row,.trip-row{padding-left:11px;padding-right:11px}}
 
 /* tripto.to Mobile Design Lock v1: Home flight pass + Flight Detail */
 .home-screen .content{padding-right:20px;padding-left:20px}
@@ -1739,4 +1757,596 @@ html[data-input-method="keyboard"] .flight-more--pass .flight-more__toggle:focus
   .timeline-page--journey{animation:reduced-fade 1ms linear both!important}
   .journey-event{transition:none!important}
   .journey-event:active{transform:none!important}
+}
+
+/* Premium Hotel Detail v1 — locked Home, Flight Detail and Timeline remain untouched. */
+.hotel-detail-screen{
+  min-height:100dvh;
+  padding-bottom:0;
+  background:#F2F4F7;
+}
+.hotel-detail-screen .app-bar{
+  min-height:52px;
+  padding:2px 10px;
+  border-bottom:1px solid rgba(20,25,72,.055);
+  background:#fff;
+}
+.hotel-detail-screen .app-bar .icon-button{width:44px;height:44px}
+.hotel-detail-screen .app-bar-title strong{
+  font-family:var(--font-display);
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:-.3px;
+}
+.hotel-detail-screen .hotel-hero{
+  position:relative;
+  height:184px;
+  overflow:hidden;
+  background:#E7E4DE url('/assets/mobile/hotel-fallback-premium.jpg') center 48%/cover no-repeat;
+}
+.hotel-detail-screen .hotel-hero:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:46%;
+  background:linear-gradient(180deg,transparent,rgba(7,15,46,.34));
+  pointer-events:none;
+}
+.hotel-detail-screen .hotel-hero-image{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  animation:hotel-image-in 180ms ease-out both;
+}
+@keyframes hotel-image-in{from{opacity:0}to{opacity:1}}
+.hotel-detail-screen .hotel-hero-scrim{position:absolute;inset:0;z-index:1}
+.hotel-offline-badge{
+  position:absolute;
+  z-index:2;
+  right:16px;
+  bottom:30px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:32px;
+  padding:0 10px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:999px;
+  background:rgba(7,21,54,.78);
+  color:#fff;
+  font-size:11px;
+  font-weight:750;
+  backdrop-filter:blur(12px);
+}
+.hotel-detail-screen .hotel-sheet{
+  position:relative;
+  z-index:3;
+  min-width:0;
+  margin-top:-22px;
+  padding:20px 20px calc(104px + env(safe-area-inset-bottom));
+  border-radius:28px 28px 0 0;
+  background:#fff;
+  animation:hotel-sheet-in 200ms var(--ease-standard) both;
+}
+@keyframes hotel-sheet-in{
+  from{opacity:0;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+.hotel-heading{min-width:0;margin-bottom:16px}
+.hotel-detail-screen .hotel-title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin:0;
+}
+.hotel-detail-screen .hotel-title-row h1{
+  min-width:0;
+  max-width:68%;
+  margin:0;
+  color:#141948;
+  font-family:var(--font-display);
+  font-size:26px;
+  font-weight:830;
+  line-height:1.06;
+  letter-spacing:-.7px;
+  overflow-wrap:anywhere;
+}
+.hotel-heading>p{margin:7px 0 0;color:#687697;font-size:13px;line-height:1.3}
+.hotel-status{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  min-height:28px;
+  padding:0 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.hotel-status svg{flex:0 0 auto;stroke-width:2.2}
+.hotel-status--confirmed{background:#E6F8EF;color:#087A42}
+.hotel-status--attention{background:#FFF3C4;color:#765600}
+.hotel-status--cancelled{background:#FDE9E7;color:#B3312A}
+.hotel-status--neutral{background:#EDF0F6;color:#566583}
+.hotel-detail-screen .hotel-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr .64fr;
+  min-height:76px;
+  margin:0;
+  overflow:hidden;
+  border:1px solid #E7EAF1;
+  border-radius:17px;
+  background:#FAFBFD;
+  box-shadow:none;
+}
+.hotel-detail-screen .hotel-stats>div{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  justify-content:center;
+  padding:10px 11px;
+  border-right:1px solid #E7EAF1;
+}
+.hotel-detail-screen .hotel-stats>div:last-child{border-right:0;text-align:center}
+.hotel-detail-screen .hotel-stats span{
+  color:#687697;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.hotel-detail-screen .hotel-stats strong{
+  margin-top:5px;
+  color:#141948;
+  font-size:14px;
+  font-weight:800;
+  line-height:1.1;
+  font-variant-numeric:tabular-nums;
+}
+.hotel-detail-screen .hotel-stats small{
+  margin-top:4px;
+  color:#687697;
+  font-size:10px;
+  font-weight:600;
+  line-height:1.15;
+  overflow-wrap:anywhere;
+}
+.hotel-detail-screen .hotel-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:12px 0 0;
+}
+.hotel-action{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+  min-height:52px;
+  margin:0;
+  padding:0 10px;
+  border:1px solid #CBD2E3;
+  border-radius:16px;
+  background:#fff;
+  color:#141948;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+  transition:transform 140ms var(--ease-emphasized),background-color 140ms var(--ease-standard);
+}
+.hotel-action svg{flex:0 0 auto;width:18px;height:18px}
+.hotel-action--primary{border-color:#141948;background:#141948;color:#fff}
+.hotel-action:active:not(:disabled){transform:scale(.98)}
+.hotel-action:focus-visible,.hotel-address-row:focus-visible,.hotel-map-panel:focus-visible,.hotel-info-row:focus-visible{
+  outline:3px solid rgba(47,59,171,.34);
+  outline-offset:2px;
+}
+.hotel-action:disabled{opacity:.48}
+.hotel-location{margin-top:16px}
+.hotel-address-row{
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:52px;
+  padding:5px 2px;
+  border:0;
+  background:transparent;
+  color:#141948;
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:620;
+  line-height:1.3;
+  text-align:left;
+}
+.hotel-address-row:disabled{opacity:.7}
+.hotel-address-row__icon{display:grid;place-items:center;color:#2F3BAB}
+.hotel-address-row>svg{color:#8A96B0}
+.hotel-map-panel{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+  min-height:128px;
+  padding:16px;
+  border:1px solid #DCE2F0;
+  border-radius:17px;
+  background:#EDF1FF;
+  color:#141948;
+  text-align:left;
+}
+.hotel-map-panel__marker{
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:#2F3BAB;
+  color:#fff;
+}
+.hotel-map-panel__copy strong,.hotel-map-panel__copy small{display:block}
+.hotel-map-panel__copy strong{font-size:14px;font-weight:800}
+.hotel-map-panel__copy small{margin-top:4px;color:#687697;font-size:11px}
+.hotel-map-panel--unavailable{border-style:dashed;background:#F6F7FA;color:#566583}
+.hotel-map-panel--unavailable .hotel-map-panel__marker{background:#E4E8F1;color:#667492}
+.hotel-contact-list{margin-top:12px;border-top:1px solid #E7EAF1}
+.hotel-info-row{
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:50px;
+  padding:6px 2px;
+  border:0;
+  border-bottom:1px solid #E7EAF1;
+  background:transparent;
+  color:#141948;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:650;
+  line-height:1.25;
+  text-align:left;
+  text-decoration:none;
+  overflow-wrap:anywhere;
+}
+.hotel-info-row__icon{display:grid;place-items:center;color:#2F3BAB}
+.hotel-info-row>svg{color:#8A96B0}
+.hotel-info-row small,.hotel-info-row strong{display:block}
+.hotel-info-row small{color:#687697;font-size:10px;font-weight:650}
+.hotel-info-row strong{margin-top:3px;font-size:13px;font-weight:780}
+@media(max-width:375px){
+  .hotel-detail-screen .hotel-sheet{padding-right:16px;padding-left:16px}
+  .hotel-detail-screen .hotel-title-row h1{font-size:25px}
+  .hotel-detail-screen .hotel-stats>div{padding-right:8px;padding-left:8px}
+  .hotel-action{gap:6px;padding:0 7px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .hotel-detail-screen .hotel-sheet,.hotel-detail-screen .hotel-hero-image{animation:reduced-fade 1ms linear both!important}
+  .hotel-action{transition:none!important}
+  .hotel-action:active:not(:disabled){transform:none!important}
+}
+
+/* Mobile UI v1 cohesion layer — secondary screens only. The approved Home,
+   Flight Detail, Timeline, Hotel, driver and bottom-navigation compositions
+   intentionally remain untouched. */
+.mobile-v1-screen,.ready-screen{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+}
+.mobile-v1-screen .mobile-page{
+  gap:24px;
+  padding:14px 20px calc(var(--nav-height) + env(safe-area-inset-bottom) + 32px);
+}
+.mobile-v1-screen .mobile-group{gap:10px}
+.mobile-v1-screen .mobile-group>h2,
+.mobile-v1-screen .section-label{
+  margin:0 3px;
+  color:#6e7691;
+  font-size:11px;
+  font-weight:780;
+  letter-spacing:.09em;
+}
+.mobile-v1-screen .mobile-list,
+.mobile-v1-screen .travel-list,
+.mobile-v1-screen .detail-list{
+  border-color:rgba(20,25,72,.075);
+  border-radius:20px;
+  box-shadow:0 6px 18px rgba(20,25,72,.035);
+}
+.mobile-v1-screen .trip-row{min-height:78px;padding:13px 15px}
+.mobile-v1-screen .travel-row{min-height:72px;padding:12px 14px}
+.mobile-v1-screen .detail-row{min-height:64px;padding:11px 14px}
+.mobile-v1-screen .trip-row strong,
+.mobile-v1-screen .travel-row strong,
+.mobile-v1-screen .detail-row strong{font-size:16px;font-weight:780;letter-spacing:-.015em}
+.mobile-v1-screen .trip-row small,
+.mobile-v1-screen .travel-row small,
+.mobile-v1-screen .detail-row small{font-size:12.5px;line-height:1.35}
+.mobile-v1-screen .trip-row__mark,
+.mobile-v1-screen .travel-row__icon{width:46px;height:46px;border-radius:15px}
+.mobile-v1-screen .travel-row__body em{color:#23815e;font-size:12px;font-style:normal;font-weight:700}
+.mobile-v1-screen .segmented-control{gap:4px;padding:4px;border-radius:16px}
+.mobile-v1-screen .segmented-control button{min-height:44px;border-radius:12px;font-size:13px;font-weight:720}
+.mobile-v1-screen .mobile-secondary-action,
+.mobile-v1-screen .mobile-primary-action{min-height:54px;border-radius:16px;font-size:16px;font-weight:790}
+.mobile-primary-action{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  min-height:54px;
+  padding:0 16px;
+  border:0;
+  border-radius:16px;
+  background:#FEBF02;
+  color:#141948;
+  font:inherit;
+  font-size:16px;
+  font-weight:800;
+  box-shadow:0 8px 20px rgba(254,191,2,.18);
+}
+.mobile-primary-action:active{transform:scale(.985)}
+.mobile-primary-action:focus-visible,.mobile-v1-screen button:focus-visible{outline:3px solid rgba(47,59,171,.34);outline-offset:2px}
+.screen-intro{display:grid;grid-template-columns:50px minmax(0,1fr);align-items:center;gap:14px}
+.screen-intro__icon{display:grid;place-items:center;width:50px;height:50px;border-radius:17px;background:#141948;color:#fff}
+.screen-intro h1{margin:0;color:#141948;font-size:24px;font-weight:820;letter-spacing:-.035em}
+.screen-intro p{margin:4px 0 0;color:#6f7892;font-size:13px;line-height:1.35}
+.document-list{overflow:hidden;border:1px solid rgba(20,25,72,.075);border-radius:20px;background:#fff}
+.document-row{display:grid;grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:12px;width:100%;min-height:82px;padding:12px 14px;border:0;border-bottom:1px solid rgba(20,25,72,.075);background:#fff;color:#141948;text-align:left}
+.document-row:last-child{border-bottom:0}
+.document-row__icon{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:#ecf0ff;color:#2F3BAB}
+.document-row__icon.green{background:#e8f8f0;color:#14875e}.document-row__icon.purple{background:#f1eaff;color:#6e3bb5}
+.document-row__copy{display:grid;gap:3px;min-width:0}.document-row__copy strong{font-size:16px;font-weight:780}.document-row__copy small{color:#707a94;font-size:12px;line-height:1.3}
+.document-row__status{display:flex;align-items:center;gap:4px;margin-top:2px;font-size:12px;font-weight:730}.document-row__status.is-ready{color:#14875e}.document-row__status.is-warning{color:#9a6500}
+.mobile-empty{min-height:310px}.mobile-empty--compact{min-height:220px}
+.journey-pass--train{gap:16px;padding:21px 20px;border-radius:28px;box-shadow:0 16px 34px rgba(20,25,72,.17)}
+.journey-pass--train .journey-route{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+.journey-pass--train .journey-route strong{font-size:46px;font-weight:790;letter-spacing:-.055em}
+.journey-pass--train .journey-route span{font-size:12px}
+.journey-pass--train .journey-times strong{font-size:22px;font-variant-numeric:tabular-nums}
+.journey-pass--train .journey-facts dd{font-size:16px;font-variant-numeric:tabular-nums}
+.plan-hero{padding:18px 4px 8px;grid-template-columns:52px minmax(0,1fr);column-gap:14px}
+.plan-hero__icon{grid-row:1/5}.plan-hero>span:not(.plan-hero__icon){font-size:11px}.plan-hero h1{font-size:29px;font-weight:820}.plan-hero p{font-size:15px;font-variant-numeric:tabular-nums}
+.essentials-summary,.review-summary,.sync-summary{padding:16px 17px;border-radius:20px}.essentials-summary strong,.review-summary strong,.sync-summary strong{font-size:16px;font-weight:790}.essentials-summary small,.review-summary small,.sync-summary small{font-size:12.5px}
+.checklist-group{margin-top:2px}.checklist-row{min-height:70px;padding:11px 14px}.checklist-box{width:32px;height:32px;border-radius:10px}.checklist-copy strong{font-size:15px;font-weight:760}.checklist-copy small{font-size:12px}.checklist-row em{font-size:11px}.auto-badge{font-size:10px}
+.traveler-row{min-height:80px!important}.traveler-avatar{width:46px;height:46px;font-size:17px}.traveler-avatar--large{width:76px;height:76px;font-size:28px}.traveler-profile{padding:10px 16px 2px}.traveler-profile h1{font-size:27px;font-weight:820}.traveler-checklist{overflow:hidden;border:1px solid rgba(20,25,72,.075);border-radius:18px;background:#fff}.traveler-checklist__row{display:flex;align-items:center;gap:12px;min-height:62px;padding:10px 14px;border-bottom:1px solid rgba(20,25,72,.075);color:#2F3BAB}.traveler-checklist__row:last-child{border-bottom:0}.traveler-checklist__row>span{display:grid;gap:2px}.traveler-checklist__row strong{color:#141948;font-size:15px}.traveler-checklist__row small{color:#707a94;font-size:12px}.traveler-checklist__row.is-complete{color:#14875e}
+.account-section.mobile-page{padding-top:8px}.account-card{padding:19px;border-radius:22px;box-shadow:0 8px 22px rgba(20,25,72,.05)}.account-profile .avatar{width:52px;height:52px}.account-profile strong{font-size:17px}.account-meta{font-size:13px}.mobile-v1-screen .simple-row{min-height:64px;padding:10px 12px;border-bottom-color:rgba(20,25,72,.075)}.mobile-v1-screen .simple-row strong{font-size:15px;font-weight:760}.mobile-v1-screen .simple-row .row-copy>span{font-size:12px}.app-version{margin-top:8px;font-size:12px}
+
+.focused-task{min-height:100dvh;background:#F2F4F7;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif}
+.focused-page{display:flex;flex-direction:column;gap:18px;min-width:0;padding:14px 20px calc(94px + env(safe-area-inset-bottom))}
+.premium-form{gap:16px}.form-section{display:grid;gap:16px}.form-section>header{padding:3px 2px}.form-section>header>span{color:#2F3BAB;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.form-section>header h1{margin:4px 0 0;color:#141948;font-size:25px;font-weight:840;letter-spacing:-.04em}
+.form-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form-field{display:grid;gap:6px;min-width:0}.form-field--wide{grid-column:1/-1}.form-field>span,.import-form label>span,.review-fields label>span{padding-left:2px;color:#69738d;font-size:11px;font-weight:780;letter-spacing:.045em;text-transform:uppercase}.form-field b{color:#A66C00}
+.premium-form input,.premium-form select,.premium-form textarea,.import-form textarea,.review-fields input{min-height:54px;padding:12px 13px;border:1px solid rgba(20,25,72,.13);border-radius:15px;background:#fff;color:#141948;font-family:inherit;font-size:16px;font-weight:590;line-height:1.25;box-shadow:0 2px 8px rgba(20,25,72,.025);font-variant-numeric:tabular-nums}.premium-form textarea{min-height:108px}
+.form-more{overflow:hidden;border:1px solid rgba(20,25,72,.09);border-radius:18px;background:#fff}.form-more summary{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 16px;color:#141948;font-size:15px;font-weight:770;cursor:pointer;list-style:none}.form-more summary::-webkit-details-marker{display:none}.form-more[open] summary{border-bottom:1px solid rgba(20,25,72,.075)}.form-more>.form-fields{padding:16px}
+.form-note{padding:0 3px;font-size:12px;line-height:1.45}.form-save-bar{position:sticky;bottom:0;z-index:4;margin-top:auto;padding:12px 0 calc(6px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(242,244,247,0),#F2F4F7 18px)}
+.form-intro{padding:6px 8px 2px}.form-intro h1{font-size:24px;font-weight:830}.form-intro p{font-size:14px}.import-form{display:contents}.import-form label{display:grid;gap:7px}.import-form textarea{min-height:300px;resize:none}.import-history-action{order:3}.import-task .form-save-bar{order:2;margin-top:0}.review-card{display:grid;gap:14px;padding:18px;border-radius:20px}.review-card header{display:flex;align-items:center;justify-content:space-between;gap:10px}.review-type{display:flex;align-items:center;gap:7px;color:#2F3BAB;font-size:12px;font-weight:800;text-transform:uppercase}.review-card h2{margin:0;font-size:21px;font-weight:820}.review-warnings{display:grid;gap:7px;padding:12px;border-radius:14px;background:rgba(254,191,2,.1)}.review-card .review-warnings p{margin:0;color:#735000}.review-fields{display:grid;gap:12px}.review-fields label{display:grid;gap:6px}.recovery-card{display:grid;gap:10px;padding:18px;border-radius:20px}.recovery-card h2{margin:0;font-size:19px}.recovery-card p{margin:0 0 4px;font-size:14px;line-height:1.45}
+.bottom-sheet--document{height:min(92dvh,780px);max-height:92dvh}.bottom-sheet--document .sheet-scroll{padding-bottom:calc(20px + env(safe-area-inset-bottom))}.document-form{gap:18px}.document-file-picker{display:grid!important;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:12px;min-height:76px;padding:12px 14px;border:1.5px dashed rgba(47,59,171,.35);border-radius:17px;background:#F7F8FE;color:#2F3BAB;cursor:pointer}.document-file-picker>svg{justify-self:center}.document-file-picker span{display:grid;gap:3px}.document-file-picker strong{color:#141948;font-size:15px}.document-file-picker small{color:#6d7894;font-size:12px}.document-file-meta{overflow-wrap:anywhere;color:#141948;font-size:13px;font-weight:720}.document-verify-state{color:#6e7791;font-size:12px;line-height:1.4}.bottom-sheet--document .sheet-submit{position:sticky;bottom:0;padding-top:12px;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 20px)}
+.loading-skeleton{padding-right:20px;padding-left:20px}.error-state{padding-right:20px;padding-left:20px}.error-state h1{font-size:24px;font-weight:830}.error-state p{font-size:14px}
+.ready-screen .offline-summary{margin-right:20px;margin-left:20px}.ready-screen .ready-list{margin-right:20px;margin-left:20px}.ready-screen .ready-list .info-card{min-height:68px;padding:10px 14px}.ready-screen .ready-list .info-copy strong{font-size:15px;font-weight:770}.ready-screen .ready-list .info-copy span{font-size:12px}.ready-screen .ready-list .needs-attention{background:rgba(254,191,2,.1)}.ready-screen .download-action{padding-right:20px;padding-left:20px}
+.health-summary{padding-right:20px;padding-left:20px}.health-summary h1{font-size:25px;font-weight:830}.health-summary p{font-size:14px}.health-summary+.list-stack{gap:12px;padding-right:20px;padding-left:20px}.health-card{min-height:86px;padding:15px;border-radius:18px}.health-card strong{font-size:16px;font-weight:790}.health-card p{font-size:13px;line-height:1.4}.health-card.warn{border-color:rgba(254,191,2,.48);background:#fffaf0}
+@media(max-width:375px){
+  .mobile-v1-screen .mobile-page,.focused-page{padding-right:16px;padding-left:16px}
+  .form-fields{gap:10px}.journey-pass--train .journey-route strong{font-size:42px}
+  .document-row{padding-right:12px;padding-left:12px}.import-form textarea{min-height:250px}
+  .ready-screen .offline-summary,.ready-screen .ready-list,.health-summary+.list-stack{margin-right:16px;margin-left:16px;padding-right:0;padding-left:0}.ready-screen .download-action,.health-summary{padding-right:16px;padding-left:16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .mobile-primary-action,.form-more,.document-file-picker{transition:none!important}
+  .mobile-primary-action:active{transform:none!important}
+}
+
+/* Final production readability and focused-task safety. This layer changes no
+   approved screen structure, color, route, or data behavior. */
+.nav-item,.nav-item>span,.nav-add small{font-size:11px}
+.trip-context-copy span,.context-chip,
+.ticket-meta--home span,
+.flight-pass--home .flight-pass__fact>span,
+.home-summary-module .section-label,
+.home-summary-module .text-action{font-size:11px}
+.flight-pass--detail .flight-pass__status small,
+.flight-pass--detail .flight-pass__time-copy>span,
+.flight-pass--detail .flight-pass__time small,
+.flight-pass--detail .flight-pass__fact-copy>span,
+.flight-pass--detail .flight-pass__fact small{font-size:11px}
+.flight-pass--detail .primary-cta,
+.flight-pass--detail .flight-pass__secondary{font-size:15px}
+.timeline-day__header time,
+.timeline-day__header time strong,
+.timeline-flag{font-size:11px}
+.hotel-detail-screen .hotel-stats span{font-size:11px}
+.hotel-detail-screen .hotel-stats small,
+.hotel-info-row small{font-size:11px}
+.journey-pass--train .journey-times span,
+.journey-pass--train .journey-times small,
+.journey-pass--train .journey-facts dt{font-size:11px}
+.journey-pass--train>header>small,.mobile-v1-screen .fact-grid span{font-size:11px}
+.auto-badge{font-size:11px}
+.ticket-meta strong,.flight-pass__time strong,.journey-time,
+.journey-times strong,.journey-facts dd,.fact-grid strong,
+.hotel-stats strong,.detail-row strong,.document-row__copy strong{
+  font-variant-numeric:tabular-nums;
+}
+
+.focused-task{scroll-padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+.focused-page{
+  min-height:calc(100dvh - 52px);
+  padding-bottom:calc(118px + env(safe-area-inset-bottom));
+  scroll-padding-bottom:calc(116px + env(safe-area-inset-bottom));
+}
+.premium-form input,.premium-form select,.premium-form textarea,
+.import-form textarea,.review-fields input{scroll-margin-block:104px}
+.form-save-bar{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  z-index:70;
+  width:min(calc(100% - 40px),390px);
+  margin:0;
+  padding:14px 0 calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(242,244,247,0),#F2F4F7 18px);
+  transform:translateX(-50%);
+}
+.form-save-bar .mobile-primary-action{min-height:56px;font-size:15px}
+.field-error,.form-submit-error{
+  margin:0;
+  color:#9F2F38;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.35;
+}
+.form-submit-error{
+  padding:11px 13px;
+  border:1px solid rgba(159,47,56,.24);
+  border-radius:13px;
+  background:#FFF2F2;
+}
+.premium-form [aria-invalid="true"],.import-form [aria-invalid="true"]{
+  border-color:#B83A43;
+  box-shadow:0 0 0 3px rgba(184,58,67,.1);
+}
+.bottom-sheet--document .sheet-field select{
+  min-height:54px;
+  font-family:inherit;
+  font-size:16px;
+}
+.bottom-sheet--document .traveler-pill span{min-height:44px;font-size:12px}
+.bottom-sheet--document .sheet-submit .primary-cta{min-height:56px;font-size:15px}
+
+@media(max-width:375px){
+  .form-save-bar{width:calc(100% - 32px)}
+  .flight-pass--detail .flight-pass__status small,
+  .flight-pass--detail .flight-pass__time-copy>span,
+  .flight-pass--detail .flight-pass__time small,
+  .flight-pass--detail .flight-pass__fact-copy>span,
+  .flight-pass--detail .flight-pass__fact small{font-size:11px}
+  .flight-pass--detail .primary-cta,
+  .flight-pass--detail .flight-pass__secondary{font-size:15px}
+}
+@media(max-height:620px){
+  .focused-page{gap:14px}
+  .import-form textarea{min-height:180px}
+}
+
+/* Mobile UI v1 production form, keyboard, dialog and loading-state hardening. */
+.form-note,.field-error,.form-submit-error,
+.document-file-picker small,.document-verify-state,
+.review-warnings p,.review-summary small,
+.import-form+.form-note{
+  min-height:0;
+  color:#626D86;
+  font-size:12px;
+  line-height:1.4;
+}
+.review-warnings p{color:#735000}
+.form-field>span,.import-form label>span,.review-fields label>span,
+.sheet-field>label{
+  min-width:0;
+  overflow-wrap:anywhere;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.3;
+  letter-spacing:.04em;
+}
+.premium-form input,.premium-form select,.premium-form textarea,
+.import-form textarea,.review-fields input,
+.bottom-sheet--document select{
+  min-width:0;
+  min-height:54px;
+  color:#141948;
+  font-size:16px;
+  line-height:1.3;
+}
+.import-review-form{display:grid;gap:18px;margin:0}
+.focused-task{overflow-x:hidden}
+html.sheet-open .bottom-nav{display:none}
+.focused-task .focused-page{
+  scroll-padding-bottom:calc(116px + var(--keyboard-offset) + env(safe-area-inset-bottom));
+}
+.form-save-bar{
+  bottom:var(--keyboard-offset);
+  transition:bottom var(--motion-fast) var(--ease-standard);
+}
+.keyboard-open .form-save-bar{padding-bottom:10px}
+.mobile-primary-action.is-loading{gap:10px}
+.button-spinner{
+  width:17px;
+  height:17px;
+  flex:0 0 17px;
+  border:2px solid rgba(20,25,72,.28);
+  border-top-color:#141948;
+  border-radius:50%;
+  animation:button-spin .75s linear infinite;
+}
+@keyframes button-spin{to{transform:rotate(360deg)}}
+
+.discard-dialog-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:220;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(8,15,48,.48);
+  backdrop-filter:blur(8px);
+}
+.discard-dialog{
+  width:min(100%,350px);
+  padding:22px;
+  border-radius:22px;
+  background:#fff;
+  box-shadow:0 24px 70px rgba(8,15,48,.28);
+  color:#141948;
+}
+.discard-dialog h2{margin:0;font-size:22px;line-height:1.2}
+.discard-dialog p{margin:8px 0 20px;color:#626D86;font-size:14px;line-height:1.4}
+.discard-dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.discard-dialog-actions button{min-height:52px;margin:0;font-size:15px}
+
+.loading-skeleton{
+  display:grid;
+  gap:18px;
+  width:100%;
+  min-height:100dvh;
+  padding:calc(8px + env(safe-area-inset-top)) 20px 28px;
+  background:#fff;
+}
+.loading-skeleton :is(.skeleton-appbar i,.skeleton-appbar b,.skeleton-heading,
+  .skeleton-home-pass>*,.skeleton-list-row i,.skeleton-list-row b,
+  .skeleton-list-row small,.skeleton-date,.skeleton-timeline i,
+  .skeleton-timeline b,.skeleton-timeline small,.skeleton-profile i,
+  .skeleton-profile b,.skeleton-profile small,.skeleton-detail-hero>div,
+  .skeleton-facts i){
+  display:block;
+  border-radius:12px;
+  background:linear-gradient(90deg,#E6E9EF 20%,#F5F7FA 45%,#E6E9EF 70%);
+  background-size:220% 100%;
+  animation:skeleton-shimmer 1.35s ease-in-out infinite;
+}
+.skeleton-appbar{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:14px;height:52px}
+.skeleton-appbar i{width:36px;height:36px;border-radius:50%}.skeleton-appbar b{width:112px;height:18px;justify-self:center}
+.skeleton-heading{width:58%;height:24px;margin-top:8px}
+.skeleton-list{display:grid;overflow:hidden;border:1px solid rgba(20,25,72,.06);border-radius:18px;background:#fff}
+.skeleton-list-row{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:13px;min-height:72px;padding:12px;border-bottom:1px solid rgba(20,25,72,.07)}
+.skeleton-list-row:last-child{border-bottom:0}.skeleton-list-row i{width:40px;height:40px}.skeleton-list-row span{display:grid;gap:8px}.skeleton-list-row b{width:68%;height:15px}.skeleton-list-row small{width:46%;height:11px}
+.skeleton-home-pass{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:228px;padding:20px;border-radius:24px;background:#141948}
+.skeleton-home-pass div,.skeleton-home-pass span{height:48px;margin-top:52px}.skeleton-home-pass i{grid-column:1/-1;height:52px;align-self:end;background:#FEBF02}
+.skeleton-date{width:92px;height:28px}.skeleton-timeline{display:grid;gap:2px;border-left:2px solid #E6E9EF;margin-left:19px;padding-left:22px}.skeleton-timeline>div{display:grid;grid-template-columns:36px 1fr;align-items:center;gap:12px;min-height:82px}.skeleton-timeline i{width:36px;height:36px;margin-left:-41px;border-radius:50%}.skeleton-timeline span{display:grid;gap:8px}.skeleton-timeline b{width:72%;height:15px}.skeleton-timeline small{width:52%;height:11px}
+.skeleton-profile{display:grid;grid-template-columns:56px 1fr;align-items:center;gap:14px;padding:16px;border-radius:20px;background:#F7F8FB}.skeleton-profile i{width:56px;height:56px;border-radius:50%}.skeleton-profile span{display:grid;gap:9px}.skeleton-profile b{width:56%;height:16px}.skeleton-profile small{width:72%;height:12px}
+.skeleton-detail-hero{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:220px;padding:20px;border-radius:24px;background:#141948}.skeleton-detail-hero>div{height:54px;align-self:center}.skeleton-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.skeleton-facts i{height:70px}
+
+@media(prefers-reduced-motion:reduce){
+  .form-save-bar{transition:none}
+  .button-spinner{animation:none}
+  .loading-skeleton :is(.skeleton-appbar i,.skeleton-appbar b,.skeleton-heading,
+    .skeleton-home-pass>*,.skeleton-list-row i,.skeleton-list-row b,
+    .skeleton-list-row small,.skeleton-date,.skeleton-timeline i,
+    .skeleton-timeline b,.skeleton-timeline small,.skeleton-profile i,
+    .skeleton-profile b,.skeleton-profile small,.skeleton-detail-hero>div,
+    .skeleton-facts i){animation:none;background:#EDF0F5}
 }
