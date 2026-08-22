@@ -2379,6 +2379,22 @@ html.sheet-open .bottom-nav{display:none}
     .skeleton-facts i){animation:none;background:#EDF0F5}
 }
 
+/* Stable Create Trip date controls. The native input remains the interactive
+   picker while the visible shell avoids browser-specific placeholder fragments. */
+.trip-create-fields>.trip-date-range{grid-column:1/-1;width:100%;box-sizing:border-box}
+.trip-date-field>.trip-date-control{padding:0;color:inherit;font-size:inherit;font-weight:inherit;line-height:normal;letter-spacing:normal;text-transform:none}
+.trip-date-control{position:relative;display:block;min-width:0;min-height:56px}
+.trip-date-input{position:absolute;z-index:2;inset:0;width:100%;min-width:0;height:100%;min-height:56px!important;margin:0;padding:0!important;border:0!important;opacity:0;cursor:pointer;appearance:none;-webkit-appearance:none}
+.trip-date-shell{display:flex;align-items:center;gap:6px;min-width:0;min-height:56px;padding:0 8px;border:1px solid rgba(20,25,72,.13);border-radius:15px;background:#fff;color:#69738D;box-shadow:0 2px 8px rgba(20,25,72,.025);transition:border-color var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard),background-color var(--motion-fast) var(--ease-standard)}
+.trip-date-icon{display:grid;place-items:center;flex:0 0 20px;width:20px;height:22px;color:#2F3BAB}.trip-date-icon svg{width:20px;height:20px;stroke-width:1.9}
+.trip-date-value{min-width:0;overflow:hidden;color:#747E96;font-size:16px;font-weight:590;line-height:1.25;white-space:nowrap;text-overflow:clip}.trip-date-value.is-selected{color:#141948;font-variant-numeric:tabular-nums}
+.trip-date-input:hover+.trip-date-shell{border-color:rgba(47,59,171,.3)}
+.trip-date-input:focus-visible+.trip-date-shell{border-color:#2F3BAB;outline:3px solid rgba(47,59,171,.2);outline-offset:2px}
+.trip-date-input[aria-invalid="true"]+.trip-date-shell{border-color:#B83A43;box-shadow:0 0 0 3px rgba(184,58,67,.1)}
+.trip-date-field .field-error{grid-column:1/-1}
+@media(max-width:370px){.trip-date-range .form-fields--date-time{grid-template-columns:1fr}.trip-date-value{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.trip-date-shell{transition:none}}
+
 /* Approved one-screen first-run experience. This layer is intentionally
    isolated from every traveler screen rendered after a trip exists. */
 html.first-run-open,

@@ -46,6 +46,59 @@ No actionable P0, P1, P2, or P3 visual-fidelity finding remains in the requested
 
 final result: passed
 
+# tripto.to Create Trip date controls — final visual QA
+
+**Comparison Target**
+
+- Source visual truth: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/approved-first-run-final/02-create-trip-empty-390x844.png` for the locked Create Trip composition, plus `/Users/arthurberlin/.codex/attachments/dcd42d53-0338-4abf-a1b0-3dec36c298a1/pasted-text.txt` for the corrected date-control behavior and copy.
+- Implementation screenshots: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/create-trip-date-controls-final/02-create-trip-empty-390x844.png`, `03-create-trip-selected-390x844.png`, and `04-create-trip-validation-error-390x844.png`.
+- Combined comparison: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/create-trip-date-controls-final/qa-create-trip-source-vs-final.png`.
+- Locked first-run comparison: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/create-trip-date-controls-final/qa-first-run-source-vs-final.png`.
+- Viewport: 390 x 844 CSS px at device scale 1. Source and implementation pixels are each 390 x 844; combined comparison is 804 x 888 including labels and a 24 px gutter.
+- Additional responsive evidence: 360 x 800, 375 x 812, 393 x 852, and 430 x 932 CSS px. The software-keyboard-equivalent capture uses 390 x 600 CSS px.
+- State: successful-empty first-run, empty Create Trip, selected dates, invalid date order, newly created empty trip, legacy no-date trip, How It Works, and offline first-run.
+
+**Full-View Comparison Evidence**
+
+- The locked header, off-white form surface, title hierarchy, trip-name control, date group, sticky yellow action, and navless composition are unchanged.
+- The formerly browser-dependent visible date text is replaced by a stable shell that shows `Select date` before selection and localized values such as `Aug 22, 2026` after selection.
+- The final side-by-side comparison shows the date group now uses the intended full width while preserving the approved spacing, radius, border, icon, and action proportions.
+- The first-run side-by-side comparison is visually unchanged. No focused crop beyond the combined Create Trip comparison was needed because field labels, icons, values, borders, and focus/error states are readable at 1:1 density.
+
+**Required Fidelity Surfaces**
+
+- Fonts and typography: the locked Apple system stack remains primary. Date values are 16 px, untruncated, and localized; labels retain the approved uppercase 11 px treatment.
+- Spacing and layout rhythm: the date group spans the form grid at 375–430 px and stacks at 360 px. Both controls are 56 px tall, the sticky Save action remains visible, and no horizontal overflow occurs.
+- Colors and tokens: the approved navy, indigo, yellow, off-white, neutral border, keyboard-focus, and validation colors remain unchanged.
+- Image and asset quality: no new raster, remote, emoji, third-party, font, or approximate decorative asset was introduced. The existing local calendar SVG is reused at a consistent optical size.
+- Copy and content: `Select date`, localized selected dates, `Enter a trip name.`, `Select a start date.`, `Select an end date.`, and `End date must be on or after the start date.` are complete and untruncated.
+- Accessibility and interaction: the native date inputs remain semantic, required, keyboard reachable, and native-picker capable. Visible focus uses `:focus-visible`; selected values are announced through an associated polite status; invalid controls retain both status and error IDs in `aria-describedby`.
+
+**Findings**
+
+- No actionable P0, P1, or P2 visual or interaction mismatch remains in the requested scope.
+
+**Comparison History**
+
+- Iteration 1 exposed the original browser-rendered `dc` fragments and a date fieldset that occupied only half the form grid. The date fieldset was made full-width and the raw browser rendering was hidden behind the semantic native input shell.
+- Iteration 2 showed `Select date` inheriting the field-label uppercase style and clipping in the two-column layout. The shell reset inherited label typography and its internal icon, padding, and gap were optically tightened.
+- Iteration 3 measured localized selected values at 375, 390, 393, and 430 px. The visible and scroll widths now match with no clipping; 360 px stacks into two 300 px controls. Post-fix screenshots and console diagnostics show no P0, P1, or P2 issue.
+
+**Primary Interactions Tested**
+
+- Native date inputs accept and expose selected dates; `showPicker()` is used when available with a native fallback.
+- Same-day and long trips pass validation; missing fields and reversed dates fail without clearing valid entries.
+- Browser Back opens the existing `Discard changes?` dialog and preserves the entered trip name until the user confirms discard.
+- Preview creation returns to truthful empty-trip Home; no ready/healthy claim appears. Legacy date-less trips render `Dates not set`.
+- The How It Works sheet remains a three-step ARIA modal. Offline first-run and reduced-motion code remain locked.
+- Browser console error log: empty after final Chromium-based in-app-browser pass.
+
+**Residual Test Gap**
+
+- Physical iPhone Safari was not available through the required in-app browser surface. The Safari-safe native fallback, Apple system stack, safe-area CSS, hidden browser date text, and responsive iPhone-sized layouts were verified; physical-device picker chrome remains a release-device check.
+
+final result: passed
+
 # tripto.to approved first-run production implementation — final visual QA
 
 **Comparison Target**

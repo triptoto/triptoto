@@ -176,16 +176,22 @@
     return { screen: screen || "home", id: id ? decodeURIComponent(id) : null };
   }
   function quickDraftKey(kind = state.selectedId) {
-    return `tripto_quick_add_draft:${state.trip?.id || "no-trip"}:${kind || "unknown"}`;
+    const normalized = String(kind || "unknown"),
+      scope = normalized === "trip" ? "new-trip" : state.trip?.id || "no-trip";
+    return `tripto_quick_add_draft:${scope}:${normalized}`;
   }
   function clearQuickDraft(kind = state.selectedId) {
-    if (!QUICK_ADD_KINDS.has(String(kind || ""))) return;
+    if (!supportsFormDraft(kind)) return;
     try {
       sessionStorage.removeItem(quickDraftKey(kind));
     } catch (_) {}
   }
   function clearActiveFormDraft() {
     if (state.screen === "form") clearQuickDraft(state.selectedId);
+  }
+  function supportsFormDraft(kind) {
+    const normalized = String(kind || "");
+    return normalized === "trip" || QUICK_ADD_KINDS.has(normalized);
   }
   function closeDiscardDialog(discard = false) {
     const backdrop = document.querySelector(".discard-dialog-backdrop"),
@@ -2200,6 +2206,11 @@
       control = `<input type="${type}" ${base} autocomplete="off" placeholder="${esc(placeholder)}">`;
     return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
   }
+  function tripDateField(name, label) {
+    const id = `form-${name}`,
+      statusId = `${id}-status`;
+    return `<label class="form-field trip-date-field form-field--${name}" for="${id}"><span>${esc(label)} <b aria-hidden="true">*</b></span><span class="trip-date-control"><input class="trip-date-input" type="date" name="${esc(name)}" id="${id}" required autocomplete="off" aria-describedby="${statusId}" data-date-label="${esc(label)}"><span class="trip-date-shell" aria-hidden="true"><span class="trip-date-icon">${icon("calendar", 20)}</span><span class="trip-date-value">Select date</span></span></span><span class="sr-only trip-date-status" id="${statusId}" aria-live="polite">${esc(label)} is not selected.</span></label>`;
+  }
   function quickTripContext() {
     if (!state.trip) return "";
     return `<section class="quick-trip-context" aria-label="Selected trip"><span class="quick-trip-context__icon">${icon("trips", 20)}</span><span><small>Adding to</small><strong>${esc(state.trip.title || "Current trip")}</strong><em>${esc(formatTripDates(state.trip))}</em></span><button type="button" data-action="switch-trip" aria-label="Choose another trip">Change</button></section>`;
@@ -2237,7 +2248,7 @@
         traveler: { title:"Add Traveler", lead:"Traveler", fields:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
         checklist: { title:"Add Essential", lead:"Travel essential", fields:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
       }, cfg = configs[kind] || configs.trip;
-    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; if(type==="select")choices='<option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option>'; if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices}); });
+    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; if(type==="select")choices='<option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option>'; if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? tripDateField(name, label) : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices}); });
     const fields = kind === "trip"
       ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<fieldset class="trip-date-range"><legend>Trip dates</legend><div class="form-fields form-fields--date-time">${mappedFields.slice(1).join("")}</div></fieldset></div>`
       : `<div class="form-fields">${mappedFields.join("")}</div>`;
@@ -2575,7 +2586,9 @@
     form.querySelectorAll(".field-error").forEach((row) => row.remove());
     form.querySelectorAll('[aria-invalid="true"]').forEach((control) => {
       control.removeAttribute("aria-invalid");
-      control.removeAttribute("aria-describedby");
+      const statusId = control.dataset.dateLabel ? `${control.id}-status` : "";
+      if (statusId) control.setAttribute("aria-describedby", statusId);
+      else control.removeAttribute("aria-describedby");
     });
   }
   function showFieldError(form, control, message) {
@@ -2589,7 +2602,10 @@
     error.textContent = message;
     field?.append(error);
     control.setAttribute("aria-invalid", "true");
-    control.setAttribute("aria-describedby", id);
+    const describedBy = [control.dataset.dateLabel ? `${control.id}-status` : "", id]
+      .filter(Boolean)
+      .join(" ");
+    control.setAttribute("aria-describedby", describedBy);
     const disclosure = control.closest(".form-more-panel");
     if (disclosure?.hidden) {
       disclosure.hidden = false;
@@ -2725,7 +2741,7 @@
           return control.checked !== control.defaultChecked;
         return String(control.value || "") !== String(control.defaultValue || "");
       });
-      if (QUICK_ADD_KINDS.has(form.dataset.kind)) saveQuickDraft(form);
+      if (supportsFormDraft(form.dataset.kind)) saveQuickDraft(form);
     };
     form.addEventListener("input", update);
     form.addEventListener("change", update);
@@ -2733,7 +2749,7 @@
   }
   function saveQuickDraft(form) {
     const kind = form.dataset.kind;
-    if (!QUICK_ADD_KINDS.has(kind)) return;
+    if (!supportsFormDraft(kind)) return;
     const values = {};
     for (const control of form.elements) {
       if (!control.name || control.type === "file" || control.disabled) continue;
@@ -2767,6 +2783,39 @@
     }
     if (draft.__moreOpen) setQuickMoreOpen(form, true);
     return true;
+  }
+  function syncTripDateControl(input, announce = false) {
+    if (!input?.classList?.contains("trip-date-input")) return;
+    const shellValue = input.parentElement?.querySelector(".trip-date-value"),
+      status = document.getElementById(`${input.id}-status`),
+      readable = input.value ? formatDateOnly(input.value) : "Select date",
+      label = input.dataset.dateLabel || "Date";
+    if (shellValue) {
+      shellValue.textContent = readable;
+      shellValue.classList.toggle("is-selected", Boolean(input.value));
+    }
+    if (status) status.textContent = input.value
+      ? `${label} selected: ${readable}.`
+      : `${label} is not selected.`;
+    if (announce && status) status.setAttribute("data-announced", String(Date.now()));
+  }
+  function bindTripDateControls(form) {
+    form.querySelectorAll(".trip-date-input").forEach((input) => {
+      syncTripDateControl(input);
+      input.addEventListener("input", () => syncTripDateControl(input, true));
+      input.addEventListener("change", () => syncTripDateControl(input, true));
+      input.addEventListener("pointerdown", (event) => {
+        if (typeof input.showPicker !== "function") return;
+        event.preventDefault();
+        input.focus({ preventScroll: true });
+        try { input.showPicker(); } catch (_) {}
+      });
+      input.addEventListener("keydown", (event) => {
+        if (typeof input.showPicker !== "function" || !["Enter", " ", "ArrowDown"].includes(event.key)) return;
+        event.preventDefault();
+        try { input.showPicker(); } catch (_) {}
+      });
+    });
   }
   function setQuickMoreOpen(form, open) {
     const toggle = form.querySelector(".form-more-toggle"),
@@ -2921,6 +2970,7 @@
     if (nativeForm && !nativeForm.dataset.bound) {
       nativeForm.dataset.bound = "1";
       restoreQuickDraft(nativeForm);
+      bindTripDateControls(nativeForm);
       syncQuickConditionalFields(nativeForm);
       nativeForm
         .querySelectorAll("[data-location-role]")

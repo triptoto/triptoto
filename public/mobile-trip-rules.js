@@ -17,7 +17,7 @@
       return {
         valid: false,
         field: "startsOn",
-        message: "Choose a start date.",
+        message: "Select a start date.",
       };
     if (!DATE_PATTERN.test(startsOn))
       return {
@@ -29,7 +29,7 @@
       return {
         valid: false,
         field: "endsOn",
-        message: "Choose an end date.",
+        message: "Select an end date.",
       };
     if (!DATE_PATTERN.test(endsOn))
       return {
@@ -41,7 +41,7 @@
       return {
         valid: false,
         field: "endsOn",
-        message: "End date cannot be before start date.",
+        message: "End date must be on or after the start date.",
       };
 
     return { valid: true, values: { title, startsOn, endsOn } };
