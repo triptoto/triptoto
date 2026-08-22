@@ -96,6 +96,7 @@ assert(app.includes('dateRangeField("checkInDate","checkOutDate","Stay dates","C
 assert(rangePicker.includes('data-range-start')&&rangePicker.includes('data-range-end')&&rangePicker.includes('Now choose the end date.'),'date-range picker does not preserve start/end data or the two-tap selection sequence');
 assert(rangePicker.includes('role="grid"')&&rangePicker.includes('aria-label="Calendar"')&&rangePicker.includes('aria-selected="true"'),'date-range calendar semantics are incomplete');
 assert(rangePicker.includes('SHORT.format(date)')&&rangePicker.includes('aria-live="polite"'),'selected date range is not localized or announced');
+assert(rangePicker.includes('node.textContent !== value')&&rangePicker.includes('setText(value,')&&rangePicker.includes('setText(hint,'),'date-range observer updates can react to their own unchanged labels');
 assert(rangeCss.includes('min-height:44px')&&rangeCss.includes('.date-range-trigger:focus-visible'),'date-range touch targets or keyboard focus are incomplete');
 assert(legacyApp.includes("dateRangeMarkup('startsOn','endsOn','Trip dates','Start','End'")&&legacyApp.includes("dateRangeMarkup('checkInDate','checkOutDate','Stay dates','Check-in','Check-out'"),'legacy trip and stay forms do not use the shared date-range control');
 assert(validateManualTrip({title:'',startsOn:'2026-09-01',endsOn:'2026-09-02'}).message==='Enter a trip name.','trip-name validation copy changed');

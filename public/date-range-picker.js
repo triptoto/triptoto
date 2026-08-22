@@ -20,6 +20,9 @@
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));
   };
+  const setText = (node, value) => {
+    if (node && node.textContent !== value) node.textContent = value;
+  };
 
   function dialog() {
     let node = document.getElementById("date-range-dialog");
@@ -97,8 +100,8 @@
     const end = container.querySelector("[data-range-end]")?.value || "";
     const value = container.querySelector(".date-range-trigger__value");
     const hint = container.querySelector(".date-range-trigger__hint");
-    if (value) value.textContent = start && end ? `${label(start)} – ${label(end)}` : "Choose dates";
-    if (hint) hint.textContent = start && end ? `${container.dataset.startLabel || "Start"} → ${container.dataset.endLabel || "End"}` : "Tap start, then end";
+    setText(value, start && end ? `${label(start)} – ${label(end)}` : "Choose dates");
+    setText(hint, start && end ? `${container.dataset.startLabel || "Start"} → ${container.dataset.endLabel || "End"}` : "Tap start, then end");
   }
 
   function enhance(root) {
