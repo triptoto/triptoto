@@ -64,7 +64,7 @@ The protected runtime was checked with iPhone-style status/home-indicator geomet
 
 ## Design system observations
 
-- Product surfaces use white `#FFFFFF`, cool concrete `#F1F3F5`, silver slate `#CED4DA`, asphalt grey `#495057`, and jet black `#111215`.
+- Product surfaces use white `#FFFFFF`, cool concrete `#F1F3F5`, silver slate borders `#CED4DA`, asphalt grey icons and secondary text `#495057`, and jet black `#111215`.
 - App content uses the Apple system stack. Android device chrome intentionally uses the protected runtime’s Roboto treatment.
 - Jet black is reserved for primary actions and primary text; grey hierarchy carries secondary states.
 - White surfaces are the default, with cool-concrete card fill and silver separators.

@@ -6,7 +6,8 @@ tripto.to is now implemented as a mobile application. The primary viewport is 39
 
 - Background: pure white `#FFFFFF`
 - Card fill: cool concrete `#F1F3F5`
-- Borders and icons: silver slate `#CED4DA`
+- Borders: silver slate `#CED4DA`
+- Icons: asphalt grey `#495057`
 - Secondary text: asphalt grey `#495057`
 - Primary text and actions: jet black `#111215`
 - Flat surfaces, thin separators and restrained shadows

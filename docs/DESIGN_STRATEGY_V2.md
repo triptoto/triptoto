@@ -55,8 +55,8 @@ Use one restrained monochrome system:
 
 - pure white `#FFFFFF` for the base application background;
 - cool concrete `#F1F3F5` for cards and grouped controls;
-- silver slate `#CED4DA` for borders and icons;
-- asphalt grey `#495057` for secondary text;
+- silver slate `#CED4DA` for borders;
+- asphalt grey `#495057` for icons and secondary text;
 - jet black `#111215` for primary text and actions.
 
 Scheduled data receives neutral provenance and never uses color to imply live status.

@@ -6,7 +6,7 @@ assert(index.includes('/mobile-app.css')&&index.includes('/mobile-app.js')&&inde
 assert(!index.includes('/app.js')&&!app.includes('/legacy.html')&&!sw.includes('/legacy.html'),'legacy presentation leaked into Product V2');
 assert(css.includes('--app-width:430px')&&css.includes('env(safe-area-inset-bottom)')&&css.includes('env(safe-area-inset-top)'),'mobile sizing or safe areas missing');
 assert(css.includes('-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif')&&!css.includes('"Inter"'),'Apple typography contract changed');
-for(const color of ['--paper:#fff','--surface:#f1f3f5','--icon:#ced4da','--muted:#495057','--ink:#111215'])assert(css.includes(color),`monochrome palette missing: ${color}`);
+for(const color of ['--paper:#fff','--surface:#f1f3f5','--icon:#495057','--muted:#495057','--ink:#111215'])assert(css.includes(color),`monochrome palette missing: ${color}`);
 for(const oldColor of ['#141948','#2f3bab','#febf02','#f2f4f7','#f7f8fa'])assert(!css.toLowerCase().includes(oldColor)&&!manifest.toLowerCase().includes(oldColor),`old palette remains: ${oldColor}`);
 assert(manifest.includes('"background_color": "#FFFFFF"')&&manifest.includes('"theme_color": "#FFFFFF"'),'PWA palette is stale');
 assert(css.includes('overflow-x:hidden')&&css.includes('overflow-x:clip'),'horizontal overflow protection missing');
