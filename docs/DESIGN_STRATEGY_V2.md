@@ -51,16 +51,15 @@ font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
 
 ## Color
 
-Preserve brand recognition with:
+Use one restrained monochrome system:
 
-- deep navy `#141948` for authority and high-confidence travel surfaces;
-- indigo `#2F3BAB` for selection, links, and secondary emphasis;
-- golden yellow `#FEBF02` only for primary action or urgent attention;
-- off-white `#F2F4F7` for the base application surface;
-- white for focused content surfaces;
-- semantic green/red/amber only for truthful result states with text/icon support.
+- pure white `#FFFFFF` for the base application background;
+- cool concrete `#F1F3F5` for cards and grouped controls;
+- silver slate `#CED4DA` for borders and icons;
+- asphalt grey `#495057` for secondary text;
+- jet black `#111215` for primary text and actions.
 
-Do not use yellow decoratively or use green to imply live flight status. Scheduled data receives neutral provenance.
+Scheduled data receives neutral provenance and never uses color to imply live status.
 
 ## Spacing and density
 
@@ -138,9 +137,9 @@ Use alert dialogs only for destructive or blocking decisions. Copy states the co
 
 ## Buttons
 
-- Primary: yellow fill, navy text, minimum 52px for major tasks.
-- Secondary: quiet white/transparent surface with navy or indigo text.
-- Destructive: red text/fill only in explicit destructive contexts.
+- Primary: jet-black fill, white text, minimum 52px for major tasks.
+- Secondary: concrete or transparent surface with jet-black text.
+- Destructive: explicit consequence copy and icon support without introducing another palette color.
 - Icon-only controls require accessible names and 44×44px targets.
 - Disabled controls explain why when the user needs the action.
 - Press feedback is subtle and respects reduced motion.

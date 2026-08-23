@@ -13,70 +13,23 @@
     ? new URLSearchParams(location.search).get("qaState")
     : null;
   const tripRules = globalThis.TriptoTripRules;
+  const routes = globalThis.TriptoRoutes;
 
-  const ICONS = {
-    user: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
-    home: '<path d="M3 11.5 12 4l9 7.5"></path><path d="M5 10.5V21h14V10.5"></path><path d="M9 21v-6h6v6"></path>',
-    trips:
-      '<rect x="4" y="7" width="16" height="13" rx="2"></rect><path d="M9 7V5h6v2"></path><path d="M8 11v5M16 11v5"></path>',
-    plus: '<path d="M12 5v14M5 12h14"></path>',
-    ticket:
-      '<path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6Z"></path><path d="M9 8v8"></path>',
-    plane: '<path d="m2 16 20-8-3-3-8 3-4-4-2 1 3 5-4 2-2-1-1 1 3 3Z"></path>',
-    chevron: '<path d="m9 18 6-6-6-6"></path>',
-    check: '<path d="m5 12 4 4L19 6"></path>',
-    qr: '<rect x="3" y="3" width="6" height="6"></rect><rect x="15" y="3" width="6" height="6"></rect><rect x="3" y="15" width="6" height="6"></rect><path d="M15 15h3v3h-3zM18 18h3v3h-3zM18 12h3v3h-3zM12 18h3v3h-3z"></path>',
-    hotel:
-      '<path d="M4 21V8l8-4 8 4v13"></path><path d="M8 10h2M14 10h2M8 14h2M14 14h2M10 21v-3h4v3"></path>',
-    train:
-      '<rect x="5" y="3" width="14" height="15" rx="3"></rect><path d="M8 7h8M8 13h.01M16 13h.01M8 18l-2 3M16 18l2 3"></path>',
-    star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"></path>',
-    restaurant:
-      '<path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3c-2 2-2 6 0 8v10"></path>',
-    document:
-      '<path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v5h5M9 13h6M9 17h6"></path>',
-    pin: '<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle>',
-    calendar:
-      '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M3 10h18"></path>',
-    clock:
-      '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
-    night:
-      '<path d="M16.8 17.4A7.5 7.5 0 0 1 7.2 7.2a7.5 7.5 0 1 0 9.6 10.2Z"></path><path d="M16.5 4.5v3M15 6h3M20 9v2M19 10h2"></path>',
-    day:
-      '<path d="M5 16h14"></path><path d="M7 16a5 5 0 0 1 10 0"></path><path d="M12 4v3M4.9 8.9 7 11M19.1 8.9 17 11M3 20h18"></path>',
-    terminal:
-      '<path d="M4 20h16M6 20v-6h12v6M9 14V9h6v5M10 9V6h4v3M8 17h2M14 17h2"></path>',
-    gate:
-      '<path d="M6 21V7h12v14M9 21v-8h6v8M5 7h14M8 4h8v3M12 16h.01"></path>',
-    seat:
-      '<path d="M8 4v8a4 4 0 0 0 4 4h5"></path><path d="M8 9h5a3 3 0 0 1 3 3v4M6 20h12M9 16l-1 4M16 16l1 4"></path>',
-    chevronDown: '<path d="m6 9 6 6 6-6"></path>',
-    chevronUp: '<path d="m6 15 6-6 6 6"></path>',
-    back: '<path d="m15 18-6-6 6-6"></path>',
-    share:
-      '<path d="M12 16V3M8 7l4-4 4 4"></path><path d="M5 12v8h14v-8"></path>',
-    luggage:
-      '<rect x="6" y="6" width="12" height="15" rx="2"></rect><path d="M9 6V4h6v2M9 10v7M15 10v7"></path>',
-    navigation: '<path d="m21 3-8 18-2-8-8-2 18-8Z"></path>',
-    info: '<circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path>',
-    warning:
-      '<path d="M12 3 2.5 20h19L12 3Z"></path><path d="M12 9v5M12 17h.01"></path>',
-    download:
-      '<path d="M12 3v12M7 10l5 5 5-5"></path><path d="M4 19h16"></path>',
-    car: '<path d="m5 11 2-5h10l2 5"></path><rect x="3" y="10" width="18" height="8" rx="2"></rect><path d="M6 18v2M18 18v2M7 14h.01M17 14h.01"></path>',
-    phone:
-      '<path d="M8 3H5a2 2 0 0 0-2 2c0 9 7 16 16 16a2 2 0 0 0 2-2v-3l-5-1-2 3c-4-2-6-4-8-8l3-2-1-5Z"></path>',
-    mail: '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path>',
-    copy: '<rect x="8" y="8" width="11" height="13" rx="2"></rect><path d="M5 16H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>',
-    passport:
-      '<rect x="5" y="3" width="14" height="18" rx="2"></rect><circle cx="12" cy="11" r="3"></circle><path d="M9 11h6M12 8c1 2 1 4 0 6M8 17h8"></path>',
-    map: '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"></path><path d="M9 3v15M15 6v15"></path>',
-    close: '<path d="m6 6 12 12M18 6 6 18"></path>',
-    shield:
-      '<path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z"></path><path d="m9 12 2 2 4-5"></path>',
-    refresh:
-      '<path d="M20 11a8 8 0 1 0 2 5"></path><path d="M20 4v7h-7"></path>',
-  };
+  const ICON_NAMES = Object.freeze({
+    user: "user", home: "house", trips: "suitcase-rolling", plus: "plus",
+    ticket: "ticket", plane: "airplane", chevron: "caret-right",
+    check: "check", qr: "qr-code", hotel: "buildings", train: "train",
+    star: "star", restaurant: "fork-knife", document: "file-text",
+    pin: "map-pin", calendar: "calendar-blank", clock: "clock",
+    night: "moon-stars", day: "sun-horizon", terminal: "air-traffic-control",
+    gate: "door", seat: "armchair", chevronDown: "caret-down",
+    chevronUp: "caret-up", back: "caret-left", share: "share-network",
+    luggage: "suitcase", navigation: "navigation-arrow", info: "info",
+    warning: "warning", download: "download-simple", car: "car",
+    phone: "phone", mail: "envelope-simple", copy: "copy",
+    passport: "identification-card", map: "map-trifold", close: "x",
+    shield: "shield-check", refresh: "arrows-clockwise",
+  });
   const state = {
     token: localStorage.getItem("tripto_token") || "",
     loading: true,
@@ -116,7 +69,9 @@
     bookingFilter: "all",
     importMode: "upload",
     manualLabel: null,
+    editingEntity: null,
     formDraft: null,
+    dateRange: null,
     tripsLoaded: false,
   };
   let flightDetailsCloseTimer = null;
@@ -140,7 +95,8 @@
     "document",
   ]);
   function icon(name, size = 24, extra = "") {
-    return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${extra}">${ICONS[name] || ""}</svg>`;
+    const glyph = ICON_NAMES[name] || "circle";
+    return `<i aria-hidden="true" class="ph ph-${glyph}${extra ? ` ${extra}` : ""}" style="--icon-size:${Number(size) || 24}px"></i>`;
   }
   function esc(value) {
     return String(value ?? "").replace(
@@ -176,9 +132,10 @@
     );
   }
   function parseRoute() {
-    const raw = location.hash.replace(/^#/, "") || "home";
-    const [screen, id] = raw.split(":");
-    return { screen: screen || "home", id: id ? decodeURIComponent(id) : null };
+    return routes?.parse(location) || { screen: "timeline", id: null };
+  }
+  function routeUrl(screen, id = null) {
+    return routes?.urlFor(screen, id, location.search) || "/timeline";
   }
   function quickDraftKey(kind = state.selectedId) {
     const normalized = String(kind || "unknown"),
@@ -260,11 +217,12 @@
       String(id || "") !== String(state.selectedId || "")
     )
       state.flightDetailsOpen = false;
-    const hash = "#" + screen + (id ? ":" + encodeURIComponent(id) : "");
+    const nextUrl = routeUrl(screen, id);
     state.routeMotion =
       kind === "tab" ? "tab" : kind === "back" ? "back" : "forward";
-    if (replace) history.replaceState(null, "", hash);
-    else if (location.hash !== hash) history.pushState(null, "", hash);
+    if (replace) history.replaceState(null, "", nextUrl);
+    else if (`${location.pathname}${location.search}` !== nextUrl)
+      history.pushState(null, "", nextUrl);
     state.screen = screen;
     state.selectedId = id || null;
     state.sheet = null;
@@ -870,6 +828,24 @@
         state.timeline = [];
         state.brain = { ...state.brain, nextItem: null };
       }
+      if (QA_STATE === "trip-empty") {
+        state.timeline = [];
+        state.transport = [];
+        state.stays = [];
+        state.health = {
+          highestSeverity: "high",
+          issueCount: 1,
+          calculatedAt: Date.now(),
+          issues: [
+            {
+              severity: "high",
+              title: "No travelers added",
+              explanation: "The trip has no traveler records.",
+            },
+          ],
+        };
+        state.brain = { ...state.brain, nextItem: null };
+      }
       if (QA_STATE === "timeline-warning" && state.timeline[1]) {
         state.timeline[1] = {
           ...state.timeline[1],
@@ -980,11 +956,11 @@
         if (!state.trip) {
           state.screen = "form";
           state.selectedId = "trip";
-          history.replaceState(null, "", "#form:trip");
+          history.replaceState(null, "", routeUrl("form", "trip"));
         } else if (["home", "trips", "bookings"].includes(state.screen)) {
           state.screen = "timeline";
           state.selectedId = null;
-          history.replaceState(null, "", "#timeline");
+          history.replaceState(null, "", routeUrl("timeline"));
         }
       }
     } catch (error) {
@@ -1653,12 +1629,17 @@
     return `<div class="empty-mobile"><div class="empty-mobile-icon">${icon("trips", 31)}</div><h1>Your first trip starts here</h1><p>Create a trip, then add transport, stays and documents.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div>`;
   }
   function shouldShowFirstRun() {
+    const previewFirstRun =
+      PREVIEW_MODE &&
+      ["empty", "empty-offline", "empty-reduced-motion"].includes(QA_STATE);
     return Boolean(
       state.tripsLoaded &&
         !state.loading &&
         !state.error &&
-        !PREVIEW_MODE &&
+        (!PREVIEW_MODE || previewFirstRun) &&
         (state.account?.mode || "guest") !== "account" &&
+        !state.trip &&
+        state.trips.length === 0 &&
         !["tour"].includes(state.screen),
     );
   }
@@ -1669,21 +1650,31 @@
       active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
     );
     const theme = document.querySelector('meta[name="theme-color"]');
-    if (theme) theme.setAttribute("content", active ? "#141948" : "#ffffff");
+    if (theme) theme.setAttribute("content", "#FFFFFF");
   }
   function firstRunProductPreview() {
-    return `<section class="first-run-preview" aria-label="Example trip product preview"><div class="first-run-preview__layer" aria-hidden="true"></div><header class="first-run-preview__header"><span class="first-run-preview__badge">Preview</span><span class="first-run-preview__ready">${icon("check", 14)} Offline ready</span></header><div class="first-run-preview__route"><span><strong>TLV</strong><small>Aug 20</small></span><span class="first-run-preview__journey" aria-hidden="true"><i></i>${icon("plane", 24)}<i></i></span><span><strong>FCO</strong><small>Aug 26</small></span></div><div class="first-run-preview__progress" aria-hidden="true"><i class="is-complete"></i><span></span><i class="is-current"></i><span></span><i></i></div><footer class="first-run-preview__footer"><span>${icon("calendar", 18)}<span><strong>3 plans organized</strong><small>In travel order</small></span></span><span class="first-run-preview__pass" aria-hidden="true">${icon("ticket", 20)}</span></footer></section>`;
+    const previewRows = [
+      ["plane", "THU, AUG 28 · 09:20", "Tel Aviv → Rome", "LY 383 · Terminal 3"],
+      ["car", "14:10", "Airport transfer", "FCO → Hotel Artemide"],
+      ["hotel", "15:00", "Hotel Artemide", "Check-in · 4 nights"],
+      ["restaurant", "20:00", "Roscioli", "Dinner reservation"],
+    ];
+    return `<section class="first-run-preview" aria-label="Example trip timeline">${previewRows.map(([iconName, time, title, detail]) => `<div class="first-run-preview__event"><span class="first-run-preview__marker">${icon(iconName, 23)}</span><span class="first-run-preview__copy"><small>${esc(time)}</small><strong>${esc(title)}</strong><span>${esc(detail)}</span></span></div>`).join("")}</section>`;
   }
   function firstRunScreen() {
     const offline = state.offline
       ? `<span class="first-run-offline" role="status">${icon("info", 14)} Offline</span>`
       : "";
-    return `<div class="phone-app"><section class="first-run-screen welcome-v2 screen--navless" aria-labelledby="first-run-title"><div class="first-run-aurora" aria-hidden="true"></div><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to">tripto<span>.</span>to</div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><h1 id="first-run-title"><span>All your trip.</span><span>One Timeline.</span></h1><p><span>Add bookings, we’ll tell you</span><span>what matters next.</span></p></section>${firstRunProductPreview()}<div class="first-run-actions welcome-v2__actions"><div id="google-signin-button" aria-label="Continue with Google"></div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span>${icon("chevron", 18)}</button></div><footer class="welcome-v2__footer"><a href="/privacy.html">Privacy</a><span aria-hidden="true"></span><a href="/terms.html">Terms</a></footer></main></section></div>`;
+    const googleAction = PREVIEW_MODE
+      ? `<button class="first-run-google-preview" data-action="preview-google" aria-label="Continue with Google"><img src="/assets/google-g.svg" alt=""><span>Continue with Google</span></button>`
+      : `<div id="google-signin-button" aria-label="Continue with Google"></div>`;
+    return `<div class="phone-app"><section class="first-run-screen welcome-v2 screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to">tripto<span>.</span>to</div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><span class="first-run-kicker">Quiet Journey</span><h1 id="first-run-title">All your trip.<br>One calm timeline.</h1><p>We turn your bookings into a single, easy-to-follow journey.</p></section>${firstRunProductPreview()}<div class="first-run-actions welcome-v2__actions"><div class="first-run-google">${googleAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span>${icon("chevron", 18)}</button></div><footer class="welcome-v2__footer"><a href="/privacy.html">Privacy</a><span aria-hidden="true"></span><a href="/terms.html">Terms</a></footer></main></section></div>`;
   }
   function timelineScreen() {
     if (!state.trip)
       return `<div class="phone-app"><section class="screen timeline-screen">${appBar("Trip")}<main class="timeline-page timeline-page--empty"><div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No trip selected</h1><p>Create or select a trip first.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div></main>${bottomNav("trips")}</section></div>`;
     const now = Date.now(),
+      emptySetup = isEmptyTripSetup(),
       highlightedNextId =
         QA_STATE === "timeline-normal" ? "" : itemId(nextItem() || {}),
       groups = [];
@@ -1748,12 +1739,16 @@
                 .join("")}</div></section>`,
           )
           .join("")
-      : `<div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${primaryCta("Add to trip", "open-add", "plus")}</div>`;
-    const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",18)}<small>${esc(formatTripDates(state.trip))}</small></button><button class="icon-button" data-screen="documents" aria-label="Tickets and documents">${icon("document",22)}</button></header>`;
-    return `<div class="phone-app"><section class="screen timeline-screen">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
+      : `<div class="timeline-empty">${emptySetup ? '<span class="timeline-empty__eyebrow">Start building</span>' : ""}<span class="timeline-empty__icon">${icon(emptySetup ? "plus" : "calendar", 30)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${emptySetup ? `<button class="primary-cta timeline-empty__add" data-action="open-add"><span>Add booking</span>${icon("plus",18)}</button>` : primaryCta("Add booking", "open-add", "plus")}</div>`;
+    const headerAction = emptySetup
+      ? `<button class="icon-button" data-screen="account" aria-label="Account">${icon("user",22)}</button>`
+      : `<button class="icon-button" data-screen="documents" aria-label="Tickets and documents">${icon("document",22)}</button>`;
+    const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",18)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
+    return `<div class="phone-app"><section class="screen timeline-screen">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${emptySetup ? "" : timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
   }
 
   function timelineContextCard() {
+    if (isEmptyTripSetup()) return "";
     const issues = activeHealthIssues();
     if (issues.length) {
       const issue = issues[0];
@@ -2281,20 +2276,45 @@
         attrs = "",
         choices = "",
         helper = "",
+        value = "",
       } = options,
       base = `name="${name}" id="form-${name}" ${required ? "required" : ""} ${attrs}`;
     let control;
     if (type === "textarea")
-      control = `<textarea ${base} rows="4" placeholder="${esc(placeholder)}"></textarea>`;
+      control = `<textarea ${base} rows="4" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`;
     else if (type === "select") control = `<select ${base}>${choices}</select>`;
     else
-      control = `<input type="${type}" ${base} autocomplete="off" placeholder="${esc(placeholder)}">`;
+      control = `<input type="${type}" ${base} autocomplete="off" placeholder="${esc(placeholder)}" value="${esc(value)}">`;
     return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
   }
-  function tripDateField(name, label) {
-    const id = `form-${name}`,
-      statusId = `${id}-status`;
-    return `<label class="form-field trip-date-field form-field--${name}" for="${id}"><span>${esc(label)} <b aria-hidden="true">*</b></span><span class="trip-date-control"><input class="trip-date-input" type="date" name="${esc(name)}" id="${id}" required autocomplete="off" aria-describedby="${statusId}" data-date-label="${esc(label)}"><span class="trip-date-shell" aria-hidden="true"><span class="trip-date-icon">${icon("calendar", 20)}</span><span class="trip-date-value">Select date</span></span></span><span class="sr-only trip-date-status" id="${statusId}" aria-live="polite">${esc(label)} is not selected.</span></label>`;
+  function dateRangeField(startName, endName, label, startLabel, endLabel) {
+    const fieldId = `range-${startName}-${endName}`;
+    return `<fieldset class="date-range-field form-field--wide" id="${fieldId}"><legend>${esc(label)}</legend><input class="date-range-input" type="hidden" name="${esc(startName)}" id="form-${esc(startName)}"><input class="date-range-input" type="hidden" name="${esc(endName)}" id="form-${esc(endName)}"><button class="date-range-trigger" type="button" data-action="open-date-range" data-start-name="${esc(startName)}" data-end-name="${esc(endName)}" data-range-title="${esc(label)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}" aria-label="${esc(label)}. Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}" aria-describedby="${fieldId}-status"><span class="date-range-trigger__icon">${icon("calendar", 21)}</span><span class="date-range-trigger__copy"><small>Select dates</small><strong>Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}</strong></span>${icon("chevron", 18)}</button><span class="sr-only" id="${fieldId}-status" aria-live="polite">No date range selected.</span></fieldset>`;
+  }
+  function syncDateRangeField(form, startName, endName) {
+    const start = form?.elements[startName], end = form?.elements[endName];
+    if (!start || !end) return;
+    const field = start.closest(".date-range-field"), trigger = field?.querySelector(".date-range-trigger"), status = field?.querySelector('[aria-live="polite"]');
+    if (!trigger) return;
+    const copy = trigger.querySelector(".date-range-trigger__copy");
+    if (start.value && end.value) {
+      copy.innerHTML = `<small>Selected dates</small><strong>${esc(formatDateOnly(start.value))} – ${esc(formatDateOnly(end.value))}</strong>`;
+      trigger.classList.add("is-selected");
+      trigger.setAttribute("aria-label", `${field.querySelector("legend")?.textContent || "Dates"}. ${formatDateOnly(start.value)} to ${formatDateOnly(end.value)}`);
+      if (status) status.textContent = `Selected range: ${formatDateOnly(start.value)} to ${formatDateOnly(end.value)}.`;
+    } else {
+      const startLabel = trigger.dataset.startLabel || "Start date", endLabel = trigger.dataset.endLabel || "End date";
+      copy.innerHTML = `<small>Select dates</small><strong>Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}</strong>`;
+      trigger.classList.remove("is-selected");
+      trigger.setAttribute("aria-label", `${field.querySelector("legend")?.textContent || "Dates"}. Choose ${startLabel.toLowerCase()} and ${endLabel.toLowerCase()}`);
+      if (status) status.textContent = "No date range selected.";
+    }
+  }
+  function bindDateRangeControls(form) {
+    form.querySelectorAll(".date-range-field").forEach((field) => {
+      const inputs = field.querySelectorAll(".date-range-input");
+      if (inputs.length === 2) syncDateRangeField(form, inputs[0].name, inputs[1].name);
+    });
   }
   function quickTripContext() {
     if (!state.trip) return "";
@@ -2328,16 +2348,20 @@
     return focusedTaskPage(title, `<section class="quick-no-trip"><span>${icon("trips", 30)}</span><h1>Choose a trip first</h1><p>This ${esc(kind)} needs a trip so it cannot become an orphan booking.</p><div class="quick-trip-list">${state.trips.map((trip) => `<button type="button" data-action="select-trip-for-add" data-id="${esc(trip.id)}"><span><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small></span>${icon("chevron", 19)}</button>`).join("")}</div><button class="mobile-primary-action" type="button" data-action="create-trip">Create trip</button></section>`, "form-screen quick-add-screen");
   }
   function basicMobileForm(kind) {
+    const editingTraveler = kind === "traveler" && state.editingEntity?.kind === "traveler"
+      ? state.travelers.find((traveler) => String(traveler.id) === String(state.editingEntity.id))
+      : null;
     const configs = {
         trip: { title:"Create Trip", lead:"New trip", fields:[["destination","Where are you going?","text",true,true],["startsOn","Start date","date",true,false],["endsOn","End date","date",true,false],["title","Trip name · Optional","text",false,true]] },
-        traveler: { title:"Add Traveler", lead:"Traveler", fields:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
+        traveler: { title:editingTraveler?"Edit Traveler":"Add Traveler", lead:"Traveler", fields:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
         checklist: { title:"Add Essential", lead:"Travel essential", fields:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
       }, cfg = configs[kind] || configs.trip;
-    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; if(type==="select")choices='<option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option>'; if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? tripDateField(name, label) : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices}); });
+    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; const current=name==="displayName"?val(editingTraveler||{},"display_name"):name==="travelerType"?val(editingTraveler||{},"traveler_type"):""; if(type==="select")choices=['adult','child','infant'].map((option)=>`<option value="${option}" ${current===option?"selected":""}>${statusText(option)}</option>`).join(""); if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? "" : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices,value:current}); });
     const fields = kind === "trip"
-      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<fieldset class="trip-date-range"><legend>Travel dates</legend><div class="form-fields form-fields--date-time">${mappedFields.slice(1,3).join("")}</div></fieldset>${mappedFields[3]}</div>`
+      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date")}${mappedFields[3]}</div>`
       : `<div class="form-fields">${mappedFields.join("")}</div>`;
-    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}" novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${kind === "trip" ? "Where are you going?" : esc(cfg.title)}</h1>${kind === "trip" ? "<p>Keep it simple. Add the details later.</p>" : ""}</header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${kind === "trip" ? "Create trip" : `Save ${esc(statusText(kind))}`}</button></div></form>`, "form-screen");
+    const editAttrs=editingTraveler?` data-edit-id="${esc(editingTraveler.id)}" data-edit-version="${esc(editingTraveler.version||1)}"`:"";
+    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${kind === "trip" ? "Where are you going?" : esc(cfg.title)}</h1>${kind === "trip" ? "<p>Keep it simple. Add the details later.</p>" : ""}</header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${kind === "trip" ? "Create trip" : editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`}</button></div></form>`, "form-screen");
   }
   function mobileFormScreen() {
     const kind = String(state.selectedId || "trip");
@@ -2352,7 +2376,7 @@
       more = quickMore(kind,"More flight details",`<div class="form-fields">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'data-timezone-role="arrival"'})}${quickField("carrierName","Marketing airline",{})}${quickField("operatingAirlineCode","Operating airline",{})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Departure uses the event-local timezone. Arrival stays unavailable until you add it.";
     } else if (kind === "hotel") {
-      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name"})}<div class="form-fields form-fields--date-time">${quickField("checkInDate","Check-in date",{type:"date",required:true,wide:false})}${quickField("checkOutDate","Check-out date",{type:"date",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name"})}${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out")}${quickDateSuggestions(kind)}`;
       more = quickMore(kind,"More stay details",`<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Check-in and check-out times remain unavailable unless you enter them.";
     } else if (kind === "train") {
@@ -2401,6 +2425,26 @@
   }
   function bottomSheet(id, title, content) {
     return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
+  }
+  function rangeMonthStart(value) {
+    const match = String(value || "").match(/^(\d{4})-(\d{2})/), now = new Date();
+    return match ? `${match[1]}-${match[2]}-01` : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  }
+  function shiftRangeMonth(value, amount) {
+    const date = new Date(`${rangeMonthStart(value)}T12:00:00Z`);
+    date.setUTCMonth(date.getUTCMonth() + amount);
+    return date.toISOString().slice(0, 10);
+  }
+  function dateRangeSheet() {
+    const range = state.dateRange;
+    if (!range) return "";
+    const monthStart = new Date(`${rangeMonthStart(range.month)}T12:00:00Z`), year = monthStart.getUTCFullYear(), month = monthStart.getUTCMonth(), firstWeekday = monthStart.getUTCDay(), daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate(), previousDays = new Date(Date.UTC(year, month, 0)).getUTCDate(), cells = [];
+    for (let index = 0; index < 42; index += 1) {
+      const dayOffset = index - firstWeekday + 1, date = new Date(Date.UTC(year, month, dayOffset)), iso = date.toISOString().slice(0, 10), inMonth = date.getUTCMonth() === month, isStart = iso === range.start, isEnd = iso === range.end, inRange = Boolean(range.start && range.end && iso > range.start && iso < range.end), label = new Intl.DateTimeFormat(undefined, { weekday:"long", month:"long", day:"numeric", year:"numeric", timeZone:"UTC" }).format(date);
+      cells.push(`<button type="button" class="range-day${inMonth ? "" : " is-outside"}${inRange ? " is-between" : ""}${isStart ? " is-start" : ""}${isEnd ? " is-end" : ""}" data-action="select-range-day" data-date="${iso}" aria-label="${esc(label)}${isStart ? ", start date" : isEnd ? ", end date" : ""}" aria-pressed="${isStart || isEnd}"><span>${date.getUTCDate()}</span></button>`);
+    }
+    const summary = range.start ? range.end ? `${formatDateOnly(range.start)} – ${formatDateOnly(range.end)}` : `${formatDateOnly(range.start)} · now choose ${range.endLabel.toLowerCase()}` : `Choose ${range.startLabel.toLowerCase()}`;
+    return bottomSheet("date-range", range.title, `<div class="range-picker"><div class="range-picker__summary" role="status" tabindex="-1"><small>${esc(range.startLabel)} → ${esc(range.endLabel)}</small><strong>${esc(summary)}</strong></div><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back", 20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron", 20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${range.start && range.end ? "" : " disabled"}>Use these dates</button></div>`);
   }
   function addSheet() {
     return bottomSheet(
@@ -2487,7 +2531,7 @@
     return `<div class="phone-app"><div class="app-loading">${loadingSkeleton()}</div></div>`;
   }
   function errorScreen() {
-    return `<div class="phone-app"><section class="screen">${topbar()}<div class="error-state"><div class="empty-mobile-icon">${icon("warning", 31)}</div><h1>Trip data could not load</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta("Try Again", "retry", "refresh")}<a class="legacy-link" href="/legacy.html">Open advanced beta tools</a></div>${bottomNav("home")}</section></div>`;
+    return `<div class="phone-app"><section class="screen">${topbar()}<div class="error-state"><div class="empty-mobile-icon">${icon("warning", 31)}</div><h1>Trip data could not load</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta("Try Again", "retry", "refresh")}</div>${bottomNav("home")}</section></div>`;
   }
   function toast() {
     const role = state.toastKind === "alert" ? "alert" : "status";
@@ -2590,6 +2634,7 @@
     if (state.sheet === "trips") html += tripSwitchSheet();
     if (state.sheet === "first-run-how") html += firstRunHowSheet();
     if (state.sheet === "manual-booking") html += manualBookingSheet();
+    if (state.sheet === "date-range") html += dateRangeSheet();
     app.innerHTML = html + toast();
     bindDynamic();
   }
@@ -2627,6 +2672,7 @@
       backdrop = document.querySelector(".sheet-backdrop"),
       finish = () => {
         state.sheet = null;
+        state.dateRange = null;
         render();
         restoreSheetFocus();
       };
@@ -2643,7 +2689,7 @@
     if (!sheet) return;
     const first =
       sheet.querySelector(
-        '.sheet-option,input,select,button:not([data-action="close-sheet"])',
+        '.range-picker__summary,.sheet-option,input,select,button:not([data-action="close-sheet"])',
       ) || sheet;
     requestAnimationFrame(() => first.focus());
     sheet.addEventListener("pointerdown", (event) => {
@@ -2690,7 +2736,11 @@
   }
   function showFieldError(form, control, message) {
     if (!control) return;
-    const field = control.closest("label") || control.parentElement,
+    const rangeField = control.classList?.contains("date-range-input")
+        ? control.closest(".date-range-field")
+        : null,
+      focusControl = rangeField?.querySelector(".date-range-trigger") || control,
+      field = rangeField || control.closest("label") || control.parentElement,
       id = `${control.id || control.name || "field"}-error`,
       error = document.createElement("span");
     error.className = "field-error";
@@ -2698,11 +2748,11 @@
     error.setAttribute("role", "alert");
     error.textContent = message;
     field?.append(error);
-    control.setAttribute("aria-invalid", "true");
+    focusControl.setAttribute("aria-invalid", "true");
     const describedBy = [control.dataset.dateLabel ? `${control.id}-status` : "", id]
       .filter(Boolean)
       .join(" ");
-    control.setAttribute("aria-describedby", describedBy);
+    focusControl.setAttribute("aria-describedby", describedBy);
     const disclosure = control.closest(".form-more-panel");
     if (disclosure?.hidden) {
       disclosure.hidden = false;
@@ -2721,7 +2771,7 @@
         ? "auto"
         : "smooth",
     });
-    requestAnimationFrame(() => control.focus({ preventScroll: true }));
+    requestAnimationFrame(() => focusControl.focus({ preventScroll: true }));
   }
   function validateFocusedForm(form) {
     clearFieldErrors(form);
@@ -2742,6 +2792,10 @@
     if (kind === "hotel") {
       const checkIn = form.elements.checkInDate,
         checkOut = form.elements.checkOutDate;
+      if (!checkIn?.value || !checkOut?.value) {
+        showFieldError(form, checkIn || checkOut, "Choose check-in and check-out dates from one calendar.");
+        return false;
+      }
       if (checkIn?.value && checkOut?.value && checkOut.value < checkIn.value) {
         showFieldError(form, checkOut, "Check-out cannot be before check-in.");
         return false;
@@ -2881,39 +2935,6 @@
     }
     if (draft.__moreOpen) setQuickMoreOpen(form, true);
     return true;
-  }
-  function syncTripDateControl(input, announce = false) {
-    if (!input?.classList?.contains("trip-date-input")) return;
-    const shellValue = input.parentElement?.querySelector(".trip-date-value"),
-      status = document.getElementById(`${input.id}-status`),
-      readable = input.value ? formatDateOnly(input.value) : "Select date",
-      label = input.dataset.dateLabel || "Date";
-    if (shellValue) {
-      shellValue.textContent = readable;
-      shellValue.classList.toggle("is-selected", Boolean(input.value));
-    }
-    if (status) status.textContent = input.value
-      ? `${label} selected: ${readable}.`
-      : `${label} is not selected.`;
-    if (announce && status) status.setAttribute("data-announced", String(Date.now()));
-  }
-  function bindTripDateControls(form) {
-    form.querySelectorAll(".trip-date-input").forEach((input) => {
-      syncTripDateControl(input);
-      input.addEventListener("input", () => syncTripDateControl(input, true));
-      input.addEventListener("change", () => syncTripDateControl(input, true));
-      input.addEventListener("pointerdown", (event) => {
-        if (typeof input.showPicker !== "function") return;
-        event.preventDefault();
-        input.focus({ preventScroll: true });
-        try { input.showPicker(); } catch (_) {}
-      });
-      input.addEventListener("keydown", (event) => {
-        if (typeof input.showPicker !== "function" || !["Enter", " ", "ArrowDown"].includes(event.key)) return;
-        event.preventDefault();
-        try { input.showPicker(); } catch (_) {}
-      });
-    });
   }
   function setQuickMoreOpen(form, open) {
     const toggle = form.querySelector(".form-more-toggle"),
@@ -3068,7 +3089,7 @@
     if (nativeForm && !nativeForm.dataset.bound) {
       nativeForm.dataset.bound = "1";
       restoreQuickDraft(nativeForm);
-      bindTripDateControls(nativeForm);
+      bindDateRangeControls(nativeForm);
       syncQuickConditionalFields(nativeForm);
       nativeForm
         .querySelectorAll("[data-location-role]")
@@ -3244,8 +3265,12 @@
         await linkLocalDocument(fd.get("relatedDocument"),result.item?.id);
       } else if (kind === "document") {
         await saveLocalDocument(form.elements.documentFile.files?.[0],fd.get("documentType"),selectedTravelerIds(fd),fd.get("relatedBooking")||null);
-      } else if (kind === "traveler") await api(`/api/v1/trips/${tripId}/travelers`,{method:"POST",body:JSON.stringify({displayName:fd.get("displayName"),travelerType:fd.get("travelerType")})});
-      else if (kind === "checklist") { location.href=legacyUrl("add","checklist"); return; }
+      } else if (kind === "traveler") {
+        const editId=String(form.dataset.editId||"");
+        await api(`/api/v1/trips/${tripId}/travelers${editId?`/${encodeURIComponent(editId)}`:""}`,{method:editId?"PATCH":"POST",body:JSON.stringify({displayName:fd.get("displayName"),travelerType:fd.get("travelerType"),...(editId?{version:Number(form.dataset.editVersion)}:{})})});
+      } else if (kind === "checklist") {
+        await api(`/api/v1/trips/${tripId}/checklist`,{method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})});
+      }
       await loadTripDetails(); clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${state.manualLabel || statusText(kind)} saved.`); state.manualLabel=null; route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
     } catch (error) {
       const message = error?.status === 409
@@ -3332,9 +3357,6 @@
       "noopener",
     );
   }
-  function legacyUrl(action, type = "") {
-    return `/legacy.html?action=${encodeURIComponent(action)}${type ? `&type=${encodeURIComponent(type)}` : ""}`;
-  }
   async function handleAction(action, target, inputMethod = "pointer") {
     switch (action) {
       case "back":
@@ -3376,6 +3398,60 @@
         break;
       case "open-first-run-how":
         openSheet("first-run-how", target);
+        break;
+      case "open-date-range": {
+        const form = target.closest("form"), startName = target.dataset.startName, endName = target.dataset.endName, start = String(form?.elements[startName]?.value || ""), end = String(form?.elements[endName]?.value || "");
+        if (!form || !startName || !endName) break;
+        saveQuickDraft(form);
+        state.dateRange = {
+          startName,
+          endName,
+          start,
+          end,
+          month: rangeMonthStart(start || end),
+          title: target.dataset.rangeTitle || "Choose dates",
+          startLabel: target.dataset.startLabel || "Start date",
+          endLabel: target.dataset.endLabel || "End date",
+        };
+        openSheet("date-range", target);
+        break;
+      }
+      case "range-month":
+        if (state.dateRange) {
+          state.dateRange.month = shiftRangeMonth(state.dateRange.month, Number(target.dataset.offset) || 0);
+          render();
+        }
+        break;
+      case "select-range-day":
+        if (state.dateRange) {
+          const selected = String(target.dataset.date || "");
+          if (!state.dateRange.start || state.dateRange.end) {
+            state.dateRange.start = selected;
+            state.dateRange.end = "";
+          } else if (selected < state.dateRange.start) {
+            state.dateRange.end = state.dateRange.start;
+            state.dateRange.start = selected;
+          } else {
+            state.dateRange.end = selected;
+          }
+          render();
+        }
+        break;
+      case "apply-date-range": {
+        const range = state.dateRange, rangeForm = document.getElementById("native-form");
+        if (!range || !range.start || !range.end || !rangeForm) break;
+        rangeForm.elements[range.startName].value = range.start;
+        rangeForm.elements[range.endName].value = range.end;
+        rangeForm.elements[range.startName].dispatchEvent(new Event("input", { bubbles:true }));
+        rangeForm.elements[range.endName].dispatchEvent(new Event("input", { bubbles:true }));
+        syncDateRangeField(rangeForm, range.startName, range.endName);
+        saveQuickDraft(rangeForm);
+        formHasMeaningfulChanges = true;
+        closeSheet();
+        break;
+      }
+      case "preview-google":
+        showToast("Google sign-in is disabled in the isolated visual preview.");
         break;
       case "finish-first-run-how":
         closeSheet();
@@ -3424,6 +3500,7 @@
           end.value = target.dataset.end || "";
           start.dispatchEvent(new Event("input", { bubbles: true }));
           end.dispatchEvent(new Event("input", { bubbles: true }));
+          syncDateRangeField(form, "checkInDate", "checkOutDate");
         }
         break;
       }
@@ -3464,14 +3541,17 @@
       case "add-type": {
         const type = target.dataset.type;
         state.manualLabel = target.dataset.manualLabel || null;
+        state.editingEntity = null;
         closeSheet();
         route("form", type);
         break;
       }
-      case "open-form":
-        if (target.dataset.id) location.href = `${legacyUrl("edit", target.dataset.form || "trip")}&id=${encodeURIComponent(target.dataset.id)}`;
-        else route("form", target.dataset.form || "trip");
+      case "open-form": {
+        const kind=target.dataset.form||"trip";
+        state.editingEntity=target.dataset.id?{kind,id:target.dataset.id}:null;
+        route("form",kind);
         break;
+      }
       case "open-trip": {
         const trip=state.trips.find((row)=>String(row.id)===String(target.dataset.id));
         if(!trip)return; state.trip=trip; localStorage.setItem("tripto_selected_trip",trip.id); if(!PREVIEW_MODE){state.loading=true;render();await loadTripDetails();state.loading=false;} route("timeline"); break;
@@ -3727,7 +3807,7 @@
     },
     { capture: true },
   );
-  window.addEventListener("hashchange", () => {
+  window.addEventListener("popstate", () => {
     const next = parseRoute();
     if (
       formHasMeaningfulChanges &&
@@ -3737,7 +3817,7 @@
       history.pushState(
         null,
         "",
-        `#${state.screen}${state.selectedId ? `:${encodeURIComponent(state.selectedId)}` : ""}`,
+        routeUrl(state.screen, state.selectedId),
       );
       requestDiscardChanges(() => history.back());
       return;
@@ -3831,6 +3911,9 @@
     show: route,
     getState: () => state,
   };
-  if (!location.hash) history.replaceState(null, "", "#timeline");
+  if (location.hash) {
+    const legacy = parseRoute();
+    history.replaceState(null, "", routeUrl(legacy.screen, legacy.id));
+  }
   loadApp();
 })();

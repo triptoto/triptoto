@@ -4,7 +4,7 @@ tripto.to is an offline-first travel companion for organizing trips, bookings, t
 
 ## Mobile App UI v1
 
-The approved mobile-first interface is the default `/` experience. The previous advanced beta interface remains available at `/legacy.html`.
+The approved Product V2 mobile interface is the only traveler-facing experience. The obsolete theme stack and legacy interface have been removed.
 
 See `INSTALL_MOBILE_APP_UI_V1.md` and `docs/MOBILE_APP_UI_V1.md`.
 

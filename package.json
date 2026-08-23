@@ -8,7 +8,7 @@
     "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts",
     "smoke:api": "bash scripts/smoke-api.sh",
     "build:smart-import": "esbuild packages/document-recognition/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --external:/vendor/* --outfile=public/smart-import.js",
-    "check:ui": "npm run build:smart-import && node --check public/smart-import.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node --check public/legacy-bridge.js && node --check public/app.js && node --check public/major-workspace.js && node tests/mobile-ui.contract.mjs",
+    "check:ui": "npm run build:smart-import && node --check public/smart-import.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node tests/mobile-ui.contract.mjs",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",
     "test:integration": "bash scripts/test-local-d1.sh",
     "validate:beta": "npm run check:ui && npm run typecheck && npm run test:scenarios && npm run test:integration",

@@ -4,12 +4,12 @@ tripto.to is now implemented as a mobile application. The primary viewport is 39
 
 ## Visual system
 
-- Navy `#141948`
-- Indigo `#2F3BAB`
-- Yellow `#FEBF02`
-- Off-white `#F2F4F7`
-- White surfaces, thin separators and restrained shadows
-- Yellow only for the primary action or urgent attention
+- Background: pure white `#FFFFFF`
+- Card fill: cool concrete `#F1F3F5`
+- Borders and icons: silver slate `#CED4DA`
+- Secondary text: asphalt grey `#495057`
+- Primary text and actions: jet black `#111215`
+- Flat surfaces, thin separators and restrained shadows
 - 44px+ touch targets and iPhone safe-area support
 
 ## Information hierarchy
@@ -26,9 +26,9 @@ Unavailable values remain unavailable. No gate, seat, status, address, document 
 
 Home, Timeline, Flight Detail, Hotel Detail, Bookings, Documents, Ready Offline, Trip Health, Account, Add Booking bottom sheet, Add Document bottom sheet and Show to Driver.
 
-## Advanced fallback
+## Single presentation layer
 
-The former complete Beta Candidate interface remains at `/legacy.html`. Add/edit flows not yet rebuilt natively open that interface through `legacy-bridge.js`, preserving existing functionality while the new mobile UI is the default.
+Product V2 uses one traveler-facing presentation layer. Checklist creation and traveler editing are native mobile flows; the obsolete `/legacy.html` theme stack is no longer shipped or cached.
 
 ## Preview mode
 

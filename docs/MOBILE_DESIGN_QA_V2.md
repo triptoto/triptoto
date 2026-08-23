@@ -64,10 +64,10 @@ The protected runtime was checked with iPhone-style status/home-indicator geomet
 
 ## Design system observations
 
-- Product surfaces use tripto.to navy `#141948`, indigo `#2F3BAB`, yellow `#FEBF02`, and off-white `#F2F4F7`.
+- Product surfaces use white `#FFFFFF`, cool concrete `#F1F3F5`, silver slate `#CED4DA`, asphalt grey `#495057`, and jet black `#111215`.
 - App content uses the Apple system stack. Android device chrome intentionally uses the protected runtime’s Roboto treatment.
-- Yellow is reserved for primary actions, current journey emphasis, and restrained warning treatment.
-- Light surfaces are the authenticated default. Navy is reserved for high-priority contextual states such as NEXT.
+- Jet black is reserved for primary actions and primary text; grey hierarchy carries secondary states.
+- White surfaces are the default, with cool-concrete card fill and silver separators.
 - The component language is consistent: 14–20px radii, subtle 1px borders, restrained shadows, and flat Timeline rows.
 
 ## Button and touch-target findings
@@ -77,7 +77,7 @@ The protected runtime was checked with iPhone-style status/home-indicator geomet
 - Welcome legal controls were initially 16px high. They were corrected to 44px touch targets without changing their visual weight.
 - Primary/secondary hierarchy is clear on Welcome, Add Booking, document recovery, forms, and dialogs.
 - Keyboard-aware text fields and the protected runtime keep form actions reachable when the simulated keyboard is shown.
-- Focus-visible treatment uses a 3px yellow outline and does not rely on color alone.
+- Focus-visible treatment uses a 3px jet-black outline and does not rely on color alone.
 
 ## Icon inventory and consistency
 

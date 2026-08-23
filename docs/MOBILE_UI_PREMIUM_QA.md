@@ -2,7 +2,7 @@
 
 ## Required validation
 
-Run `npm install`, `npm run check:ui`, and `npm run validate:candidate`. Confirm `/`, `/legacy.html`, and `/?preview=1` load without browser-console errors after service-worker activation.
+Run `npm install`, `npm run check:ui`, and `npm run validate:candidate`. Confirm `/` and `/?preview=1` load without browser-console errors after service-worker activation. `/legacy.html` must resolve to the Product V2 SPA rather than an obsolete theme.
 
 Inspect at 390×844: Home, Timeline, Flight Detail collapsed and expanded, Hotel Detail, Ready Offline, Add to Trip, Add Document, Show to Driver, Offline Home, loading, empty-trip, and recovery. Also inspect Home at 360×800, 375×812, 393×852, and 430×932.
 
@@ -21,5 +21,5 @@ These controls are unavailable on production hosts and do not call backend APIs.
 
 - Live-flight integration remains disabled; operational status, delays, and gate updates are unavailable and labeled as scheduled data.
 - R2 documents remain disabled. Documents are device-local and open only after checksum verification.
-- Native add forms are incomplete, so supported options intentionally bridge to the legacy interface.
+- Checklist creation and traveler editing use native Product V2 forms. Broader existing-booking editing remains progressively disclosed by the active detail screens.
 - Property images render only when existing data supplies a local or embedded image; otherwise the bundled SVG remains the fallback.

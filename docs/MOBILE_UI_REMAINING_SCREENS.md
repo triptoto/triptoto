@@ -15,7 +15,7 @@ The remaining screens extend the locked premium mobile system without changing t
 
 ## Service worker
 
-The mobile and legacy navigation shells remain separately keyed. API responses are never cached by the service worker. The current premium hotel fallback is precached; the deleted legacy SVG is not.
+The Product V2 shell has one cache key. API responses are never cached by the service worker, and the current premium hotel fallback is precached.
 
 ## Feature boundaries
 

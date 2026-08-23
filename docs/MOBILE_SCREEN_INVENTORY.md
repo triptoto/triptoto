@@ -26,9 +26,9 @@
 
 ## Advanced or unavailable
 
-- Manual creation of a brand-new checklist row remains in the legacy UI because the current API exposes checklist seeding and optimistic-lock updates, but no supported create-item endpoint.
-- Conflict resolution choices remain in the legacy UI until the sync API exposes safe, explicit keep-local/use-server operations. The mobile screen never overwrites a conflict silently.
-- Existing booking/traveler edits remain in legacy until the mobile forms can prefill and submit optimistic-lock versions without changing the locked detail screens.
+- Manual checklist creation and optimistic-lock traveler editing are native Product V2 flows.
+- Conflict recovery remains visible in Product V2. The mobile screen never overwrites a conflict silently.
+- Existing booking editing is exposed only where the Product V2 detail flow has a safe version-aware action; unavailable edit actions are not redirected to an obsolete interface.
 - Sharing, public authentication, AI, live flights, Gmail Sync, R2 documents, demo tools, and ops remain disabled.
 
 ## Not present

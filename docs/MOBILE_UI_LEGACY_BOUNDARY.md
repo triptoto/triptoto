@@ -1,6 +1,6 @@
-# Mobile UI legacy boundary
+# Retired mobile UI boundary
 
-The default `/` interface contains normal traveler-facing functionality. `/legacy.html` remains available as an advanced beta fallback and is not part of primary navigation.
+Product V2 is the only traveler-facing presentation layer. The obsolete `/legacy.html` page, layered milestone themes, bridge script, and workspace overlay are no longer shipped or cached.
 
 ## Native mobile flows
 
@@ -8,21 +8,19 @@ The default `/` interface contains normal traveler-facing functionality. `/legac
 - View/filter bookings
 - View Flight, Hotel, Train, activity, and reservation details
 - Add Flight, Hotel, Train, Activity, Reservation, Traveler, and local Document
-- View and update existing checklist items
+- Create, view, and update checklist items
 - View Documents, Ready Offline, Trip Health, Travelers, imports, and pending sync state
 - Use verified local documents, directions, Show to Driver, and offline cached trip data
 
-## Remaining legacy flows
+## Advanced boundaries
 
-- Add a new custom checklist item: no supported create-item API exists; the legacy checklist seeding/manual tooling preserves existing behavior.
-- Resolve sync conflicts with keep-local/use-server: the current mobile-safe API reports conflicts but does not expose explicit resolution operations.
-- Editing existing traveler and booking records remains in the legacy UI during this milestone. Native add flows are complete, but promoting edit requires locked-screen-safe entry points plus complete version-prefill/conflict recovery on every form.
-- Advanced connection editing, sharing administration, deletion previews, support diagnostics, and internal beta tooling.
+- Sync conflicts stay visible, but keep-local/use-server remains unavailable until explicit version-aware resolution APIs exist.
+- Traveler editing is native and version-aware. Other edit actions appear only when Product V2 has a safe matching API flow.
+- Provider, ops, demo, and sharing administration remain disabled and are not traveler-facing.
 
 ## Replacement requirements
 
-- Add a versioned checklist create endpoint with category, priority, assignment, and idempotency support.
 - Add conflict-resolution endpoints that require the current server version and explicit resolution intent.
 - Add traveler-safe API wrappers for any advanced operation promoted into the primary app.
 
-No backend behavior or schema was changed for this milestone.
+No D1 schema change was required for presentation cleanup.

@@ -3,8 +3,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 echo '1/7 Frontend JavaScript'
-node --check public/app.js
-node --check public/major-workspace.js
+node --check public/mobile-trip-rules.js
+node --check public/mobile-app.js
 
 echo '2/7 TypeScript'
 tsc --noEmit

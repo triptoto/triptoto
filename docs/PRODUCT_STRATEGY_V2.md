@@ -387,7 +387,7 @@ If OAuth nonce/replay state cannot be safely held in a signed short-lived cookie
 - Automatic trip matching could silently misfile a booking; ambiguous matches must ask the traveler.
 - Upload support without R2 requires a clear local/document lifecycle; a UI promise must not exceed actual byte availability.
 - Reframing several deterministic engines into one Needs Attention result can create priority drift; mappings need contract tests.
-- Replacing five-tab navigation may strand advanced recovery features; the old→new map and legacy fallback must remain until parity is proven.
+- Replacing five-tab navigation may strand advanced recovery features; the old→new map must remain until parity is proven. Product V2 parity has since retired the legacy visual fallback.
 - Service-worker cache drift can expose mixed V1/V2 shells; V2 needs isolated cache/versioning and upgrade tests.
 - Authentication and forwarding introduce abuse, quota, privacy, and deletion obligations not present in a purely guest UI.
 

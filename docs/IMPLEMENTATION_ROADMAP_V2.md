@@ -17,7 +17,7 @@ Status: approved product model; implementation plan only. Production remains on 
 - **Worker/API:** expose the existing release/flag state only; no data-contract change.
 - **D1:** none.
 - **Flags:** add `V2_ENABLED=false`; preview may enable it explicitly.
-- **Compatibility:** V1 remains the default and `/legacy.html` remains available.
+- **Compatibility:** Product V2 is now the sole traveler-facing shell; the obsolete V1 theme stack has been retired.
 - **Tests:** flag routing, static assets, accessibility shell, service-worker cache separation.
 - **Rollback:** disable flag and purge only the V2 shell cache.
 
@@ -149,7 +149,7 @@ Status: approved product model; implementation plan only. Production remains on 
 - **Worker/API:** preview smoke and readiness release identifiers; QA/test-data exclusion.
 - **D1:** apply all approved additive migrations to preview, then production after backup verification; no data copy from production to preview.
 - **Flags:** internal QA → allowlisted beta → measured percentage → default-on; emergency `V2_ENABLED=false` at every stage.
-- **Compatibility:** V1 remains available throughout rollout and for rollback.
+- **Compatibility:** rollback uses Git/Worker deployment history rather than a second live theme stack.
 - **Tests:** full candidate validation, 10 production scenarios, deployed smoke, cross-version data reads/writes, rollback rehearsal.
 - **Rollback:** disable V2, restore prior Worker deployment if needed, leave additive schema intact, verify health and core V1 smoke.
 

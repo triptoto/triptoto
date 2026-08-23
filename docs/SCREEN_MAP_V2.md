@@ -72,7 +72,7 @@ These are compositions of Trip Timeline, not separate destinations:
 | Unsynced sign-out warning | Keep local work; retry sync; sign out only when safe | Blocking recovery dialog |
 | Offline/status detail | Human-readable availability/provenance | Small sheet only when explanation is needed |
 
-## Advanced / legacy
+## Advanced
 
 These capabilities remain supported but leave the primary mental model:
 
@@ -86,24 +86,38 @@ These capabilities remain supported but leave the primary mental model:
 - privacy export/deletion history;
 - share/invite administration (disabled until separately approved);
 - provider/ops/demo diagnostics (not traveler-facing and disabled);
-- legacy UI fallback during staged migration.
+- disabled provider/ops/demo diagnostics remain outside the traveler product.
 
 ## Route intent
 
 V2 routes should remain state-addressable for Back/recovery without exposing implementation concepts:
 
 ```text
-/                    → Welcome or authenticated routing decision
-/trip/{tripId}       → Timeline
-/trip/{tripId}/add   → Add Booking
-/trip/{tripId}/item/{itemId} → Booking Detail
-/trips/new           → Create Trip
-/account             → Account
-/account/history     → Past and Cancelled Trip History
-/account/help        → Help
+/                              → Welcome or authenticated routing decision
+/home                          → What’s Next
+/timeline                      → Current Trip Timeline
+/trips                         → Trip selector
+/trips/new                     → Create Trip
+/bookings                      → Bookings
+/bookings/add                  → Add Booking
+/bookings/import               → Import Booking
+/bookings/new/{type}            → Manual booking form
+/flights/{itemId}               → Flight Detail
+/hotels/{itemId}                → Hotel Detail
+/trains/{itemId}                → Train Detail
+/plans/{itemId}                 → Activity or reservation detail
+/documents                     → Tickets & Documents
+/ready-offline                 → Ready Offline
+/trip-health                   → Trip Health
+/before-you-go                 → Before You Go
+/travelers                     → Travelers
+/account                       → Account
 ```
 
-The exact SPA/hash implementation may remain during migration, but product semantics must match this map.
+All traveler-facing navigation uses clean History API paths. Legacy `#screen`
+bookmarks are accepted once and immediately replaced with the corresponding
+clean path. Both `https://tripto.to/...` and `https://www.tripto.to/...` use the
+same route map.
 
 ## Locked small-screen inventory for the first prototype
 

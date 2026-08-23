@@ -20,11 +20,7 @@ Open the mobile app:
 https://tripto-api.travelinkme.workers.dev/
 ```
 
-The old full beta UI remains at:
-
-```text
-https://tripto-api.travelinkme.workers.dev/legacy.html
-```
+The Product V2 mobile shell is the only shipped presentation layer. Old milestone themes and `/legacy.html` are intentionally absent.
 
 After phone review:
 

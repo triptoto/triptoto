@@ -13,15 +13,12 @@ tsc --noEmit false --outDir "$TMP_DIR" --rewriteRelativeImportExtensions true --
 node "$TMP_DIR/tests/scenarios/candidate.scenarios.js"
 
 echo '3/6 Candidate recovery contracts'
-grep -q "checksum-verified local file" public/app.js
-grep -q "Missing verified hotel confirmation" public/app.js
-grep -q 'aria-label="Add trip item"' public/app.js
-grep -q 'role="status" aria-live="polite"' public/app.js
-grep -q "Delete this trip" public/app.js
-grep -q "needs_review" public/app.js
-grep -q "Scheduled booking data is never presented as live" public/app.js
-grep -q "i.explanation||i.message" public/major-workspace.js
-grep -q "i.suggestedAction||i.action" public/major-workspace.js
+grep -q 'integrity === "verified"' public/mobile-app.js
+grep -q 'Ready offline appears only after checksum verification succeeds' public/mobile-app.js
+grep -q 'role="status"' public/mobile-app.js
+grep -q 'Nothing was overwritten' public/mobile-app.js
+grep -q 'Review pending changes before removing local data' public/mobile-app.js
+grep -q 'Scheduled booking data is never presented as live' public/mobile-app.js
 node tests/browser-timezone.contract.mjs
 
 echo '4/6 Mobile application UI contracts'
@@ -29,12 +26,16 @@ npm run check:ui
 grep -q 'max-width:var(--app-width)' public/mobile-app.css
 grep -q 'Show to Driver' public/mobile-app.js
 grep -q 'Scheduled booking data is never presented as live' public/mobile-app.js
-test -f public/legacy.html
+test ! -f public/legacy.html
+test ! -f public/app.css
+test ! -f public/app.js
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/6 PWA and disabled integrations'
-grep -Eq "tripto-shell-(smart-import-auth-v1|product-v2)" public/sw.js
-grep -q "/assets/mobile/hotel-fallback-premium.jpg" public/sw.js
+grep -q "tripto-shell-apple-flat-v1" public/sw.js
+grep -q "/vendor/phosphor/Phosphor.woff2" public/sw.js
+grep -q "/assets/google-g.svg" public/sw.js
+! grep -q "/legacy.html" public/sw.js
 grep -q "key.startsWith('tripto-shell-')" public/sw.js
 for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED SHARING_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
   grep -q "\"$flag\": \"false\"" wrangler.jsonc
