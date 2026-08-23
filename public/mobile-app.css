@@ -390,3 +390,86 @@ html.first-run-open,html.first-run-open body{height:100%;overflow:hidden;backgro
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   button:active{transform:none}
 }
+
+/* ============================================================
+   V2 design polish — styles for elements that shipped unstyled.
+   Every selector below matched nothing before; all monochrome.
+   ============================================================ */
+@keyframes tripto-spin{to{transform:rotate(360deg)}}
+
+/* Saving spinner inside primary buttons (was invisible) */
+.button-spinner{display:inline-block;width:16px;height:16px;margin-right:2px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-3px;animation:tripto-spin .7s linear infinite}
+
+/* "Automatic" tag on smart-derived essentials */
+.auto-badge{display:inline-flex;align-items:center;min-height:20px;margin-left:8px;padding:0 8px;border-radius:999px;background:var(--blue-soft);color:var(--muted);font-size:10px;font-weight:750;letter-spacing:.04em;text-transform:uppercase}
+
+/* Form intro block (import/upload screens) — match .v2-task-intro */
+.form-intro{padding:4px 0 22px}
+.form-intro>span{display:inline-block;color:var(--indigo);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.form-intro h1{margin:7px 0 7px;font-size:34px;line-height:.98;letter-spacing:-.055em}
+.form-intro p{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
+
+/* Muted helper paragraphs and derived-timezone caption */
+.muted-copy{margin:0;padding:6px 0;color:var(--muted);font-size:13px;line-height:1.4}
+.timezone-derived{margin:6px 0 0;color:var(--muted);font-size:11px;line-height:1.4}
+.form-error{margin:6px 0 0;color:var(--ink);font-size:12px;font-weight:750;line-height:1.4}
+.form-error[hidden]{display:none}
+
+/* Before-you-go checklist rows (custom monochrome checkbox) */
+.checklist-row{display:grid;grid-template-columns:26px minmax(0,1fr);align-items:start;gap:12px;min-height:var(--button-row-height);padding:11px 0;border-bottom:1px solid var(--line);color:var(--navy);text-align:left;cursor:pointer}
+.checklist-group .checklist-row:last-child,.checklist-row:last-child{border-bottom:0}
+.checklist-row input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.checklist-box{display:grid;place-items:center;width:24px;height:24px;margin-top:1px;border:1.5px solid var(--line-strong);border-radius:8px;background:var(--paper);color:transparent;transition:background .15s var(--ease),border-color .15s var(--ease)}
+.checklist-row input:checked+.checklist-box{border-color:var(--ink);background:var(--ink);color:#fff}
+.checklist-row input:focus-visible+.checklist-box{outline:3px solid rgba(17,18,21,.32);outline-offset:2px}
+.checklist-copy{display:grid;gap:2px;min-width:0}
+.checklist-copy strong{font-size:15px;font-weight:650}
+.checklist-copy small{color:var(--muted);font-size:12px;line-height:1.35}
+.checklist-row.is-complete .checklist-copy strong{color:var(--muted);text-decoration:line-through}
+
+/* Per-traveler essentials checklist (account screen) */
+.traveler-checklist{display:grid}
+.traveler-checklist__row{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:12px;min-height:56px;padding:9px 0;border-bottom:1px solid var(--line);color:var(--icon)}
+.traveler-checklist__row:last-child{border-bottom:0}
+.traveler-checklist__row>span{display:grid;gap:2px;min-width:0;color:var(--navy)}
+.traveler-checklist__row strong{font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.traveler-checklist__row small{color:var(--muted);font-size:12px}
+.traveler-checklist__row.is-complete{color:var(--green)}
+
+/* Flight pass: missing boarding-pass warning */
+.flight-pass__missing{display:flex;align-items:flex-start;gap:9px;margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--amber-soft);color:var(--muted);font-size:12px;line-height:1.4}
+
+/* Smart-import review screen */
+.review-summary{display:flex;align-items:center;gap:13px;margin-bottom:18px;padding:15px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface)}
+.review-summary>span{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--green-soft);color:var(--green)}
+.review-summary--duplicate>span{background:var(--amber-soft);color:var(--amber)}
+.review-summary>div{display:grid;gap:3px;min-width:0}
+.review-summary strong{font-size:15px}
+.review-summary small{color:var(--muted);font-size:12px;line-height:1.35}
+.review-type{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:750;text-transform:capitalize}
+.review-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 10px;margin:12px 0}
+.review-card label{display:grid;gap:7px;min-width:0}
+.review-card label>span{color:var(--muted);font-size:12px;font-weight:650}
+.review-warnings{display:grid;gap:6px;margin:10px 0}
+.review-warnings p{display:flex;align-items:flex-start;gap:7px;margin:0;color:var(--amber);font-size:12px;line-height:1.35}
+
+/* Activity form: "has a specific time" radio group */
+.time-mode-control{display:grid;gap:8px;margin-top:4px}
+.time-mode-control label{display:flex;align-items:center;gap:10px;min-height:44px;color:var(--navy);font-size:14px;cursor:pointer}
+.time-mode-control input{width:20px;height:20px;accent-color:var(--ink)}
+
+/* Smart-import file picker + sheet submit + orphan-move trip list */
+.smart-import-file{display:grid;gap:8px;padding:14px;border:1px dashed var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer}
+.smart-import-file>span{color:var(--navy);font-size:14px;font-weight:650}
+.smart-import-file input[type="file"]{font-size:13px;color:var(--muted)}
+.smart-import-file small{color:var(--muted);font-size:11px;line-height:1.4}
+.sheet-submit{margin-top:16px}
+.quick-trip-list{display:grid;margin-bottom:14px}
+
+/* Toasts render with class "toast-mobile", not ".toast" — style them */
+.toast-mobile{position:fixed;left:50%;bottom:calc(var(--nav-height) + 18px + env(safe-area-inset-bottom));z-index:100;max-width:min(350px,calc(100% - 32px));padding:11px 14px;transform:translateX(-50%);border-radius:12px;background:var(--navy);color:#fff;font-size:13px;line-height:1.35;text-align:center;box-shadow:0 10px 30px rgba(17,18,21,.22)}
+.toast-mobile--alert{background:var(--red)}
+
+/* Status colour hooks on info-icon rows (align with health tokens) */
+.info-icon.green{background:var(--green-soft);color:var(--green)}
+.info-icon.purple{background:var(--blue-soft);color:var(--indigo)}

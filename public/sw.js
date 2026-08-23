@@ -1,5 +1,5 @@
-const CACHE='tripto-shell-product-v2-button-system-v1';
-const ASSETS=['/','/app','/index.html','/mobile-routes.js','/mobile-trip-rules.js','/vendor/phosphor/phosphor.css','/vendor/phosphor/Phosphor.woff2','/mobile-app.css','/smart-import.js','/airport-timezones.js','/mobile-app.js','/manifest.webmanifest','/assets/google-g.svg'];
+const CACHE='tripto-shell-product-v2-v2-polish-1';
+const ASSETS=['/','/app','/index.html','/mobile-routes.js','/mobile-trip-rules.js','/vendor/phosphor/phosphor.css','/vendor/phosphor/Phosphor.woff2','/mobile-app.css','/smart-import.js','/airport-timezones.js','/mobile-app.js','/manifest.webmanifest','/assets/google-g.svg','/favicon.svg','/favicon-32.png','/apple-touch-icon.png','/icon-192.png','/icon-512.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
