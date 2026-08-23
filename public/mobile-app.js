@@ -14,6 +14,7 @@
     : null;
   const tripRules = globalThis.TriptoTripRules;
   const routes = globalThis.TriptoRoutes;
+  const airportTimezones = globalThis.TriptoAirportTimezones;
 
   const ICON_NAMES = Object.freeze({
     user: "user", home: "house", trips: "suitcase-rolling", plus: "plus",
@@ -2372,9 +2373,9 @@
     let primary="", more="", note="", list="", extraClass="";
     if (kind === "flight") {
       list = quickLocationList("flight");
-      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"TLV — Ben Gurion Airport",attrs:'list="quick-flight-locations" data-location-role="departure"'})}${quickField("toLocation","Destination airport",{required:true,placeholder:"FCO — Rome Fiumicino",attrs:'list="quick-flight-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Asia/Jerusalem",attrs:'data-timezone-role="departure"',helper:"Required when the origin airport does not supply a reliable timezone."})}`;
-      more = quickMore(kind,"More flight details",`<div class="form-fields">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'data-timezone-role="arrival"'})}${quickField("carrierName","Marketing airline",{})}${quickField("operatingAirlineCode","Operating airline",{})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
-      note = "Departure uses the event-local timezone. Arrival stays unavailable until you add it.";
+      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"TLV — Ben Gurion Airport",attrs:'list="quick-flight-locations" data-location-role="departure"'})}${quickField("toLocation","Destination airport",{required:true,placeholder:"FCO — Rome Fiumicino",attrs:'list="quick-flight-locations" data-location-role="arrival"'})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival"><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      more = quickMore(kind,"More flight details",`<div class="form-fields">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("carrierName","Marketing airline",{})}${quickField("operatingAirlineCode","Operating airline",{})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      note = "Airport local times are recognized automatically from the three-letter airport codes.";
     } else if (kind === "hotel") {
       primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name"})}${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out")}${quickDateSuggestions(kind)}`;
       more = quickMore(kind,"More stay details",`<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
@@ -2801,6 +2802,34 @@
         return false;
       }
     }
+    if (kind === "flight") {
+      const departureTimezone = timezoneForLocationInput(
+          form.elements.fromLocation?.value,
+          "flight",
+        ),
+        arrivalTimezone = timezoneForLocationInput(
+          form.elements.toLocation?.value,
+          "flight",
+        );
+      if (!departureTimezone) {
+        showFieldError(
+          form,
+          form.elements.fromLocation,
+          "Airport not recognized. Enter its three-letter airport code.",
+        );
+        return false;
+      }
+      if (!arrivalTimezone) {
+        showFieldError(
+          form,
+          form.elements.toLocation,
+          "Airport not recognized. Enter its three-letter airport code.",
+        );
+        return false;
+      }
+      form.elements.departureTimezone.value = departureTimezone;
+      form.elements.arrivalTimezone.value = arrivalTimezone;
+    }
     if (["flight", "train"].includes(kind)) {
       const date = form.elements.arrivalDate,
         time = form.elements.arrivalLocalTime,
@@ -2812,7 +2841,9 @@
         showFieldError(
           form,
           missing,
-          "Add arrival date, local time, and timezone together—or leave all three unavailable.",
+          kind === "flight"
+            ? "Add arrival date and local time together—or leave both unavailable. The airport timezone is automatic."
+            : "Add arrival date, local time, and timezone together—or leave all three unavailable.",
         );
         return false;
       }
@@ -2863,13 +2894,17 @@
       arrivalError = /arrival/i.test(text),
       timeError = /local time|daylight|ambiguous|date and time/i.test(text),
       control = timezoneError
-        ? form.elements.arrivalTimezone ||
-          form.elements.departureTimezone ||
-          form.elements.timezone
+        ? form.dataset.kind === "flight"
+          ? arrivalError
+            ? form.elements.toLocation
+            : form.elements.fromLocation
+          : form.elements.arrivalTimezone ||
+            form.elements.departureTimezone ||
+            form.elements.timezone
         : arrivalError
-          ? form.elements.arrivalTime
+          ? form.elements.arrivalLocalTime
           : timeError
-            ? form.elements.departureTime || form.elements.startsAt
+            ? form.elements.departureLocalTime || form.elements.startsAt
             : null;
     if (control) {
       showFieldError(form, control, text);
@@ -2975,29 +3010,45 @@
       }) || null
     );
   }
+  function airportCodeForInput(value) {
+    return airportTimezones?.airportCodeFromInput?.(value) || null;
+  }
+  function timezoneForLocationInput(value, kind) {
+    const location = knownLocationForInput(value, kind);
+    if (kind === "flight") {
+      const code =
+        String(val(location, "iata_code") || "").toUpperCase() ||
+        airportCodeForInput(value);
+      const catalogTimezone = airportTimezones?.timezoneForAirport?.(code);
+      if (catalogTimezone) return String(catalogTimezone);
+    }
+    return String(val(location, "timezone") || "");
+  }
   function syncQuickTimezone(form, input) {
     const kind = form.dataset.kind,
       role = input.dataset.locationRole,
       locationKind = kind === "flight" ? "flight" : kind === "train" ? "train" : "activity",
-      location = knownLocationForInput(input.value, locationKind),
-      timezone = String(val(location, "timezone") || ""),
+      timezone = timezoneForLocationInput(input.value, locationKind),
       timezoneName = role === "arrival" ? "arrivalTimezone" : kind === "activity" || kind === "reservation" ? "timezone" : "departureTimezone",
       control = form.elements[timezoneName],
-      field = control?.closest(".form-field");
-    if (!control || !field) return;
-    field.querySelector(".timezone-derived")?.remove();
+      field = input.closest(".form-field");
+    if (!control) return;
+    form.querySelector(`[data-timezone-status="${CSS.escape(role || "location")}"]`)?.remove();
+    field?.querySelector(".timezone-derived")?.remove();
     if (timezone) {
       control.value = timezone;
       control.dataset.derived = "true";
-      field.classList.add("is-derived-timezone");
-      field.insertAdjacentHTML(
-        "afterend",
-        `<p class="timezone-derived" data-timezone-status="${esc(role)}">${icon("check", 15)} ${esc(timezone)} from the selected ${kind === "train" ? "station" : kind === "flight" ? "airport" : "location"}</p>`,
-      );
+      if (field && kind !== "flight") {
+        field.classList.add("is-derived-timezone");
+        field.insertAdjacentHTML(
+          "afterend",
+          `<p class="timezone-derived" data-timezone-status="${esc(role || "location")}">${icon("check", 15)} ${esc(timezone)} from the selected ${kind === "train" ? "station" : "location"}</p>`,
+        );
+      }
     } else {
       if (control.dataset.derived === "true") control.value = "";
       delete control.dataset.derived;
-      field.classList.remove("is-derived-timezone");
+      field?.classList.remove("is-derived-timezone");
     }
   }
   function syncQuickConditionalFields(form) {
@@ -3175,8 +3226,8 @@
   function quickLocationParts(value, kind) {
     const known = knownLocationForInput(value, kind);
     if (known) return { known, name: String(val(known, "display_name", "local_name") || value), code: String(val(known, kind === "flight" ? "iata_code" : "station_code") || "") };
-    const text = String(value || "").trim(), match = text.match(/^([A-Z0-9]{2,12})\s+[—-]\s+(.+)$/i);
-    return { known: null, name: match ? match[2].trim() : text, code: match ? match[1].toUpperCase() : "" };
+    const text = String(value || "").trim(), match = text.match(/^([A-Z0-9]{2,12})\s+[—-]\s+(.+)$/i), airportCode = kind === "flight" ? airportCodeForInput(text) : null;
+    return { known: null, name: match ? match[2].trim() : text, code: airportCode || (match ? match[1].toUpperCase() : "") };
   }
   async function quickLocation(value, kind, timezone = "") {
     const parts = quickLocationParts(value, kind);
