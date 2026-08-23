@@ -37,7 +37,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/mobile-routes.js')&&sw.includes('/airport-timezones.js')&&sw.includes('product-v2-clean-timezone-v1'),'clean route shell is not cached');
+assert(sw.includes('/mobile-routes.js')&&sw.includes('/airport-timezones.js')&&sw.includes('product-v2-button-system-v1'),'clean route shell is not cached');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Quiet Journey','All your trip.','One calm timeline.','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('Roscioli')&&app.includes('Dinner reservation'),'Welcome timeline preview is incomplete');

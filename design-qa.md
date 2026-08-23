@@ -1,40 +1,39 @@
-# tripto.to Apple-flat production application — visual QA
+# Button sizing design QA
 
-## Evidence
+## Visual source of truth
 
-- Visual source of truth: `design/apple-flat-v1/selected-welcome.png` (853 × 1844 px).
-- Browser implementation: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/apple-flat-v1/welcome-390x844.png` (390 × 844 CSS px at density 1).
-- Combined comparison: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/apple-flat-v1/welcome-reference-vs-monochrome.png`. The reference supplies structure; the user's later five-color palette instruction supplies final color truth.
-- Additional final captures: Timeline, Flight Detail, Hotel Detail, Create Trip, and the unified date-range calendar in `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/apple-flat-v1/`.
-- Responsive viewports: 360 × 800, 390 × 844, and 430 × 932 CSS px.
+- Reference: `/Users/arthurberlin/Downloads/tripto.to 3.png`
+- Implemented state: flight form discard-confirmation dialog
+- Viewport: 390 x 844 CSS pixels
+- Reference image: 1260 x 603 pixels
+- Implementation capture: 1265 x 712 pixels
+- Final screenshot: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/button-sizing-discard-dialog-390x844.png`
+- Side-by-side comparison: `/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/outputs/button-sizing-comparison.png`
 
-## Fidelity review
+The comparison normalizes both images to the dialog region. The reference is a cropped production screenshot; the implementation capture includes more surrounding page content.
 
-- The welcome screen preserves the reference hierarchy: wordmark, Quiet Journey eyebrow, dominant two-line promise, restrained supporting copy, four-event timeline, primary Google action, Take a tour, and legal links.
-- The signed-in product uses Apple system typography and the approved monochrome palette: pure-white canvas, cool-concrete cards, silver borders/icons, asphalt secondary text, and jet-black primary text/actions.
-- The Timeline is one clean chronological rail. Flight and Hotel detail surfaces preserve real scheduled data and unavailable states without invented values.
-- Create Trip exposes one touch date-range control. The same single-calendar interaction selects hotel check-in and check-out.
-- The first-run screen has no bottom navigation or scrolling. Signed-in screens use only `Trip | Add | Account`.
-- No gradient, out-of-palette UI color, external font request, emoji icon, rejected hotel fallback image, or old theme stylesheet remains in the production shell.
+## Focused measurements
 
-## Interaction and responsive review
+| Control | Before | After |
+| --- | ---: | ---: |
+| Keep editing | 143 x 50 px, 14 px top margin | 150.5 x 48 px, no top margin |
+| Discard | 143 x 64 px | 150.5 x 48 px |
+| Dialog | 335 x 173 px | 350 x 157 px |
 
-- Welcome fits without document scrolling at all required widths.
-- The unified calendar uses 44px day targets: first tap selects start/check-in; second tap selects end/check-out; the complete range is highlighted and confirmed with one action.
-- Trip and hotel forms retain the original backend field names through hidden inputs; no separate native date fields are rendered.
-- How It Works, Add, Back, detail navigation, clean History API routes, and fixed safe-area navigation were exercised in the in-app browser.
-- No horizontal overflow, clipped CTA, or console error was observed in the final browser pass.
+## Findings and corrections
 
-## Comparison history
+- **P1 fixed:** The shared secondary-action top margin leaked into the two-column confirmation dialog. This displaced `Keep editing` and allowed the grid to stretch `Discard` taller. Dialog actions now explicitly share the same 48 px height, margin, radius, and alignment.
+- **P2 fixed:** Button dimensions were expressed as unrelated values across screens. Shared compact, secondary, primary, and row-height tokens now define the mobile control scale.
+- **P2 fixed:** The installed service worker could retain the pre-fix stylesheet. The shell cache and CSS/JavaScript query versions were advanced so the corrected controls replace stale cached UI.
+- **Responsive pass:** 360 x 800, 390 x 844, and 430 x 932 checks found no visible action below the 44 px touch-target minimum and no horizontal overflow on Timeline, Bookings, Account, Add Booking, Ready Offline, Trips, Create Trip, or Add Flight.
 
-1. The initial production app contained multiple overlapping historical stylesheet stacks and legacy presentation assets.
-2. The selected Apple-flat reference was implemented as the only active design system, with local icons and clean routes.
-3. Final comparison tightened the welcome content to four timeline events and aligned the CTA, typography, spacing, and one-screen composition.
-4. The visual system was consolidated to the final five-color monochrome palette across every active screen.
-5. Create Trip and Hotel were consolidated onto one shared date-range calendar without changing API data contracts.
+## Preserved design decisions
 
-## Findings
+- Existing Apple system typography
+- Existing pure-white, concrete-grey, and jet-black palette
+- Existing labels, dialog semantics, and destructive-action behavior
+- Existing icons and application navigation
 
-No actionable P0, P1, or P2 visual-fidelity issue remains.
+## Result
 
-final result: passed
+**Passed.** The dialog actions are visually equal and the shared mobile button system is consistent without redesigning the approved interface.

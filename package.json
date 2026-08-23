@@ -10,7 +10,7 @@
     "build:smart-import": "esbuild packages/document-recognition/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --external:/vendor/* --outfile=public/smart-import.js",
     "update:airport-timezones": "node scripts/update-airport-timezones.mjs",
     "build:airport-timezones": "esbuild packages/airport-timezones/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/airport-timezones.js",
-    "check:ui": "npm run build:smart-import && npm run build:airport-timezones && node --check public/smart-import.js && node --check public/airport-timezones.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node tests/airport-timezones.contract.mjs && node tests/mobile-ui.contract.mjs",
+    "check:ui": "npm run build:smart-import && npm run build:airport-timezones && node --check public/smart-import.js && node --check public/airport-timezones.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node tests/airport-timezones.contract.mjs && node tests/mobile-ui.contract.mjs && node tests/button-size.contract.mjs",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",
     "test:integration": "bash scripts/test-local-d1.sh",
     "validate:beta": "npm run check:ui && npm run typecheck && npm run test:scenarios && npm run test:integration",

@@ -1,4 +1,4 @@
-const CACHE='tripto-shell-product-v2-clean-timezone-v1';
+const CACHE='tripto-shell-product-v2-button-system-v1';
 const ASSETS=['/','/app','/index.html','/mobile-routes.js','/mobile-trip-rules.js','/vendor/phosphor/phosphor.css','/vendor/phosphor/Phosphor.woff2','/mobile-app.css','/smart-import.js','/airport-timezones.js','/mobile-app.js','/manifest.webmanifest','/assets/google-g.svg'];
 
 self.addEventListener('install',event=>{

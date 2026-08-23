@@ -32,7 +32,7 @@ test ! -f public/app.js
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/6 PWA and disabled integrations'
-grep -q "tripto-shell-product-v2-clean-timezone-v1" public/sw.js
+grep -q "tripto-shell-product-v2-button-system-v1" public/sw.js
 grep -q "/airport-timezones.js" public/sw.js
 grep -q "/vendor/phosphor/Phosphor.woff2" public/sw.js
 grep -q "/assets/google-g.svg" public/sw.js
