@@ -59,7 +59,7 @@
   function parsePath(pathname) {
     const path = normalizePath(pathname);
     if (["/", "/app", "/index.html"].includes(path))
-      return { screen: "timeline", id: null };
+      return { screen: "home", id: null };
 
     if (path === "/trips/new") return { screen: "form", id: "trip" };
     if (path === "/travelers/new")
@@ -82,7 +82,7 @@
       if (id) return { screen, id };
     }
 
-    return { screen: "timeline", id: null };
+    return { screen: "home", id: null };
   }
 
   function parse(locationLike = global.location) {
