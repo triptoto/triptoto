@@ -33,12 +33,13 @@ test -f public/legacy.html
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/6 PWA and disabled integrations'
-grep -q "tripto-shell-trip-date-controls-v1" public/sw.js
+grep -Eq "tripto-shell-(smart-import-auth-v1|product-v2)" public/sw.js
 grep -q "/assets/mobile/hotel-fallback-premium.jpg" public/sw.js
 grep -q "key.startsWith('tripto-shell-')" public/sw.js
-for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED ACCOUNT_AUTH_ENABLED SHARING_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
+for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED SHARING_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
   grep -q "\"$flag\": \"false\"" wrangler.jsonc
 done
+grep -Eq '"ACCOUNT_AUTH_ENABLED": "(false|true)"' wrangler.jsonc
 
 echo '6/6 Candidate release files'
 test -f scripts/smoke-beta-candidate.sh

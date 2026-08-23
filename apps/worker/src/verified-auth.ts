@@ -1,7 +1,6 @@
 import type { Env } from './types.ts';
 import { HttpError, nowMs, optionalString, uuid } from './http.ts';
 import { issueSession } from './auth.ts';
-import { migrateGuestDeviceToUser } from './account-migration.ts';
 
 export type VerifiedProvider = 'apple' | 'google' | 'email';
 
@@ -13,6 +12,7 @@ export interface VerifiedIdentityInput {
   displayName?: string | null;
   locale?: string | null;
   timezone?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface VerifiedLoginResult {
@@ -59,6 +59,7 @@ export async function completeVerifiedIdentityLogin(
 
   let userId: string;
   let createdAccount = false;
+  const statements = [];
 
   if (existingIdentity) {
     userId = existingIdentity.user_id;
@@ -66,9 +67,9 @@ export async function completeVerifiedIdentityLogin(
     if (!user || user.deleted_at != null) throw new HttpError(409, 'IDENTITY_ACCOUNT_UNAVAILABLE', 'Verified identity points to an unavailable account.');
     if (device.user_id && device.user_id !== userId) throw new HttpError(409, 'DEVICE_ALREADY_LINKED', 'This device is already linked to another account.');
 
-    await env.DB.prepare(`UPDATE auth_identities SET email=COALESCE(?,email),email_verified=CASE WHEN ?=1 THEN 1 ELSE email_verified END,last_used_at=? WHERE id=?`)
-      .bind(email, input.emailVerified ? 1 : 0, now, existingIdentity.id).run();
-    await updateUserProfile(env, userId, input, email, now);
+    statements.push(env.DB.prepare(`UPDATE auth_identities SET email=COALESCE(?,email),email_verified=CASE WHEN ?=1 THEN 1 ELSE email_verified END,last_used_at=? WHERE id=?`)
+      .bind(email, input.emailVerified ? 1 : 0, now, existingIdentity.id));
+    statements.push(userProfileStatement(env, userId, input, email, now));
   } else {
     if (device.user_id) {
       userId = device.user_id;
@@ -77,39 +78,50 @@ export async function completeVerifiedIdentityLogin(
     } else {
       userId = uuid();
       createdAccount = true;
-      await env.DB.prepare(`INSERT INTO users(id,display_name,primary_email,locale,timezone,created_at,updated_at,version) VALUES (?,?,?,?,?,?,?,1)`)
+      statements.push(env.DB.prepare(`INSERT INTO users(id,display_name,primary_email,locale,timezone,avatar_url,created_at,updated_at,version) VALUES (?,?,?,?,?,?,?,?,1)`)
         .bind(
           userId,
           cleanOptional(input.displayName, 120),
           email,
           cleanOptional(input.locale, 40),
           cleanOptional(input.timezone, 80),
+          cleanUrl(input.avatarUrl),
           now,
           now,
-        ).run();
+        ));
     }
 
     const identityId = uuid();
-    try {
-      await env.DB.prepare(`INSERT INTO auth_identities(id,user_id,provider,provider_subject,email,email_verified,created_at,last_used_at) VALUES (?,?,?,?,?,?,?,?)`)
-        .bind(identityId, userId, provider, subject, email, input.emailVerified ? 1 : 0, now, now).run();
-    } catch (error) {
-      if (createdAccount) {
-        await env.DB.prepare(`UPDATE users SET deleted_at=?,updated_at=?,version=version+1 WHERE id=? AND deleted_at IS NULL`).bind(now, now, userId).run();
-      }
-      void error;
-      throw new HttpError(409, 'IDENTITY_ALREADY_LINKED', 'This verified identity is already linked to another account.');
-    }
-    await env.DB.prepare(`INSERT INTO identity_events(id,user_id,device_id,event_type,metadata_json,created_at) VALUES (?,?,?,'identity_linked',?,?)`)
-      .bind(uuid(), userId, deviceId, JSON.stringify({ provider }), now).run();
+    statements.push(env.DB.prepare(`INSERT INTO auth_identities(id,user_id,provider,provider_subject,email,email_verified,created_at,last_used_at) VALUES (?,?,?,?,?,?,?,?)`)
+      .bind(identityId, userId, provider, subject, email, input.emailVerified ? 1 : 0, now, now));
+    statements.push(env.DB.prepare(`INSERT INTO identity_events(id,user_id,device_id,event_type,metadata_json,created_at) VALUES (?,?,?,'identity_linked',?,?)`)
+      .bind(uuid(), userId, deviceId, JSON.stringify({ provider }), now));
   }
 
   let migratedTrips = 0;
   if (!device.user_id) {
-    const migrated = await migrateGuestDeviceToUser(env, deviceId, userId);
-    migratedTrips = migrated.migratedTrips;
+    const count = await env.DB.prepare(`SELECT COUNT(*) AS count FROM trips WHERE created_by_device_id=? AND owner_user_id IS NULL AND deleted_at IS NULL`).bind(deviceId).first<{count:number}>();
+    migratedTrips = Number(count?.count ?? 0);
+    statements.push(
+      env.DB.prepare(`INSERT OR IGNORE INTO trip_members(trip_id,user_id,role,status,joined_at) SELECT id,?,'owner','active',? FROM trips WHERE created_by_device_id=? AND owner_user_id IS NULL AND deleted_at IS NULL`).bind(userId,now,deviceId),
+      env.DB.prepare(`UPDATE trips SET owner_user_id=?,updated_at=?,version=version+1 WHERE created_by_device_id=? AND owner_user_id IS NULL AND deleted_at IS NULL`).bind(userId,now,deviceId),
+      env.DB.prepare(`UPDATE imports SET user_id=? WHERE user_id IS NULL AND trip_id IN (SELECT id FROM trips WHERE created_by_device_id=?)`).bind(userId,deviceId),
+      env.DB.prepare(`UPDATE sync_operations SET user_id=? WHERE user_id IS NULL AND device_id=?`).bind(userId,deviceId),
+      env.DB.prepare(`UPDATE devices SET user_id=?,last_seen_at=? WHERE id=? AND user_id IS NULL`).bind(userId,now,deviceId),
+      env.DB.prepare(`INSERT INTO identity_events(id,user_id,device_id,event_type,metadata_json,created_at) VALUES (?,?,?,'guest_migrated',?,?)`).bind(uuid(),userId,deviceId,JSON.stringify({migratedTrips}),now),
+    );
   } else {
-    await env.DB.prepare(`UPDATE devices SET last_seen_at=? WHERE id=?`).bind(now, deviceId).run();
+    statements.push(env.DB.prepare(`UPDATE devices SET last_seen_at=? WHERE id=?`).bind(now, deviceId));
+  }
+  if (email && input.emailVerified) {
+    statements.push(env.DB.prepare(`INSERT OR IGNORE INTO verified_sender_emails(id,user_id,email,email_normalized,source,verified_at,created_at) VALUES (?,?,?,?,?,?,?)`)
+      .bind(uuid(),userId,email,email,'google_identity',now,now));
+  }
+
+  try {
+    await env.DB.batch(statements);
+  } catch {
+    throw new HttpError(409, 'IDENTITY_LINK_FAILED', 'Sign-in could not be completed safely. Please try again.');
   }
 
   const expiresAt = now + 90 * 24 * 60 * 60 * 1000;
@@ -117,12 +129,12 @@ export async function completeVerifiedIdentityLogin(
   return { token, expiresAt, userId, createdAccount, migratedTrips };
 }
 
-async function updateUserProfile(env: Env, userId: string, input: VerifiedIdentityInput, email: string | null, now: number): Promise<void> {
+function userProfileStatement(env: Env, userId: string, input: VerifiedIdentityInput, email: string | null, now: number) {
   const displayName = cleanOptional(input.displayName, 120);
   const locale = cleanOptional(input.locale, 40);
   const timezone = cleanOptional(input.timezone, 80);
-  await env.DB.prepare(`UPDATE users SET display_name=COALESCE(?,display_name),primary_email=COALESCE(?,primary_email),locale=COALESCE(?,locale),timezone=COALESCE(?,timezone),updated_at=?,version=version+1 WHERE id=? AND deleted_at IS NULL`)
-    .bind(displayName, email, locale, timezone, now, userId).run();
+  return env.DB.prepare(`UPDATE users SET display_name=COALESCE(?,display_name),primary_email=COALESCE(?,primary_email),locale=COALESCE(?,locale),timezone=COALESCE(?,timezone),avatar_url=COALESCE(?,avatar_url),updated_at=?,version=version+1 WHERE id=? AND deleted_at IS NULL`)
+    .bind(displayName, email, locale, timezone, cleanUrl(input.avatarUrl), now, userId);
 }
 
 function normalizeSubject(value: string): string {
@@ -144,4 +156,13 @@ function cleanOptional(value: string | null | undefined, max: number): string | 
   if (typeof value !== 'string') return null;
   const out = value.trim();
   return out ? out.slice(0, max) : null;
+}
+
+function cleanUrl(value: string | null | undefined): string | null {
+  const out = cleanOptional(value, 1000);
+  if (!out) return null;
+  try {
+    const parsed = new URL(out);
+    return parsed.protocol === 'https:' ? parsed.toString() : null;
+  } catch { return null; }
 }

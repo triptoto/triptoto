@@ -23,6 +23,8 @@ The repository includes the cumulative Major Beta Milestone 5–8:
 - traveler-specific seat, baggage and ticket details;
 - travel contacts and explicit deadline/time-marker semantics;
 - forwarded-email import confirmation without generative AI;
+- local Smart Import for PDF, image, EML, DOCX, ICS and Wallet documents, with explicit review;
+- feature-gated Google Identity Services account continuity (disabled by default);
 - local offline documents while cloud storage is disabled;
 - offline sync cursors, change feed, idempotency and conflict visibility;
 - privacy-safe beta metrics, quotas and deletion controls;
@@ -33,6 +35,7 @@ The repository includes the cumulative Major Beta Milestone 5–8:
 ```bash
 npm install
 npm run validate:candidate
+npm run validate:smart-import-auth
 ```
 
 ## Remote D1 and deployment
@@ -46,5 +49,7 @@ bash scripts/smoke-major-milestone.sh
 ## Disabled integrations
 
 Generative AI, live-flight provider, Gmail Sync, R2 Documents, public account authentication, public sharing, demo tools and ops are disabled by default.
+
+See `docs/SMART_IMPORT.md` and `docs/GOOGLE_AUTH.md`. Google sign-in requires both `ACCOUNT_AUTH_ENABLED=true` and an environment-specific `GOOGLE_CLIENT_ID`; neither is enabled by this branch.
 
 See `COPY_MAJOR_BETA_MILESTONE_5_8.md` and `docs/MAJOR_MILESTONE_5_8.md`.

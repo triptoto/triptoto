@@ -1,0 +1,17 @@
+import { strict as assert } from 'node:assert';
+import { readFileSync } from 'node:fs';
+const app=readFileSync('public/mobile-app.js','utf8'),html=readFileSync('public/index.html','utf8'),headers=readFileSync('public/_headers','utf8'),sw=readFileSync('public/sw.js','utf8'),worker=readFileSync('apps/worker/src/index.ts','utf8'),imports=readFileSync('apps/worker/src/routes/imports.ts','utf8'),wrangler=readFileSync('wrangler.jsonc','utf8'),migration=readFileSync('migrations/0016_google_auth_smart_import.sql','utf8');
+for(const value of ['.pdf','.heic','.eml','.docx','.ics','.pkpass'])assert(app.includes(value),`missing import accept ${value}`);
+for(const value of ['TriptoSmartImport.recognizeFile','saveLocalDocument(file','duplicateDisposition:"add_anyway"','resolveImport'])assert(app.includes(value),`missing Smart Import contract ${value}`);
+assert(imports.includes('rawBytesReceived:false')&&imports.includes('extractedTextReceived:false'),'upload privacy response missing');
+assert(html.indexOf('/smart-import.js')<html.indexOf('/mobile-app.js'),'recognizer loads before app');
+assert(sw.includes('/smart-import.js')&&sw.includes('tripto-shell-product-v2'),'service worker cache updated');
+assert(headers.includes('https://accounts.google.com/gsi/client')&&headers.includes('frame-src https://accounts.google.com'),'Google CSP is narrow');
+assert(worker.includes("'/api/v1/auth/google/challenge'")&&worker.includes("'/api/v1/auth/google'")&&worker.includes("'/api/v1/auth/signout'"),'auth endpoints wired');
+assert(worker.includes('imports\\/upload\\/preview')&&worker.includes('previewUploadedDocument'),'upload preview endpoint wired');
+for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','SHARING_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`${flag} must remain disabled`);
+assert(wrangler.includes('"ACCOUNT_AUTH_ENABLED": "true"'),'Google account authentication must be enabled');
+assert(/"GOOGLE_CLIENT_ID": "[^"]+\.apps\.googleusercontent\.com"/.test(wrangler),'Google OAuth client ID must be configured');
+assert(migration.includes('auth_challenges')&&migration.includes('avatar_url')&&!/DROP\s+TABLE|DELETE\s+FROM/i.test(migration),'migration is additive');
+assert(!app.includes('console.log(response.credential)')&&!app.includes('localStorage.setItem("google'),'Google credential is not logged or persisted');
+console.log('Smart Import + Google auth browser/security contracts passed.');

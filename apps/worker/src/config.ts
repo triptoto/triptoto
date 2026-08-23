@@ -7,6 +7,7 @@ export const PRODUCT_LIMITS = {
   forwardedImportsPerDay: 20,
   actorWritesPerHour: 300,
   guestSessionsPerHourPerFingerprint: 30,
+  googleAuthAttemptsPerHour: 20,
 } as const;
 
 export const FEATURE_FLAGS = {

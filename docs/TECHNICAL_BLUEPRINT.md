@@ -1,5 +1,9 @@
 # tripto.to Technical Blueprint v1.0
 
+## Smart Import and verified identity extension
+
+The mobile client has a provider-oriented, local document-recognition pipeline: detect, extract embedded text/OCR/barcode, classify, extract fields, score confidence, review, then confirm. Original bytes and extraction evidence remain device-local. D1 stores only reviewed structured candidates and confirmed entities. Google Identity Services uses a nonce challenge and the existing provider-subject identity/account migration boundary. Both additions preserve the Worker + D1 architecture; see `SMART_IMPORT.md` and `GOOGLE_AUTH.md`.
+
 ## Scope
 V1 supports guest-first onboarding, accounts later, trips, multi-city itineraries, travelers, timeline, flights/stays/activities/reservations, documents, forwarded-email/manual import contracts, offline-first use, Ready Offline, Show to Driver, Trip Brain, Impact Engine, Trip Checklist, sharing model, alerts, and privacy-first analytics.
 

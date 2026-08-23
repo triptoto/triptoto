@@ -108,9 +108,14 @@
     syncStatus: null,
     localDocs: [],
     account: null,
+    importReview: null,
+    importLocalDocumentId: null,
+    importUploadRequest: null,
     imports: [],
     importReview: null,
     bookingFilter: "all",
+    importMode: "upload",
+    manualLabel: null,
     formDraft: null,
     tripsLoaded: false,
   };
@@ -313,6 +318,10 @@
       return [];
     }
   }
+  function queuePendingMutation(row) {
+    const rows=pendingMutations();rows.push({id:`pending_${crypto.randomUUID()}`,createdAt:Date.now(),status:"pending",...row});localStorage.setItem(PENDING_KEY,JSON.stringify(rows));
+  }
+  async function flushSmartImportQueue(){if(PREVIEW_MODE||!navigator.onLine||!state.token)return;const rows=pendingMutations(),keep=[];for(const row of rows){if(row.kind!=="smart-import-preview"||row.status==="done"){keep.push(row);continue;}try{await api(row.path,{method:"POST",body:JSON.stringify(row.body)});}catch{keep.push({...row,status:"retry"});}}localStorage.setItem(PENDING_KEY,JSON.stringify(keep));}
   function ageLabel(timestamp) {
     if (!timestamp) return "Not cached";
     const age = Math.max(0, Date.now() - Number(timestamp));
@@ -760,6 +769,15 @@
     if (file.size > 10 * 1024 * 1024)
       throw new Error("The beta limit is 10 MB per local document.");
     const existing = await listLocalDocs(state.trip.id);
+    const checksum = await sha256Blob(file),
+      duplicate = existing.find(
+        (document) =>
+          document.checksum === checksum && document.integrity === "verified",
+      );
+    if (duplicate) {
+      showToast("This document is already saved on this phone.");
+      return duplicate;
+    }
     if (existing.length >= 20)
       throw new Error(
         "The beta limit is 20 local documents per trip on this phone.",
@@ -774,7 +792,7 @@
       travelerIds: Array.isArray(travelerIds) ? travelerIds : [],
       relatedBookingId: relatedBookingId || null,
       savedAt: Date.now(),
-      checksum: await sha256Blob(file),
+      checksum,
       integrity: "verified",
       blob: file,
     };
@@ -788,6 +806,7 @@
     state.localDocs = await listLocalDocs(state.trip.id);
     showToast("Document saved offline on this phone.");
     render();
+    return row;
   }
   async function linkLocalDocument(documentId, relatedBookingId) {
     if (!documentId || !relatedBookingId || PREVIEW_MODE) return;
@@ -951,12 +970,23 @@
       const selected = localStorage.getItem("tripto_selected_trip");
       state.trip =
         state.trips.find((trip) => String(trip.id) === selected) ||
-        state.trips[0] ||
+        selectRelevantTrip(state.trips) ||
         null;
       if (state.trip)
         localStorage.setItem("tripto_selected_trip", state.trip.id);
       await loadTripDetails();
       state.tripsLoaded = true;
+      if (state.account?.mode === "account") {
+        if (!state.trip) {
+          state.screen = "form";
+          state.selectedId = "trip";
+          history.replaceState(null, "", "#form:trip");
+        } else if (["home", "trips", "bookings"].includes(state.screen)) {
+          state.screen = "timeline";
+          state.selectedId = null;
+          history.replaceState(null, "", "#timeline");
+        }
+      }
     } catch (error) {
       state.tripsLoaded = false;
       state.error = error instanceof Error ? error.message : String(error);
@@ -965,6 +995,20 @@
       state.loading = false;
       render();
     }
+  }
+  function selectRelevantTrip(trips) {
+    const now = new Date().toISOString().slice(0, 10);
+    const active = trips.find((trip) => String(val(trip, "lifecycle_state", "lifecycleState")) === "active");
+    if (active) return active;
+    const upcoming = trips
+      .filter((trip) => {
+        const lifecycle = String(val(trip, "lifecycle_state", "lifecycleState") || "upcoming");
+        const start = String(val(trip, "starts_on", "startsOn") || "");
+        return lifecycle === "upcoming" && (!start || start >= now);
+      })
+      .sort((a, b) => String(val(a, "starts_on", "startsOn") || "9999").localeCompare(String(val(b, "starts_on", "startsOn") || "9999")))[0];
+    if (upcoming) return upcoming;
+    return [...trips].sort((a, b) => String(val(b, "ends_on", "endsOn", "updated_at") || "").localeCompare(String(val(a, "ends_on", "endsOn", "updated_at") || "")))[0] || null;
   }
   async function loadTripDetails() {
     if (!state.trip) {
@@ -1303,13 +1347,12 @@
   }
   function bottomNav(active) {
     const rows = [
-      ["home", "home", "Home"],
-      ["trips", "trips", "Trip"],
+      ["timeline", "clock", "Trip"],
       ["add", "plus", "Add"],
-      ["bookings", "ticket", "Bookings"],
       ["account", "user", "Account"],
     ];
-    return `<nav class="bottom-nav" aria-label="Primary navigation">${rows.map(([screen, ic, label]) => (screen === "add" ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add trip item"><span>${icon(ic, 27)}</span><small>${label}</small></button>` : `<button class="nav-item ${active === screen ? "active" : ""}" data-screen="${screen}" ${active === screen ? 'aria-current="page"' : ""}>${icon(ic, 23)}<span>${label}</span></button>`)).join("")}</nav>`;
+    const normalized = active === "account" ? "account" : "timeline";
+    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${rows.map(([screen, ic, label]) => (screen === "add" ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon(ic, 27)}</span><small>${label}</small></button>` : `<button class="nav-item ${normalized === screen ? "active" : ""}" data-screen="${screen}" ${normalized === screen ? 'aria-current="page"' : ""}>${icon(ic, 23)}<span>${label}</span></button>`)).join("")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
@@ -1614,9 +1657,9 @@
       state.tripsLoaded &&
         !state.loading &&
         !state.error &&
-        state.screen === "home" &&
-        !state.trip &&
-        state.trips.length === 0,
+        !PREVIEW_MODE &&
+        (state.account?.mode || "guest") !== "account" &&
+        !["tour"].includes(state.screen),
     );
   }
   function syncFirstRunPresentation(active) {
@@ -1635,7 +1678,7 @@
     const offline = state.offline
       ? `<span class="first-run-offline" role="status">${icon("info", 14)} Offline</span>`
       : "";
-    return `<div class="phone-app"><section class="first-run-screen screen--navless" aria-labelledby="first-run-title"><div class="first-run-aurora" aria-hidden="true"></div><div class="first-run-orbit" aria-hidden="true"><span class="first-run-orbit__track"></span><span class="first-run-orbit__plane">${icon("plane", 46)}</span></div><div class="first-run-clouds" aria-hidden="true"><i></i><i></i><i></i></div><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to">tripto<span>.</span>to</div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><h1 id="first-run-title"><span>Your trip.</span><span>Ready before</span><span>you need it.</span></h1><p><span>Organize everything in one place.</span><span>Travel calm, prepared and offline-ready.</span></p></section><div class="first-run-actions"><button class="first-run-primary" data-action="create-trip">${icon("plus", 18)}<span>Create my first trip</span>${icon("chevron", 19)}</button><button class="first-run-secondary" data-action="open-first-run-how">${icon("info", 18)}<span>See how it works</span></button></div>${firstRunProductPreview()}<section class="first-run-benefits" aria-label="tripto.to benefits"><article><span>${icon("calendar", 18)}</span><strong>Timeline</strong><small>Your trip, in order.</small></article><article><span>${icon("download", 18)}</span><strong>Offline Ready</strong><small>Plans and documents anywhere.</small></article><article><span>${icon("shield", 18)}</span><strong>Smart Essentials</strong><small>Only what still needs attention.</small></article></section></main></section></div>`;
+    return `<div class="phone-app"><section class="first-run-screen welcome-v2 screen--navless" aria-labelledby="first-run-title"><div class="first-run-aurora" aria-hidden="true"></div><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to">tripto<span>.</span>to</div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><h1 id="first-run-title"><span>All your trip.</span><span>One Timeline.</span></h1><p><span>Add bookings, we’ll tell you</span><span>what matters next.</span></p></section>${firstRunProductPreview()}<div class="first-run-actions welcome-v2__actions"><div id="google-signin-button" aria-label="Continue with Google"></div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span>${icon("chevron", 18)}</button></div><footer class="welcome-v2__footer"><a href="/privacy.html">Privacy</a><span aria-hidden="true"></span><a href="/terms.html">Terms</a></footer></main></section></div>`;
   }
   function timelineScreen() {
     if (!state.trip)
@@ -1706,7 +1749,31 @@
           )
           .join("")
       : `<div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${primaryCta("Add to trip", "open-add", "plus")}</div>`;
-    return `<div class="phone-app"><section class="screen timeline-screen">${appBar(state.trip.title || "Trip", formatTripDates(state.trip))}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${content}</main>${bottomNav("trips")}</section></div>`;
+    const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",18)}<small>${esc(formatTripDates(state.trip))}</small></button><button class="icon-button" data-screen="documents" aria-label="Tickets and documents">${icon("document",22)}</button></header>`;
+    return `<div class="phone-app"><section class="screen timeline-screen">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
+  }
+
+  function timelineContextCard() {
+    const issues = activeHealthIssues();
+    if (issues.length) {
+      const issue = issues[0];
+      return `<section class="timeline-context timeline-context--attention"><span>Needs Attention</span><h2>${esc(issue.title || "Review your trip")}</h2><p>${esc(issue.explanation || "One trip detail needs your review.")}</p><button data-screen="health">Review${icon("chevron",17)}</button></section>`;
+    }
+    const next = nextItem();
+    if (next) {
+      const starts = Number(val(next,"starts_at_utc","startsAtUtc")) || null,
+        zone = val(next,"start_timezone","startTimezone"),
+        active = starts != null && starts <= Date.now() && Number(val(next,"ends_at_utc","endsAtUtc") || starts) > Date.now();
+      if (active || (starts != null && starts - Date.now() <= 6 * 60 * 60 * 1000))
+        return `<section class="timeline-context timeline-context--next"><span>${active ? "Now" : "Next"}</span><h2>${esc(next.title || "Next plan")}</h2><p>${esc(starts ? `${formatTime(starts,zone)} · ${next.subtitle || statusText(next.status)}` : next.subtitle || "Time unavailable")}</p><button data-action="timeline-detail" data-id="${esc(itemId(next))}">Open${icon("chevron",17)}</button></section>`;
+    }
+    const start = val(state.trip,"starts_on","startsOn");
+    if (start) {
+      const days = Math.ceil((new Date(`${start}T00:00:00`).getTime() - Date.now()) / 86400000);
+      if (days >= 0 && days <= 14)
+        return `<section class="timeline-context timeline-context--prepare"><span>${days === 0 ? "Today" : `${days} day${days === 1 ? "" : "s"} to go`}</span><h2>Before you go</h2><p>Keep tickets and confirmations available on this device.</p><button data-screen="documents">Review documents${icon("chevron",17)}</button></section>`;
+    }
+    return "";
   }
 
   function timelineDay(ms, timeZone) {
@@ -2156,12 +2223,21 @@
     return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(transportIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
   }
   function importScreen() {
-    return focusedTaskPage("Import Booking", `<section class="form-intro"><span>${icon("mail",28)}</span><h1>Paste a booking confirmation</h1><p>No AI guessing. You review every field before it is added.</p></section><form class="mobile-form import-form" id="import-form" novalidate><label><span>Forwarded email</span><textarea name="body" rows="12" required placeholder="Paste the full airline, hotel, train, or activity confirmation here"></textarea></label><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon("document",19)} Preview Booking</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
+    // No AI guessing. You review every field before it is added.
+    const forward = state.importMode === "forward";
+    const control = forward
+      ? `<section class="forward-booking-address"><span>${icon("mail",24)}</span><div><strong>bookings@tripto.to</strong><small>Forward from your verified Google email. If more than one trip could match, we will ask you to choose.</small></div></section><label><span>Paste confirmation for immediate review</span><textarea name="body" rows="7" placeholder="Paste the forwarded confirmation email"></textarea></label>`
+      : `<label class="smart-import-file"><span>Booking document</span><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,.eml,.docx,.ics,.pkpass,application/pdf,image/*,text/plain,message/rfc822,text/calendar"><small>PDF, image, TXT, EML, DOCX, ICS, or PKPASS · 10 MB max</small></label>`;
+    return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Only verified senders are accepted. Review uncertain fields before adding anything." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon(forward ? "mail" : "document",19)} Review recognized fields</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
   }
   function importReviewScreen() {
-    const candidates = state.importReview?.candidates || (PREVIEW_MODE ? [{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing","Date is ambiguous"]}] : []);
-    return focusedTaskPage("Import Review", `<form id="import-review-form" class="import-review-form"><section class="review-summary"><span>${icon("warning",25)}</span><div><strong>${candidates.some((c)=>String(c.confidence).toLowerCase() === "low") ? "Needs confirmation" : "Ready to import"}</strong><small>Nothing is added until you confirm.</small></div></section>${candidates.map((c)=>{ const warnings=c.warnings||[], payload=c.payload||{}; return `<section class="review-card"><header><span class="review-type">${icon(transportIcon(val(c,"type")||"flight"),19)} ${esc(statusText(val(c,"type")||"Booking"))}</span><span class="travel-state ${String(c.confidence).toLowerCase()==="low"?"travel-state--attention":""}">${String(c.confidence).toLowerCase()==="low"?"Needs confirmation":"Ready to import"}</span></header><h2>${esc(val(c,"title") || statusText(val(c,"type")||"Booking"))}</h2>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",15)} ${esc(w)}</p>`).join("")}</div>`:""}<div class="review-fields">${warnings.some((w)=>/timezone/i.test(w))?`<label><span>Timezone</span><input type="text" name="candidate-timezone" value="${esc(payload.departureTimezone||payload.timezone||"")}" placeholder="Europe/Rome"></label>`:""}${warnings.some((w)=>/date|time/i.test(w))?`<label><span>Travel date and time</span><input type="datetime-local" name="candidate-date" value="${esc(payload.localDateTime||payload.departureLocalDatetime||"")}"></label>`:""}</div><button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">Confirm and Import</button></section>`; }).join("") || `<section class="mobile-empty"><h1>No booking candidates</h1><p>This format could not be imported safely.</p></section>`}</form>`, "import-review-task");
+    const candidates = state.importReview?.candidates || [];
+    const duplicate=Boolean(state.importReview?.duplicate);
+    return focusedTaskPage("Import Review", `<form id="import-review-form" class="import-review-form"><section class="review-summary ${duplicate?"review-summary--duplicate":""}"><span>${icon(duplicate?"warning":"check",25)}</span><div><strong>${duplicate?"Possible duplicate":"Review before adding"}</strong><small>${duplicate?"This document was imported before. Review the existing import or add another copy intentionally.":"Nothing is added until you confirm."}</small></div></section>${candidates.map((c)=>reviewCandidate(c,duplicate)).join("") || `<section class="mobile-empty"><h1>No booking candidates</h1><p>This format could not be imported safely. Add the booking manually instead.</p></section>`}</form>`, "import-review-task");
   }
+
+  function reviewCandidate(c,duplicate){const payload=c.payload||{},type=val(c,"candidate_type","type")||"reservation",warnings=payload.warnings||c.warnings||[],confidence=Number(c.confidence||0),ignored=new Set(["warnings","fieldMeta","documentKind","filename","checksum"]),fields=new Map(Object.entries(payload).filter(([key,value])=>!ignored.has(key)&&(typeof value==="string"||typeof value==="number")));for(const key of reviewRequiredFields(type))if(!fields.has(key))fields.set(key,"");const control=([key,value])=>{const date=key.endsWith("LocalDatetime"),tz=key.toLowerCase().includes("timezone");return `<label><span>${esc(statusText(key.replace(/([A-Z])/g," $1")))}</span><input type="${date?"datetime-local":"text"}" name="field-${esc(c.id)}-${esc(key)}" value="${esc(value)}" data-field-name="${esc(key)}" ${tz?'placeholder="Europe/Rome"':""}></label>`;};return `<section class="review-card"><header><span class="review-type">${icon(transportIcon(type),19)} ${esc(statusText(type))}</span><span class="travel-state ${confidence<.7?"travel-state--attention":""}">${confidence<.7?"Check carefully":"Recognized"}</span></header>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",15)} ${esc(w)}</p>`).join("")}</div>`:""}<label><span>Booking type</span><select name="field-${esc(c.id)}-candidateType">${["flight","hotel","train","car","transfer","ferry","activity","restaurant","reservation","generic_ticket"].map(x=>`<option value="${x}" ${x===type?"selected":""}>${esc(statusText(x))}</option>`).join("")}</select></label><div class="review-fields">${[...fields].map(control).join("")}</div><div class="review-actions">${duplicate?`<button type="button" class="mobile-secondary-action" data-action="add-duplicate-import" data-id="${esc(c.id)}">Add anyway</button>`:`<button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">Confirm and Import</button>`}<button type="button" class="text-action" data-action="reject-import" data-id="${esc(c.id)}">Reject</button></div></section>`;}
+  function reviewRequiredFields(type){if(type==="flight")return["airlineCode","flightNumber","departureIata","arrivalIata","departureLocalDatetime","departureTimezone","arrivalLocalDatetime","arrivalTimezone"];if(type==="hotel")return["propertyName","checkInDate","checkOutDate"];return["title"];}
   function importHistoryScreen() {
     const rows = (state.imports || []).map((row)=>`<button class="travel-row" data-action="review-import" data-id="${esc(row.id)}"><span class="travel-row__icon">${icon(row.candidate_type==="hotel"?"hotel":row.candidate_type==="train"?"train":"plane",20)}</span><span class="travel-row__body"><strong>${esc(row.subject || statusText(row.candidate_type || "Booking"))}</strong><small>${esc(row.created_at ? formatDateTime(Number(row.created_at)) : "Date unavailable")}</small><em class="travel-state ${row.status==="imported"?"":"travel-state--attention"}">${esc(row.status==="imported"?"Imported":"Needs confirmation")}</em></span>${icon("chevron",18)}</button>`).join("");
     return mobilePage("Import History", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No imports yet</h1><p>Forwarded bookings you review will appear here.</p></section>`}</div><button class="mobile-secondary-action" data-screen="import">${icon("plus",19)} Import booking</button>`, "account");
@@ -2185,8 +2261,17 @@
           .toUpperCase() || "GT";
     const bytes = state.localDocs.reduce((sum,d)=>sum+Number(d.size||0),0), pending = pendingMutations().filter((x)=>x.status!=="done").length + Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
     const row = (ic,title,sub,screen,action="") => `<button class="simple-row" ${screen?`data-screen="${screen}"`:`data-action="${action}"`}><span class="row-icon">${icon(ic,22)}</span><span class="row-copy"><strong>${title}</strong><span>${esc(sub)}</span></span>${icon("chevron",22,"chevron")}</button>`;
-    return `<div class="phone-app"><section class="screen mobile-v1-screen">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? "Signed in" : "Using this device without an account"}</div></div></div></div><div class="section-label">Your trip</div>${row("user","Travelers",`${state.travelers.length} traveler${state.travelers.length===1?"":"s"}`,"travelers")}${row("document","Documents",`${state.localDocs.length} saved on this phone`,"documents")}${row("download","Offline storage",`${state.localDocs.length} files · ${Math.max(0.1,bytes/1048576).toFixed(1)} MB`,"ready")}${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}<div class="section-label">Tools</div>${row("mail","Import booking","Paste a forwarded confirmation","import")}${row("check","Smart Essentials",`${state.checklist.filter((x)=>!x.completed).length} incomplete`,"checklist")}${row("shield","Trip Health","Review what needs attention","health")}${row("trips","Switch trip",`${state.trips.length} trip${state.trips.length===1?"":"s"} available`,"","switch-trip")}<div class="section-label">Privacy & help</div>${row("share","Export trip","Download your trip data","","export-trip")}${row("info","Help & support","Beta support bundle","","support")}<button class="simple-row simple-row--danger" data-action="remove-local-data"><span class="row-icon">${icon("close",22)}</span><span class="row-copy"><strong>Remove local data</strong><span>${pending?"Pending changes must be reviewed first":"Deletes files stored on this phone"}</span></span>${icon("chevron",22)}</button><p class="app-version">tripto.to Mobile UI v1</p><a class="legacy-link" href="/legacy.html">Advanced beta tools</a></main>${bottomNav("account")}</section></div>`;
+    const google=state.account?.providers?.find((provider)=>provider.provider==="google"&&provider.enabled),identity=state.account?.identities?.find((item)=>item.provider==="google");
+    const authBlock=mode==="guest"&&google?`<section class="account-signin"><h2>Keep your trips across devices</h2><p>Continue with Google to attach this phone's trips to your verified account.</p><div id="google-signin-button" data-client-id="${esc(google.clientId)}"></div><p class="signin-error" role="alert" hidden></p></section>`:mode==="account"?`<section class="account-signin account-signin--active"><div><strong>${identity?"Google account connected":"Account connected"}</strong><small>${esc(state.account?.user?.primary_email||identity?.email||"")}</small></div><button class="mobile-secondary-action" data-action="sign-out">Sign out</button></section>`:"";
+    const upcoming = state.trips.filter((trip)=>!["completed","archived","cancelled"].includes(String(val(trip,"lifecycle_state","lifecycleState")||"upcoming"))).length,
+      past = state.trips.length - upcoming,
+      identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
+    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div></div></div>${authBlock}<div class="section-label">My trips</div>${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"timeline")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}<div class="section-label">Booking email</div>${row("mail","bookings@tripto.to",mode === "account" ? "Forward from your verified Google email" : "Sign in to verify a sender","","booking-email-info")}<div class="section-label">Preferences</div>${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","support")} ${mode === "account" ? `<button class="simple-row simple-row--danger" data-action="sign-out"><span class="row-icon">${icon("back",22)}</span><span class="row-copy"><strong>Sign out</strong><span>Unsynced changes stay protected</span></span>${icon("chevron",22)}</button>` : ""}<p class="app-version">tripto.to Product V2</p></main>${bottomNav("account")}</section></div>`;
   }
+
+  let googleScriptPromise=null;
+  function loadGoogleIdentityScript(){if(globalThis.google?.accounts?.id)return Promise.resolve();if(googleScriptPromise)return googleScriptPromise;googleScriptPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error("Google sign-in could not load."));document.head.appendChild(script);});return googleScriptPromise;}
+  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{const challenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});await loadGoogleIdentityScript();globalThis.google.accounts.id.initialize({client_id:challenge.clientId,nonce:challenge.nonce,use_fedcm_for_prompt:true,callback:async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||null})});state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}}});globalThis.google.accounts.id.renderButton(container,{type:"standard",theme:"outline",size:"large",shape:"pill",text:"continue_with",width:Math.min(350,container.clientWidth||350)});}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
   function quickField(name, label, options = {}) {
     const {
         type = "text",
@@ -2244,20 +2329,20 @@
   }
   function basicMobileForm(kind) {
     const configs = {
-        trip: { title:"Create Trip", lead:"Trip basics", fields:[["title","Trip name","text",true,true],["startsOn","Start date","date",true,false],["endsOn","End date","date",true,false]] },
+        trip: { title:"Create Trip", lead:"New trip", fields:[["destination","Where are you going?","text",true,true],["startsOn","Start date","date",true,false],["endsOn","End date","date",true,false],["title","Trip name · Optional","text",false,true]] },
         traveler: { title:"Add Traveler", lead:"Traveler", fields:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
         checklist: { title:"Add Essential", lead:"Travel essential", fields:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
       }, cfg = configs[kind] || configs.trip;
     const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; if(type==="select")choices='<option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option>'; if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? tripDateField(name, label) : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices}); });
     const fields = kind === "trip"
-      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<fieldset class="trip-date-range"><legend>Trip dates</legend><div class="form-fields form-fields--date-time">${mappedFields.slice(1).join("")}</div></fieldset></div>`
+      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<fieldset class="trip-date-range"><legend>Travel dates</legend><div class="form-fields form-fields--date-time">${mappedFields.slice(1,3).join("")}</div></fieldset>${mappedFields[3]}</div>`
       : `<div class="form-fields">${mappedFields.join("")}</div>`;
-    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}" novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">Save ${esc(statusText(kind))}</button></div></form>`, "form-screen");
+    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}" novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${kind === "trip" ? "Where are you going?" : esc(cfg.title)}</h1>${kind === "trip" ? "<p>Keep it simple. Add the details later.</p>" : ""}</header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${kind === "trip" ? "Create trip" : `Save ${esc(statusText(kind))}`}</button></div></form>`, "form-screen");
   }
   function mobileFormScreen() {
     const kind = String(state.selectedId || "trip");
     if (!QUICK_ADD_KINDS.has(kind)) return basicMobileForm(kind);
-    const titles = {flight:"Add Flight",hotel:"Add Hotel",train:"Add Train",activity:"Add Activity",reservation:"Add Reservation",document:"Add Document"}, title=titles[kind];
+    const titles = {flight:"Add Flight",hotel:"Add Hotel",train:"Add Train",activity:"Add Activity",reservation:"Add Reservation",document:"Add Document"}, title=state.manualLabel || titles[kind];
     if (!state.trip) return noTripQuickAdd(kind, title);
     const localDocumentOptions = `<option value="">No related document</option>${state.localDocs.map((document) => `<option value="${esc(document.id)}">${esc(document.name || statusText(document.type || "Document"))}</option>`).join("")}`;
     let primary="", more="", note="", list="", extraClass="";
@@ -2271,17 +2356,23 @@
       more = quickMore(kind,"More stay details",`<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Check-in and check-out times remain unavailable unless you enter them.";
     } else if (kind === "train") {
+      const ferry = state.manualLabel === "Ferry",
+        originLabel = ferry ? "Departure port" : "Origin station",
+        destinationLabel = ferry ? "Arrival port" : "Destination station",
+        serviceLabel = ferry ? "Ferry or sailing number" : "Train or service number";
       list = quickLocationList("train");
-      primary = `${quickField("fromLocation","Origin station",{required:true,placeholder:"Roma Termini",attrs:'list="quick-train-locations" data-location-role="departure"'})}${quickField("toLocation","Destination station",{required:true,placeholder:"Firenze S. M. Novella",attrs:'list="quick-train-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("serviceNumber","Train or service number",{placeholder:"Optional"})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure"',helper:"Required when the station does not supply a reliable timezone."})}`;
+      primary = `${quickField("fromLocation",originLabel,{required:true,placeholder:ferry?"Port of Civitavecchia":"Roma Termini",attrs:'list="quick-train-locations" data-location-role="departure"'})}${quickField("toLocation",destinationLabel,{required:true,placeholder:ferry?"Port of Olbia":"Firenze S. M. Novella",attrs:'list="quick-train-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("serviceNumber",serviceLabel,{placeholder:"Optional"})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure"',helper:`Required when the ${ferry?"port":"station"} does not supply a reliable timezone.`})}`;
       more = quickMore(kind,"More train details",`<div class="form-fields">${quickField("carrierName","Operator",{})}${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome"})}${quickField("platform","Platform",{wide:false})}${quickField("coach","Coach",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","Booking reference",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Departure uses the event-local timezone. Platform, arrival, coach, and seat are never guessed.";
     } else if (kind === "activity") {
-      primary = `${quickField("title","Activity name",{required:true,placeholder:"Vatican Museums"})}${quickField("activityDate","Date",{type:"date",required:true})}${quickDateSuggestions(kind)}<fieldset class="time-mode form-field--wide"><legend>Time</legend><div class="time-mode-control"><label><input type="radio" name="timeMode" value="specific" checked><span>Has a specific time</span></label><label><input type="radio" name="timeMode" value="unset"><span>Time not set yet</span></label></div></fieldset><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome"})}</div>${quickField("location","Location",{placeholder:"Optional",attrs:'list="quick-activity-locations" data-location-role="activity"'})}`;
+      const cruise = state.manualLabel === "Cruise";
+      primary = `${quickField("title",cruise?"Cruise name":"Activity name",{required:true,placeholder:cruise?"Mediterranean cruise":"Vatican Museums"})}${quickField("activityDate",cruise?"Departure date":"Date",{type:"date",required:true})}${quickDateSuggestions(kind)}<fieldset class="time-mode form-field--wide"><legend>Time</legend><div class="time-mode-control"><label><input type="radio" name="timeMode" value="specific" checked><span>Has a specific time</span></label><label><input type="radio" name="timeMode" value="unset"><span>Time not set yet</span></label></div></fieldset><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome"})}</div>${quickField("location",cruise?"Departure port":"Location",{placeholder:"Optional",attrs:'list="quick-activity-locations" data-location-role="activity"'})}<input type="hidden" name="activityType" value="${cruise?"cruise":"activity"}">`;
       list = quickLocationList("activity");
       more = quickMore(kind,"More details",`<div class="form-fields">${quickField("activityType","Activity type",{})}${quickField("endTime","End time",{type:"time",wide:false})}${quickField("reservationWindow","Reservation window",{wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document or ticket",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "A date is always required. Choose Time not set yet explicitly if the booking has no confirmed time.";
     } else if (kind === "reservation") {
-      primary = `${quickField("title","Reservation name",{required:true,placeholder:"Dinner at Roscioli"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Date",{type:"date",required:true,wide:false})}${quickField("reservationTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome"})}${quickField("location","Location",{placeholder:"Optional",attrs:'list="quick-reservation-locations" data-location-role="reservation"'})}`;
+      const reservationLabels = {"Car Rental":["Rental company or vehicle","Pickup date","Pickup time","Pickup location","car_rental"],"Transfer":["Transfer","Pickup date","Pickup time","Pickup location","transfer"],"Restaurant":["Restaurant name","Reservation date","Reservation time","Location","restaurant"],"Other":["Booking name","Date","Local time","Location","other"]}, labels=reservationLabels[state.manualLabel]||["Reservation name","Date","Local time","Location","reservation"];
+      primary = `${quickField("title",labels[0],{required:true,placeholder:labels[0]})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",labels[1],{type:"date",required:true,wide:false})}${quickField("reservationTime",labels[2],{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome"})}${quickField("location",labels[3],{placeholder:"Optional",attrs:'list="quick-reservation-locations" data-location-role="reservation"'})}<input type="hidden" name="reservationType" value="${esc(labels[4])}">`;
       list = quickLocationList("reservation");
       more = quickMore(kind,"More details",`<div class="form-fields">${quickField("reservationType","Reservation type",{})}${quickField("endTime","End time or window",{type:"time"})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Reservation time uses the event-local timezone and is required.";
@@ -2312,24 +2403,25 @@
     return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
   }
   function addSheet() {
-    const options = [
-      ["plane", "Flight", "Add a flight reservation", "flight"],
-      ["hotel", "Hotel", "Add a hotel stay", "hotel"],
-      ["train", "Train", "Add a train journey", "train"],
-      ["star", "Activity", "Add a tour or activity", "activity"],
-      ["restaurant", "Reservation", "Add a restaurant booking", "reservation"],
-      ["document", "Document", "Save an offline travel file", "document"],
-    ];
     return bottomSheet(
       "add",
-      "Add to trip",
-      `<button class="sheet-import-action" data-screen="import"><span class="info-icon">${icon("mail", 22)}</span><span><strong>Import booking</strong><small>Paste a forwarded booking confirmation</small></span>${icon("chevron", 22, "chevron")}</button><div class="sheet-manual-label">Or add manually</div><div class="sheet-options-group">${options
-        .map(
-          ([ic, title, sub, type]) =>
-            `<button class="sheet-option sheet-option--${type}" data-action="add-type" data-type="${type}"><span class="info-icon">${icon(ic, 22)}</span><span><strong>${title}</strong><small>${sub}</small></span>${icon("chevron", 22, "chevron")}</button>`,
-        )
-        .join("")}</div>`,
+      "What would you like to do?",
+      `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="open-add-booking"><span class="info-icon">${icon("plus",22)}</span><span><strong>Add Booking</strong><small>Add something to ${esc(state.trip?.title || "your trip")}</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-action="create-trip"><span class="info-icon">${icon("plane",22)}</span><span><strong>Create New Trip</strong><small>Start planning another trip</small></span>${icon("chevron",22)}</button></div>`,
     );
+  }
+  function addBookingScreen() {
+    if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
+    const choice = (ic,title,copy,action) => `<button class="v2-choice" data-action="${action}"><span>${icon(ic,23)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",20)}</button>`;
+    return focusedTaskPage(`Add to ${state.trip.title || "trip"}`, `<section class="v2-task-intro"><span>Add Booking</span><h1>How would you like<br>to add it?</h1><p>Everything you add appears in the Timeline.</p></section><div class="v2-choice-list">${choice("document","Upload Booking","Choose a ticket or confirmation file","open-upload-booking")}${choice("mail","Forward Confirmation Email","Send it to bookings@tripto.to","open-forward-booking")}${choice("plus","Add Manually","Enter only the confirmed details","open-manual-booking")}</div>`, "v2-add-booking");
+  }
+  function manualBookingSheet() {
+    const options = [
+      ["plane","Flight","flight"],["hotel","Hotel / Stay","hotel"],["train","Train","train"],
+      ["car","Car Rental","reservation"],["navigation","Transfer","reservation"],["trips","Cruise","activity"],
+      ["navigation","Ferry","train"],["restaurant","Restaurant","reservation"],["star","Activity / Event","activity"],
+      ["calendar","Other","reservation"],
+    ];
+    return bottomSheet("manual-booking","Add Manually",`<div class="sheet-options-group manual-v2-options">${options.map(([ic,title,type])=>`<button class="sheet-option" data-action="add-type" data-type="${type}" data-manual-label="${esc(title)}"><span class="info-icon">${icon(ic,21)}</span><span><strong>${esc(title)}</strong></span>${icon("chevron",20)}</button>`).join("")}</div>`);
   }
   function documentSheet() {
     const travelers = state.travelers
@@ -2355,9 +2447,10 @@
   }
   function firstRunHowSheet() {
     const steps = [
+      ["trips", "Create your trip"],
       ["calendar", "Add your bookings"],
-      ["download", "Keep documents ready offline"],
-      ["shield", "See what matters next"],
+      ["clock", "Everything becomes one Timeline"],
+      ["shield", "Know what matters next"],
     ];
     return bottomSheet(
       "first-run-how",
@@ -2454,6 +2547,9 @@
         case "timeline":
           html = timelineScreen();
           break;
+        case "add-booking":
+          html = addBookingScreen();
+          break;
         case "flight":
           html = flightScreen();
           break;
@@ -2486,13 +2582,14 @@
         case "sync": html = syncScreen(); break;
         case "form": html = mobileFormScreen(); break;
         default:
-          html = homeScreen();
+          html = state.trip ? timelineScreen() : firstRunScreen();
       }
     html = decorateScreen(html);
     if (state.sheet === "add") html += addSheet();
     if (state.sheet === "document") html += documentSheet();
     if (state.sheet === "trips") html += tripSwitchSheet();
     if (state.sheet === "first-run-how") html += firstRunHowSheet();
+    if (state.sheet === "manual-booking") html += manualBookingSheet();
     app.innerHTML = html + toast();
     bindDynamic();
   }
@@ -2631,13 +2728,14 @@
     const kind = form.dataset.kind;
     if (kind === "trip") {
       const result = tripRules?.validateManualTrip({
-        title: form.elements.title?.value,
+        title: form.elements.title?.value || form.elements.destination?.value,
         startsOn: form.elements.startsOn?.value,
         endsOn: form.elements.endsOn?.value,
       });
       if (!result?.valid) {
-        const field = result?.field || "title";
-        showFieldError(form, form.elements[field], result?.message || "Complete the required trip details.");
+        const field = result?.field === "title" ? "destination" : result?.field || "destination";
+        const message = result?.field === "title" ? "Enter a destination." : result?.message || "Complete the required trip details.";
+        showFieldError(form, form.elements[field], message);
         return false;
       }
     }
@@ -3033,6 +3131,7 @@
         previewImportForm(importForm);
       });
     }
+    setupGoogleSignIn();
     document.querySelectorAll('input[data-action="toggle-checklist"]').forEach((input) => input.addEventListener("change", () => toggleChecklistItem(input)));
     setupSheet();
   }
@@ -3104,14 +3203,14 @@
       if (QUICK_ADD_KINDS.has(kind) && !state.trip) throw new Error("Choose a trip before saving this booking.");
       if (PREVIEW_MODE) {
         if (isFirstTripCreation) {
-          const values=tripRules.validateManualTrip({title:fd.get("title"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
-          const trip={id:"preview-created-trip",title:values.title,lifecycle_state:"upcoming",starts_on:values.startsOn,ends_on:values.endsOn};
+          const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
+          const trip={id:"preview-created-trip",title:values.title,destination:fd.get("destination"),lifecycle_state:"upcoming",starts_on:values.startsOn,ends_on:values.endsOn};
           Object.assign(state,{trips:[trip],trip,timeline:[],checklist:[],brain:null,impacts:[],transport:[],stays:[],locations:[],travelers:[],connections:[],health:null,bookingDetails:[],contacts:[],syncStatus:null,localDocs:[],tripsLoaded:true});
         }
-        clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(kind==="document"?"documents":kind==="trip"&&isFirstTripCreation?"home":kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true); return;
+        clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true); return;
       }
       if (kind === "trip") {
-        const values=tripRules.validateManualTrip({title:fd.get("title"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
+        const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
         const result=await api("/api/v1/trips",{method:"POST",body:JSON.stringify({title:values.title,startsOn:values.startsOn,endsOn:values.endsOn,lifecycleState:"upcoming"})}); state.trips.unshift(result.trip); state.trip=result.trip; state.tripsLoaded=true; localStorage.setItem("tripto_selected_trip",result.trip.id);
       } else if (kind === "hotel") {
         let locationId=null; if(fd.get("address")){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:fd.get("address")}); locationId=location.id; }
@@ -3123,7 +3222,8 @@
         const from=await quickLocation(fd.get("fromLocation"),kind,depTz), to=await quickLocation(fd.get("toLocation"),kind,arrTz), travelers=selectedTravelerIds(fd), flight=kind==="flight"?parseFlightNumber(fd.get("flightNumber")):null;
         const boarding=fd.get("boardingTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("boardingTime")}`,depTz):null, gateClose=fd.get("gateCloseTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("gateCloseTime")}`,depTz):null;
         const title=flight?flight.raw:`${fd.get("carrierName")||"Train"}${fd.get("serviceNumber")?` ${fd.get("serviceNumber")}`:""}`;
-        const result=await api(`/api/v1/trips/${tripId}/transport`,{method:"POST",body:JSON.stringify({transportType:kind,title,carrierName:fd.get("carrierName")||null,serviceNumber:kind==="flight"?flight.number:(fd.get("serviceNumber")||null),marketingAirlineCode:flight?.code||null,marketingFlightNumber:flight?.number||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,departureGate:fd.get("departureGate")||null,boardingTimeUtc:boarding,gateCloseTimeUtc:gateClose,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers})});
+        const transportType=kind==="train"&&state.manualLabel==="Ferry"?"ferry":kind;
+        const result=await api(`/api/v1/trips/${tripId}/transport`,{method:"POST",body:JSON.stringify({transportType,title,carrierName:fd.get("carrierName")||null,serviceNumber:kind==="flight"?flight.number:(fd.get("serviceNumber")||null),marketingAirlineCode:flight?.code||null,marketingFlightNumber:flight?.number||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,departureGate:fd.get("departureGate")||null,boardingTimeUtc:boarding,gateCloseTimeUtc:gateClose,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers})});
         await saveTravelerFacts(tripId,result.item?.id,travelers,fd);
         if (kind === "train") {
           const structured = [
@@ -3146,7 +3246,7 @@
         await saveLocalDocument(form.elements.documentFile.files?.[0],fd.get("documentType"),selectedTravelerIds(fd),fd.get("relatedBooking")||null);
       } else if (kind === "traveler") await api(`/api/v1/trips/${tripId}/travelers`,{method:"POST",body:JSON.stringify({displayName:fd.get("displayName"),travelerType:fd.get("travelerType")})});
       else if (kind === "checklist") { location.href=legacyUrl("add","checklist"); return; }
-      await loadTripDetails(); clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved.`); route(kind==="document"?"documents":kind==="trip"&&isFirstTripCreation?"home":kind==="trip"?"trips":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"bookings",null,true);
+      await loadTripDetails(); clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${state.manualLabel || statusText(kind)} saved.`); state.manualLabel=null; route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
@@ -3159,8 +3259,27 @@
   async function previewImportForm(form) {
     if (form.getAttribute("aria-busy") === "true") return;
     setFormSaving(form, true, "Preparing preview…");
-    try { if (PREVIEW_MODE) state.importReview={candidates:[{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing","Date is ambiguous"]}]}; else state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/forwarded-email/preview`,{method:"POST",body:JSON.stringify({body:new FormData(form).get("body")})}); formHasMeaningfulChanges=false; route("import-review"); } catch(error){ showFormSubmissionError(form,error.message); } finally { if(document.contains(form)) setFormSaving(form,false); }
+    try {
+      const fd=new FormData(form),file=form.elements.document?.files?.[0],pasted=String(fd.get("body")||"").trim();
+      if(!file&&!pasted)throw new Error("Choose a booking document or paste a confirmation email.");
+      if(file){
+        if(!globalThis.TriptoSmartImport)throw new Error("Local document recognition is unavailable. Reload and try again.");
+        const local=await saveLocalDocument(file,"other",[]),result=await globalThis.TriptoSmartImport.recognizeFile(file);
+        state.importLocalDocumentId=local.id;
+        if(!result.candidates.length){state.importReview={candidates:[],localOnly:true,warnings:result.warnings};formHasMeaningfulChanges=false;route("import-review");return;}
+        const candidate=result.candidates[0],safeFields=Object.fromEntries(Object.entries(candidate.fields).filter(([key])=>key!=="barcodeValue")),requestBody={checksum:result.checksum,filename:file.name,documentKind:result.kind,candidate:{type:candidate.type,confidence:candidate.confidence,fields:safeFields,warnings:candidate.warnings}};
+        state.importUploadRequest=requestBody;
+        if(PREVIEW_MODE)state.importReview={duplicate:false,import:{id:"preview-upload"},candidates:[{id:"candidate-1",candidate_type:candidate.type,payload:{...Object.fromEntries(Object.entries(candidate.fields).map(([k,v])=>[k,v.value])),fieldMeta:Object.fromEntries(Object.entries(candidate.fields).map(([k,v])=>[k,{confidence:v.confidence,source:v.source}])),warnings:candidate.warnings},confidence:candidate.confidence}]};
+        else if(!navigator.onLine){queuePendingMutation({kind:"smart-import-preview",tripId:state.trip.id,path:`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,body:requestBody});showToast("Document saved on this phone. Recognition will sync when you reconnect.");route("import-history");return;}
+        else state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,{method:"POST",body:JSON.stringify(requestBody)});
+      } else if(PREVIEW_MODE)state.importReview={import:{id:"preview-email"},candidates:[{id:"candidate-1",candidate_type:"flight",payload:{title:"Example booking",warnings:["Timezone missing","Date is ambiguous"]},confidence:.55}]};
+      else state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/forwarded-email/preview`,{method:"POST",body:JSON.stringify({body:pasted})});
+      formHasMeaningfulChanges=false;route("import-review");
+    } catch(error){ showFormSubmissionError(form,error.message); } finally { if(document.contains(form)) setFormSaving(form,false); }
   }
+
+  function reviewedImportPayload(candidateId){const form=document.getElementById("import-review-form"),payload={};for(const input of form?.querySelectorAll(`[name^="field-${CSS.escape(candidateId)}-"]`)||[]){const key=input.dataset.fieldName||input.name.slice(`field-${candidateId}-`.length);payload[key]=input.value||null;}const type=form?.querySelector(`[name="field-${CSS.escape(candidateId)}-candidateType"]`)?.value;if(type)payload.candidateType=type;if(payload.departureLocalDatetime&&payload.departureTimezone)payload.scheduledDepartureUtc=resolveEventLocalDateTime(payload.departureLocalDatetime,payload.departureTimezone);if(payload.arrivalLocalDatetime&&payload.arrivalTimezone)payload.scheduledArrivalUtc=resolveEventLocalDateTime(payload.arrivalLocalDatetime,payload.arrivalTimezone);delete payload.departureLocalDatetime;delete payload.arrivalLocalDatetime;return payload;}
+  async function resolveImport(candidateId,action){if(PREVIEW_MODE){showToast(action==="confirm"?"Import confirmed in preview.":"Import rejected in preview.");route("bookings");return;}const importId=state.importReview?.import?.id;if(!importId)throw new Error("Import is unavailable.");const result=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/${encodeURIComponent(importId)}/resolve`,{method:"POST",body:JSON.stringify({candidateId,action,payload:action==="confirm"?reviewedImportPayload(candidateId):undefined})});if(action==="confirm"&&state.importLocalDocumentId&&result.entityId)await linkLocalDocument(state.importLocalDocumentId,result.entityId);await loadTripDetails();showToast(action==="confirm"?"Booking imported.":"Import rejected.");route(action==="confirm"?"bookings":"import-history");}
   async function toggleChecklistItem(input) {
     const item=state.checklist.find((row)=>String(row.id)===String(input.dataset.id)); if(!item)return;
     if(PREVIEW_MODE){item.completed=input.checked;render();return;}
@@ -3224,7 +3343,7 @@
             formHasMeaningfulChanges = false;
             state.routeMotion = "back";
             if (history.length > 1) history.back();
-            else route("home", null, false, "back");
+            else route("timeline", null, false, "back");
           };
           if (
             formHasMeaningfulChanges &&
@@ -3240,6 +3359,21 @@
       case "open-add":
         openSheet("add", target);
         break;
+      case "open-add-booking":
+        closeSheet();
+        route("add-booking");
+        break;
+      case "open-upload-booking":
+        state.importMode = "upload";
+        route("import");
+        break;
+      case "open-forward-booking":
+        state.importMode = "forward";
+        route("import");
+        break;
+      case "open-manual-booking":
+        openSheet("manual-booking", target);
+        break;
       case "open-first-run-how":
         openSheet("first-run-how", target);
         break;
@@ -3250,6 +3384,7 @@
         closeSheet();
         break;
       case "create-trip":
+        closeSheet();
         route("form", "trip");
         break;
       case "open-timeline":
@@ -3323,11 +3458,13 @@
         state.loading = false;
         if (state.screen === "form" && QUICK_ADD_KINDS.has(state.selectedId))
           route("form", state.selectedId, true);
-        else route("home", null, true);
+        else route("timeline", null, true);
         break;
       }
       case "add-type": {
         const type = target.dataset.type;
+        state.manualLabel = target.dataset.manualLabel || null;
+        closeSheet();
         route("form", type);
         break;
       }
@@ -3378,16 +3515,28 @@
         if(PREVIEW_MODE){state.importReview={candidates:[{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing"]}]};route("import-review");}
         else {try{state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/${encodeURIComponent(target.dataset.id)}`);route("import-review");}catch(error){showToast(error.message,"alert");}}
         break;
-      case "confirm-import": showToast(PREVIEW_MODE?"Import confirmed in preview.":"Review the confirmed fields before import."); break;
+      case "confirm-import": try{await resolveImport(target.dataset.id,"confirm");}catch(error){showToast(error.message,"alert");} break;
+      case "reject-import": try{await resolveImport(target.dataset.id,"reject");}catch(error){showToast(error.message,"alert");} break;
+      case "add-duplicate-import": {
+        try{if(PREVIEW_MODE){state.importReview.duplicate=false;render();break;}const response=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,{method:"POST",body:JSON.stringify({...state.importUploadRequest,duplicateDisposition:"add_anyway"})});state.importReview=response;render();showToast("A separate review was created.");}catch(error){showToast(error.message,"alert");}break;
+      }
       case "sync-retry": if(PREVIEW_MODE){state.syncStatus={pendingOperations:0,openConflicts:0};render();showToast("Pending changes synced in preview.");}else await loadApp(); break;
       case "sync-review": showToast("Conflict remains visible until you choose a safe resolution in advanced beta tools."); break;
       case "export-trip": if(PREVIEW_MODE)showToast("Trip export is available outside preview mode."); else window.open(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/export/json`,`_blank`,`noopener`); break;
       case "support": if(PREVIEW_MODE)showToast("Support bundle is available outside preview mode."); else window.open(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/support`,`_blank`,`noopener`); break;
+      case "booking-email-info":
+        showToast("Forward booking confirmations to bookings@tripto.to from your verified Google email.");
+        break;
       case "remove-local-data": {
         const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
         if(pending){showToast("Review pending changes before removing local data.","alert");break;}
         if(confirm("Remove locally stored documents and cached trip data from this phone? Your server trip will not be deleted.")) showToast("Local-data removal is available in advanced beta tools.");
         break;
+      }
+      case "sign-out": {
+        const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+        if(pending&&!confirm(`${pending} change${pending===1?" is":"s are"} still pending. Sign out anyway? The changes and local documents will stay on this phone.`))break;
+        try{const result=await api("/api/v1/auth/signout",{method:"POST",body:"{}"});globalThis.google?.accounts?.id?.disableAutoSelect?.();state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed out. Local documents remain on this phone.");}catch(error){showToast(error.message,"alert");}break;
       }
       case "show-driver":
         state.selectedId = target.dataset.id || state.selectedId;
@@ -3607,8 +3756,9 @@
     const restore = scrollPositions.get(next.screen) || 0;
     requestAnimationFrame(() => window.scrollTo({ top: restore, behavior: "instant" }));
   });
-  window.addEventListener("online", () => {
+  window.addEventListener("online", async () => {
     state.offline = false;
+    await flushSmartImportQueue();
     loadApp();
   });
   window.addEventListener("offline", () => {
@@ -3681,6 +3831,6 @@
     show: route,
     getState: () => state,
   };
-  if (!location.hash) history.replaceState(null, "", "#home");
+  if (!location.hash) history.replaceState(null, "", "#timeline");
   loadApp();
 })();
