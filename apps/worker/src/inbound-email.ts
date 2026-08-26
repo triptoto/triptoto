@@ -12,9 +12,14 @@ export interface InboundEmailMessage {
 
 const MAX_BYTES = 512 * 1024;
 
+// Addresses that Cloudflare Email Routing forwards to this worker. go@tripto.to
+// is the user-facing brand address shown across the app; travelinkme@gmail.com
+// is the routing destination that also delivers to the worker.
+const ACCEPTED_RECIPIENTS = new Set(['go@tripto.to', 'travelinkme@gmail.com']);
+
 export async function receiveBookingEmail(message: InboundEmailMessage, env: Env): Promise<void> {
   const recipient = normalizeAddress(message.to);
-  if (recipient !== 'bookings@tripto.to') {
+  if (!ACCEPTED_RECIPIENTS.has(recipient)) {
     message.setReject('Unknown recipient');
     return;
   }

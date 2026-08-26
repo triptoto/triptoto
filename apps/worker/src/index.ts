@@ -20,7 +20,7 @@ import { tripSupportBundle } from './routes/support.ts';
 import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
 import { createDemoTrip } from './routes/demo.ts';
 import { previewForwardedEmail, previewUploadedDocument, listImports, getImport, resolveImportCandidate } from './routes/imports.ts';
-import { createGoogleChallenge, googleSignIn, signOut } from './routes/google-auth.ts';
+import { acknowledgeGoogleHandoff, createGoogleChallenge, exchangeGoogleHandoff, googleSignIn, googleSignInRedirect, signOut } from './routes/google-auth.ts';
 import { betaStatus, recordClientBetaEvent } from './routes/beta.ts';
 import { opsSummary } from './routes/ops.ts';
 import { deletionPreview, deleteMyData } from './routes/privacy.ts';
@@ -34,22 +34,36 @@ import { listTimeMarkers, createTimeMarker, updateTimeMarker, deleteTimeMarker }
 import { expandedTripHealth } from './routes/intelligence.ts';
 import { syncStatus, syncChanges, acknowledgeSync, queueSyncOperation, listSyncConflicts } from './routes/sync-v2.ts';
 import { readiness } from './routes/readiness.ts';
+import { currentWeather } from './routes/weather.ts';
 import { receiveBookingEmail, type InboundEmailMessage } from './inbound-email.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     try {
+      // Await the routed handler so a rejected handler promise (e.g. an HttpError
+      // thrown inside a route) is caught here and converted to a JSON error,
+      // instead of escaping as an uncaught rejection => Cloudflare Worker 1101 (500).
+      // A returned-but-not-awaited promise's rejection bypasses this try/catch.
+      return await (async (): Promise<Response> => {
       if (request.method === 'OPTIONS') return corsPreflight(request, env);
       const url = new URL(request.url);
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
       if (request.method === 'GET' && path === '/health') return health(request, env);
       if (request.method === 'GET' && path === '/api/v1/readiness') return readiness(request, env);
+      if (request.method === 'GET' && path === '/api/v1/weather') {
+        await enforcePublicRateLimit(request,env,{action:'weather',limit:120,windowMs:60*60*1000});
+        return currentWeather(request, env);
+      }
       if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-candidate-1' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {
         await enforcePublicRateLimit(request,env,{action:'guest_session',limit:PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint,windowMs:60*60*1000});
         return createGuestSession(request, env);
       }
+      // Await the public redirect handler so HttpError rejections are converted
+      // by this fetch handler's catch block instead of escaping as Worker 1101.
+      if (request.method === 'POST' && path === '/api/v1/auth/google/callback') return await googleSignInRedirect(request,env);
+      if (request.method === 'POST' && path === '/api/v1/auth/google/exchange') return exchangeGoogleHandoff(request,env);
 
       const auth = await requireAuth(request, env);
       if (['POST','PUT','PATCH','DELETE'].includes(request.method)) await enforceActorRateLimit(env,auth,{action:'api_write',limit:PRODUCT_LIMITS.actorWritesPerHour,windowMs:60*60*1000});
@@ -64,6 +78,7 @@ export default {
         await enforceActorRateLimit(env,auth,{action:'google_auth',limit:PRODUCT_LIMITS.googleAuthAttemptsPerHour,windowMs:60*60*1000});
         return googleSignIn(request,env,auth);
       }
+      if (request.method === 'POST' && path === '/api/v1/auth/google/exchange/ack') return acknowledgeGoogleHandoff(request,env,auth);
       if (request.method === 'POST' && path === '/api/v1/auth/signout') return signOut(request,env,auth);
       if (request.method === 'GET' && path === '/api/v1/account/deletion-preview') return deletionPreview(request,env,auth);
       if (request.method === 'DELETE' && path === '/api/v1/account') return deleteMyData(request,env,auth);
@@ -205,6 +220,7 @@ export default {
       if (match && request.method==='GET') return listChanges(request,env,auth,decodeURIComponent(match[1]));
 
       return json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } }, { status: 404 }, request, env);
+      })();
     } catch (error) {
       return errorResponse(error, request, env);
     }

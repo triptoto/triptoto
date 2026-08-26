@@ -14,10 +14,44 @@
     : null;
   const tripRules = globalThis.TriptoTripRules;
   const routes = globalThis.TriptoRoutes;
-  const airportTimezones = globalThis.TriptoAirportTimezones;
+  const googleAuth = globalThis.TriptoGoogleAuth;
+
+  // Lazy-load heavy, flow-specific modules (smart-import ~374KB, airport
+  // timezones ~120KB) instead of parsing them on every cold start. Each is
+  // fetched once, on first use, then cached on its global for the session.
+  const moduleLoaders = {};
+  function loadModule(src, globalName) {
+    if (globalThis[globalName]) return Promise.resolve(globalThis[globalName]);
+    if (moduleLoaders[src]) return moduleLoaders[src];
+    moduleLoaders[src] = new Promise((resolve, reject) => {
+      const el = document.createElement("script");
+      el.src = src;
+      el.async = true;
+      el.onload = () => resolve(globalThis[globalName]);
+      el.onerror = () => {
+        delete moduleLoaders[src];
+        reject(new Error(`Failed to load ${src}`));
+      };
+      document.head.appendChild(el);
+    });
+    return moduleLoaders[src];
+  }
+  const ensureAirportTimezones = () =>
+    loadModule(
+      "/airport-timezones.js?v=airport-timezones-v1",
+      "TriptoAirportTimezones",
+    );
+  const ensureSmartImport = () =>
+    loadModule("/smart-import.js?v=product-v2-conf2", "TriptoSmartImport");
+  // Warm the airport-timezone table in the background once the app is idle, so
+  // the quick-add form has it ready without blocking first paint.
+  (globalThis.requestIdleCallback || ((fn) => setTimeout(fn, 1200)))(() =>
+    ensureAirportTimezones().catch(() => {}),
+  );
+  let googleRedirectMarker = googleAuth?.redirectMarker(location) || null;
 
   const ICON_NAMES = Object.freeze({
-    user: "user", home: "house", trips: "suitcase-rolling", plus: "plus",
+    user: "user", home: "house", trips: "suitcase", plus: "plus",
     ticket: "ticket", plane: "airplane", chevron: "caret-right",
     check: "check", qr: "qr-code", hotel: "buildings", train: "train",
     star: "star", restaurant: "fork-knife", document: "file-text",
@@ -30,6 +64,27 @@
     phone: "phone", mail: "envelope-simple", copy: "copy",
     passport: "identification-card", map: "map-trifold", close: "x",
     shield: "shield-check", refresh: "arrows-clockwise",
+    edit: "pencil-simple", trash: "trash",
+  });
+  const INLINE_SVG = Object.freeze({
+    edit: '<path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152a15.86,15.86,0,0,0-4.69,11.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160,144,67.31,160.68,84,68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188,172,95.31,188.68,112Z"/>',
+    trash: '<path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/>',
+    "plane-solid": { vb: "0 0 24 24", path: '<path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>' },
+    "car-solid": { vb: "0 0 24 24", path: '<path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>' },
+    "hotel-solid": { vb: "0 0 24 24", path: '<path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>' },
+    "restaurant-solid": { vb: "0 0 24 24", path: '<path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>' },
+    "wx-sun": { vb: "0 0 24 24", path: '<circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2.5" x2="12" y2="4.6"/><line x1="12" y1="19.4" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="4.6" y2="12"/><line x1="19.4" y1="12" x2="21.5" y2="12"/><line x1="5.2" y1="5.2" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="18.8" y2="18.8"/><line x1="5.2" y1="18.8" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="18.8" y2="5.2"/></g>' },
+    "wx-moon": { vb: "0 0 24 24", path: '<path d="M20 14.6A8 8 0 0 1 9.4 4 6.6 6.6 0 1 0 20 14.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
+    "wx-cloud": { vb: "0 0 24 24", path: '<path d="M17 18.5H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 18.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
+    "wx-cloud-sun": { vb: "0 0 24 24", path: '<g stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"><circle cx="8" cy="7.5" r="2.9"/><line x1="8" y1="1.6" x2="8" y2="3"/><line x1="2.1" y1="7.5" x2="3.5" y2="7.5"/><line x1="3.8" y1="3.3" x2="4.8" y2="4.3"/><line x1="12.2" y1="3.3" x2="11.2" y2="4.3"/></g><path d="M18 20H10a3.6 3.6 0 0 1-.45-7.16 5 5 0 0 1 9.6-.55A3.35 3.35 0 0 1 18 20Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
+    "wx-cloud-rain": { vb: "0 0 24 24", path: '<path d="M17 15H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 15Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="18" x2="8" y2="21"/><line x1="13" y1="18" x2="12" y2="21"/><line x1="17" y1="18" x2="16" y2="21"/></g>' },
+    "wx-cloud-snow": { vb: "0 0 24 24", path: '<path d="M17 15H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 15Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g fill="currentColor"><circle cx="9" cy="19.3" r="1.05"/><circle cx="13" cy="19.3" r="1.05"/><circle cx="17" cy="19.3" r="1.05"/></g>' },
+    "wx-fog": { vb: "0 0 24 24", path: '<path d="M17 13H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 13Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="17" x2="16" y2="17"/><line x1="8" y1="20.5" x2="18" y2="20.5"/></g>' },
+    "wx-storm": { vb: "0 0 24 24", path: '<path d="M17 14H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 14Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12.5 16l-3 3.6h2.4L11 23" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' },
+    // Destination-flavored marks for the Trips list (solid, read well at 27px).
+    "dest-mountain": { vb: "0 0 24 24", path: '<path d="M14 4l9 16H5L14 4z"/><path d="M7 12l6 8H1L7 12z"/>' },
+    "dest-beach": { vb: "0 0 24 24", path: '<circle cx="12" cy="7.6" r="3.4"/><path d="M2.5 15c1.6 0 1.6 1.7 3.2 1.7S7.3 15 8.9 15s1.6 1.7 3.2 1.7S13.7 15 15.3 15s1.6 1.7 3.2 1.7 1.6-1.7 3.2-1.7v2.4c-1.6 0-1.6 1.7-3.2 1.7s-1.6-1.7-3.2-1.7-1.6 1.7-3.2 1.7S8.5 17.4 6.9 17.4 5.3 19.1 3.7 19.1 2.5 17.4 2.5 17.4z"/>' },
+    "dest-monument": { vb: "0 0 24 24", path: '<path d="M12 3L2.5 7.5h19L12 3z"/><path d="M3.6 9h16.8v1.7H3.6z"/><path d="M5 11.4h2.1v7.1H5zM10.9 11.4H13v7.1h-2.1zM16.9 11.4H19v7.1h-2.1z"/><path d="M3.2 19.2h17.6V21H3.2z"/>' },
   });
   const state = {
     token: localStorage.getItem("tripto_token") || "",
@@ -42,6 +97,7 @@
     toastKind: "status",
     error: null,
     requestId: null,
+    sessionRejected: false,
     routeMotion: "forward",
     refreshingOffline: false,
     flightDetailsOpen: false,
@@ -54,6 +110,8 @@
     transport: [],
     stays: [],
     locations: [],
+    weather: null,
+    weatherRefreshing: false,
     travelers: [],
     connections: [],
     health: null,
@@ -74,7 +132,26 @@
     formDraft: null,
     dateRange: null,
     tripsLoaded: false,
+    googleAuthHandoffStatus: null,
+    googleAuthHandoffMessage: "",
+    theme: "harbor",
   };
+  const THEMES = [
+    { id: "harbor", name: "Harbor", note: "Dark navy & amber", chips: ["#0d1626", "#182338", "#f5ae41"] },
+  ];
+  function themeCanvasColor() {
+    return "#080e1a";
+  }
+  function applyTheme() {
+    document.documentElement.classList.add("theme-harbor");
+    document.documentElement.classList.remove("theme-classic");
+    state.theme = "harbor";
+    try { localStorage.setItem("tripto_theme", "harbor"); } catch (_error) {}
+    if (!document.documentElement.classList.contains("first-run-open")) {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", themeCanvasColor());
+    }
+  }
   let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
   let toastTimer = null,
@@ -84,6 +161,7 @@
     routeTimer = null,
     formHasMeaningfulChanges = false,
     discardDialogOpen = false,
+    formPrefill = null,
     discardReturnFocus = null;
   const scrollPositions = new Map();
   const DIRTY_TASK_SCREENS = new Set(["form", "import", "import-review"]);
@@ -96,8 +174,15 @@
     "document",
   ]);
   function icon(name, size = 24, extra = "") {
+    const px = Number(size) || 24;
+    if (INLINE_SVG[name]) {
+      const entry = INLINE_SVG[name],
+        vb = typeof entry === "object" ? entry.vb : "0 0 256 256",
+        path = typeof entry === "object" ? entry.path : entry;
+      return `<svg aria-hidden="true" class="ph-svg${extra ? ` ${extra}` : ""}" width="${px}" height="${px}" viewBox="${vb}" fill="currentColor" style="--icon-size:${px}px">${path}</svg>`;
+    }
     const glyph = ICON_NAMES[name] || "circle";
-    return `<i aria-hidden="true" class="ph ph-${glyph}${extra ? ` ${extra}` : ""}" style="--icon-size:${Number(size) || 24}px"></i>`;
+    return `<i aria-hidden="true" class="ph ph-${glyph}${extra ? ` ${extra}` : ""}" style="--icon-size:${px}px"></i>`;
   }
   function esc(value) {
     return String(value ?? "").replace(
@@ -139,8 +224,17 @@
     return routes?.urlFor(screen, id, location.search) || "/timeline";
   }
   function quickDraftKey(kind = state.selectedId) {
-    const normalized = String(kind || "unknown"),
-      scope = normalized === "trip" ? "new-trip" : state.trip?.id || "no-trip";
+    const normalized = String(kind || "unknown");
+    // Editing a trip and creating a trip must never share a draft slot, or an
+    // abandoned "Create trip" draft (empty fields) gets restored over an edit
+    // form and wipes the prefilled data. Scope edits per-trip by id.
+    let scope;
+    if (normalized === "trip")
+      scope =
+        state.editingEntity?.kind === "trip" && state.editingEntity.id
+          ? `edit-${state.editingEntity.id}`
+          : "new-trip";
+    else scope = state.trip?.id || "no-trip";
     return `tripto_quick_add_draft:${scope}:${normalized}`;
   }
   function clearQuickDraft(kind = state.selectedId) {
@@ -169,6 +263,183 @@
       return;
     }
     discardReturnFocus?.focus?.();
+  }
+  function confirmDeleteTrip() {
+    const trip = state.trip;
+    if (!trip) return;
+    const returnFocus = document.activeElement;
+    const backdrop = document.createElement("div");
+    backdrop.className = "discard-dialog-backdrop";
+    backdrop.innerHTML = `<section class="discard-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-trip-title" aria-describedby="delete-trip-copy"><h2 id="delete-trip-title">Delete this trip?</h2><p id="delete-trip-copy">“${esc(trip.title || "Untitled trip")}” and its bookings will be removed. This cannot be undone.</p><div class="discard-dialog-actions"><button type="button" class="mobile-secondary-action" data-delete-action="cancel">Keep trip</button><button type="button" class="mobile-danger-action" data-delete-action="confirm">Delete</button></div></section>`;
+    const cancel = backdrop.querySelector('[data-delete-action="cancel"]'),
+      confirmBtn = backdrop.querySelector('[data-delete-action="confirm"]');
+    const close = () => { backdrop.remove(); returnFocus?.focus?.(); };
+    cancel.addEventListener("click", close);
+    backdrop.addEventListener("click", (event) => { if (event.target === backdrop) close(); });
+    backdrop.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { event.preventDefault(); close(); return; }
+      if (event.key !== "Tab") return;
+      const controls = [cancel, confirmBtn], index = controls.indexOf(document.activeElement);
+      event.preventDefault();
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+    });
+    confirmBtn.addEventListener("click", async () => {
+      confirmBtn.disabled = true; cancel.disabled = true;
+      try {
+        await deleteCurrentTrip(trip);
+        backdrop.remove();
+      } catch (error) {
+        confirmBtn.disabled = false; cancel.disabled = false;
+        showToast(error?.message || "The trip could not be deleted.", "alert");
+      }
+    });
+    document.body.append(backdrop);
+    requestAnimationFrame(() => cancel.focus());
+  }
+  async function deleteCurrentTrip(trip) {
+    if (!PREVIEW_MODE) {
+      await api(`/api/v1/trips/${encodeURIComponent(trip.id)}`, {
+        method: "DELETE",
+        body: JSON.stringify({ version: Number(val(trip, "version")) || 1 }),
+      });
+    }
+    state.trips = state.trips.filter((row) => String(row.id) !== String(trip.id));
+    state.editingEntity = null;
+    formHasMeaningfulChanges = false;
+    if (state.screen === "form") clearQuickDraft("trip");
+    const next = selectRelevantTrip(state.trips) || null;
+    state.trip = next;
+    if (next) {
+      localStorage.setItem("tripto_selected_trip", next.id);
+      state.loading = true;
+      render();
+      await loadTripDetails();
+      state.loading = false;
+      route("timeline", null, true);
+    } else {
+      localStorage.removeItem("tripto_selected_trip");
+      await loadTripDetails();
+      route("form", "trip", true);
+    }
+    showToast("Trip deleted.");
+  }
+  function findBookingRecord(kind, id) {
+    const wanted = String(id || "");
+    if (kind === "hotel") {
+      const entity = state.stays.find((row) => itemId(row) === wanted);
+      return entity ? { kind, entity, path: "stays" } : null;
+    }
+    if (["flight", "train", "ferry", "car"].includes(kind)) {
+      const entity = state.transport.find((row) => itemId(row) === wanted);
+      return entity ? { kind, entity, path: "transport" } : null;
+    }
+    const entity = state.timeline.find((row) => itemId(row) === wanted);
+    return entity ? { kind, entity, path: "activities" } : null;
+  }
+  function bookingRecordTitle(record) {
+    const item = record.entity;
+    if (record.kind === "flight") return flightNumber(item);
+    if (record.kind === "hotel") return val(item, "property_name", "title") || "this stay";
+    return val(item, "title") || statusText(record.kind);
+  }
+  function bookingFormKind(kind, entity) {
+    if (kind === "flight") return "flight";
+    if (kind === "train" || kind === "ferry") return "train";
+    if (kind === "hotel") return "hotel";
+    const subtype = String(val(entity || {}, "reservation_type", "activity_type", "type") || "").toLowerCase();
+    if (["reservation", "restaurant", "transfer", "car_rental", "car", "other"].includes(subtype)) return "reservation";
+    return "activity";
+  }
+  function confirmDeleteBooking(kind, id) {
+    const record = findBookingRecord(kind, id);
+    if (!record) return;
+    const title = bookingRecordTitle(record), returnFocus = document.activeElement;
+    const backdrop = document.createElement("div");
+    backdrop.className = "discard-dialog-backdrop";
+    backdrop.innerHTML = `<section class="discard-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-booking-title" aria-describedby="delete-booking-copy"><h2 id="delete-booking-title">Delete this booking?</h2><p id="delete-booking-copy">“${esc(title)}” will be removed from this trip. This cannot be undone.</p><div class="discard-dialog-actions"><button type="button" class="mobile-secondary-action" data-delete-action="cancel">Keep booking</button><button type="button" class="mobile-danger-action" data-delete-action="confirm">Delete</button></div></section>`;
+    const cancel = backdrop.querySelector('[data-delete-action="cancel"]'),
+      confirmBtn = backdrop.querySelector('[data-delete-action="confirm"]');
+    const close = () => { backdrop.remove(); returnFocus?.focus?.(); };
+    cancel.addEventListener("click", close);
+    backdrop.addEventListener("click", (event) => { if (event.target === backdrop) close(); });
+    backdrop.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { event.preventDefault(); close(); return; }
+      if (event.key !== "Tab") return;
+      const controls = [cancel, confirmBtn], index = controls.indexOf(document.activeElement);
+      event.preventDefault();
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+    });
+    confirmBtn.addEventListener("click", async () => {
+      confirmBtn.disabled = true; cancel.disabled = true;
+      try {
+        await deleteBookingRecord(record);
+        backdrop.remove();
+      } catch (error) {
+        confirmBtn.disabled = false; cancel.disabled = false;
+        showToast(error?.message || "The booking could not be deleted.", "alert");
+      }
+    });
+    document.body.append(backdrop);
+    requestAnimationFrame(() => cancel.focus());
+  }
+  async function deleteBookingRecord(record) {
+    const version = Number(val(record.entity, "version")) || 1;
+    if (!PREVIEW_MODE) {
+      await api(`/api/v1/trips/${encodeURIComponent(state.trip?.id || "")}/${record.path}/${encodeURIComponent(itemId(record.entity))}`, {
+        method: "DELETE",
+        body: JSON.stringify({ version }),
+      });
+      await loadTripDetails();
+    } else {
+      state.transport = state.transport.filter((row) => row !== record.entity);
+      state.stays = state.stays.filter((row) => row !== record.entity);
+      state.timeline = state.timeline.filter((row) => row !== record.entity);
+    }
+    state.editingEntity = null;
+    showToast(`${statusText(record.kind)} deleted.`);
+    route("timeline", null, true);
+  }
+  function bookingMenuButton(kind, id) {
+    return `<button class="icon-button" data-action="manage-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Edit or delete">${icon("edit", 23)}</button>`;
+  }
+  function bookingHeaderActions(kind, id) {
+    return `<button class="icon-button" data-action="share-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Share">${icon("share", 23)}</button>${bookingMenuButton(kind, id)}`;
+  }
+  function bookingShareText(record) {
+    const e = record.entity;
+    if (record.kind === "flight") {
+      const r = flightRoute(e);
+      return `${flightNumber(e)} · ${r.fromCode} → ${r.toCode} · ${formatDateTime(flightDeparture(e), val(e, "departure_timezone"))}`;
+    }
+    if (record.kind === "hotel") {
+      const parts = [val(e, "property_name", "title") || "Stay"];
+      const ci = formatTripBoundDate(val(e, "check_in_date"), state.trip), co = formatTripBoundDate(val(e, "check_out_date"), state.trip);
+      if (ci || co) parts.push(`${ci || "?"} → ${co || "?"}`);
+      const addr = val(e, "address", "formatted_address");
+      if (addr) parts.push(addr);
+      return parts.join(" · ");
+    }
+    if (record.path === "transport") {
+      const from = locationById(val(e, "departure_location_id", "start_location_id")), to = locationById(val(e, "arrival_location_id", "end_location_id"));
+      const dep = Number(val(e, "scheduled_departure_utc", "starts_at_utc")) || null;
+      const parts = [val(e, "title") || val(e, "carrier_name") || statusText(record.kind)];
+      const fromName = val(from, "display_name", "station_code", "iata_code"), toName = val(to, "display_name", "station_code", "iata_code");
+      if (fromName || toName) parts.push(`${fromName || "?"} → ${toName || "?"}`);
+      if (dep) parts.push(formatDateTime(dep, val(e, "departure_timezone")));
+      return parts.join(" · ");
+    }
+    const parts = [val(e, "title") || statusText(record.kind)];
+    const when = Number(val(e, "starts_at_utc")) || null;
+    if (when) parts.push(formatDateTime(when, val(e, "start_timezone", "timezone")));
+    const loc = locationById(val(e, "location_id"));
+    const locName = val(loc, "display_name", "formatted_address");
+    if (locName) parts.push(locName);
+    return parts.join(" · ");
+  }
+  function manageBookingSheet() {
+    const menu = state.manageBooking;
+    if (!menu) return "";
+    return bottomSheet("manage-booking", "Manage booking", `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="edit-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("edit", 22)}</span><span><strong>Edit</strong><small>Update the details of this booking</small></span>${icon("chevron", 22)}</button><button class="sheet-option sheet-option--danger" data-action="delete-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("trash", 22)}</span><span><strong>Delete</strong><small>Remove this booking from the trip</small></span>${icon("chevron", 22)}</button></div>`);
   }
   function requestDiscardChanges(continuation) {
     if (!formHasMeaningfulChanges) return false;
@@ -226,6 +497,7 @@
       history.pushState(null, "", nextUrl);
     state.screen = screen;
     state.selectedId = id || null;
+    if (screen !== "trips") state.tripFilter = null;
     state.sheet = null;
     if (
       DIRTY_TASK_SCREENS.has(screen) &&
@@ -320,13 +592,8 @@
     );
   }
   function transportIcon(type) {
-    return type === "flight"
-      ? "plane"
-      : type === "train"
-        ? "train"
-        : type === "car"
-          ? "car"
-          : "trips";
+    // Single canonical icon map so every surface shows the right glyph.
+    return timelineIcon(type);
   }
   function timelineType(item) {
     const transport = transportForItem(itemId(item));
@@ -337,6 +604,117 @@
   }
   function locationById(id) {
     return state.locations.find((x) => String(x.id) === String(id)) || null;
+  }
+  // Pick the most representative destination for trip weather: prefer the place
+  // you actually stay/visit over transit hubs like airports. Returns either
+  // stored coordinates or a place-name query for the server to geocode.
+  function tripWeatherLocation() {
+    const rank = { city: 0, hotel: 1, attraction: 2, restaurant: 3, port: 4, station: 5, address: 6, airport: 7, other: 8 };
+    const locs = (state.locations || []).slice().sort(
+      (a, b) => (rank[val(a, "type")] ?? 9) - (rank[val(b, "type")] ?? 9),
+    );
+    const withCoords = locs.find(
+      (l) => val(l, "latitude") != null && val(l, "longitude") != null,
+    );
+    if (withCoords)
+      return {
+        lat: Number(val(withCoords, "latitude")),
+        lon: Number(val(withCoords, "longitude")),
+        place: val(withCoords, "city") || val(withCoords, "display_name") || "Destination",
+      };
+    // No stored coordinates (e.g. demo trips) — fall back to a place name and
+    // let the server geocode it.
+    const named = locs.find((l) => val(l, "city") || val(l, "display_name"));
+    if (named) {
+      const query = val(named, "city") || val(named, "display_name");
+      return { query, place: query };
+    }
+    return null;
+  }
+  // Short localized weekday for a "YYYY-MM-DD" date (noon avoids TZ edge cases).
+  function weekdayLabel(date) {
+    try {
+      return new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(
+        new Date(`${date}T12:00:00`),
+      );
+    } catch (_error) {
+      return "";
+    }
+  }
+  // Map WMO weather codes (what Open-Meteo returns) to a short label + icon.
+  function weatherFromCode(code, isDay) {
+    const c = Number(code);
+    if (c === 0) return { label: isDay ? "Clear sky" : "Clear night", iconName: isDay ? "wx-sun" : "wx-moon" };
+    if (c === 1) return { label: "Mostly clear", iconName: isDay ? "wx-sun" : "wx-moon" };
+    if (c === 2) return { label: "Partly cloudy", iconName: "wx-cloud-sun" };
+    if (c === 3) return { label: "Overcast", iconName: "wx-cloud" };
+    if (c === 45 || c === 48) return { label: "Fog", iconName: "wx-fog" };
+    if (c >= 51 && c <= 57) return { label: "Drizzle", iconName: "wx-cloud-rain" };
+    if (c >= 61 && c <= 67) return { label: "Rain", iconName: "wx-cloud-rain" };
+    if (c >= 71 && c <= 77) return { label: "Snow", iconName: "wx-cloud-snow" };
+    if (c >= 80 && c <= 82) return { label: "Rain showers", iconName: "wx-cloud-rain" };
+    if (c === 85 || c === 86) return { label: "Snow showers", iconName: "wx-cloud-snow" };
+    if (c >= 95) return { label: "Thunderstorm", iconName: "wx-storm" };
+    return { label: "Weather", iconName: "wx-cloud" };
+  }
+  let weatherInFlight = null;
+  // Fetch destination weather in the background and re-render when it lands.
+  // apiGet already caches per-path in localStorage, so it degrades gracefully
+  // offline. Skips the network when we already have fresh data for this place.
+  async function ensureWeather(force) {
+    if (PREVIEW_MODE) return;
+    const target = tripWeatherLocation();
+    if (!target) {
+      if (state.weather) { state.weather = null; render(); }
+      return;
+    }
+    const key = target.query
+      ? `q:${target.query}`
+      : `c:${target.lat.toFixed(4)},${target.lon.toFixed(4)}`;
+    const fresh =
+      !force &&
+      state.weather &&
+      state.weather.key === key &&
+      Date.now() - Number(state.weather.fetchedAt || 0) < 30 * 60 * 1000;
+    if (fresh) return;
+    if (weatherInFlight === key) return;
+    weatherInFlight = key;
+    const path = target.query
+      ? `/api/v1/weather?q=${encodeURIComponent(target.query)}`
+      : `/api/v1/weather?lat=${target.lat.toFixed(4)}&lon=${target.lon.toFixed(4)}`;
+    try {
+      const data = await apiGet(path);
+      const wx = data?.weather;
+      if (!wx || wx.temperatureC == null) return;
+      const view = weatherFromCode(wx.weatherCode, wx.isDay);
+      state.weather = {
+        key,
+        place: wx.place || target.place,
+        tempC: Number(wx.temperatureC),
+        label: view.label,
+        iconName: view.iconName,
+        daily: Array.isArray(wx.daily)
+          ? wx.daily
+              .filter((day) => day && day.tempMaxC != null)
+              .map((day) => {
+                const dayView = weatherFromCode(day.weatherCode, true);
+                return {
+                  date: day.date,
+                  weekday: weekdayLabel(day.date),
+                  iconName: dayView.iconName,
+                  hi: Math.round(day.tempMaxC),
+                  lo: day.tempMinC != null ? Math.round(day.tempMinC) : null,
+                };
+              })
+          : [],
+        fetchedAt: Number(wx.fetchedAt) || Date.now(),
+      };
+      if (state.screen === "timeline") render();
+    } catch (_error) {
+      // Weather is non-essential; leave any previous value in place.
+    } finally {
+      weatherInFlight = null;
+    }
   }
   function locationLabel(id) {
     const loc = locationById(id);
@@ -448,9 +826,32 @@
     const start = val(trip, "starts_on"),
       end = val(trip, "ends_on");
     if (!start && !end) return "Dates not set";
-    if (start && end)
+    if (!start || !end) return formatDateOnly(start || end);
+    if (start === end) return formatDateOnly(start);
+    return formatDateRange(start, end);
+  }
+  function formatDateRange(start, end) {
+    const parse = (date) => {
+      const parts = new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      }).formatToParts(new Date(`${date}T12:00:00Z`));
+      const get = (type) => parts.find((p) => p.type === type)?.value || "";
+      return { mon: get("month"), day: get("day"), year: get("year") };
+    };
+    try {
+      const a = parse(start),
+        b = parse(end);
+      if (a.year === b.year && a.mon === b.mon)
+        return `${a.mon} ${a.day}–${b.day}, ${b.year}`;
+      if (a.year === b.year)
+        return `${a.mon} ${a.day} – ${b.mon} ${b.day}, ${b.year}`;
+      return `${a.mon} ${a.day}, ${a.year} – ${b.mon} ${b.day}, ${b.year}`;
+    } catch (_) {
       return `${formatDateOnly(start)} – ${formatDateOnly(end)}`;
-    return formatDateOnly(start || end);
+    }
   }
   function formatTime(ms, timeZone) {
     if (ms == null) return "—";
@@ -509,8 +910,8 @@
       ? source
       : "";
   }
-  function checkDot() {
-    return `<span class="status-dot-check">${icon("check", 14)}</span>`;
+  function checkDot(extra = "") {
+    return `<span class="status-dot-check${extra ? ` ${extra}` : ""}">${icon("check", 14)}</span>`;
   }
   function primaryCta(label, action, iconName = "chevron", attrs = "") {
     return `<button class="primary-cta" data-action="${action}" ${attrs}><span class="cta-left">${icon(iconName, 24)}<span>${esc(label)}</span></span>${icon("chevron", 25)}</button>`;
@@ -535,13 +936,34 @@
       return 0;
     }
   }
+  // Every network call gets a hard deadline. Without one, a stalled request
+  // (cold worker, flaky mobile radio) leaves loadApp() awaiting forever and the
+  // loading skeleton stuck on screen with no way out. On timeout we abort so the
+  // caller's catch/finally runs — falling back to cached data or the
+  // recoverable "Try Again" error screen instead of a permanent skeleton.
+  const REQUEST_TIMEOUT_MS = 15000;
+  async function fetchWithTimeout(url, options = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } catch (error) {
+      if (error && error.name === "AbortError")
+        throw new Error(
+          "The network took too long to respond. Check your connection and try again.",
+        );
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
   async function refreshSessionIfNeeded() {
     if (!state.token || !navigator.onLine || PREVIEW_MODE) return;
     const exp = sessionExpiry(state.token);
     if (!exp || exp - Date.now() > 14 * 86400000) return;
     if (sessionRefreshPromise) return sessionRefreshPromise;
     sessionRefreshPromise = (async () => {
-      const response = await fetch(`${API}/api/v1/session/refresh`, {
+      const response = await fetchWithTimeout(`${API}/api/v1/session/refresh`, {
         method: "POST",
         headers: {
           authorization: `Bearer ${state.token}`,
@@ -573,7 +995,7 @@
       throw new Error(
         "No saved session is available offline. Open tripto.to online once before relying on offline mode.",
       );
-    const response = await fetch(`${API}/api/v1/session/guest`, {
+    const response = await fetchWithTimeout(`${API}/api/v1/session/guest`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -596,7 +1018,7 @@
         "This change needs internet. Cached trip information is still available.",
       );
     await ensureSession();
-    const response = await fetch(`${API}${path}`, {
+    const response = await fetchWithTimeout(`${API}${path}`, {
         ...options,
         headers: {
           "content-type": "application/json",
@@ -611,7 +1033,7 @@
         new Error(
           "This device session is no longer accepted. Do not clear browser data; cached trip information remains on this device.",
         ),
-        { requestId },
+        { requestId, status: 401, code: "AUTH_REQUIRED" },
       );
     if (!response.ok) {
       let message = `Request failed (${response.status}).`;
@@ -649,6 +1071,33 @@
     throw new Error(
       "This part of the trip has not been cached on this phone yet.",
     );
+  }
+  async function apiDownload(path, fallbackName) {
+    if (PREVIEW_MODE) throw new Error("Downloads are available outside preview mode.");
+    if (!navigator.onLine) throw new Error("This download needs internet.");
+    await ensureSession();
+    const response = await fetch(`${API}${path}`, {
+      headers: { authorization: `Bearer ${state.token}` },
+    });
+    if (response.status === 401)
+      throw Object.assign(new Error("This device session is no longer accepted."), { status: 401, code: "AUTH_REQUIRED" });
+    if (!response.ok) {
+      let message = `Request failed (${response.status}).`;
+      try { const payload = await response.json(); message = payload.error?.message || message; } catch (_) {}
+      throw Object.assign(new Error(message), { status: response.status });
+    }
+    const disposition = response.headers.get("content-disposition") || "",
+      match = disposition.match(/filename="?([^"]+)"?/),
+      name = match ? match[1] : fallbackName,
+      blob = await response.blob(),
+      url = URL.createObjectURL(blob),
+      anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = name;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
   function openLocalDocDb() {
     return new Promise((resolve, reject) => {
@@ -815,13 +1264,30 @@
     window.open(url, "_blank", "noopener");
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
+  // Populate trips/account/selected-trip from the local cache so relaunching
+  // paints the last-known screen instantly instead of the loading skeleton.
+  function hydrateAppFromCache() {
+    const tripsRow = cacheRead("/api/v1/trips");
+    if (!tripsRow) return false;
+    const accountRow = cacheRead("/api/v1/account");
+    state.trips = tripsRow.data?.trips || [];
+    if (accountRow) state.account = accountRow.data?.account || state.account || null;
+    const selected = localStorage.getItem("tripto_selected_trip");
+    state.trip =
+      state.trips.find((trip) => String(trip.id) === selected) ||
+      selectRelevantTrip(state.trips) ||
+      null;
+    if (state.trip) hydrateTripDetailsFromCache();
+    return true;
+  }
   async function loadApp() {
-    state.loading = true;
     state.tripsLoaded = false;
     state.error = null;
     state.requestId = null;
-    render();
+    state.sessionRejected = false;
     if (PREVIEW_MODE) {
+      state.loading = true;
+      render();
       if (QA_STATE === "loading") return;
       applyPreviewData();
       if (["offline", "empty-offline"].includes(QA_STATE)) state.offline = true;
@@ -937,6 +1403,10 @@
       render();
       return;
     }
+    const hydrated = hydrateAppFromCache();
+    state.loading = !hydrated;
+    if (hydrated) state.tripsLoaded = true;
+    render();
     try {
       const [tripsResult, accountResult] = await Promise.all([
         apiGet("/api/v1/trips"),
@@ -958,16 +1428,25 @@
           state.screen = "form";
           state.selectedId = "trip";
           history.replaceState(null, "", routeUrl("form", "trip"));
-        } else if (["home", "trips", "bookings"].includes(state.screen)) {
+        } else if (["trips", "bookings"].includes(state.screen)) {
           state.screen = "timeline";
           state.selectedId = null;
           history.replaceState(null, "", routeUrl("timeline"));
         }
       }
     } catch (error) {
-      state.tripsLoaded = false;
-      state.error = error instanceof Error ? error.message : String(error);
-      state.requestId = error?.requestId || null;
+      const authFailed = error?.status === 401 || error?.code === "AUTH_REQUIRED";
+      // If we already painted cached data, keep it on screen for transient
+      // network errors — only surface the error screen when we have nothing, or
+      // when the session was rejected and must be re-authenticated.
+      if (!hydrated || authFailed) {
+        state.tripsLoaded = false;
+        state.error = error instanceof Error ? error.message : String(error);
+        state.requestId = error?.requestId || null;
+        state.sessionRejected = authFailed;
+      } else {
+        state.offline = true;
+      }
     } finally {
       state.loading = false;
       render();
@@ -987,6 +1466,64 @@
     if (upcoming) return upcoming;
     return [...trips].sort((a, b) => String(val(b, "ends_on", "endsOn", "updated_at") || "").localeCompare(String(val(a, "ends_on", "endsOn", "updated_at") || "")))[0] || null;
   }
+  function tripDetailPaths() {
+    const id = encodeURIComponent(state.trip.id);
+    return [
+      `/api/v1/trips/${id}/timeline`,
+      `/api/v1/trips/${id}/checklist`,
+      `/api/v1/trips/${id}/brain`,
+      `/api/v1/trips/${id}/impacts`,
+      `/api/v1/trips/${id}/transport`,
+      `/api/v1/trips/${id}/stays`,
+      `/api/v1/trips/${id}/locations`,
+      `/api/v1/trips/${id}/travelers`,
+      `/api/v1/trips/${id}/connections`,
+      `/api/v1/trips/${id}/health/expanded`,
+      `/api/v1/trips/${id}/booking-details`,
+      `/api/v1/trips/${id}/contacts`,
+      `/api/v1/trips/${id}/sync/status`,
+      `/api/v1/trips/${id}/activities`,
+    ];
+  }
+  function applyTripDetails(results) {
+    const take = (index, key, fallback) =>
+      results[index] && results[index].status === "fulfilled"
+        ? (results[index].value?.[key] ?? fallback)
+        : fallback;
+    state.timeline = take(0, "items", []);
+    state.checklist = take(1, "items", []);
+    state.brain = take(2, "brain", null);
+    state.impacts = take(3, "impacts", []);
+    state.transport = take(4, "transport", []);
+    state.stays = take(5, "stays", []);
+    state.locations = take(6, "locations", []);
+    state.travelers = take(7, "travelers", []);
+    state.connections = take(8, "connections", []);
+    state.health = take(9, "health", null);
+    state.bookingDetails = take(10, "bookingDetails", []);
+    state.contacts = take(11, "contacts", []);
+    state.syncStatus = take(
+      12,
+      "sync",
+      results[12] && results[12].status === "fulfilled" ? results[12].value : null,
+    );
+    const activityDetails = take(13, "activities", []),
+      activityById = new Map(activityDetails.map((item) => [String(item.id), item]));
+    state.timeline = state.timeline.map((item) => activityById.has(String(item.id)) ? { ...item, ...activityById.get(String(item.id)) } : item);
+  }
+  // Synchronously populate trip detail state from the local cache so a returning
+  // user sees the timeline instantly instead of the loading skeleton. Returns
+  // true only when the core timeline was cached (enough to render meaningfully).
+  function hydrateTripDetailsFromCache() {
+    if (!state.trip) return false;
+    const results = tripDetailPaths().map((path) => {
+      const row = cacheRead(path);
+      return row ? { status: "fulfilled", value: row.data } : { status: "rejected" };
+    });
+    if (results[0].status !== "fulfilled") return false;
+    applyTripDetails(results);
+    return true;
+  }
   async function loadTripDetails() {
     if (!state.trip) {
       state.timeline = [];
@@ -1005,49 +1542,39 @@
       state.localDocs = [];
       return;
     }
-    const id = encodeURIComponent(state.trip.id);
-    const paths = [
-      `/api/v1/trips/${id}/timeline`,
-      `/api/v1/trips/${id}/checklist`,
-      `/api/v1/trips/${id}/brain`,
-      `/api/v1/trips/${id}/impacts`,
-      `/api/v1/trips/${id}/transport`,
-      `/api/v1/trips/${id}/stays`,
-      `/api/v1/trips/${id}/locations`,
-      `/api/v1/trips/${id}/travelers`,
-      `/api/v1/trips/${id}/connections`,
-      `/api/v1/trips/${id}/health/expanded`,
-      `/api/v1/trips/${id}/booking-details`,
-      `/api/v1/trips/${id}/contacts`,
-      `/api/v1/trips/${id}/sync/status`,
-      `/api/v1/trips/${id}/activities`,
-    ];
-    const results = await Promise.allSettled(paths.map(apiGet));
-    const take = (index, key, fallback) =>
-      results[index].status === "fulfilled"
-        ? (results[index].value?.[key] ?? fallback)
-        : fallback;
-    state.timeline = take(0, "items", []);
-    state.checklist = take(1, "items", []);
-    state.brain = take(2, "brain", null);
-    state.impacts = take(3, "impacts", []);
-    state.transport = take(4, "transport", []);
-    state.stays = take(5, "stays", []);
-    state.locations = take(6, "locations", []);
-    state.travelers = take(7, "travelers", []);
-    state.connections = take(8, "connections", []);
-    state.health = take(9, "health", null);
-    state.bookingDetails = take(10, "bookingDetails", []);
-    state.contacts = take(11, "contacts", []);
-    state.syncStatus = take(
-      12,
-      "sync",
-      results[12].status === "fulfilled" ? results[12].value : null,
-    );
-    const activityDetails = take(13, "activities", []),
-      activityById = new Map(activityDetails.map((item) => [String(item.id), item]));
-    state.timeline = state.timeline.map((item) => activityById.has(String(item.id)) ? { ...item, ...activityById.get(String(item.id)) } : item);
-    state.localDocs = await listLocalDocs(state.trip.id);
+    const tripId = state.trip.id;
+    const results = await Promise.allSettled(tripDetailPaths().map(apiGet));
+    // Drop the response if the user switched trips while it was in flight, so a
+    // slow request can never overwrite the newly-opened trip's data.
+    if (state.trip?.id !== tripId) return;
+    applyTripDetails(results);
+    state.localDocs = await listLocalDocs(tripId);
+    if (state.trip?.id !== tripId) return;
+    void ensureWeather();
+  }
+  // Optimistic trip entry: if cached detail exists, navigate immediately and
+  // revalidate in the background; otherwise fall back to the loading skeleton.
+  async function enterTripWithDetails(routeAfter) {
+    if (PREVIEW_MODE) {
+      routeAfter();
+      return;
+    }
+    if (hydrateTripDetailsFromCache()) {
+      routeAfter();
+      try {
+        await loadTripDetails();
+        render();
+      } catch (_error) {}
+      return;
+    }
+    state.loading = true;
+    render();
+    try {
+      await loadTripDetails();
+    } finally {
+      state.loading = false;
+    }
+    routeAfter();
   }
 
   function previewData() {
@@ -1320,16 +1847,16 @@
     return `<header class="app-header"><button class="brand" data-screen="home" aria-label="tripto.to Home">tripto<span class="brand-dot">.</span>to</button><div class="connection-state">${state.offline ? `<span class="offline-state" role="status">${icon("info", 16)} Offline</span>` : ""}<button class="header-icon" data-screen="account" aria-label="Account">${icon("user", 31)}</button></div></header>`;
   }
   function appBar(title, subtitle = "", dark = false, right = "") {
-    return `<header class="app-bar ${dark ? "app-bar--dark" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 25)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div><div>${right || ""}</div></header>`;
+    return `<header class="app-bar ${dark ? "app-bar--dark" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 25)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div><div class="app-bar-actions">${right || ""}</div></header>`;
   }
   function bottomNav(active) {
     const rows = [
-      ["timeline", "clock", "Trip"],
+      ["trips", "trips", "Trips"],
       ["add", "plus", "Add"],
       ["account", "user", "Account"],
     ];
-    const normalized = active === "account" ? "account" : "timeline";
-    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${rows.map(([screen, ic, label]) => (screen === "add" ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon(ic, 27)}</span><small>${label}</small></button>` : `<button class="nav-item ${normalized === screen ? "active" : ""}" data-screen="${screen}" ${normalized === screen ? 'aria-current="page"' : ""}>${icon(ic, 23)}<span>${label}</span></button>`)).join("")}</nav>`;
+    const normalized = active === "account" ? "account" : "trips";
+    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${rows.map(([screen, ic, label]) => (screen === "add" ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon(ic, 24)}</span></button>` : `<button class="nav-item ${normalized === screen ? "active" : ""}" data-screen="${screen}" ${normalized === screen ? 'aria-current="page"' : ""}>${icon(ic, 23)}<span>${label}</span></button>`)).join("")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
@@ -1554,7 +2081,7 @@
         ? compactFlightNumber(flight)
         : flightNumber(flight);
 
-    const routeMarkup = `<div class="flight-pass__route"><div class="flight-pass__airport"><div class="flight-pass__airport-code">${esc(fromCode)}</div><span class="flight-pass__airport-name">${esc(route.fromName)}</span></div><div class="flight-pass__route-center"><div class="flight-pass__route-line">${icon("plane", 25)}</div>${duration ? `<span class="flight-pass__duration">${icon("clock", 14)} ${esc(duration)}</span>` : ""}</div><div class="flight-pass__airport flight-pass__airport--right"><div class="flight-pass__airport-code">${esc(toCode)}</div><span class="flight-pass__airport-name">${esc(route.toName)}</span></div></div>`;
+    const routeMarkup = `<div class="flight-pass__route"><div class="flight-pass__airport"><div class="flight-pass__airport-code">${esc(fromCode)}</div><span class="flight-pass__airport-name">${esc(route.fromName)}</span></div><div class="flight-pass__route-center"><div class="flight-pass__route-line">${icon("plane", 22)}</div>${duration ? `<span class="flight-pass__duration">${icon("clock", 14)} ${esc(duration)}</span>` : ""}</div><div class="flight-pass__airport flight-pass__airport--right"><div class="flight-pass__airport-code">${esc(toCode)}</div><span class="flight-pass__airport-name">${esc(route.toName)}</span></div></div>`;
     const header = `<div class="flight-pass__header"><span class="flight-pass__pill">${icon("plane", 22)} ${esc(displayedFlightNumber)}</span><div class="flight-pass__status ${confirmed ? "is-confirmed" : ""}"${detailVariant ? ` role="status" aria-label="${esc(status)}. Scheduled booking data is never presented as live."` : ""}><strong>${confirmed ? checkDot() : ""}${esc(status)}</strong><small>Scheduled data</small></div>${detailVariant ? `<span class="flight-pass__status-chevron" aria-hidden="true">${icon("chevron", 22)}</span>` : ""}</div>`;
     const primaryAction = primaryCta(
       actionLabel,
@@ -1567,7 +2094,7 @@
       return `<section class="flight-pass flight-pass--home" aria-label="Next scheduled flight"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span>Departure</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)}</small>` : ""}</div><div class="flight-pass__fact"><span>Terminal</span><strong>${esc(terminal || "—")}</strong>${terminal ? "<small>Departure</small>" : ""}</div><div class="flight-pass__fact"><span>Seat</span><strong>${esc(seat || "—")}</strong>${cabin ? `<small>${esc(cabin)}</small>` : ""}</div></div><div class="flight-pass__actions flight-pass__actions--single">${primaryAction}</div></div></section>`;
     }
 
-    return `<section class="flight-pass flight-pass--detail" aria-label="Scheduled flight details"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__times" aria-label="Scheduled departure and arrival in event-local time"><div class="flight-pass__time"><span class="flight-pass__event-icon">${icon("night", 30)}</span><span class="flight-pass__time-copy"><span>Departs</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)} · Local time</small>` : ""}</span></div><div class="flight-pass__time-separator"></div><div class="flight-pass__time flight-pass__time--right"><span class="flight-pass__time-copy"><span>Arrives</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong>${arrivalDay ? `<small>${esc(arrivalDay)} · Local time</small>` : ""}</span><span class="flight-pass__event-icon flight-pass__event-icon--day">${icon("day", 30)}</span></div></div><div class="flight-pass__divider flight-pass__divider--facts"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("terminal", 27)}</span><span class="flight-pass__fact-copy"><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("gate", 27)}</span><span class="flight-pass__fact-copy"><span>Gate</span><strong>${esc(gate || "—")}</strong><small>${gate ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("seat", 27)}</span><span class="flight-pass__fact-copy"><span>Seat</span><strong>${esc(seat || "—")}</strong>${seat ? (cabin ? `<small>${esc(cabin)}</small>` : "") : "<small>Not assigned</small>"}</span></div></div><div class="flight-pass__actions">${primaryAction}<button class="flight-pass__secondary" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 18)}<span>Directions</span></button></div></div></section>`;
+    return `<section class="flight-pass flight-pass--detail" aria-label="Scheduled flight details"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__times" aria-label="Scheduled departure and arrival in event-local time"><div class="flight-pass__time"><span class="flight-pass__event-icon">${icon("night", 25)}</span><span class="flight-pass__time-copy"><span>Departs</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)} · Local time</small>` : ""}</span></div><div class="flight-pass__time-separator"></div><div class="flight-pass__time flight-pass__time--right"><span class="flight-pass__time-copy"><span>Arrives</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong>${arrivalDay ? `<small>${esc(arrivalDay)} · Local time</small>` : ""}</span><span class="flight-pass__event-icon flight-pass__event-icon--day">${icon("day", 25)}</span></div></div><div class="flight-pass__divider flight-pass__divider--facts"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("terminal", 23)}</span><span class="flight-pass__fact-copy"><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("gate", 23)}</span><span class="flight-pass__fact-copy"><span>Gate</span><strong>${esc(gate || "—")}</strong><small>${gate ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("seat", 23)}</span><span class="flight-pass__fact-copy"><span>Seat</span><strong>${esc(seat || "—")}</strong>${seat ? (cabin ? `<small>${esc(cabin)}</small>` : "") : "<small>Not assigned</small>"}</span></div></div><div class="flight-pass__actions">${primaryAction}<button class="flight-pass__secondary" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 18)}<span>Directions</span></button></div></div></section>`;
   }
 
   function flightTicket(flight) {
@@ -1577,7 +2104,7 @@
     const type = timelineType(item),
       starts = Number(val(item, "starts_at_utc", "startsAtUtc")) || null,
       zone = val(item, "start_timezone", "startTimezone");
-    return `<section class="next-action-card"><span class="ticket-chip">${icon(type === "hotel" ? "hotel" : type === "train" ? "train" : type === "activity" ? "star" : "clock", 18)} What’s next</span><h2>${esc(item.title || "Next plan")}</h2><p>${esc(item.subtitle || statusText(item.status))}</p><div class="next-action-time">${esc(formatTime(starts, zone))}</div><p>${esc(formatDateTime(starts, zone))}</p><div class="next-action-actions"><button class="secondary-cta" data-action="timeline-detail" data-id="${esc(itemId(item))}">${icon("info", 19)} Details</button><button class="secondary-cta" data-action="directions-item" data-id="${esc(itemId(item))}">${icon("navigation", 19)} Directions</button></div></section>`;
+    return `<section class="next-action-card"><span class="ticket-chip">${icon(timelineIcon(type), 18)} What’s next</span><h2>${esc(item.title || "Next plan")}</h2><p>${esc(item.subtitle || statusText(item.status))}</p><div class="next-action-time">${esc(formatTime(starts, zone))}</div><p>${esc(formatDateTime(starts, zone))}</p><div class="next-action-actions"><button class="secondary-cta" data-action="timeline-detail" data-id="${esc(itemId(item))}">${icon("info", 19)} Details</button><button class="secondary-cta" data-action="directions-item" data-id="${esc(itemId(item))}">${icon("navigation", 19)} Directions</button></div></section>`;
   }
   function upcomingRows() {
     const next = nextItem(),
@@ -1598,7 +2125,7 @@
           routeText = transport
             ? `${locationLabel(val(transport, "departure_location_id"))} → ${locationLabel(val(transport, "arrival_location_id"))}`
             : item.subtitle || statusText(item.status);
-        return `<button class="simple-row" data-action="timeline-detail" data-id="${esc(itemId(item))}"><span class="row-icon">${icon(type === "flight" ? "plane" : type === "train" ? "train" : type === "hotel" ? "hotel" : type === "activity" ? "star" : "calendar", 22)}</span><span class="row-copy"><strong>${esc(item.title || "Plan")}</strong><span>${esc(routeText)}</span></span><span class="row-date">${esc(formatTime(starts, zone))}<br>${esc(formatDay(starts, zone))}</span></button>`;
+        return `<button class="simple-row" data-action="timeline-detail" data-id="${esc(itemId(item))}"><span class="row-icon">${icon(timelineIcon(type), 22)}</span><span class="row-copy"><strong>${esc(item.title || "Plan")}</strong><span>${esc(routeText)}</span></span><span class="row-date">${esc(formatTime(starts, zone))}<br>${esc(formatDay(starts, zone))}</span></button>`;
       })
       .join("");
   }
@@ -1651,25 +2178,28 @@
       active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
     );
     const theme = document.querySelector('meta[name="theme-color"]');
-    if (theme) theme.setAttribute("content", "#FFFFFF");
+    if (theme) theme.setAttribute("content", active ? "#0a1020" : themeCanvasColor(state.theme));
   }
   function firstRunProductPreview() {
     const previewRows = [
-      ["plane", "THU, AUG 28 · 09:20", "Tel Aviv → Rome", "LY 383 · Terminal 3"],
-      ["car", "14:10", "Airport transfer", "FCO → Hotel Artemide"],
-      ["hotel", "15:00", "Hotel Artemide", "Check-in · 4 nights"],
-      ["restaurant", "20:00", "Roscioli", "Dinner reservation"],
+      ["plane-solid", "Thu, Aug 28 · 09:20", "Tel Aviv → Rome", "LY 383 · Terminal 3"],
+      ["car-solid", "14:10", "Airport transfer", "FCO → Hotel Artemide"],
+      ["hotel-solid", "15:00", "Hotel Artemide", "Check-in · 4 nights"],
+      ["restaurant-solid", "20:00", "Roscioli", "Dinner reservation"],
     ];
-    return `<section class="first-run-preview" aria-label="Example trip timeline">${previewRows.map(([iconName, time, title, detail]) => `<div class="first-run-preview__event"><span class="first-run-preview__marker">${icon(iconName, 23)}</span><span class="first-run-preview__copy"><small>${esc(time)}</small><strong>${esc(title)}</strong><span>${esc(detail)}</span></span></div>`).join("")}</section>`;
+    return `<section class="first-run-preview" aria-label="Example trip timeline">${previewRows.map(([iconName, time, title, detail]) => `<div class="first-run-preview__event"><span class="first-run-preview__marker">${icon(iconName, 22)}</span><span class="first-run-preview__copy"><small>${esc(time)}</small><strong>${esc(title)}</strong><span>${esc(detail)}</span></span></div>`).join("")}</section>`;
   }
   function firstRunScreen() {
     const offline = state.offline
       ? `<span class="first-run-offline" role="status">${icon("info", 14)} Offline</span>`
       : "";
     const googleAction = PREVIEW_MODE
-      ? `<button class="first-run-google-preview" data-action="preview-google" aria-label="Continue with Google"><img src="/assets/google-g.svg" alt=""><span>Continue with Google</span></button>`
-      : `<div id="google-signin-button" aria-label="Continue with Google"></div>`;
-    return `<div class="phone-app"><section class="first-run-screen welcome-v2 screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to">tripto<span>.</span>to</div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><span class="first-run-kicker">Quiet Journey</span><h1 id="first-run-title">All your trip.<br>One calm timeline.</h1><p>We turn your bookings into a single, easy-to-follow journey.</p></section>${firstRunProductPreview()}<div class="first-run-actions welcome-v2__actions"><div class="first-run-google">${googleAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span>${icon("chevron", 18)}</button></div><footer class="welcome-v2__footer"><a href="/privacy.html">Privacy</a><span aria-hidden="true"></span><a href="/terms.html">Terms</a></footer></main></section></div>`;
+      ? `<button class="first-run-google-preview" data-action="preview-google" aria-label="Sign in with Google"><img src="/assets/google-g.svg" alt=""><span>Sign in with Google</span></button>`
+      : `<div id="google-signin-button" aria-label="Sign in with Google"></div>`;
+    const entryAction = state.account?.mode === "account"
+      ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span></button>`
+      : googleAction;
+    return `<div class="phone-app"><section class="first-run-screen welcome-v2 screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to">tripto<span>.</span>to</div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><span class="first-run-kicker">Quiet Journey</span><h1 id="first-run-title">All your trip.<br><span class="first-run-title__muted">One calm timeline.</span></h1><p>We turn your bookings into a single, easy-to-follow journey.</p></section>${firstRunProductPreview()}<div class="first-run-actions welcome-v2__actions"><span class="first-run-actions__fade" aria-hidden="true"></span><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span>${icon("chevron", 18)}</button></div><footer class="welcome-v2__footer"><a href="/privacy">Privacy</a><span aria-hidden="true"></span><a href="/terms">Terms</a></footer></main></section></div>`;
   }
   function timelineScreen() {
     if (!state.trip)
@@ -1718,43 +2248,43 @@
                       ends != null &&
                       starts <= now &&
                       ends > now,
+                    isStay = type === "hotel" || type === "stay",
+                    staying = active && isStay,
+                    happeningNow = active && !isStay,
                     next = !active && itemId(item) === highlightedNextId,
                     past = !active && !next && starts != null && starts < now,
-                    phase = active
+                    phase = happeningNow
                       ? "active"
-                      : next
-                        ? "next"
-                        : past
-                          ? "past"
-                          : "future",
+                      : staying
+                        ? "staying"
+                        : next
+                          ? "next"
+                          : past
+                            ? "past"
+                            : "future",
                     eventTime = starts != null
                       ? formatTime(starts, zone)
                       : "Time unavailable",
-                    flags = `${active ? '<span class="timeline-flag timeline-flag--now">Now</span>' : ""}${next ? '<span class="timeline-flag timeline-flag--next">Next</span>' : ""}${exception ? `<span class="timeline-flag timeline-flag--${esc(exception.tone)}">${esc(exception.label)}</span>` : ""}`,
+                    flags = `${happeningNow ? '<span class="timeline-flag timeline-flag--now">Now</span>' : ""}${staying ? '<span class="timeline-flag timeline-flag--staying">Staying</span>' : ""}${next ? '<span class="timeline-flag timeline-flag--next">Next</span>' : ""}${exception ? `<span class="timeline-flag timeline-flag--${esc(exception.tone)}">${esc(exception.label)}</span>` : ""}`,
                     title = item.title || "Trip item",
                     aria = [eventTime, title, subtitle, exception?.label]
                       .filter(Boolean)
                       .join(". ");
-                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker">${icon(timelineIcon(type), 19)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small></span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 19)}</span></span></button>`;
+                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker">${icon(timelineIcon(type), 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small></span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 19)}</span></span></button>`;
                 })
                 .join("")}</div></section>`,
           )
           .join("")
-      : `<div class="timeline-empty">${emptySetup ? '<span class="timeline-empty__eyebrow">Start building</span>' : ""}<span class="timeline-empty__icon">${icon(emptySetup ? "plus" : "calendar", 30)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${emptySetup ? `<button class="primary-cta timeline-empty__add" data-action="open-add"><span>Add booking</span>${icon("plus",18)}</button>` : primaryCta("Add booking", "open-add", "plus")}</div>`;
-    const headerAction = emptySetup
-      ? `<button class="icon-button" data-screen="account" aria-label="Account">${icon("user",22)}</button>`
-      : `<button class="icon-button" data-screen="documents" aria-label="Tickets and documents">${icon("document",22)}</button>`;
-    const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",18)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
+      : `<div class="timeline-empty">${emptySetup ? '<span class="timeline-empty__eyebrow">Start building</span>' : ""}<span class="timeline-empty__icon">${icon(emptySetup ? "plus" : "calendar", 30)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${emptySetup ? `<div class="timeline-empty__actions"><button class="primary-cta timeline-empty__add" data-action="open-add-booking"><span>Add booking</span>${icon("plus",18)}</button><button class="text-action timeline-empty__skip" data-screen="trips">Skip for now</button></div>` : primaryCta("Add booking", "open-add", "plus")}</div>`;
+    const headerAction = `<div class="trip-v2-actions">${emptySetup
+      ? ""
+      : `<button class="icon-button" data-screen="documents" aria-label="Tickets and documents">${icon("document",18)}</button>`}<button class="icon-button" data-action="edit-trip" aria-label="Edit trip details">${icon("edit",18)}</button></div>`;
+    const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
     return `<div class="phone-app"><section class="screen timeline-screen">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${emptySetup ? "" : timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
   }
 
   function timelineContextCard() {
     if (isEmptyTripSetup()) return "";
-    const issues = activeHealthIssues();
-    if (issues.length) {
-      const issue = issues[0];
-      return `<section class="timeline-context timeline-context--attention"><span>Needs Attention</span><h2>${esc(issue.title || "Review your trip")}</h2><p>${esc(issue.explanation || "One trip detail needs your review.")}</p><button data-screen="health">Review${icon("chevron",17)}</button></section>`;
-    }
     const next = nextItem();
     if (next) {
       const starts = Number(val(next,"starts_at_utc","startsAtUtc")) || null,
@@ -1762,6 +2292,17 @@
         active = starts != null && starts <= Date.now() && Number(val(next,"ends_at_utc","endsAtUtc") || starts) > Date.now();
       if (active || (starts != null && starts - Date.now() <= 6 * 60 * 60 * 1000))
         return `<section class="timeline-context timeline-context--next"><span>${active ? "Now" : "Next"}</span><h2>${esc(next.title || "Next plan")}</h2><p>${esc(starts ? `${formatTime(starts,zone)} · ${next.subtitle || statusText(next.status)}` : next.subtitle || "Time unavailable")}</p><button data-action="timeline-detail" data-id="${esc(itemId(next))}">Open${icon("chevron",17)}</button></section>`;
+    }
+    const wx = state.weather;
+    if (wx && wx.tempC != null) {
+      const days = Array.isArray(wx.daily) ? wx.daily.slice(0, 5) : [];
+      const strip = days
+        .map(
+          (day, i) =>
+            `<div class="timeline-context__wx-day"><span>${esc(i === 0 ? "Today" : day.weekday || "")}</span>${icon(day.iconName, 20)}<strong>${esc(day.hi)}°</strong></div>`,
+        )
+        .join("");
+      return `<section class="timeline-context timeline-context--weather"><button class="timeline-context__wx-now timeline-context__wx-refresh${state.weatherRefreshing ? " is-refreshing" : ""}" data-action="refresh-weather" aria-label="Refresh weather"${state.weatherRefreshing ? " disabled" : ""}>${icon("refresh", 22)}</button><div class="timeline-context__wx-forecast">${strip}</div></section>`;
     }
     const start = val(state.trip,"starts_on","startsOn");
     if (start) {
@@ -1824,13 +2365,35 @@
     return (
       {
         flight: "plane",
+        plane: "plane",
+        air: "plane",
         train: "train",
+        rail: "train",
+        ferry: "navigation",
+        boat: "navigation",
+        ship: "navigation",
+        cruise: "navigation",
+        bus: "car",
+        coach: "car",
+        shuttle: "car",
+        car: "car",
+        car_rental: "car",
+        taxi: "car",
+        transfer: "car",
+        transport: "car",
         hotel: "hotel",
         stay: "hotel",
-        car: "car",
-        transfer: "car",
+        lodging: "hotel",
+        accommodation: "hotel",
         activity: "star",
+        attraction: "star",
+        tour: "star",
+        event: "star",
         reservation: "restaurant",
+        restaurant: "restaurant",
+        dining: "restaurant",
+        ticket: "ticket",
+        generic_ticket: "ticket",
         document: "document",
       }[String(type || "").toLowerCase()] || "calendar"
     );
@@ -1887,7 +2450,7 @@
       disclosure = disclosureRows.length
         ? `<section class="flight-more flight-more--pass"><button type="button" class="flight-more__toggle" id="${disclosureButtonId}" data-action="toggle-flight-details" aria-expanded="${state.flightDetailsOpen}" aria-controls="${disclosureId}"><span>Flight details</span><span class="flight-more__chevron" aria-hidden="true">${icon(state.flightDetailsOpen ? "chevronUp" : "chevronDown", 18)}</span></button><div class="flight-more-content${state.flightDetailsOpen ? " is-open" : ""}" id="${disclosureId}" role="region" aria-labelledby="${disclosureButtonId}"${state.flightDetailsOpen ? "" : " hidden"}><dl>${disclosureRows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section>`
         : "";
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, `<button class="icon-button" data-action="share-flight" aria-label="Share flight">${icon("share", 23)}</button>`)}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div></main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div></main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -1940,7 +2503,7 @@
             : statusTone === "attention"
               ? icon("warning", 14)
               : icon("info", 14);
-    return `<div class="phone-app"><section class="screen hotel-detail-screen">${appBar("Hotel")}<div class="hotel-hero ${imageUrl ? "hotel-hero--image" : "hotel-hero--fallback"}" role="img" aria-label="${imageUrl ? "Hotel property image" : "Hotel image unavailable; showing a generic local hotel-room fallback"}">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span>${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 15)} Offline · saved details</span>` : ""}</div><main class="hotel-sheet"><header class="hotel-heading"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="hotel-status hotel-status--${statusTone}">${statusIcon}<span>${esc(statusLabel)}</span></span></div>${roomName ? `<p>${esc(roomName)}</p>` : ""}</header><section class="hotel-stats" aria-label="Stay dates"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></section><div class="hotel-actions"><button class="hotel-action hotel-action--primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}>${icon("navigation", 18)}<span>Directions</span></button><button class="hotel-action" data-action="show-driver" data-id="${esc(itemId(stay))}"${driverDisabled ? " disabled" : ""}>${icon("car", 18)}<span>Show to Driver</span></button></div><section class="hotel-location" aria-label="Hotel location"><button class="hotel-address-row" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""} aria-label="${address ? `Open directions to ${esc(address)}` : "Hotel address unavailable"}"><span class="hotel-address-row__icon">${icon("pin", 21)}</span><span>${esc(address || "Location unavailable")}</span>${directionsDisabled ? "" : icon("chevron", 18)}</button>${hasCoordinates ? `<button class="hotel-map-panel" data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel location in Maps"><span class="hotel-map-panel__marker">${icon("pin", 22)}</span><span class="hotel-map-panel__copy"><strong>Saved location</strong><small>Open in Maps</small></span></button>` : `<div class="hotel-map-panel hotel-map-panel--unavailable" role="status"><span class="hotel-map-panel__marker">${icon("map", 22)}</span><span class="hotel-map-panel__copy"><strong>Map unavailable</strong><small>No saved coordinates</small></span></div>`}</section>${contactRows ? `<section class="hotel-contact-list" aria-label="Hotel contact and confirmation">${contactRows}</section>` : ""}</main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen hotel-detail-screen">${appBar("Hotel", "", false, bookingHeaderActions("hotel", itemId(stay)))}<div class="hotel-hero ${imageUrl ? "hotel-hero--image" : "hotel-hero--fallback"}" role="img" aria-label="${imageUrl ? "Hotel property image" : "Hotel image unavailable; showing a generic local hotel-room fallback"}">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image" loading="lazy" decoding="async">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span>${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 15)} Offline · saved details</span>` : ""}</div><main class="hotel-sheet"><header class="hotel-heading"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="hotel-status hotel-status--${statusTone}">${statusIcon}<span>${esc(statusLabel)}</span></span></div>${roomName ? `<p>${esc(roomName)}</p>` : ""}</header><section class="hotel-stats" aria-label="Stay dates"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></section><div class="hotel-actions"><button class="hotel-action hotel-action--primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}>${icon("navigation", 18)}<span>Directions</span></button><button class="hotel-action" data-action="show-driver" data-id="${esc(itemId(stay))}"${driverDisabled ? " disabled" : ""}>${icon("car", 18)}<span>Show to Driver</span></button></div><section class="hotel-location" aria-label="Hotel location"><button class="hotel-address-row" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""} aria-label="${address ? `Open directions to ${esc(address)}` : "Hotel address unavailable"}"><span class="hotel-address-row__icon">${icon("pin", 21)}</span><span>${esc(address || "Location unavailable")}</span>${directionsDisabled ? "" : icon("chevron", 18)}</button>${hasCoordinates ? `<button class="hotel-map-panel" data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel location in Maps"><span class="hotel-map-panel__marker">${icon("pin", 22)}</span><span class="hotel-map-panel__copy"><strong>Saved location</strong><small>Open in Maps</small></span></button>` : ""}</section>${contactRows ? `<section class="hotel-contact-list" aria-label="Hotel contact and confirmation">${contactRows}</section>` : ""}</main>${bottomNav("bookings")}</section></div>`;
   }
   function bookingsScreen() {
     const rows = [];
@@ -1979,8 +2542,8 @@
     return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Your travel documents</h1><p>${verified} of ${state.localDocs.length} ready offline on this phone</p></div></header><section class="mobile-group"><h2>Saved documents</h2><div class="document-list">${rows || `<div class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon("document", 30)}</span><h1>No offline documents</h1><p>Add a ticket, boarding pass, or confirmation.</p></div>`}</div></section><button class="mobile-primary-action" data-action="document-sheet">${icon("plus", 20)} Add Document</button>`, "bookings");
   }
 
-  function mobilePage(title, body, active = "trips", right = "") {
-    return `<div class="phone-app"><section class="screen mobile-v1-screen">${appBar(title, "", false, right)}${mobileAlert()}<main class="mobile-page">${body}</main>${bottomNav(active)}</section></div>`;
+  function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
+    return `<div class="phone-app"><section class="screen mobile-v1-screen ${esc(extraClass)}">${appBar(title, "", false, right)}${mobileAlert()}<main class="mobile-page">${body}</main>${bottomNav(active)}</section></div>`;
   }
   function focusedTaskPage(title, body, className = "") {
     return `<div class="phone-app"><section class="screen mobile-v1-screen focused-task ${esc(className)}">${appBar(title)}${mobileAlert()}<main class="focused-page">${body}</main></section></div>`;
@@ -1989,20 +2552,71 @@
     const key = String(value || "upcoming").toLowerCase();
     return ({ upcoming: "Upcoming", active: "Current", during: "Current", completed: "Past", past: "Past", cancelled: "Cancelled", draft: "Draft" })[key] || statusText(key);
   }
-  function tripListScreen() {
-    if (!state.trips.length) return mobilePage("Trips", `<section class="mobile-empty"><span class="mobile-empty__icon">${icon("luggage", 30)}</span><h1>No trips yet</h1><p>Create your first trip and keep everything in one place.</p>${primaryCta("Create trip", "create-trip", "plus")}</section>`, "trips", `<button class="icon-button" data-action="create-trip" aria-label="Create trip">${icon("plus", 23)}</button>`);
-    const groups = [
-      ["Current", (t) => String(t.id) === String(state.trip?.id)],
-      ["Upcoming", (t) => String(t.id) !== String(state.trip?.id) && ["upcoming", "draft"].includes(String(t.lifecycle_state || t.lifecycleState))],
-      ["Past", (t) => ["completed", "past"].includes(String(t.lifecycle_state || t.lifecycleState))],
-      ["Cancelled", (t) => String(t.lifecycle_state || t.lifecycleState) === "cancelled"],
+  // Pick a destination-flavored icon from the trip name so each trip in the list
+  // reads differently. Keyword rules first, then a stable hash fallback so two
+  // different cities never collide on the same generic suitcase.
+  function tripMarkIcon(trip) {
+    const text = String(val(trip, "title") || "").toLowerCase();
+    const rules = [
+      [/mountain|alps?|ski\b|snow|peak|everest|nepal|andes|aspen|tahoe|whistler|dolomit|kilimanjaro|patagon|hike|trek|safari|jungle|forest|national park/, "dest-mountain"],
+      [/beach|island|bali|hawaii|maldiv|caribbean|phuket|ibiza|cancun|\bgoa\b|tropic|fiji|seychelle|bahama|maui|coast|riviera|cruise/, "dest-beach"],
+      [/rome|roma|egypt|cairo|athens|greece|greek|machu|temple|pyramid|ruin|ancient|petra|angkor|acropolis|colosse|jerusalem/, "dest-monument"],
+      [/tokyo|york|nyc|london|paris|dubai|singapore|kong|shanghai|chicago|berlin|madrid|barcelona|amsterdam|\bcity\b|urban|metropol/, "hotel"],
+      [/road ?trip|route ?66|self ?drive|\bdrive\b/, "car"],
+      [/rail|interrail|eurail|\btrain\b/, "train"],
+      [/summer|\bsun\b|desert|sahara/, "day"],
+      [/flight|\bfly\b|layover|airport/, "plane"],
+      [/food|culinary|wine|gourmet|tasting/, "restaurant"],
     ];
-    const content = groups.map(([label, test]) => {
-      const trips = state.trips.filter(test);
+    for (const [re, name] of rules) if (re.test(text)) return name;
+    const pool = ["dest-mountain", "dest-beach", "dest-monument", "hotel", "day", "map", "plane"];
+    if (!text) return "trips";
+    let h = 0;
+    for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
+    return pool[h % pool.length];
+  }
+  // Place a trip in exactly one bucket. Dates are the source of truth (a trip
+  // that has ended is Past even if it's the one you last opened); lifecycle is
+  // only a fallback when dates are missing. This prevents a trip appearing in
+  // both "Current" and "Past" at once.
+  // Each bucket gets its own mark so Current / Upcoming / Past read differently
+  // at a glance: a navigation arrow for the trip you're on now, a calendar for
+  // what's coming, a clock for what's done.
+  function bucketMarkIcon(label) {
+    return ({ Current: "navigation", Upcoming: "calendar", Past: "clock", Cancelled: "close" })[label] || "trips";
+  }
+  function tripBucket(trip) {
+    const now = new Date().toISOString().slice(0, 10);
+    const lc = String(val(trip, "lifecycle_state", "lifecycleState") || "").toLowerCase();
+    if (lc === "cancelled") return "Cancelled";
+    const start = String(val(trip, "starts_on", "startsOn") || ""),
+      end = String(val(trip, "ends_on", "endsOn") || "");
+    if (end && end < now) return "Past";
+    if (start && start > now) return "Upcoming";
+    if (start && end && start <= now && now <= end) return "Current";
+    if (["completed", "past"].includes(lc)) return "Past";
+    if (lc === "active") return "Current";
+    return "Upcoming";
+  }
+  function tripListScreen() {
+    if (!state.trips.length) return mobilePage("Trips", `<section class="mobile-empty"><span class="mobile-empty__icon">${icon("luggage", 30)}</span><h1>No trips yet</h1><p>Create your first trip and keep everything in one place.</p>${primaryCta("Create trip", "create-trip", "plus")}</section>`, "trips");
+    const filter = state.tripFilter || null,
+      pageTitle = filter === "upcoming" ? "Upcoming trips" : filter === "past" ? "Past trips" : "Trips",
+      visibleGroups = filter === "upcoming" ? ["Current", "Upcoming"] : filter === "past" ? ["Past"] : null;
+    const order = ["Current", "Upcoming", "Past", "Cancelled"];
+    const content = order.filter((label) => !visibleGroups || visibleGroups.includes(label)).map((label) => {
+      const trips = state.trips
+        .filter((t) => tripBucket(t) === label)
+        .sort((a, b) => {
+          const sa = String(val(a, "starts_on", "startsOn") || ""),
+            sb = String(val(b, "starts_on", "startsOn") || "");
+          return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
+        });
       if (!trips.length) return "";
-      return `<section class="mobile-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => `<button class="trip-row ${String(trip.id) === String(state.trip?.id) ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon("trips", 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small><span>${esc(lifecycleLabel(trip.lifecycle_state || trip.lifecycleState))}</span></span>${icon("chevron", 21, "chevron")}</button>`).join("")}</div></section>`;
+      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => `<button class="trip-row ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small></span>${icon("chevron", 18, "chevron")}</button>`).join("")}</div></section>`;
     }).join("");
-    return mobilePage("Trips", `${content}<button class="mobile-secondary-action" data-action="create-trip">${icon("plus", 20)} Create trip</button>`, "trips", `<button class="icon-button" data-action="create-trip" aria-label="Create trip">${icon("plus", 23)}</button>`);
+    const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "past" ? "past" : "upcoming"} trips</h1><p>${filter === "past" ? "Completed trips will appear here." : "Trips you have coming up will appear here."}</p></section>`;
+    return mobilePage(pageTitle, body, "trips", "", "trips-bg-screen");
   }
   function meaningfulBookingStatus(item) {
     const raw = String(val(item, "booking_status", "status") || "").toLowerCase();
@@ -2036,16 +2650,20 @@
     if (!train) return missingDetailScreen("Train unavailable", "No train booking is available.");
     const from = locationById(val(train, "departure_location_id", "start_location_id")), to = locationById(val(train, "arrival_location_id", "end_location_id")), dep = Number(val(train, "scheduled_departure_utc", "starts_at_utc")) || null, arr = Number(val(train, "scheduled_arrival_utc", "ends_at_utc")) || null, detail = detailFor(train) || {}, doc = state.localDocs.find((d) => d.integrity === "verified" && d.type === "ticket" && (!d.travelerIds?.length || d.travelerIds.some((id) => String(val(train,"traveler_ids")||"").split(",").includes(id))));
     const facts = [["Platform", val(train, "departure_platform", "platform")], ["Coach", val(detail, "coach")], ["Seat", val(detail, "seat")], ["Booking", val(train, "booking_reference")]].filter(([,v]) => v);
-    return mobilePage("Train Detail", `<section class="journey-pass journey-pass--train"><header><span>${icon("train", 20)} ${esc(val(train,"carrier_name") || "Train")}</span><strong>${statusText(val(train,"booking_status","status") || "confirmed")}</strong><small>Scheduled data</small></header><div class="journey-route"><div><strong>${esc(val(from,"station_code","iata_code") || "—")}</strong><span>${esc(val(from,"display_name") || "Origin unavailable")}</span></div><span class="journey-route__line">${icon("train", 25)}</span><div><strong>${esc(val(to,"station_code","iata_code") || "—")}</strong><span>${esc(val(to,"display_name") || "Destination unavailable")}</span></div></div><div class="journey-times"><div><span>Departs</span><strong>${esc(formatTime(dep,val(train,"departure_timezone")))}</strong><small>${esc(formatDay(dep,val(train,"departure_timezone")))}</small></div><div><span>Arrives</span><strong>${esc(formatTime(arr,val(train,"arrival_timezone")))}</strong><small>${esc(formatDay(arr,val(train,"arrival_timezone")))}</small></div></div><dl class="journey-facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>${doc ? primaryCta("Open Ticket","open-document","ticket",`data-id="${esc(doc.id)}"`) : `<div class="inline-recovery">${icon("warning",18)}<span><strong>Ticket not saved offline</strong><small>Add a verified ticket before travel.</small></span></div><button class="mobile-secondary-action" data-action="add-document">${icon("plus",18)} Add ticket</button>`}<button class="mobile-secondary-action" data-action="directions-item" data-id="${esc(itemId(train))}">${icon("navigation",18)} Directions to station</button></section>`, "bookings");
+    return mobilePage("Train Detail", `<section class="journey-pass journey-pass--train"><header><span>${icon("train", 20)} ${esc(val(train,"carrier_name") || "Train")}</span><strong>${statusText(val(train,"booking_status","status") || "confirmed")}</strong><small>Scheduled data</small></header><div class="journey-route"><div><strong>${esc(val(from,"station_code","iata_code") || "—")}</strong><span>${esc(val(from,"display_name") || "Origin unavailable")}</span></div><span class="journey-route__line">${icon("train", 25)}</span><div><strong>${esc(val(to,"station_code","iata_code") || "—")}</strong><span>${esc(val(to,"display_name") || "Destination unavailable")}</span></div></div><div class="journey-times"><div><span>Departs</span><strong>${esc(formatTime(dep,val(train,"departure_timezone")))}</strong><small>${esc(formatDay(dep,val(train,"departure_timezone")))}</small></div><div><span>Arrives</span><strong>${esc(formatTime(arr,val(train,"arrival_timezone")))}</strong><small>${esc(formatDay(arr,val(train,"arrival_timezone")))}</small></div></div><dl class="journey-facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>${doc ? primaryCta("Open Ticket","open-document","ticket",`data-id="${esc(doc.id)}"`) : `<div class="inline-recovery">${icon("warning",18)}<span><strong>Ticket not saved offline</strong><small>Add a verified ticket before travel.</small></span></div><button class="mobile-secondary-action" data-action="add-document">${icon("plus",18)} Add ticket</button>`}<button class="mobile-secondary-action" data-action="directions-item" data-id="${esc(itemId(train))}">${icon("navigation",18)} Directions to station</button></section>`, "bookings", bookingHeaderActions(String(val(train,"transport_type")||"train"), itemId(train)));
   }
   function selectedPlan() { return state.timeline.find((row) => itemId(row) === String(state.selectedId)) || null; }
   function planScreen() {
     const item = selectedPlan();
     if (!item) return missingDetailScreen("Plan unavailable", "This plan is not available.");
     const location = locationById(val(item,"start_location_id")), contact = contactFor(item), doc = state.localDocs.find((d)=>d.integrity==="verified" && ["reservation","voucher","ticket","qr_code"].includes(d.type));
-    const primary = doc ? `<button class="primary-cta" data-action="open-document" data-id="${esc(doc.id)}">${icon("ticket",19)} Open Ticket</button>` : location ? `<button class="primary-cta" data-action="directions-item" data-id="${esc(itemId(item))}">${icon("navigation",19)} Directions</button>` : val(contact,"phone") ? `<button class="primary-cta" data-action="call" data-value="${esc(contact.phone)}">${icon("phone",19)} Call</button>` : "";
+    const primary = [
+      doc ? primaryCta("Open Ticket","open-document","ticket",`data-id="${esc(doc.id)}"`) : "",
+      location ? primaryCta("Directions","directions-item","navigation",`data-id="${esc(itemId(item))}"`) : "",
+      !doc && !location && val(contact,"phone") ? primaryCta("Call","call","phone",`data-value="${esc(contact.phone)}"`) : "",
+    ].join("");
     const confirmation = val(item,"confirmation_number","reservation_reference"), notes = val(item,"activity_notes","reservation_notes","notes"), kind = val(item,"activity_type","reservation_type","type") || "Plan";
-    return mobilePage(statusText(val(item,"type") || "Plan"), `<section class="plan-hero"><span class="plan-hero__icon">${icon(transportIcon(val(item,"type") || "activity"),28)}</span><span>${esc(statusText(kind))}</span><h1>${esc(val(item,"title") || "Plan")}</h1><p>${esc(formatDateTime(Number(val(item,"starts_at_utc"))||null,val(item,"start_timezone")))}</p></section><section class="detail-list">${location ? `<button class="detail-row" data-action="directions-item" data-id="${esc(itemId(item))}"><span>${icon("pin",20)}</span><span><small>Location</small><strong>${esc(val(location,"display_name") || val(location,"formatted_address"))}</strong></span>${icon("chevron",18)}</button>` : ""}${confirmation ? `<button class="detail-row" data-action="copy" data-value="${esc(confirmation)}"><span>${icon("copy",20)}</span><span><small>Confirmation</small><strong>${esc(confirmation)}</strong></span>${icon("copy",18)}</button>` : ""}${val(contact,"phone") ? `<button class="detail-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone",20)}</span><span><small>Contact</small><strong>${esc(val(contact,"display_name") || contact.phone)}</strong></span>${icon("chevron",18)}</button>` : ""}</section>${primary}${notes ? `<details class="mobile-disclosure"><summary>Notes ${icon("chevronDown",18)}</summary><p>${esc(notes)}</p></details>` : ""}`, "bookings");
+    return mobilePage(statusText(val(item,"type") || "Plan"), `<section class="plan-hero"><span class="plan-hero__icon">${icon(timelineIcon(timelineType(item)),28)}</span><span>${esc(statusText(kind))}</span><h1>${esc(val(item,"title") || "Plan")}</h1><p>${esc(formatDateTime(Number(val(item,"starts_at_utc"))||null,val(item,"start_timezone")))}</p></section><section class="detail-list">${location ? `<div class="detail-row detail-row--static"><span>${icon("pin",20)}</span><span><small>Location</small><strong>${esc(val(location,"display_name") || val(location,"formatted_address"))}</strong></span></div>` : ""}${confirmation ? `<button class="detail-row" data-action="copy" data-value="${esc(confirmation)}"><span>${icon("copy",20)}</span><span><small>Confirmation</small><strong>${esc(confirmation)}</strong></span>${icon("copy",18)}</button>` : ""}${val(contact,"phone") ? `<button class="detail-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone",20)}</span><span><small>Contact</small><strong>${esc(val(contact,"display_name") || contact.phone)}</strong></span>${icon("chevron",18)}</button>` : ""}</section>${primary}${notes ? `<details class="mobile-disclosure"><summary>Notes ${icon("chevronDown",18)}</summary><p>${esc(notes)}</p></details>` : ""}`, "bookings", bookingHeaderActions(String(val(item,"type")||"plan"), itemId(item)));
   }
 
   function documentRequirements() {
@@ -2216,26 +2834,28 @@
     const traveler = state.travelers.find((t)=>String(t.id)===String(state.selectedId));
     if (!traveler) return missingDetailScreen("Traveler unavailable", "This traveler is not available.");
     const details = state.bookingDetails.filter((d)=>String(val(d,"traveler_id"))===String(traveler.id)), docs = state.localDocs.filter((d)=>d.travelerIds?.includes(String(traveler.id))), assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))), checklist = state.checklist.filter((item)=>String(val(item,"traveler_id"))===String(traveler.id));
-    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(transportIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
+    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(timelineIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
   }
   function importScreen() {
     // No AI guessing. You review every field before it is added.
     const forward = state.importMode === "forward";
     const control = forward
-      ? `<section class="forward-booking-address"><span>${icon("mail",24)}</span><div><strong>bookings@tripto.to</strong><small>Forward from your verified Google email. If more than one trip could match, we will ask you to choose.</small></div></section><label><span>Paste confirmation for immediate review</span><textarea name="body" rows="7" placeholder="Paste the forwarded confirmation email"></textarea></label>`
-      : `<label class="smart-import-file"><span>Booking document</span><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,.eml,.docx,.ics,.pkpass,application/pdf,image/*,text/plain,message/rfc822,text/calendar"><small>PDF, image, TXT, EML, DOCX, ICS, or PKPASS · 10 MB max</small></label>`;
+      ? `<section class="forward-booking-address"><span>${icon("mail",24)}</span><div><strong>go@tripto.to</strong><small>Forward from your verified Google email. If more than one trip could match, we will ask you to choose.</small></div></section><label><span>Paste confirmation for immediate review</span><textarea name="body" rows="7" placeholder="Paste the forwarded confirmation email"></textarea></label>`
+      : `<label class="smart-import-file"><span>Booking document</span><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,.eml,.docx,.ics,.pkpass,application/pdf,image/*,text/plain,message/rfc822,text/calendar"><small>Best accuracy: the original PDF, .eml, .ics, or .pkpass. Photos and screenshots are read with OCR and may need corrections. · 10 MB max</small></label>`;
     return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Only verified senders are accepted. Review uncertain fields before adding anything." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon(forward ? "mail" : "document",19)} Review recognized fields</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
   }
   function importReviewScreen() {
     const candidates = state.importReview?.candidates || [];
     const duplicate=Boolean(state.importReview?.duplicate);
-    return focusedTaskPage("Import Review", `<form id="import-review-form" class="import-review-form"><section class="review-summary ${duplicate?"review-summary--duplicate":""}"><span>${icon(duplicate?"warning":"check",25)}</span><div><strong>${duplicate?"Possible duplicate":"Review before adding"}</strong><small>${duplicate?"This document was imported before. Review the existing import or add another copy intentionally.":"Nothing is added until you confirm."}</small></div></section>${candidates.map((c)=>reviewCandidate(c,duplicate)).join("") || `<section class="mobile-empty"><h1>No booking candidates</h1><p>This format could not be imported safely. Add the booking manually instead.</p></section>`}</form>`, "import-review-task");
+    const emptyWarnings=(!candidates.length&&Array.isArray(state.importReview?.warnings))?state.importReview.warnings:[];
+    const emptyBlock=`<section class="mobile-empty"><h1>No booking candidates</h1><p>This format could not be imported safely. Add the booking manually instead.</p>${emptyWarnings.length?`<div class="review-warnings">${emptyWarnings.map((w)=>`<p>${icon("warning",15)} ${esc(w)}</p>`).join("")}</div>`:""}</section>`;
+    return focusedTaskPage("Import Review", `<form id="import-review-form" class="import-review-form"><section class="review-summary ${duplicate?"review-summary--duplicate":""}"><span>${icon(duplicate?"warning":"check",25)}</span><div><strong>${duplicate?"Possible duplicate":"Review before adding"}</strong><small>${duplicate?"This document was imported before. Review the existing import or add another copy intentionally.":"Nothing is added until you confirm."}</small></div></section>${candidates.map((c)=>reviewCandidate(c,duplicate)).join("") || emptyBlock}</form>`, "import-review-task");
   }
 
   function reviewCandidate(c,duplicate){const payload=c.payload||{},type=val(c,"candidate_type","type")||"reservation",warnings=payload.warnings||c.warnings||[],confidence=Number(c.confidence||0),ignored=new Set(["warnings","fieldMeta","documentKind","filename","checksum"]),fields=new Map(Object.entries(payload).filter(([key,value])=>!ignored.has(key)&&(typeof value==="string"||typeof value==="number")));for(const key of reviewRequiredFields(type))if(!fields.has(key))fields.set(key,"");const control=([key,value])=>{const date=key.endsWith("LocalDatetime"),tz=key.toLowerCase().includes("timezone");return `<label><span>${esc(statusText(key.replace(/([A-Z])/g," $1")))}</span><input type="${date?"datetime-local":"text"}" name="field-${esc(c.id)}-${esc(key)}" value="${esc(value)}" data-field-name="${esc(key)}" ${tz?'placeholder="Europe/Rome"':""}></label>`;};return `<section class="review-card"><header><span class="review-type">${icon(transportIcon(type),19)} ${esc(statusText(type))}</span><span class="travel-state ${confidence<.7?"travel-state--attention":""}">${confidence<.7?"Check carefully":"Recognized"}</span></header>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",15)} ${esc(w)}</p>`).join("")}</div>`:""}<label><span>Booking type</span><select name="field-${esc(c.id)}-candidateType">${["flight","hotel","train","car","transfer","ferry","activity","restaurant","reservation","generic_ticket"].map(x=>`<option value="${x}" ${x===type?"selected":""}>${esc(statusText(x))}</option>`).join("")}</select></label><div class="review-fields">${[...fields].map(control).join("")}</div><div class="review-actions">${duplicate?`<button type="button" class="mobile-secondary-action" data-action="add-duplicate-import" data-id="${esc(c.id)}">Add anyway</button>`:`<button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">Confirm and Import</button>`}<button type="button" class="text-action" data-action="reject-import" data-id="${esc(c.id)}">Reject</button></div></section>`;}
   function reviewRequiredFields(type){if(type==="flight")return["airlineCode","flightNumber","departureIata","arrivalIata","departureLocalDatetime","departureTimezone","arrivalLocalDatetime","arrivalTimezone"];if(type==="hotel")return["propertyName","checkInDate","checkOutDate"];return["title"];}
   function importHistoryScreen() {
-    const rows = (state.imports || []).map((row)=>`<button class="travel-row" data-action="review-import" data-id="${esc(row.id)}"><span class="travel-row__icon">${icon(row.candidate_type==="hotel"?"hotel":row.candidate_type==="train"?"train":"plane",20)}</span><span class="travel-row__body"><strong>${esc(row.subject || statusText(row.candidate_type || "Booking"))}</strong><small>${esc(row.created_at ? formatDateTime(Number(row.created_at)) : "Date unavailable")}</small><em class="travel-state ${row.status==="imported"?"":"travel-state--attention"}">${esc(row.status==="imported"?"Imported":"Needs confirmation")}</em></span>${icon("chevron",18)}</button>`).join("");
+    const rows = (state.imports || []).map((row)=>`<button class="travel-row" data-action="review-import" data-id="${esc(row.id)}"><span class="travel-row__icon">${icon(timelineIcon(row.candidate_type),20)}</span><span class="travel-row__body"><strong>${esc(row.subject || statusText(row.candidate_type || "Booking"))}</strong><small>${esc(row.created_at ? formatDateTime(Number(row.created_at)) : "Date unavailable")}</small><em class="travel-state ${row.status==="imported"?"":"travel-state--attention"}">${esc(row.status==="imported"?"Imported":"Needs confirmation")}</em></span>${icon("chevron",18)}</button>`).join("");
     return mobilePage("Import History", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No imports yet</h1><p>Forwarded bookings you review will appear here.</p></section>`}</div><button class="mobile-secondary-action" data-screen="import">${icon("plus",19)} Import booking</button>`, "account");
   }
   function syncScreen() {
@@ -2258,16 +2878,82 @@
     const bytes = state.localDocs.reduce((sum,d)=>sum+Number(d.size||0),0), pending = pendingMutations().filter((x)=>x.status!=="done").length + Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
     const row = (ic,title,sub,screen,action="") => `<button class="simple-row" ${screen?`data-screen="${screen}"`:`data-action="${action}"`}><span class="row-icon">${icon(ic,22)}</span><span class="row-copy"><strong>${title}</strong><span>${esc(sub)}</span></span>${icon("chevron",22,"chevron")}</button>`;
     const google=state.account?.providers?.find((provider)=>provider.provider==="google"&&provider.enabled),identity=state.account?.identities?.find((item)=>item.provider==="google");
-    const authBlock=mode==="guest"&&google?`<section class="account-signin"><h2>Keep your trips across devices</h2><p>Continue with Google to attach this phone's trips to your verified account.</p><div id="google-signin-button" data-client-id="${esc(google.clientId)}"></div><p class="signin-error" role="alert" hidden></p></section>`:mode==="account"?`<section class="account-signin account-signin--active"><div><strong>${identity?"Google account connected":"Account connected"}</strong><small>${esc(state.account?.user?.primary_email||identity?.email||"")}</small></div><button class="mobile-secondary-action" data-action="sign-out">Sign out</button></section>`:"";
+    const authBlock=mode==="guest"&&google?`<section class="account-signin"><h2>Keep your trips across devices</h2><p>Continue with Google to attach this phone's trips to your verified account.</p><div id="google-signin-button" data-client-id="${esc(google.clientId)}"></div><p class="signin-error" role="alert" hidden></p></section>`:"";
     const upcoming = state.trips.filter((trip)=>!["completed","archived","cancelled"].includes(String(val(trip,"lifecycle_state","lifecycleState")||"upcoming"))).length,
       past = state.trips.length - upcoming,
       identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
-    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div></div></div>${authBlock}<div class="section-label">My trips</div>${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"timeline")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}<div class="section-label">Booking email</div>${row("mail","bookings@tripto.to",mode === "account" ? "Forward from your verified Google email" : "Sign in to verify a sender","","booking-email-info")}<div class="section-label">Preferences</div>${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","support")} ${mode === "account" ? `<button class="simple-row simple-row--danger" data-action="sign-out"><span class="row-icon">${icon("back",22)}</span><span class="row-copy"><strong>Sign out</strong><span>Unsynced changes stay protected</span></span>${icon("chevron",22)}</button>` : ""}<p class="app-version">tripto.to Product V2</p></main>${bottomNav("account")}</section></div>`;
+    const themePicker = "";
+    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div>${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}${themePicker}<div class="section-label">Booking email</div>${row("mail","go@tripto.to",mode === "account" ? "Forward from your verified Google email" : "Sign in to verify a sender","","booking-email-info")}<div class="section-label">Preferences</div>${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")} <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
   }
 
-  let googleScriptPromise=null;
-  function loadGoogleIdentityScript(){if(globalThis.google?.accounts?.id)return Promise.resolve();if(googleScriptPromise)return googleScriptPromise;googleScriptPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error("Google sign-in could not load."));document.head.appendChild(script);});return googleScriptPromise;}
-  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{const challenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});await loadGoogleIdentityScript();globalThis.google.accounts.id.initialize({client_id:challenge.clientId,nonce:challenge.nonce,use_fedcm_for_prompt:true,callback:async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||null})});state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}}});globalThis.google.accounts.id.renderButton(container,{type:"standard",theme:"outline",size:"large",shape:"pill",text:"continue_with",width:Math.min(350,container.clientWidth||350)});}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
+  let googleScriptPromise=null,googleRedirectExchangePromise=null;
+  function loadGoogleIdentityScript(){if(globalThis.google?.accounts?.id)return Promise.resolve();if(googleScriptPromise)return googleScriptPromise;googleScriptPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client?hl=en";script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error("Google sign-in could not load."));document.head.appendChild(script);});return googleScriptPromise;}
+  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{if(!googleAuth)throw new Error("Google sign-in could not load.");const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";const challenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});await loadGoogleIdentityScript();const initializeOptions=googleAuth.buildInitializeOptions(challenge,navigator,location.origin);if(initializeOptions.ux_mode==="popup")initializeOptions.callback=async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}};globalThis.google.accounts.id.initialize(initializeOptions);globalThis.google.accounts.id.renderButton(container,googleAuth.buildButtonOptions(challenge,navigator,location.origin));container.dataset.rendered="1";}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
+  function clearGoogleRedirectMarker(){googleAuth?.clearRedirectMarker(location,history);googleRedirectMarker=null;}
+  async function acknowledgeGoogleRedirectSession(token){
+    try{
+      const response=await fetch("/api/v1/auth/google/exchange/ack",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json",authorization:`Bearer ${token}`},body:"{}"});
+      return response.ok;
+    }catch(_){return false;}
+  }
+  async function exchangeGoogleRedirectSession(){
+    if(!googleRedirectMarker)return null;
+    if(googleRedirectMarker==="error"){
+      clearGoogleRedirectMarker();
+      return{ok:false,callbackError:true,error:"Google sign-in could not be completed. Please try again."};
+    }
+    if(!navigator.onLine)return{ok:false,pending:true,error:"Reconnect to finish signing in. Your saved trip data remains safe."};
+    try{
+      const response=await fetch("/api/v1/auth/google/exchange",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:"{}"});
+      let result=null;
+      try{result=await response.json();}catch(_){
+        if(response.ok)return{ok:false,pending:true,error:"Google sign-in was interrupted. Try again now."};
+      }
+      if(!response.ok){
+        const failure=googleAuth?.classifyExchangeFailure(response.status,result)||{terminal:false};
+        if(failure.terminal){
+          clearGoogleRedirectMarker();
+          return{ok:false,terminal:true,error:"The secure sign-in handoff expired. Please sign in again."};
+        }
+        return{ok:false,pending:true,error:result?.error?.message||"Google sign-in was interrupted. Try again now."};
+      }
+      const token=result?.session?.token;
+      if(!token||typeof token!=="string"||token.length>8192||/\s/.test(token))return{ok:false,pending:true,error:"Google sign-in was interrupted. Try again now."};
+      const previousToken=state.token;
+      state.token=token;
+      try{localStorage.setItem("tripto_token",token);}catch(_){
+        state.token=previousToken;
+        return{ok:false,pending:true,error:"Google sign-in could not be saved on this phone. Check browser storage and try again."};
+      }
+      clearGoogleRedirectMarker();
+      const acknowledged=await acknowledgeGoogleRedirectSession(token);
+      return{ok:true,acknowledged};
+    }catch(_){
+      return{ok:false,pending:true,error:"Google sign-in was interrupted. Check your connection and try again now."};
+    }
+  }
+  async function resumeGoogleRedirectSession(){
+    if(googleRedirectExchangePromise)return googleRedirectExchangePromise;
+    googleRedirectExchangePromise=(async()=>{
+      state.googleAuthHandoffStatus=null;
+      state.googleAuthHandoffMessage="";
+      state.loading=true;
+      render();
+      const result=await exchangeGoogleRedirectSession();
+      if(result?.pending||result?.terminal){
+        state.loading=false;
+        state.googleAuthHandoffStatus=result.pending?"pending":"terminal";
+        state.googleAuthHandoffMessage=result.error;
+        render();
+        return result;
+      }
+      await loadApp();
+      if(result?.ok)showToast("Signed in with Google.");
+      else if(result?.error)showToast(result.error,"alert");
+      return result;
+    })();
+    try{return await googleRedirectExchangePromise;}finally{googleRedirectExchangePromise=null;}
+  }
   function quickField(name, label, options = {}) {
     const {
         type = "text",
@@ -2278,19 +2964,23 @@
         choices = "",
         helper = "",
         value = "",
+        optional = false,
+        autocap = "off",
       } = options,
-      base = `name="${name}" id="form-${name}" ${required ? "required" : ""} ${attrs}`;
+      resolvedValue = value !== "" ? value : (formPrefill && formPrefill[name] != null ? String(formPrefill[name]) : ""),
+      base = `name="${name}" id="form-${name}" ${required ? "required" : ""} ${attrs}`,
+      textGuards = `autocapitalize="${autocap}" autocorrect="off" spellcheck="false"`;
     let control;
     if (type === "textarea")
-      control = `<textarea ${base} rows="4" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`;
+      control = `<textarea ${base} rows="4" placeholder="${esc(placeholder)}" autocapitalize="sentences" autocorrect="on" spellcheck="true">${esc(resolvedValue)}</textarea>`;
     else if (type === "select") control = `<select ${base}>${choices}</select>`;
     else
-      control = `<input type="${type}" ${base} autocomplete="off" placeholder="${esc(placeholder)}" value="${esc(value)}">`;
-    return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
+      control = `<input type="${type}" ${base} autocomplete="off" ${textGuards} placeholder="${esc(placeholder)}" value="${esc(resolvedValue)}">`;
+    return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : optional ? " <em class=\"field-optional\">Optional</em>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
   }
-  function dateRangeField(startName, endName, label, startLabel, endLabel) {
+  function dateRangeField(startName, endName, label, startLabel, endLabel, startValue = "", endValue = "") {
     const fieldId = `range-${startName}-${endName}`;
-    return `<fieldset class="date-range-field form-field--wide" id="${fieldId}"><legend>${esc(label)}</legend><input class="date-range-input" type="hidden" name="${esc(startName)}" id="form-${esc(startName)}"><input class="date-range-input" type="hidden" name="${esc(endName)}" id="form-${esc(endName)}"><button class="date-range-trigger" type="button" data-action="open-date-range" data-start-name="${esc(startName)}" data-end-name="${esc(endName)}" data-range-title="${esc(label)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}" aria-label="${esc(label)}. Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}" aria-describedby="${fieldId}-status"><span class="date-range-trigger__icon">${icon("calendar", 21)}</span><span class="date-range-trigger__copy"><small>Select dates</small><strong>Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}</strong></span>${icon("chevron", 18)}</button><span class="sr-only" id="${fieldId}-status" aria-live="polite">No date range selected.</span></fieldset>`;
+    return `<fieldset class="date-range-field form-field--wide" id="${fieldId}"><legend>${esc(label)}</legend><input class="date-range-input" type="hidden" name="${esc(startName)}" id="form-${esc(startName)}"${startValue ? ` value="${esc(startValue)}"` : ""}><input class="date-range-input" type="hidden" name="${esc(endName)}" id="form-${esc(endName)}"${endValue ? ` value="${esc(endValue)}"` : ""}><button class="date-range-trigger" type="button" data-action="open-date-range" data-start-name="${esc(startName)}" data-end-name="${esc(endName)}" data-range-title="${esc(label)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}" aria-label="${esc(label)}. Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}" aria-describedby="${fieldId}-status"><span class="date-range-trigger__icon">${icon("calendar", 21)}</span><span class="date-range-trigger__copy"><small>Select dates</small><strong>Choose dates</strong></span>${icon("chevron", 18)}</button><span class="sr-only" id="${fieldId}-status" aria-live="polite">No date range selected.</span></fieldset>`;
   }
   function syncDateRangeField(form, startName, endName) {
     const start = form?.elements[startName], end = form?.elements[endName];
@@ -2305,7 +2995,7 @@
       if (status) status.textContent = `Selected range: ${formatDateOnly(start.value)} to ${formatDateOnly(end.value)}.`;
     } else {
       const startLabel = trigger.dataset.startLabel || "Start date", endLabel = trigger.dataset.endLabel || "End date";
-      copy.innerHTML = `<small>Select dates</small><strong>Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}</strong>`;
+      copy.innerHTML = `<small>Select dates</small><strong>Choose dates</strong>`;
       trigger.classList.remove("is-selected");
       trigger.setAttribute("aria-label", `${field.querySelector("legend")?.textContent || "Dates"}. Choose ${startLabel.toLowerCase()} and ${endLabel.toLowerCase()}`);
       if (status) status.textContent = "No date range selected.";
@@ -2327,10 +3017,29 @@
     if (!rows.length) return "";
     return `<datalist id="quick-${kind}-locations">${rows.map((location) => { const code = val(location, kind === "flight" ? "iata_code" : "station_code"); return `<option value="${esc(`${code ? `${code} — ` : ""}${val(location, "display_name", "local_name") || code || "Location"}`)}"></option>`; }).join("")}</datalist>`;
   }
+  const SUGGEST_LISTS = {
+    airlines: ["Aegean Airlines","Aer Lingus","Aeroflot","Aeroméxico","Air Canada","Air China","Air France","Air India","Air New Zealand","Alaska Airlines","American Airlines","ANA","Austrian Airlines","Avianca","British Airways","Brussels Airlines","Cathay Pacific","China Eastern","China Southern","Copa Airlines","Delta Air Lines","EasyJet","Egyptair","El Al","Emirates","Ethiopian Airlines","Etihad Airways","Eurowings","EVA Air","Finnair","Frontier Airlines","Iberia","Icelandair","IndiGo","ITA Airways","Japan Airlines","JetBlue","KLM","Korean Air","LATAM","Lufthansa","Malaysia Airlines","Norwegian","Pegasus Airlines","Philippine Airlines","Qantas","Qatar Airways","Royal Air Maroc","Ryanair","SAS","Saudia","Singapore Airlines","Southwest Airlines","Spirit Airlines","Swiss","TAP Air Portugal","Thai Airways","Turkish Airlines","United Airlines","Virgin Atlantic","Vueling","WestJet","Wizz Air"],
+    rail: ["Amtrak","Avanti West Coast","Brightline","Deutsche Bahn (DB)","Eurostar","Great Western Railway","Italo","LNER","NS (Nederlandse Spoorwegen)","ÖBB","Renfe","SBB","SNCB","SNCF","Thalys","Trenitalia","TGV INOUI","VIA Rail","Westbahn","ZSSK","Corsica Ferries","DFDS","Grimaldi Lines","GNV","Irish Ferries","Moby Lines","P&O Ferries","Stena Line","Tirrenia","Viking Line"],
+    carRental: ["Alamo","Avis","Budget","Dollar","Enterprise","Europcar","Firefly","Goldcar","Hertz","National","Payless","Sixt","Thrifty"],
+    cabin: ["Economy","Premium Economy","Business","First"],
+    hotel: ["Accor","Best Western","Four Seasons","Hilton","Holiday Inn","Hyatt","IHG","InterContinental","Marriott","Meliá","NH Hotels","Novotel","Radisson","Ritz-Carlton","Sheraton","Sofitel","Westin"],
+  };
+  let _timezoneOptionsCache = null;
+  function timezoneOptions() {
+    if (_timezoneOptionsCache) return _timezoneOptionsCache;
+    let list = null;
+    try { if (typeof Intl.supportedValuesOf === "function") list = Intl.supportedValuesOf("timeZone"); } catch (_) { list = null; }
+    if (!list || !list.length) list = ["Europe/London","Europe/Paris","Europe/Berlin","Europe/Rome","Europe/Madrid","Europe/Athens","Europe/Istanbul","Europe/Moscow","Asia/Jerusalem","Asia/Dubai","Asia/Kolkata","Asia/Bangkok","Asia/Singapore","Asia/Hong_Kong","Asia/Shanghai","Asia/Tokyo","Australia/Sydney","America/New_York","America/Chicago","America/Denver","America/Los_Angeles","America/Sao_Paulo","UTC"];
+    _timezoneOptionsCache = list;
+    return list;
+  }
+  function dataListMarkup(id, values) {
+    return `<datalist id="${id}">${values.map((v) => `<option value="${esc(v)}"></option>`).join("")}</datalist>`;
+  }
   function quickTravelerField() {
     if (!state.travelers.length) return "";
-    const one = state.travelers.length === 1;
-    return `<fieldset class="quick-travelers form-field--wide"><legend>Travelers</legend><p>${one ? "Preselected for this booking. You can change it." : "Choose only the travelers on this booking."}</p><div class="traveler-pills">${state.travelers.map((traveler) => `<label class="traveler-pill"><input type="checkbox" name="travelerIds" value="${esc(traveler.id)}" ${one ? "checked" : ""}><span>${esc(traveler.display_name || "Traveler")}</span></label>`).join("")}</div></fieldset>`;
+    const one = state.travelers.length === 1, selected = formPrefill?.travelerIds || null;
+    return `<fieldset class="quick-travelers form-field--wide"><legend>Travelers</legend><p>${one ? "Preselected for this booking. You can change it." : "Choose only the travelers on this booking."}</p><div class="traveler-pills">${state.travelers.map((traveler) => `<label class="traveler-pill"><input type="checkbox" name="travelerIds" value="${esc(traveler.id)}" ${(selected ? selected.includes(String(traveler.id)) : one) ? "checked" : ""}><span>${esc(traveler.display_name || "Traveler")}</span></label>`).join("")}</div></fieldset>`;
   }
   function quickMore(kind, label, content) {
     const id = `quick-more-${kind}`;
@@ -2352,33 +3061,164 @@
     const editingTraveler = kind === "traveler" && state.editingEntity?.kind === "traveler"
       ? state.travelers.find((traveler) => String(traveler.id) === String(state.editingEntity.id))
       : null;
+    const editingTrip = kind === "trip" && state.editingEntity?.kind === "trip" && state.trip ? state.trip : null;
+    const tripStart = editingTrip ? String(val(editingTrip, "starts_on", "startsOn") || "") : "";
+    const tripEnd = editingTrip ? String(val(editingTrip, "ends_on", "endsOn") || "") : "";
     const configs = {
-        trip: { title:"Create Trip", lead:"New trip", fields:[["destination","Where are you going?","text",true,true],["startsOn","Start date","date",true,false],["endsOn","End date","date",true,false],["title","Trip name · Optional","text",false,true]] },
+        trip: { title:editingTrip?"Edit Trip":"Create Trip", lead:editingTrip?"Edit trip":"New trip", fields:[["destination","Destination","text",true,true],["startsOn","Start date","date",true,false],["endsOn","End date","date",true,false],["title","Trip name","text",false,true]] },
         traveler: { title:editingTraveler?"Edit Traveler":"Add Traveler", lead:"Traveler", fields:[["displayName","Name","text",true,true],["travelerType","Traveler type","select",true,true]] },
         checklist: { title:"Add Essential", lead:"Travel essential", fields:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
       }, cfg = configs[kind] || configs.trip;
-    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; const current=name==="displayName"?val(editingTraveler||{},"display_name"):name==="travelerType"?val(editingTraveler||{},"traveler_type"):""; if(type==="select")choices=['adult','child','infant'].map((option)=>`<option value="${option}" ${current===option?"selected":""}>${statusText(option)}</option>`).join(""); if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? "" : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices,value:current}); });
+    const tripPlaceholders = { destination: "City, country, or region", title: "e.g. Summer in Italy" };
+    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; const current=name==="displayName"?val(editingTraveler||{},"display_name"):name==="travelerType"?val(editingTraveler||{},"traveler_type"):(editingTrip&&name==="destination")?val(editingTrip,"title"):""; if(type==="select")choices=['adult','child','infant'].map((option)=>`<option value="${option}" ${current===option?"selected":""}>${statusText(option)}</option>`).join(""); if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? "" : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices,value:current,placeholder:kind==="trip"?(tripPlaceholders[name]||""):"",optional:kind==="trip"&&!required}); });
     const fields = kind === "trip"
-      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date")}${mappedFields[3]}</div>`
+      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${mappedFields[3]}</div>`
       : `<div class="form-fields">${mappedFields.join("")}</div>`;
-    const editAttrs=editingTraveler?` data-edit-id="${esc(editingTraveler.id)}" data-edit-version="${esc(editingTraveler.version||1)}"`:"";
-    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${kind === "trip" ? "Where are you going?" : esc(cfg.title)}</h1>${kind === "trip" ? "<p>Keep it simple. Add the details later.</p>" : ""}</header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${kind === "trip" ? "Create trip" : editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`}</button></div></form>`, "form-screen");
+    const editAttrs=editingTraveler?` data-edit-id="${esc(editingTraveler.id)}" data-edit-version="${esc(editingTraveler.version||1)}"`:editingTrip?` data-edit-id="${esc(editingTrip.id)}" data-edit-version="${esc(val(editingTrip,"version")||1)}"`:"";
+    const deleteBar=editingTrip?`<button type="button" class="trip-delete-text" data-action="delete-trip">Delete this trip</button>`:"";
+    const submitLabel=kind==="trip"?(editingTrip?"Save changes":"Create trip"):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
+    const heading=kind==="trip"?(editingTrip?"Edit trip details":"Where are you going?"):esc(cfg.title);
+    const subhead=kind==="trip"?(editingTrip?"<p>Update the name or dates, or delete the trip.</p>":"<p>Keep it simple. Add the details later.</p>"):"";
+    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${heading}</h1>${subhead}</header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${submitLabel}</button>${deleteBar}</div></form>`, "form-screen");
+  }
+  function zonedDateTimeParts(ms, timeZone) {
+    const value = Number(ms);
+    if (!value) return { date: "", time: "" };
+    try {
+      const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timeZone || "UTC", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(value)), row = {};
+      parts.forEach((part) => { if (part.type !== "literal") row[part.type] = part.value; });
+      return { date: `${row.year}-${row.month}-${row.day}`, time: `${row.hour}:${row.minute}` };
+    } catch (_) {
+      return { date: "", time: "" };
+    }
+  }
+  function locationInputValue(id, kind) {
+    const loc = locationById(id);
+    if (!loc) return "";
+    const code = String(val(loc, kind === "flight" ? "iata_code" : "station_code") || "").trim(),
+      name = String(val(loc, "display_name", "local_name", "formatted_address") || "").trim();
+    return code && name ? `${code} — ${name}` : name || code;
+  }
+  function travelerIdList(entity) {
+    return String(val(entity, "traveler_ids") || "").split(",").map((id) => id.trim()).filter(Boolean);
+  }
+  function buildBookingPrefill(kind, entity) {
+    if (kind === "hotel") {
+      const contact = contactFor(entity, "hotel") || {};
+      return {
+        propertyName: String(val(entity, "property_name", "title") || ""),
+        checkInDate: String(val(entity, "check_in_date") || ""),
+        checkOutDate: String(val(entity, "check_out_date") || ""),
+        address: String(val(locationById(val(entity, "property_location_id", "start_location_id")), "local_address", "formatted_address", "display_name") || ""),
+        checkInFrom: String(val(entity, "check_in_from") || ""),
+        checkInUntil: String(val(entity, "check_in_until") || ""),
+        checkOutBy: String(val(entity, "check_out_by") || ""),
+        confirmationNumber: String(val(entity, "confirmation_number") || ""),
+        roomName: String(val(entity, "room_name") || ""),
+        bookingStatus: String(val(entity, "booking_status") || ""),
+        phone: String(val(contact, "phone") || ""),
+        email: String(val(contact, "email") || ""),
+        notes: String(val(contact, "notes") || ""),
+        travelerIds: travelerIdList(entity),
+      };
+    }
+    if (kind === "flight") {
+      const detail = detailFor(entity) || {},
+        dep = zonedDateTimeParts(val(entity, "scheduled_departure_utc", "starts_at_utc"), val(entity, "departure_timezone", "start_timezone")),
+        arr = zonedDateTimeParts(val(entity, "scheduled_arrival_utc", "ends_at_utc"), val(entity, "arrival_timezone", "end_timezone")),
+        boarding = zonedDateTimeParts(val(entity, "boarding_time_utc"), val(entity, "departure_timezone", "start_timezone")),
+        gateClose = zonedDateTimeParts(val(entity, "gate_close_time_utc"), val(entity, "departure_timezone", "start_timezone"));
+      return {
+        flightNumber: compactFlightNumber(entity),
+        fromLocation: locationInputValue(val(entity, "departure_location_id", "start_location_id"), "flight"),
+        toLocation: locationInputValue(val(entity, "arrival_location_id", "end_location_id"), "flight"),
+        departureDate: dep.date, departureLocalTime: dep.time,
+        departureTimezone: String(val(entity, "departure_timezone", "start_timezone") || ""),
+        arrivalTimezone: String(val(entity, "arrival_timezone", "end_timezone") || ""),
+        arrivalDate: arr.date, arrivalLocalTime: arr.time,
+        carrierName: String(val(entity, "carrier_name") || ""),
+        operatingAirlineCode: String(val(entity, "operating_airline_code") || ""),
+        departureTerminal: String(val(entity, "departure_terminal") || ""),
+        boardingTime: boarding.time, gateCloseTime: gateClose.time,
+        seat: String(val(detail, "seat") || ""),
+        cabin: String(val(detail, "cabin_class", "cabin") || ""),
+        checkedBags: val(detail, "checked_bags") != null ? String(detail.checked_bags) : "",
+        bookingReference: String(val(entity, "booking_reference") || ""),
+        ticketNumber: String(val(detail, "ticket_number") || ""),
+        travelerIds: travelerIdList(entity),
+      };
+    }
+    if (kind === "train") {
+      const detail = detailFor(entity) || {},
+        dep = zonedDateTimeParts(val(entity, "scheduled_departure_utc", "starts_at_utc"), val(entity, "departure_timezone", "start_timezone")),
+        arr = zonedDateTimeParts(val(entity, "scheduled_arrival_utc", "ends_at_utc"), val(entity, "arrival_timezone", "end_timezone"));
+      return {
+        fromLocation: locationInputValue(val(entity, "departure_location_id", "start_location_id"), "train"),
+        toLocation: locationInputValue(val(entity, "arrival_location_id", "end_location_id"), "train"),
+        departureDate: dep.date, departureLocalTime: dep.time,
+        departureTimezone: String(val(entity, "departure_timezone", "start_timezone") || ""),
+        arrivalTimezone: String(val(entity, "arrival_timezone", "end_timezone") || ""),
+        arrivalDate: arr.date, arrivalLocalTime: arr.time,
+        serviceNumber: String(val(entity, "service_number") || ""),
+        carrierName: String(val(entity, "carrier_name") || ""),
+        platform: String(val(entity, "departure_platform", "platform") || val(detail, "platform") || ""),
+        coach: String(val(detail, "coach") || ""),
+        seat: String(val(detail, "seat") || ""),
+        bookingReference: String(val(entity, "booking_reference") || ""),
+        checkedBags: val(detail, "checked_bags") != null ? String(detail.checked_bags) : "",
+        travelerIds: travelerIdList(entity),
+      };
+    }
+    // activity or reservation
+    const tz = String(val(entity, "timezone", "start_timezone") || ""),
+      start = zonedDateTimeParts(val(entity, "starts_at_utc"), tz),
+      end = zonedDateTimeParts(val(entity, "ends_at_utc"), tz),
+      dateName = kind === "activity" ? "activityDate" : "reservationDate",
+      timeName = kind === "activity" ? "activityTime" : "reservationTime",
+      hasTime = Number(val(entity, "starts_at_utc")) > 0;
+    return {
+      title: String(val(entity, "title") || ""),
+      [dateName]: start.date,
+      [timeName]: start.time,
+      timezone: tz,
+      timeMode: hasTime ? "specific" : "unset",
+      endTime: end.time,
+      location: String(val(locationById(val(entity, "start_location_id")), "display_name", "local_name", "formatted_address") || ""),
+      activityType: String(val(entity, "activity_type") || ""),
+      reservationType: String(val(entity, "reservation_type") || ""),
+      confirmationNumber: String(val(entity, "reference", "confirmation_number", "reservation_reference") || ""),
+      notes: String(val(entity, "notes", "activity_notes", "reservation_notes") || ""),
+      travelerIds: travelerIdList(entity),
+    };
   }
   function mobileFormScreen() {
     const kind = String(state.selectedId || "trip");
-    if (!QUICK_ADD_KINDS.has(kind)) return basicMobileForm(kind);
-    const titles = {flight:"Add Flight",hotel:"Add Hotel",train:"Add Train",activity:"Add Activity",reservation:"Add Reservation",document:"Add Document"}, title=state.manualLabel || titles[kind];
+    if (!QUICK_ADD_KINDS.has(kind)) { formPrefill = null; return basicMobileForm(kind); }
+    const editingRecord = state.editingEntity && state.editingEntity.kind === kind ? findBookingRecord(kind, state.editingEntity.id) : null;
+    formPrefill = editingRecord ? buildBookingPrefill(kind, editingRecord.entity) : null;
+    const editId = editingRecord ? itemId(editingRecord.entity) : "", editVersion = editingRecord ? Number(val(editingRecord.entity, "version")) || 1 : 0;
+    const titles = {flight:"Add Flight",hotel:"Add Hotel",train:"Add Train",activity:"Add Activity",reservation:"Add Reservation",document:"Add Document"},
+      editTitles = {flight:"Edit Flight",hotel:"Edit Hotel",train:"Edit Train",activity:"Edit Activity",reservation:"Edit Reservation",document:"Edit Document"},
+      title = editingRecord ? editTitles[kind] : (state.manualLabel || titles[kind]);
     if (!state.trip) return noTripQuickAdd(kind, title);
     const localDocumentOptions = `<option value="">No related document</option>${state.localDocs.map((document) => `<option value="${esc(document.id)}">${esc(document.name || statusText(document.type || "Document"))}</option>`).join("")}`;
-    let primary="", more="", note="", list="", extraClass="";
+    const editing = Boolean(editingRecord), dateDefault = editing ? "" : String(val(state.trip, "starts_on", "startsOn") || "");
+    let primary="", more="", note="", list="", dataLists="", extraClass="";
     if (kind === "flight") {
       list = quickLocationList("flight");
-      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"TLV — Ben Gurion Airport",attrs:'list="quick-flight-locations" data-location-role="departure"'})}${quickField("toLocation","Destination airport",{required:true,placeholder:"FCO — Rome Fiumicino",attrs:'list="quick-flight-locations" data-location-role="arrival"'})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival"><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
-      more = quickMore(kind,"More flight details",`<div class="form-fields">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("carrierName","Marketing airline",{})}${quickField("operatingAirlineCode","Operating airline",{})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      dataLists = dataListMarkup("suggest-airlines",SUGGEST_LISTS.airlines)+dataListMarkup("suggest-cabin",SUGGEST_LISTS.cabin);
+      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"TLV — Ben Gurion Airport",attrs:'list="quick-flight-locations" data-location-role="departure"'})}${quickField("toLocation","Destination airport",{required:true,placeholder:"FCO — Rome Fiumicino",attrs:'list="quick-flight-locations" data-location-role="arrival"'})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      const flightArrivalRow = `<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div><p class="field-helper form-field--wide">Add arrival date and local time together, or leave both empty. The airport timezone is automatic.</p>`;
+      more = quickMore(kind,"More flight details", editing
+        ? `<div class="form-fields">${flightArrivalRow}${quickField("carrierName","Marketing airline",{attrs:'list="suggest-airlines"'})}${quickField("operatingAirlineCode","Operating airline",{attrs:'list="suggest-airlines"'})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false,attrs:'list="suggest-cabin"'})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`
+        : `<div class="form-fields">${flightArrivalRow}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","PNR",{wide:false})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Airport local times are recognized automatically from the three-letter airport codes.";
     } else if (kind === "hotel") {
-      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name"})}${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out")}${quickDateSuggestions(kind)}`;
-      more = quickMore(kind,"More stay details",`<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      dataLists = dataListMarkup("suggest-hotels",SUGGEST_LISTS.hotel);
+      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name",attrs:'list="suggest-hotels"'})}${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out", formPrefill?.checkInDate||"", formPrefill?.checkOutDate||"")}${quickDateSuggestions(kind)}`;
+      more = quickMore(kind,"More stay details", editing
+        ? `<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`
+        : `<div class="form-fields">${quickField("address","Address or location",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Check-in and check-out times remain unavailable unless you enter them.";
     } else if (kind === "train") {
       const ferry = state.manualLabel === "Ferry",
@@ -2386,30 +3226,43 @@
         destinationLabel = ferry ? "Arrival port" : "Destination station",
         serviceLabel = ferry ? "Ferry or sailing number" : "Train or service number";
       list = quickLocationList("train");
-      primary = `${quickField("fromLocation",originLabel,{required:true,placeholder:ferry?"Port of Civitavecchia":"Roma Termini",attrs:'list="quick-train-locations" data-location-role="departure"'})}${quickField("toLocation",destinationLabel,{required:true,placeholder:ferry?"Port of Olbia":"Firenze S. M. Novella",attrs:'list="quick-train-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("serviceNumber",serviceLabel,{placeholder:"Optional"})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure"',helper:`Required when the ${ferry?"port":"station"} does not supply a reliable timezone.`})}`;
-      more = quickMore(kind,"More train details",`<div class="form-fields">${quickField("carrierName","Operator",{})}${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome"})}${quickField("platform","Platform",{wide:false})}${quickField("coach","Coach",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","Booking reference",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      dataLists = dataListMarkup("suggest-rail",SUGGEST_LISTS.rail)+dataListMarkup("suggest-timezones",timezoneOptions());
+      primary = `${quickField("fromLocation",originLabel,{required:true,placeholder:ferry?"Port of Civitavecchia":"Roma Termini",attrs:'list="quick-train-locations" data-location-role="departure"'})}${quickField("toLocation",destinationLabel,{required:true,placeholder:ferry?"Port of Olbia":"Firenze S. M. Novella",attrs:'list="quick-train-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("serviceNumber",serviceLabel,{placeholder:"Optional"})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure" list="suggest-timezones"',helper:`Required when the ${ferry?"port":"station"} does not supply a reliable timezone.`})}`;
+      more = quickMore(kind,"More train details", editing
+        ? `<div class="form-fields">${quickField("carrierName","Operator",{attrs:'list="suggest-rail"'})}<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("platform","Platform",{wide:false})}${quickField("coach","Coach",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","Booking reference",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`
+        : `<div class="form-fields">${quickField("platform","Platform",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","Booking reference",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Departure uses the event-local timezone. Platform, arrival, coach, and seat are never guessed.";
     } else if (kind === "activity") {
       const cruise = state.manualLabel === "Cruise";
-      primary = `${quickField("title",cruise?"Cruise name":"Activity name",{required:true,placeholder:cruise?"Mediterranean cruise":"Vatican Museums"})}${quickField("activityDate",cruise?"Departure date":"Date",{type:"date",required:true})}${quickDateSuggestions(kind)}<fieldset class="time-mode form-field--wide"><legend>Time</legend><div class="time-mode-control"><label><input type="radio" name="timeMode" value="specific" checked><span>Has a specific time</span></label><label><input type="radio" name="timeMode" value="unset"><span>Time not set yet</span></label></div></fieldset><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome"})}</div>${quickField("location",cruise?"Departure port":"Location",{placeholder:"Optional",attrs:'list="quick-activity-locations" data-location-role="activity"'})}<input type="hidden" name="activityType" value="${cruise?"cruise":"activity"}">`;
+      primary = `${quickField("title",cruise?"Cruise name":"Activity name",{required:true,placeholder:cruise?"Mediterranean cruise":"Vatican Museums"})}${quickField("activityDate",cruise?"Departure date":"Date",{type:"date",required:true,value:dateDefault})}${quickDateSuggestions(kind)}<fieldset class="time-mode form-field--wide"><legend>Time</legend><div class="time-mode-control"><label><input type="radio" name="timeMode" value="specific" ${formPrefill?.timeMode==="unset"?"":"checked"}><span>Has a specific time</span></label><label><input type="radio" name="timeMode" value="unset" ${formPrefill?.timeMode==="unset"?"checked":""}><span>Time not set yet</span></label></div></fieldset><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location",cruise?"Departure port":"Location",{placeholder:"Optional",attrs:'list="quick-activity-locations" data-location-role="activity"'})}<input type="hidden" name="activityType" value="${cruise?"cruise":"activity"}">`;
       list = quickLocationList("activity");
-      more = quickMore(kind,"More details",`<div class="form-fields">${quickField("activityType","Activity type",{})}${quickField("endTime","End time",{type:"time",wide:false})}${quickField("reservationWindow","Reservation window",{wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document or ticket",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
+      more = quickMore(kind,"More details", editing
+        ? `<div class="form-fields">${quickField("activityType","Activity type",{})}${quickField("endTime","End time",{type:"time",wide:false})}${quickField("reservationWindow","Reservation window",{wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document or ticket",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`
+        : `<div class="form-fields">${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "A date is always required. Choose Time not set yet explicitly if the booking has no confirmed time.";
     } else if (kind === "reservation") {
       const reservationLabels = {"Car Rental":["Rental company or vehicle","Pickup date","Pickup time","Pickup location","car_rental"],"Transfer":["Transfer","Pickup date","Pickup time","Pickup location","transfer"],"Restaurant":["Restaurant name","Reservation date","Reservation time","Location","restaurant"],"Other":["Booking name","Date","Local time","Location","other"]}, labels=reservationLabels[state.manualLabel]||["Reservation name","Date","Local time","Location","reservation"];
-      primary = `${quickField("title",labels[0],{required:true,placeholder:labels[0]})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",labels[1],{type:"date",required:true,wide:false})}${quickField("reservationTime",labels[2],{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome"})}${quickField("location",labels[3],{placeholder:"Optional",attrs:'list="quick-reservation-locations" data-location-role="reservation"'})}<input type="hidden" name="reservationType" value="${esc(labels[4])}">`;
+      const isCarRental = state.manualLabel === "Car Rental", titleSuggest = isCarRental ? ' list="suggest-carrental"' : "";
+      primary = `${quickField("title",labels[0],{required:true,placeholder:labels[0],attrs:titleSuggest})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",labels[1],{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",labels[2],{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("location",labels[3],{placeholder:"Optional",attrs:'list="quick-reservation-locations" data-location-role="reservation"'})}<input type="hidden" name="reservationType" value="${esc(labels[4])}">`;
       list = quickLocationList("reservation");
-      more = quickMore(kind,"More details",`<div class="form-fields">${quickField("reservationType","Reservation type",{})}${quickField("endTime","End time or window",{type:"time"})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`);
+      dataLists = dataListMarkup("suggest-timezones",timezoneOptions())+(isCarRental?dataListMarkup("suggest-carrental",SUGGEST_LISTS.carRental):"");
+      more = quickMore(kind,"More details", editing
+        ? `<div class="form-fields">${quickField("reservationType","Reservation type",{})}${quickField("endTime","End time or window",{type:"time"})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider",{attrs:isCarRental?'list="suggest-carrental"':""})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`
+        : `<div class="form-fields">${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
       note = "Reservation time uses the event-local timezone and is required.";
     } else {
       const bookingOptions = bookingRows().map(({item}) => `<option value="${esc(itemId(item))}">${esc(val(item,"title","property_name")||"Booking")}</option>`).join(""),
         travelerSpecific = state.travelers.length ? quickTravelerField() : "";
-      primary = `<div class="form-field form-field--wide quick-document-file"><span>File <b aria-hidden="true">*</b></span><label class="document-file-picker" for="form-documentFile">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="form-documentFile" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div><div class="document-verify-state">Ready offline appears only after checksum verification succeeds.</div></div>${quickField("documentType","Document type",{type:"select",required:true,choices:'<option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="passport_copy">Passport copy</option><option value="other">Other</option>'})}<div class="document-traveler-assignment">${travelerSpecific}</div>`;
+      primary = `<div class="form-field form-field--wide quick-document-file"><label class="document-file-picker" for="form-documentFile">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="form-documentFile" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div></div>${quickField("documentType","Document type",{type:"select",required:true,choices:'<option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="passport_copy">Passport copy</option><option value="other">Other</option>'})}<div class="document-traveler-assignment">${travelerSpecific}</div>`;
       more = quickMore(kind,"More details",`<div class="form-fields">${quickField("relatedBooking","Related booking",{type:"select",choices:`<option value="">No related booking</option>${bookingOptions}`})}</div>`);
-      note = "The file stays on this phone. It is not marked Ready until its checksum is verified.";
+      note = "Files stay on this phone.";
       extraClass = " document-quick-add";
     }
-    const form = `<form class="mobile-form premium-form quick-add-form${extraClass}" id="native-form" data-kind="${esc(kind)}" novalidate>${quickTripContext()}<section class="form-section"><header><span>Quick add</span><h1>${esc(title)}</h1><p>Add the essentials now. Everything else can wait.</p></header><div class="quick-primary-fields">${primary}</div>${list}</section>${more}<p class="form-note">${esc(note)}</p><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${kind === "document" ? "Save on This Phone" : `Save ${esc(statusText(kind))}`}</button></div></form>`;
+    const editAttrs = editingRecord ? ` data-edit-id="${esc(editId)}" data-edit-version="${esc(editVersion)}"` : "";
+    const submitLabel = editingRecord ? "Save changes" : (kind === "document" ? "Save on This Phone" : `Save ${esc(statusText(kind))}`);
+    const heading = editingRecord ? `Edit ${esc(statusText(kind))}` : esc(title);
+    const form = `<form class="mobile-form premium-form quick-add-form${extraClass}" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate>${quickTripContext()}<section class="form-section"><div class="quick-primary-fields">${primary}</div>${list}${dataLists}</section>${more}${note ? `<p class="form-note">${esc(note)}</p>` : ""}<div class="form-save-bar"><button type="submit" class="mobile-primary-action">${submitLabel}</button></div></form>`;
     return focusedTaskPage(title, form, `form-screen quick-add-screen quick-add-screen--${kind}`);
   }
   function driverScreen() {
@@ -2457,7 +3310,7 @@
   function addBookingScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
     const choice = (ic,title,copy,action) => `<button class="v2-choice" data-action="${action}"><span>${icon(ic,23)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",20)}</button>`;
-    return focusedTaskPage(`Add to ${state.trip.title || "trip"}`, `<section class="v2-task-intro"><span>Add Booking</span><h1>How would you like<br>to add it?</h1><p>Everything you add appears in the Timeline.</p></section><div class="v2-choice-list">${choice("document","Upload Booking","Choose a ticket or confirmation file","open-upload-booking")}${choice("mail","Forward Confirmation Email","Send it to bookings@tripto.to","open-forward-booking")}${choice("plus","Add Manually","Enter only the confirmed details","open-manual-booking")}</div>`, "v2-add-booking");
+    return focusedTaskPage(`Add to ${state.trip.title || "trip"}`, `<section class="v2-task-intro"><span>Add Booking</span><h1>How would you like<br>to add it?</h1><p>Everything you add appears in the Timeline.</p></section><div class="v2-choice-list">${choice("document","Upload Booking","Choose a ticket or confirmation file","open-upload-booking")}${choice("mail","Forward Confirmation Email","Send it to go@tripto.to","open-forward-booking")}${choice("plus","Add Manually","Enter only the confirmed details","open-manual-booking")}</div>`, "v2-add-booking");
   }
   function manualBookingSheet() {
     const options = [
@@ -2485,7 +3338,7 @@
       state.trips
         .map(
           (trip) =>
-            `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small></span>${String(trip.id) === String(state.trip?.id) ? checkDot() : icon("chevron", 22, "chevron")}</button>`,
+            `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small></span>${String(trip.id) === String(state.trip?.id) ? checkDot("status-dot-check--selected") : icon("chevron", 22, "chevron")}</button>`,
         )
         .join(""),
     );
@@ -2506,6 +3359,16 @@
             `<li><span class="first-run-how-list__number">${index + 1}</span><span class="first-run-how-list__icon">${icon(iconName, 21)}</span><strong>${esc(label)}</strong></li>`,
         )
         .join("")}</ol><button class="first-run-how-done" data-action="finish-first-run-how">Got it</button>`,
+    );
+  }
+  function helpSheet() {
+    const hasTrip = Boolean(state.trip && !PREVIEW_MODE);
+    const rowLink = (ic, title, sub, href) => `<a class="sheet-option" href="${href}"><span class="info-icon">${icon(ic, 21)}</span><span><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 20, "chevron")}</a>`;
+    const rowAct = (ic, title, sub, action) => `<button class="sheet-option" data-action="${action}"><span class="info-icon">${icon(ic, 21)}</span><span><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 20, "chevron")}</button>`;
+    return bottomSheet(
+      "help",
+      "Help, privacy & terms",
+      `<div class="sheet-options-group sheet-options-group--v2">${rowAct("info", "How tripto.to works", "A quick tour of the basics", "open-first-run-how")}${rowAct("mail", "Booking email", "Forward confirmations to go@tripto.to", "booking-email-info")}${rowLink("shield", "Privacy Policy", "How your trip data is handled", "/privacy")}${rowLink("document", "Terms of Service", "The agreement for using tripto.to", "/terms")}${hasTrip ? rowAct("download", "Download support bundle", "Diagnostics for this trip — no private details", "export-support") : ""}</div><p class="sheet-note">tripto.to Product V2</p>`,
     );
   }
 
@@ -2532,7 +3395,12 @@
     return `<div class="phone-app"><div class="app-loading">${loadingSkeleton()}</div></div>`;
   }
   function errorScreen() {
-    return `<div class="phone-app"><section class="screen">${topbar()}<div class="error-state"><div class="empty-mobile-icon">${icon("warning", 31)}</div><h1>Trip data could not load</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta("Try Again", "retry", "refresh")}</div>${bottomNav("home")}</section></div>`;
+    const rejected = state.sessionRejected;
+    return `<div class="phone-app"><section class="screen">${topbar()}<div class="error-state"><div class="empty-mobile-icon">${icon(rejected ? "user" : "warning", 31)}</div><h1>${rejected ? "Reconnect your account" : "Trip data could not load"}</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta(rejected ? "Reconnect with Google" : "Try Again", rejected ? "restart-google-sign-in" : "retry", rejected ? "user" : "refresh")}</div>${bottomNav("home")}</section></div>`;
+  }
+  function googleAuthRecoveryScreen() {
+    const pending = state.googleAuthHandoffStatus === "pending";
+    return `<div class="phone-app"><section class="screen screen--navless google-auth-recovery"><header class="google-auth-recovery__brand" aria-label="tripto.to">tripto<span>.</span>to</header><main class="error-state" role="status" aria-live="polite"><div class="empty-mobile-icon">${icon(pending ? "refresh" : "warning", 31)}</div><h1>${pending ? "Finish signing in" : "Sign-in link expired"}</h1><p>${esc(state.googleAuthHandoffMessage || (pending ? "The secure sign-in handoff was interrupted." : "Please start Google sign-in again."))}</p><p class="recovery-safe">Your trips, offline files, and unsynced changes remain on this phone.</p>${primaryCta(pending ? "Try Again" : "Sign in again", pending ? "retry-google-sign-in" : "restart-google-sign-in", pending ? "refresh" : "user")}</main></section></div>`;
   }
   function toast() {
     const role = state.toastKind === "alert" ? "alert" : "status";
@@ -2550,27 +3418,28 @@
     );
   }
   function transitionRender() {
-    const current = app?.querySelector(".phone-app"),
-      reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!current || reduced || state.loading) {
-      render();
-      return;
-    }
+    // Route changes render immediately. The old route-enter/route-exit classes
+    // had no CSS behind them, so the previous setTimeout was pure navigation
+    // latency with no visible transition — removed for snappier taps.
     clearTimeout(routeTimer);
-    const motion = state.routeMotion || "tab";
-    current.classList.add("route-exit", `route-exit-${motion}`);
-    routeTimer = setTimeout(render, motion === "tab" ? 70 : 90);
+    render();
   }
   function render() {
     if (!app) return;
     const firstRun = shouldShowFirstRun();
-    syncFirstRunPresentation(firstRun);
+    const showWelcome = firstRun || state.screen === "home";
+    syncFirstRunPresentation(showWelcome);
     document.documentElement.classList.toggle(
       "sheet-open",
       Boolean(state.sheet && state.sheet !== "driver"),
     );
     if (state.loading) {
       app.innerHTML = decorateScreen(loadingScreen());
+      return;
+    }
+    if (state.googleAuthHandoffStatus) {
+      app.innerHTML = decorateScreen(googleAuthRecoveryScreen()) + toast();
+      bindDynamic();
       return;
     }
     if (state.error && !state.trip) {
@@ -2584,7 +3453,7 @@
     else
       switch (state.screen) {
         case "home":
-          html = homeScreen();
+          html = firstRunScreen();
           break;
         case "trips":
           html = tripListScreen();
@@ -2634,7 +3503,9 @@
     if (state.sheet === "document") html += documentSheet();
     if (state.sheet === "trips") html += tripSwitchSheet();
     if (state.sheet === "first-run-how") html += firstRunHowSheet();
+    if (state.sheet === "help") html += helpSheet();
     if (state.sheet === "manual-booking") html += manualBookingSheet();
+    if (state.sheet === "manage-booking") html += manageBookingSheet();
     if (state.sheet === "date-range") html += dateRangeSheet();
     app.innerHTML = html + toast();
     bindDynamic();
@@ -3011,7 +3882,7 @@
     );
   }
   function airportCodeForInput(value) {
-    return airportTimezones?.airportCodeFromInput?.(value) || null;
+    return globalThis.TriptoAirportTimezones?.airportCodeFromInput?.(value) || null;
   }
   function timezoneForLocationInput(value, kind) {
     const location = knownLocationForInput(value, kind);
@@ -3019,7 +3890,7 @@
       const code =
         String(val(location, "iata_code") || "").toUpperCase() ||
         airportCodeForInput(value);
-      const catalogTimezone = airportTimezones?.timezoneForAirport?.(code);
+      const catalogTimezone = globalThis.TriptoAirportTimezones?.timezoneForAirport?.(code);
       if (catalogTimezone) return String(catalogTimezone);
     }
     return String(val(location, "timezone") || "");
@@ -3169,7 +4040,7 @@
           const file = nativeFile.files?.[0];
           if (!file) {
             fileMeta.textContent = "No file selected";
-            verifyState.textContent =
+            if (verifyState) verifyState.textContent =
               "Ready offline appears only after checksum verification succeeds.";
             return;
           }
@@ -3178,7 +4049,7 @@
               ? `${Math.max(1, Math.round(file.size / 1024))} KB`
               : `${(file.size / 1048576).toFixed(1)} MB`
           }`;
-          verifyState.textContent = "Ready to verify when saved on this phone.";
+          if (verifyState) verifyState.textContent = "Ready to verify when saved on this phone.";
         });
       }
       bindMeaningfulChanges(nativeForm);
@@ -3268,7 +4139,7 @@
     await api(`/api/v1/trips/${tripId}/contacts`, { method: "POST", body: JSON.stringify({ contactType: type, displayName: displayName || statusText(type), phone: phone || null, email: email || null, notes: notes || null, tripItemId: itemId }) });
   }
   async function saveNativeForm(form) {
-    const kind=form.dataset.kind, fd=new FormData(form), tripId=encodeURIComponent(state.trip?.id || ""), isFirstTripCreation=kind==="trip"&&state.trips.length===0;
+    const kind=form.dataset.kind, fd=new FormData(form), tripId=encodeURIComponent(state.trip?.id || ""), isFirstTripCreation=kind==="trip"&&state.trips.length===0, editId=form.dataset.editId||"", editVersion=Number(form.dataset.editVersion)||1;
     if (form.getAttribute("aria-busy") === "true") return;
     setFormSaving(form, true);
     try {
@@ -3283,17 +4154,35 @@
       }
       if (kind === "trip") {
         const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
+        if (form.dataset.editId) {
+          const result=await api(`/api/v1/trips/${encodeURIComponent(form.dataset.editId)}`,{method:"PATCH",body:JSON.stringify({title:values.title,startsOn:values.startsOn,endsOn:values.endsOn,version:Number(form.dataset.editVersion)||1})});
+          const updated=result.trip; state.trips=state.trips.map((trip)=>String(trip.id)===String(updated.id)?updated:trip); if(String(state.trip?.id)===String(updated.id)) state.trip=updated; clearQuickDraft(kind); state.editingEntity=null;
+          formHasMeaningfulChanges=false; showToast("Trip updated."); route("timeline",null,true); return;
+        }
         const result=await api("/api/v1/trips",{method:"POST",body:JSON.stringify({title:values.title,startsOn:values.startsOn,endsOn:values.endsOn,lifecycleState:"upcoming"})}); state.trips.unshift(result.trip); state.trip=result.trip; state.tripsLoaded=true; localStorage.setItem("tripto_selected_trip",result.trip.id);
       } else if (kind === "hotel") {
-        let locationId=null; if(fd.get("address")){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:fd.get("address")}); locationId=location.id; }
-        const result=await api(`/api/v1/trips/${tripId}/stays`,{method:"POST",body:JSON.stringify({propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,travelerIds:selectedTravelerIds(fd)})});
-        await saveItemContact(tripId, result.stay?.id, "hotel", String(fd.get("propertyName")||""), fd);
+        if (editId) {
+          const existing=findBookingRecord("hotel",editId)?.entity||{}, existingAddress=String(val(locationById(val(existing,"property_location_id","start_location_id")),"local_address","formatted_address","display_name")||""), address=String(fd.get("address")||"");
+          const body={propertyName:fd.get("propertyName"),checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,version:editVersion};
+          if(address!==existingAddress){ if(address){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:address}); body.propertyLocationId=location.id; } else body.propertyLocationId=null; }
+          await api(`/api/v1/trips/${tripId}/stays/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+        } else {
+          let locationId=null; if(fd.get("address")){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:fd.get("address")}); locationId=location.id; }
+          const result=await api(`/api/v1/trips/${tripId}/stays`,{method:"POST",body:JSON.stringify({propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,travelerIds:selectedTravelerIds(fd)})});
+          await saveItemContact(tripId, result.stay?.id, "hotel", String(fd.get("propertyName")||""), fd);
+        }
       } else if (["flight","train"].includes(kind)) {
         const depTz=String(fd.get("departureTimezone")||""), arrTz=String(fd.get("arrivalTimezone")||""), dep=resolveEventLocalDateTime(localDateTime(fd,"departureDate","departureLocalTime"),depTz), arrivalLocal=localDateTime(fd,"arrivalDate","arrivalLocalTime"), arr=arrivalLocal ? resolveEventLocalDateTime(arrivalLocal,arrTz) : null;
         if(arr!=null&&arr<dep) throw new Error("Arrival cannot be before departure.");
         const from=await quickLocation(fd.get("fromLocation"),kind,depTz), to=await quickLocation(fd.get("toLocation"),kind,arrTz), travelers=selectedTravelerIds(fd), flight=kind==="flight"?parseFlightNumber(fd.get("flightNumber")):null;
         const boarding=fd.get("boardingTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("boardingTime")}`,depTz):null, gateClose=fd.get("gateCloseTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("gateCloseTime")}`,depTz):null;
         const title=flight?flight.raw:`${fd.get("carrierName")||"Train"}${fd.get("serviceNumber")?` ${fd.get("serviceNumber")}`:""}`;
+        if (editId) {
+          const body={title,carrierName:fd.get("carrierName")||null,serviceNumber:kind==="flight"?flight.number:(fd.get("serviceNumber")||null),departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,version:editVersion};
+          if(kind==="flight"){ body.marketingAirlineCode=flight?.code||null; body.marketingFlightNumber=flight?.number||null; body.operatingAirlineCode=fd.get("operatingAirlineCode")||null; body.departureTerminal=fd.get("departureTerminal")||null; body.boardingTimeUtc=boarding; body.gateCloseTimeUtc=gateClose; }
+          await api(`/api/v1/trips/${tripId}/transport/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+          await saveTravelerFacts(tripId,editId,travelers,fd);
+        } else {
         const transportType=kind==="train"&&state.manualLabel==="Ferry"?"ferry":kind;
         const result=await api(`/api/v1/trips/${tripId}/transport`,{method:"POST",body:JSON.stringify({transportType,title,carrierName:fd.get("carrierName")||null,serviceNumber:kind==="flight"?flight.number:(fd.get("serviceNumber")||null),marketingAirlineCode:flight?.code||null,marketingFlightNumber:flight?.number||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,departureGate:fd.get("departureGate")||null,boardingTimeUtc:boarding,gateCloseTimeUtc:gateClose,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers})});
         await saveTravelerFacts(tripId,result.item?.id,travelers,fd);
@@ -3306,14 +4195,21 @@
           fd.set("notes", structured);
         }
         await saveItemContact(tripId,result.item?.id,kind==="flight"?"airline":"other",String(fd.get("carrierName")||title),fd);
+        }
       } else if (["activity","reservation"].includes(kind)) {
         const dateName=kind==="activity"?"activityDate":"reservationDate", timeName=kind==="activity"?"activityTime":"reservationTime", unset=kind==="activity"&&fd.get("timeMode")==="unset", timezone=unset?"":String(fd.get("timezone")||""), local=unset?"":localDateTime(fd,dateName,timeName), ms=unset?null:resolveEventLocalDateTime(local,timezone), locationName=String(fd.get("location")||""), location=locationName ? await quickLocation(locationName,kind,timezone) : null;
         const end=fd.get("endTime")&&!unset?resolveEventLocalDateTime(`${fd.get(dateName)}T${fd.get("endTime")}`,timezone):null;
         if(ms!=null&&end!=null&&end<ms) throw new Error("End time cannot be before the start time.");
         const explicitDate=String(fd.get(dateName)||""), contactNote=fd.get("contact")?`Contact: ${fd.get("contact")}`:"", windowNote=fd.get("reservationWindow")?`Reservation window: ${fd.get("reservationWindow")}`:"", userNotes=String(fd.get("notes")||""), notes=[...(unset?[`Date: ${explicitDate}`,"Time not set yet"]:[]),windowNote,contactNote,userNotes].filter(Boolean).join(" · ")||null, travelers=selectedTravelerIds(fd);
+        if (editId) {
+          const body={kind,status:"confirmed",title:fd.get("title"),startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",version:editVersion};
+          if(kind==="activity") body.activityType=fd.get("activityType")||formPrefill?.activityType||null; else body.reservationType=fd.get("reservationType")||formPrefill?.reservationType||"reservation";
+          await api(`/api/v1/trips/${tripId}/activities/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+        } else {
         const result=await api(`/api/v1/trips/${tripId}/activities`,{method:"POST",body:JSON.stringify({kind,status:"confirmed",title:fd.get("title"),startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,activityType:kind==="activity"?(fd.get("activityType")||null):null,reservationType:kind==="reservation"?(fd.get("reservationType")||"reservation"):null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",travelerIds:travelers})});
         if(fd.get("provider") && result.item?.id) await api(`/api/v1/trips/${tripId}/contacts`,{method:"POST",body:JSON.stringify({contactType:"tour_operator",displayName:fd.get("provider"),notes:contactNote||null,tripItemId:result.item.id})});
         await linkLocalDocument(fd.get("relatedDocument"),result.item?.id);
+        }
       } else if (kind === "document") {
         await saveLocalDocument(form.elements.documentFile.files?.[0],fd.get("documentType"),selectedTravelerIds(fd),fd.get("relatedBooking")||null);
       } else if (kind === "traveler") {
@@ -3322,7 +4218,7 @@
       } else if (kind === "checklist") {
         await api(`/api/v1/trips/${tripId}/checklist`,{method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})});
       }
-      await loadTripDetails(); clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${state.manualLabel || statusText(kind)} saved.`); state.manualLabel=null; route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+      await loadTripDetails(); clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(editId?`${statusText(kind)} updated.`:`${state.manualLabel || statusText(kind)} saved.`); state.manualLabel=null; state.editingEntity=null; formPrefill=null; route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
@@ -3332,6 +4228,13 @@
       if (document.contains(form)) setFormSaving(form, false);
     }
   }
+  function importFormatWarnings(file, kind) {
+    const ext = String(file?.name || "").toLowerCase().split(".").pop() || "";
+    const out = [];
+    if (kind === "image") out.push("Read from a photo or screenshot with on-device OCR — check every field carefully. For the most accurate result, upload the original PDF or forward the confirmation email instead.");
+    if (ext === "heic" || ext === "heif") out.push("HEIC photos may not be readable in some browsers. If fields look wrong or empty, re-save as JPEG or PDF, or forward the confirmation email.");
+    return out;
+  }
   async function previewImportForm(form) {
     if (form.getAttribute("aria-busy") === "true") return;
     setFormSaving(form, true, "Preparing preview…");
@@ -3339,11 +4242,15 @@
       const fd=new FormData(form),file=form.elements.document?.files?.[0],pasted=String(fd.get("body")||"").trim();
       if(!file&&!pasted)throw new Error("Choose a booking document or paste a confirmation email.");
       if(file){
+        if(!globalThis.TriptoSmartImport){try{await ensureSmartImport();}catch{throw new Error("Local document recognition is unavailable. Reload and try again.");}}
         if(!globalThis.TriptoSmartImport)throw new Error("Local document recognition is unavailable. Reload and try again.");
         const local=await saveLocalDocument(file,"other",[]),result=await globalThis.TriptoSmartImport.recognizeFile(file);
         state.importLocalDocumentId=local.id;
-        if(!result.candidates.length){state.importReview={candidates:[],localOnly:true,warnings:result.warnings};formHasMeaningfulChanges=false;route("import-review");return;}
-        const candidate=result.candidates[0],safeFields=Object.fromEntries(Object.entries(candidate.fields).filter(([key])=>key!=="barcodeValue")),requestBody={checksum:result.checksum,filename:file.name,documentKind:result.kind,candidate:{type:candidate.type,confidence:candidate.confidence,fields:safeFields,warnings:candidate.warnings}};
+        const fmtWarnings=importFormatWarnings(file,result.kind);
+        if(!result.candidates.length){state.importReview={candidates:[],localOnly:true,warnings:[...fmtWarnings,...result.warnings]};formHasMeaningfulChanges=false;route("import-review");return;}
+        const candidate=result.candidates[0];
+        if(fmtWarnings.length)candidate.warnings=[...fmtWarnings,...(candidate.warnings||[])];
+        const safeFields=Object.fromEntries(Object.entries(candidate.fields).filter(([key])=>key!=="barcodeValue")),requestBody={checksum:result.checksum,filename:file.name,documentKind:result.kind,candidate:{type:candidate.type,confidence:candidate.confidence,fields:safeFields,warnings:candidate.warnings}};
         state.importUploadRequest=requestBody;
         if(PREVIEW_MODE)state.importReview={duplicate:false,import:{id:"preview-upload"},candidates:[{id:"candidate-1",candidate_type:candidate.type,payload:{...Object.fromEntries(Object.entries(candidate.fields).map(([k,v])=>[k,v.value])),fieldMeta:Object.fromEntries(Object.entries(candidate.fields).map(([k,v])=>[k,{confidence:v.confidence,source:v.source}])),warnings:candidate.warnings},confidence:candidate.confidence}]};
         else if(!navigator.onLine){queuePendingMutation({kind:"smart-import-preview",tripId:state.trip.id,path:`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,body:requestBody});showToast("Document saved on this phone. Recognition will sync when you reconnect.");route("import-history");return;}
@@ -3402,11 +4309,9 @@
       showToast("Address or coordinates are unavailable.");
       return;
     }
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`,
-      "_blank",
-      "noopener",
-    );
+    // Same-tab navigation so the browser Back button returns to the app
+    // (a _blank tab bounces to the Maps app and leaves no history to go back to).
+    window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   }
   async function handleAction(action, target, inputMethod = "pointer") {
     switch (action) {
@@ -3429,8 +4334,27 @@
       case "retry":
         await loadApp();
         break;
+      case "retry-google-sign-in":
+        await resumeGoogleRedirectSession();
+        break;
+      case "restart-google-sign-in":
+        state.token = "";
+        localStorage.removeItem("tripto_token");
+        state.googleAuthHandoffStatus = null;
+        state.googleAuthHandoffMessage = "";
+        state.screen = "account";
+        state.selectedId = null;
+        history.replaceState(null, "", routeUrl("account"));
+        await loadApp();
+        showToast("Please continue with Google again.");
+        break;
       case "open-add":
-        openSheet("add", target);
+        if (state.screen === "trips") {
+          state.editingEntity = null;
+          route("form", "trip");
+        } else {
+          openSheet("add", target);
+        }
         break;
       case "open-add-booking":
         closeSheet();
@@ -3512,10 +4436,44 @@
         break;
       case "create-trip":
         closeSheet();
+        state.editingEntity = null;
         route("form", "trip");
         break;
+      case "edit-trip":
+        if (!state.trip) break;
+        closeSheet();
+        state.editingEntity = { kind: "trip", id: state.trip.id };
+        route("form", "trip");
+        break;
+      case "delete-trip":
+        confirmDeleteTrip();
+        break;
+      case "manage-booking":
+        state.manageBooking = { kind: target.dataset.kind, id: target.dataset.id };
+        openSheet("manage-booking", target);
+        break;
+      case "edit-booking": {
+        const record = findBookingRecord(target.dataset.kind, target.dataset.id);
+        if (!record) break;
+        const formKind = bookingFormKind(target.dataset.kind, record.entity);
+        state.sheet = null;
+        state.manageBooking = null;
+        state.manualLabel = null;
+        state.editingEntity = { kind: formKind, id: itemId(record.entity) };
+        route("form", formKind);
+        break;
+      }
+      case "delete-booking": {
+        const kind = target.dataset.kind, id = target.dataset.id;
+        if (state.sheet === "manage-booking") { state.sheet = null; state.manageBooking = null; render(); }
+        confirmDeleteBooking(kind, id);
+        break;
+      }
       case "open-timeline":
         route("timeline");
+        break;
+      case "enter-app":
+        route("trips");
         break;
       case "open-health":
         route("health");
@@ -3563,13 +4521,7 @@
         const kind = state.selectedId;
         state.trip = trip;
         localStorage.setItem("tripto_selected_trip", trip.id);
-        if (!PREVIEW_MODE) {
-          state.loading = true;
-          render();
-          await loadTripDetails();
-          state.loading = false;
-        }
-        route("form", kind, true);
+        await enterTripWithDetails(() => route("form", kind, true));
         break;
       }
       case "select-trip": {
@@ -3580,13 +4532,11 @@
         state.trip = trip;
         localStorage.setItem("tripto_selected_trip", trip.id);
         state.sheet = null;
-        state.loading = true;
-        render();
-        await loadTripDetails();
-        state.loading = false;
-        if (state.screen === "form" && QUICK_ADD_KINDS.has(state.selectedId))
-          route("form", state.selectedId, true);
-        else route("timeline", null, true);
+        await enterTripWithDetails(() => {
+          if (state.screen === "form" && QUICK_ADD_KINDS.has(state.selectedId))
+            route("form", state.selectedId, true);
+          else route("timeline", null, true);
+        });
         break;
       }
       case "add-type": {
@@ -3605,7 +4555,7 @@
       }
       case "open-trip": {
         const trip=state.trips.find((row)=>String(row.id)===String(target.dataset.id));
-        if(!trip)return; state.trip=trip; localStorage.setItem("tripto_selected_trip",trip.id); if(!PREVIEW_MODE){state.loading=true;render();await loadTripDetails();state.loading=false;} route("timeline"); break;
+        if(!trip)return; state.trip=trip; localStorage.setItem("tripto_selected_trip",trip.id); await enterTripWithDetails(()=>route("timeline")); break;
       }
       case "filter-bookings": state.bookingFilter=target.dataset.filter||"all"; render(); break;
       case "document-sheet":
@@ -3653,10 +4603,34 @@
       }
       case "sync-retry": if(PREVIEW_MODE){state.syncStatus={pendingOperations:0,openConflicts:0};render();showToast("Pending changes synced in preview.");}else await loadApp(); break;
       case "sync-review": showToast("Conflict remains visible until you choose a safe resolution in advanced beta tools."); break;
-      case "export-trip": if(PREVIEW_MODE)showToast("Trip export is available outside preview mode."); else window.open(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/export/json`,`_blank`,`noopener`); break;
-      case "support": if(PREVIEW_MODE)showToast("Support bundle is available outside preview mode."); else window.open(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/support`,`_blank`,`noopener`); break;
+      case "export-trip":
+        if(PREVIEW_MODE){showToast("Trip export is available outside preview mode.");break;}
+        if(!state.trip){showToast("Select a trip first to export it.");break;}
+        try{showToast("Preparing trip export…");await apiDownload(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/export/json`,`tripto-trip-${String(state.trip.id).slice(0,8)}.json`);}catch(error){showToast(error.message,"alert");}
+        break;
+      case "support":
+      case "export-support":
+        if(PREVIEW_MODE){showToast("Support bundle is available outside preview mode.");break;}
+        if(!state.trip){showToast("Select a trip first to build a support bundle.");break;}
+        try{showToast("Preparing support bundle…");await apiDownload(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/support`,`tripto-support-${String(state.trip.id).slice(0,8)}.json`);}catch(error){showToast(error.message,"alert");}
+        break;
+      case "set-theme":
+        applyTheme();
+        render();
+        break;
+      case "open-help":
+        openSheet("help", target);
+        break;
+      case "open-upcoming-trips":
+        state.tripFilter = "upcoming";
+        route("trips");
+        break;
+      case "open-past-trips":
+        state.tripFilter = "past";
+        route("trips");
+        break;
       case "booking-email-info":
-        showToast("Forward booking confirmations to bookings@tripto.to from your verified Google email.");
+        showToast("Forward booking confirmations to go@tripto.to from your verified Google email.");
         break;
       case "remove-local-data": {
         const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
@@ -3758,6 +4732,17 @@
         openMaps(mapQueryForLocation(locationById(locationId)));
         break;
       }
+      case "refresh-weather":
+        if (state.weatherRefreshing) break;
+        state.weatherRefreshing = true;
+        render();
+        try {
+          await ensureWeather(true);
+        } finally {
+          state.weatherRefreshing = false;
+          if (state.screen === "timeline") render();
+        }
+        break;
       case "call":
         if (target.dataset.value) location.href = `tel:${target.dataset.value}`;
         else showToast("Phone number unavailable.");
@@ -3777,6 +4762,17 @@
         else {
           await navigator.clipboard.writeText(text);
           showToast("Flight details copied.");
+        }
+        break;
+      }
+      case "share-booking": {
+        const record = findBookingRecord(target.dataset.kind, target.dataset.id);
+        if (!record) return;
+        const text = bookingShareText(record);
+        if (navigator.share) await navigator.share({ title: bookingRecordTitle(record), text });
+        else {
+          await navigator.clipboard.writeText(text);
+          showToast("Details copied.");
         }
         break;
       }
@@ -3889,12 +4885,32 @@
   });
   window.addEventListener("online", async () => {
     state.offline = false;
+    if (googleRedirectMarker === "complete") {
+      await resumeGoogleRedirectSession();
+      return;
+    }
     await flushSmartImportQueue();
     loadApp();
   });
   window.addEventListener("offline", () => {
     state.offline = true;
     render();
+  });
+  // A backgrounded tab can be restored (bfcache) frozen mid-load, leaving the
+  // loading skeleton on screen forever. Re-kick the load when the tab returns:
+  // always after a bfcache restore, and otherwise only if we're stuck loading —
+  // so a healthy tab-switch never churns the network. hydrateAppFromCache paints
+  // cached data instantly, so this does not flash the skeleton when cache exists.
+  function revalidateOnReturn(force) {
+    if (PREVIEW_MODE || googleRedirectExchangePromise) return;
+    if (!force && !state.loading && state.tripsLoaded) return;
+    loadApp();
+  }
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) revalidateOnReturn(true);
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") revalidateOnReturn(false);
   });
   window.addEventListener("beforeunload", (event) => {
     if (!formHasMeaningfulChanges) return;
@@ -3953,6 +4969,7 @@
     }
   });
   syncVisualViewport();
+  applyTheme(state.theme);
   if ("serviceWorker" in navigator && !PREVIEW_MODE)
     window.addEventListener("load", () =>
       navigator.serviceWorker.register("/sw.js").catch(() => {}),
@@ -3966,5 +4983,5 @@
     const legacy = parseRoute();
     history.replaceState(null, "", routeUrl(legacy.screen, legacy.id));
   }
-  loadApp();
+  resumeGoogleRedirectSession();
 })();

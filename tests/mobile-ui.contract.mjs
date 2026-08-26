@@ -12,7 +12,7 @@ assert(manifest.includes('"background_color": "#FFFFFF"')&&manifest.includes('"t
 assert(css.includes('overflow-x:hidden')&&css.includes('overflow-x:clip'),'horizontal overflow protection missing');
 assert(css.includes('@media(prefers-reduced-motion:reduce)')&&css.includes('min-height:44px'),'motion or touch safety missing');
 const nav=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
-assert(nav.includes('["timeline", "clock", "Trip"]')&&nav.includes('["add", "plus", "Add"]')&&nav.includes('["account", "user", "Account"]'),'V2 navigation order is wrong');
+assert(nav.includes('["timeline", "trips", "Trip"]')&&nav.includes('["add", "plus", "Add"]')&&nav.includes('["account", "user", "Account"]'),'V2 navigation order is wrong');
 assert(!nav.includes('"Home"')&&!nav.includes('"Bookings"'),'V1 navigation leaked');
 assert(app.includes('function selectRelevantTrip(')&&app.includes('state.account?.mode === "account"')&&app.includes('history.replaceState(null, "", routeUrl("timeline"))'),'authenticated relevant-trip routing missing');
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;
@@ -37,13 +37,13 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/mobile-routes.js')&&sw.includes('/airport-timezones.js')&&sw.includes('product-v2-button-system-v1'),'clean route shell is not cached');
+assert(sw.includes('/mobile-routes.js')&&sw.includes('/airport-timezones.js')&&sw.includes('/google-auth-client.js')&&sw.includes('tripto-shell-product-v2-google-auth-ios-v1'),'clean route or Google-auth shell asset is not cached');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Quiet Journey','All your trip.','One calm timeline.','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('Roscioli')&&app.includes('Dinner reservation'),'Welcome timeline preview is incomplete');
 assert(!welcome.includes('bottomNav(')&&app.includes('(state.account?.mode || "guest") !== "account"')&&app.includes('state.trips.length === 0'),'Welcome gate/navigation invalid');
 assert(app.includes('["empty", "empty-offline", "empty-reduced-motion"].includes(QA_STATE)'),'isolated first-run visual QA state missing');
-assert(app.includes('/api/v1/auth/google/challenge')&&app.includes('/api/v1/auth/google'),'Google sign-in wiring missing');
+assert(index.includes('/google-auth-client.js?v=google-auth-ios-v1')&&index.indexOf('/google-auth-client.js')<index.indexOf('/mobile-app.js')&&app.includes('/api/v1/auth/google/challenge')&&app.includes('/api/v1/auth/google')&&app.includes('/api/v1/auth/google/exchange'),'Google sign-in or secure iOS redirect handoff wiring missing');
 assert(!app.includes('Gmail access')&&!app.includes('Google Drive access')&&!app.includes('Google Calendar access'),'forbidden Google scope surfaced');
 for(const field of ['["destination","Where are you going?","text",true,true]','["startsOn","Start date","date",true,false]','["endsOn","End date","date",true,false]','["title","Trip name · Optional","text",false,true]'])assert(app.includes(field),`Create Trip field missing: ${field}`);
 assert(app.includes('function dateRangeField(')&&app.includes('data-action="open-date-range"')&&app.includes('data-action="select-range-day"')&&app.includes('data-action="apply-date-range"'),'single-calendar date range controls missing');
@@ -59,7 +59,7 @@ assert(plus.includes('Add Booking')&&plus.includes('Create New Trip')&&!plus.inc
 assert(app.includes('function timelineContextCard('),'Timeline priority context missing');
 assert(app.includes('if (isEmptyTripSetup()) return "";'),'empty trip must not surface premature health warnings');
 assert(app.includes('timeline-empty__eyebrow">Start building'),'empty-trip setup hierarchy missing');
-assert(css.includes('.timeline-page--empty')&&css.includes('min-height:calc(100dvh - 68px - var(--nav-height)'),'empty timeline viewport sizing missing');
+assert(css.includes('.timeline-page--empty')&&css.includes('min-height:calc(100dvh - var(--header-h) - var(--nav-height))')&&css.includes('padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom) + 6vh)'),'empty timeline viewport sizing missing');
 assert(app.includes('timeline-empty__add')&&app.includes('emptySetup ? "plus" : "calendar"'),'Product V2 empty-trip structure missing');
 for(const concept of ['Needs Attention','Now','Next','Before you go'])assert(app.includes(concept),`Timeline state missing: ${concept}`);
 assert(app.includes('timeline-day__header')&&app.includes('journey-event journey-event--${phase}')&&app.includes('timelineDay(starts, zone)'),'Timeline structure/local grouping missing');
@@ -77,14 +77,14 @@ assert(app.includes('Nothing was overwritten.')&&app.includes('Review pending ch
 assert(app.includes('method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})'),'native checklist creation missing');
 assert(app.includes('data-edit-version')&&app.includes('method:editId?"PATCH":"POST"'),'native traveler editing missing');
 const account=app.slice(app.indexOf('function accountScreen('),app.indexOf('let googleScriptPromise'));
-for(const copy of ['My trips','Booking email','bookings@tripto.to','Take the tour','Sign out'])assert(account.includes(copy),`Account missing: ${copy}`);
+for(const copy of ['My trips','Booking email','go@tripto.to','Take the tour','Sign out'])assert(account.includes(copy),`Account missing: ${copy}`);
 for(const internal of ['Trip Health','Smart Essentials','Smart Import'])assert(!account.includes(internal),`internal name exposed: ${internal}`);
 assert(sw.includes("url.pathname.startsWith('/api/')")&&sw.includes("navigationCacheKey=isMobileShell?'/index.html':url.pathname"),'service worker isolation missing');
 assert(index.indexOf('/mobile-trip-rules.js')<index.indexOf('/mobile-app.js'),'trip rules load order wrong');
 assert(index.indexOf('/airport-timezones.js')<index.indexOf('/mobile-app.js'),'airport timezone resolver must load before the app');
 assert(!index.match(/https?:\/\/[^"']+\.(?:css|woff2?)/i),'external font/style introduced');
 assert(index.includes('/vendor/phosphor/phosphor.css')&&sw.includes('/vendor/phosphor/Phosphor.woff2'),'local icon library missing');
-assert(!app.includes('const ICONS')&&!app.includes('<svg'),'homemade inline icon system remains');
+assert(!app.includes('const ICONS')&&app.includes('const INLINE_SVG = Object.freeze({')&&app.includes("edit: '<path")&&app.includes("trash: '<path")&&(app.match(/<svg/g)||[]).length===1,'local icon system changed or expanded beyond the approved edit/trash fallbacks');
 assert(!css.includes('linear-gradient(')&&!css.includes('radial-gradient('),'flat visual system contains gradients');
 const sandbox={};runInNewContext(rules,sandbox);const validate=sandbox.TriptoTripRules?.validateManualTrip;
 assert(typeof validate==='function','trip validation unavailable');

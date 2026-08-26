@@ -16,6 +16,20 @@ export interface GoogleIdentity {
   avatarUrl: string | null;
 }
 
+/**
+ * Reads only the nonce claim needed to locate a redirect challenge. The value
+ * is not trusted until verifyGoogleCredential validates the JWT signature and
+ * compares the same nonce again.
+ */
+export function googleCredentialNonce(credential: string): string {
+  if (typeof credential !== 'string' || credential.length < 100 || credential.length > 16000) throw invalid();
+  const parts = credential.split('.');
+  if (parts.length !== 3) throw invalid();
+  const payload = parseSegment(parts[1]) as Record<string, unknown>;
+  if (typeof payload.nonce !== 'string' || !payload.nonce || payload.nonce.length > 200) throw invalid();
+  return payload.nonce;
+}
+
 export async function verifyGoogleCredential(env:Env, credential:string, expectedNonce:string):Promise<GoogleIdentity> {
   if (env.ACCOUNT_AUTH_ENABLED !== 'true' || !env.GOOGLE_CLIENT_ID) throw new HttpError(503,'GOOGLE_AUTH_DISABLED','Google sign-in is unavailable.');
   if (typeof credential !== 'string' || credential.length < 100 || credential.length > 16000) throw invalid();

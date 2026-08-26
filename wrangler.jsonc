@@ -17,6 +17,7 @@
     "R2_DOCUMENTS_ENABLED": "false",
     "ACCOUNT_AUTH_ENABLED": "true",
     "GOOGLE_CLIENT_ID": "832895442630-6enisft24gupqct0igg1uldv9hnqsjsh.apps.googleusercontent.com",
+    "APP_BASE_URL": "https://tripto.to",
     "SHARING_ENABLED": "false",
     "DEMO_TOOLS_ENABLED": "false",
     "BETA_RELEASE": "product-v2-production",

@@ -15,7 +15,8 @@ const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-aut
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
 const { refreshSession }=await load('apps/worker/src/routes/session.js');
 const { previewForwardedEmail, previewUploadedDocument, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
-const { createGoogleChallenge, signOut }=await load('apps/worker/src/routes/google-auth.js');
+const { acknowledgeGoogleHandoff, createGoogleChallenge, exchangeGoogleHandoff, googleSignInRedirect, signOut }=await load('apps/worker/src/routes/google-auth.js');
+const { requireAuth }=await load('apps/worker/src/auth.js');
 const { betaStatus, recordClientBetaEvent }=await load('apps/worker/src/routes/beta.js');
 const { enforceActorRateLimit, enforcePublicRateLimit }=await load('apps/worker/src/rate-limit.js');
 const { deletionPreview, deleteMyData }=await load('apps/worker/src/routes/privacy.js');
@@ -36,6 +37,7 @@ class LocalD1 {
 function assert(condition,label){if(!condition)throw new Error(`Integration assertion failed: ${label}`);}
 async function body(response){return JSON.parse(await response.text());}
 function req(url,method='GET',data,headers={}){return new Request(url,{method,headers:{...(data!==undefined?{'content-type':'application/json'}:{}),...headers},body:data===undefined?undefined:JSON.stringify(data)});}
+function formReq(url,data,cookie){return new Request(url,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded;charset=UTF-8','cookie':cookie},body:new URLSearchParams(data).toString()});}
 function addDevice(db,id,userId=null){const now=Date.now();db.prepare(`INSERT INTO devices(id,user_id,platform,app_version,api_version,created_at,last_seen_at) VALUES (?,?,'web','integration','v1',?,?)`).run(id,userId,now,now);}
 
 const db=new DatabaseSync(':memory:');
@@ -182,6 +184,75 @@ assert(db.prepare(`SELECT COUNT(*) c FROM import_messages WHERE import_id=? AND 
 env.GOOGLE_CLIENT_ID='test-client.apps.googleusercontent.com';
 const challenge=await body(await createGoogleChallenge(req('https://test/api/v1/auth/google/challenge','POST',{}),env,owner));
 assert(challenge.nonce&&challenge.clientId===env.GOOGLE_CLIENT_ID,'Google challenge created only when configured');
+assert(challenge.redirect.loginUri==='https://app.tripto.test/api/v1/auth/google/callback'&&challenge.redirect.state===challenge.challengeId,'Google redirect challenge is same-origin and opaque');
+
+// iOS redirect: signed Google credential + double-submit CSRF migrates the
+// bound guest, then a short-lived HttpOnly cookie is exchanged and acknowledged.
+addDevice(db,'google-redirect-device');
+const redirectGuest={deviceId:'google-redirect-device'};
+const redirectTrip=await body(await createDemoTrip(req('https://app.tripto.test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,redirectGuest));
+const redirectChallenge=await body(await createGoogleChallenge(new Request('https://app.tripto.test/api/v1/auth/google/challenge',{method:'POST'}),env,redirectGuest));
+const googlePair=await crypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
+const googleJwk=await crypto.subtle.exportKey('jwk',googlePair.publicKey);Object.assign(googleJwk,{kid:'redirect-test-key',alg:'RS256',use:'sig'});
+const b64url=value=>{const bytes=typeof value==='string'?new TextEncoder().encode(value):value;let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+async function googleToken(nonce,subject='google-redirect-subject'){
+  const now=Math.floor(Date.now()/1000),header=b64url(JSON.stringify({alg:'RS256',kid:'redirect-test-key',typ:'JWT'})),payload=b64url(JSON.stringify({iss:'https://accounts.google.com',aud:env.GOOGLE_CLIENT_ID,sub:subject,email:'redirect@example.test',email_verified:true,name:'Redirect Traveler',nonce,iat:now,exp:now+600})),data=`${header}.${payload}`,signature=await crypto.subtle.sign('RSASSA-PKCS1-v1_5',googlePair.privateKey,new TextEncoder().encode(data));
+  return `${data}.${b64url(new Uint8Array(signature))}`;
+}
+const originalGoogleFetch=globalThis.fetch;
+globalThis.fetch=async()=>new Response(JSON.stringify({keys:[googleJwk]}),{status:200,headers:{'cache-control':'public,max-age=300'}});
+const redirectCredential=await googleToken(redirectChallenge.nonce),csrfToken='csrf-redirect-123';
+const callbackUrl='https://app.tripto.test/api/v1/auth/google/callback';
+const callbackData={credential:redirectCredential,g_csrf_token:csrfToken,state:redirectChallenge.redirect.state};
+const callback=await googleSignInRedirect(formReq(callbackUrl,callbackData,`g_csrf_token=${csrfToken}`),env);
+globalThis.fetch=originalGoogleFetch;
+assert(callback.status===303,'Google redirect callback returns see-other');
+const callbackLocation=new URL(callback.headers.get('location'));
+assert(callbackLocation.origin==='https://app.tripto.test'&&callbackLocation.pathname==='/account'&&callbackLocation.searchParams.get('google_auth')==='complete','Google callback uses fixed non-secret landing marker');
+assert(!callbackLocation.hash&&!callback.headers.get('location').includes(redirectCredential),'Google callback URL contains no bearer or ID credential');
+const handoffSetCookie=callback.headers.get('set-cookie')||'';
+assert(handoffSetCookie.startsWith('__Secure-tripto_google_transfer=')&&handoffSetCookie.includes('Max-Age=120')&&handoffSetCookie.includes('HttpOnly')&&handoffSetCookie.includes('Secure')&&handoffSetCookie.includes('SameSite=Lax')&&handoffSetCookie.includes('Path=/api/v1/auth/google/exchange'),'Google transfer cookie is short-lived and tightly scoped');
+const handoffCookie=handoffSetCookie.split(';')[0];
+const exchangeRequest=new Request('https://app.tripto.test/api/v1/auth/google/exchange',{method:'POST',headers:{'content-type':'application/json','origin':'https://app.tripto.test','cookie':handoffCookie},body:'{}'});
+const exchangedResponse=await exchangeGoogleHandoff(exchangeRequest,env),exchanged=await body(exchangedResponse);
+assert(exchangedResponse.status===200&&exchanged.session.token&&exchanged.account.userId,'Google handoff returns the normal session');
+assert(!exchangedResponse.headers.get('set-cookie'),'Google exchange remains retryable until client acknowledgment');
+const redirectAuth=await requireAuth(new Request('https://app.tripto.test/api/v1/account',{headers:{authorization:`Bearer ${exchanged.session.token}`}}),env);
+assert(redirectAuth.deviceId==='google-redirect-device'&&redirectAuth.userId===exchanged.account.userId,'exchanged session is bound to migrated device and account');
+assert(db.prepare(`SELECT owner_user_id FROM trips WHERE id=?`).get(redirectTrip.demo.tripId).owner_user_id===exchanged.account.userId,'redirect login migrates the guest trip');
+assert(db.prepare(`SELECT used_at FROM auth_challenges WHERE id=?`).get(redirectChallenge.challengeId).used_at==null,'redirect transfer remains available until acknowledgment');
+
+const [transferName,transferValue]=handoffCookie.split('='),tamperedTransfer=`${transferValue.slice(0,-1)}${transferValue.endsWith('0')?'1':'0'}`;
+const tamperedExchange=await exchangeGoogleHandoff(new Request('https://app.tripto.test/api/v1/auth/google/exchange',{method:'POST',headers:{'content-type':'application/json','origin':'https://app.tripto.test','cookie':`${transferName}=${tamperedTransfer}`},body:'{}'}),env);
+assert(tamperedExchange.status===401&&db.prepare(`SELECT used_at FROM auth_challenges WHERE id=?`).get(redirectChallenge.challengeId).used_at==null,'wrong transfer secret is rejected without consuming valid transfer');
+const retryExchange=await exchangeGoogleHandoff(new Request('https://app.tripto.test/api/v1/auth/google/exchange',{method:'POST',headers:{'content-type':'application/json','origin':'https://app.tripto.test','cookie':handoffCookie},body:'{}'}),env);
+assert(retryExchange.status===200,'Google exchange is idempotently retryable before acknowledgment');
+addDevice(db,'wrong-ack-device');
+let wrongAckRejected=false;
+try{await acknowledgeGoogleHandoff(new Request('https://app.tripto.test/api/v1/auth/google/exchange/ack',{method:'POST',headers:{'content-type':'application/json','origin':'https://app.tripto.test','cookie':handoffCookie},body:'{}'}),env,{deviceId:'wrong-ack-device'});}catch(error){wrongAckRejected=error.code==='GOOGLE_SIGN_IN_FAILED';}
+assert(wrongAckRejected&&db.prepare(`SELECT used_at FROM auth_challenges WHERE id=?`).get(redirectChallenge.challengeId).used_at==null,'handoff acknowledgment is bound to authenticated device');
+const acknowledged=await acknowledgeGoogleHandoff(new Request('https://app.tripto.test/api/v1/auth/google/exchange/ack',{method:'POST',headers:{'content-type':'application/json','origin':'https://app.tripto.test','cookie':handoffCookie},body:'{}'}),env,redirectAuth);
+assert(acknowledged.status===200&&(await body(acknowledged)).acknowledged===true,'authenticated handoff acknowledgment succeeds');
+assert((acknowledged.headers.get('set-cookie')||'').includes('Max-Age=0'),'handoff acknowledgment clears transfer cookie');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM auth_challenges WHERE id=?`).get(redirectChallenge.challengeId).c)===0,'handoff acknowledgment atomically removes transfer row');
+const replayExchange=await exchangeGoogleHandoff(new Request('https://app.tripto.test/api/v1/auth/google/exchange',{method:'POST',headers:{'content-type':'application/json','origin':'https://app.tripto.test','cookie':handoffCookie},body:'{}'}),env);
+assert(replayExchange.status===401,'transfer cannot be exchanged after acknowledgment');
+
+addDevice(db,'google-csrf-device');
+const csrfChallenge=await body(await createGoogleChallenge(new Request('https://app.tripto.test/api/v1/auth/google/challenge',{method:'POST'}),env,{deviceId:'google-csrf-device'}));
+let csrfRejected=false;
+try{await googleSignInRedirect(formReq(callbackUrl,{credential:await googleToken(csrfChallenge.nonce,'csrf-subject'),g_csrf_token:'body-token',state:csrfChallenge.redirect.state},'g_csrf_token=cookie-token'),env);}catch(error){csrfRejected=error.code==='GOOGLE_REDIRECT_INVALID';}
+assert(csrfRejected,'Google redirect rejects mismatched double-submit CSRF tokens');
+assert(db.prepare(`SELECT used_at FROM auth_challenges WHERE id=?`).get(csrfChallenge.challengeId).used_at==null,'CSRF failure does not consume challenge');
+
+let contentTypeRejected=false;
+try{await googleSignInRedirect(req(callbackUrl,'POST',{credential:'x',g_csrf_token:'x',state:csrfChallenge.redirect.state}),env);}catch(error){contentTypeRejected=error.code==='FORM_REQUIRED';}
+assert(contentTypeRejected,'Google redirect strictly requires form-urlencoded input');
+
+let oversizedCallbackRejected=false;
+try{await googleSignInRedirect(new Request(callbackUrl,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded','cookie':'g_csrf_token=x'},body:'x'.repeat(25*1024)}),env);}catch(error){oversizedCallbackRejected=error.code==='REQUEST_TOO_LARGE'&&error.status===413;}
+assert(oversizedCallbackRejected,'Google redirect preserves a 413 response for oversized form bodies');
+
 const signedOut=await body(await signOut(req('https://test/api/v1/auth/signout','POST',{}),env,owner));
 assert(signedOut.localDataPreserved===true&&signedOut.accountMode==='guest','sign-out preserves local-data contract');
 assert(db.prepare(`SELECT revoked_at FROM devices WHERE id='guest-device'`).get().revoked_at!=null,'signed-out account device revoked');

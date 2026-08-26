@@ -10584,7 +10584,7 @@
     const source = cleanRows[0]?.source ?? (barcodes.length ? "barcode" : "embedded_text");
     const fields = {};
     add(fields, "title", titleFor(text, type), 0.55, source);
-    add(fields, "confirmationNumber", match(text, /(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+reference|reservation(?:\s+(?:number|code|no\.?))?|pnr|reference)\s*[:#-]?\s*([A-Z0-9]{5,12})\b/i), 0.82, source);
+    add(fields, "confirmationNumber", match(text, /(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+reference|reservation(?:\s+(?:number|code|no\.?))?|pnr|reference)\s*[:#-]?\s*((?=[A-Z0-9]*\d)[A-Z0-9]{5,12})\b/i), 0.82, source);
     const serviceNumber = match(text, /\b(?:marketing\s+)?(?:flight|train|service)\s*(?:no\.?|number|#)?\s*[:#-]?\s*([A-Z]{1,3}\s?\d{1,5}[A-Z]?)\b/i);
     add(fields, "serviceNumber", serviceNumber, 0.78, source);
     if (type === "flight" && serviceNumber) {

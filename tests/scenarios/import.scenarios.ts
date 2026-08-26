@@ -7,7 +7,7 @@ assert(flight.candidates.length===1,'flight candidate detected');
 assert(flight.candidates[0].candidateType==='flight','flight type');
 assert(flight.candidates[0].payload.departureIata==='TLV','departure IATA');
 assert(flight.candidates[0].payload.arrivalIata==='FCO','arrival IATA');
-assert(flight.candidates[0].payload.departureLocal==='2026-09-01T10:30','departure local');
+assert(flight.candidates[0].payload.departureLocalDatetime==='2026-09-01T10:30','departure local');
 assert(Array.isArray(flight.candidates[0].warnings)&&flight.candidates[0].warnings.length>0,'timezone confirmation warning');
 
 const hotel=parseForwardedEmail({subject:'Booking confirmation at Hotel Artemide',body:`Hotel: Hotel Artemide\nAddress: Via Nazionale 22, Roma\nConfirmation number: HTL9988\nCheck-in: 1 September 2026\nCheck-out: 5 September 2026`});
