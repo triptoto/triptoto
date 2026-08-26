@@ -23,6 +23,7 @@
     "validate:major": "bash scripts/validate-major.sh",
     "validate:candidate": "bash scripts/validate-candidate.sh",
     "validate:smart-import-auth": "bash scripts/validate-smart-import-auth.sh",
+    "validate:manual-booking": "node tests/manual-booking-attachments.contract.mjs && node tests/manual-booking-ui.contract.mjs",
     "validate:v2": "bash scripts/validate-v2.sh"
   },
   "devDependencies": {

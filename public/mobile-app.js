@@ -170,14 +170,227 @@
     discardReturnFocus = null;
   const scrollPositions = new Map();
   const DIRTY_TASK_SCREENS = new Set(["form", "import", "import-review"]);
+  const MANUAL_BOOKING_TYPES = Object.freeze({
+    flight: { label: "Flight", icon: "plane", base: "flight", cta: "Add Flight", documentType: "ticket" },
+    hotel: { label: "Hotel / Stay", shortLabel: "Stay", icon: "hotel", base: "hotel", cta: "Add Stay", documentType: "hotel_confirmation" },
+    train: { label: "Train", icon: "train", base: "train", cta: "Add Train", documentType: "ticket" },
+    "car-rental": { label: "Car Rental", icon: "car", base: "transport", subtype: "car", cta: "Add Car Rental", documentType: "reservation" },
+    transfer: { label: "Transfer", icon: "navigation", base: "transport", subtype: "transfer", cta: "Add Transfer", documentType: "reservation" },
+    cruise: { label: "Cruise", icon: "trips", base: "activity", subtype: "cruise", cta: "Add Cruise", documentType: "ticket" },
+    ferry: { label: "Ferry", icon: "navigation", base: "train", subtype: "ferry", cta: "Add Ferry", documentType: "ticket" },
+    restaurant: { label: "Restaurant", icon: "restaurant", base: "reservation", subtype: "restaurant", cta: "Add Restaurant", documentType: "reservation" },
+    activity: { label: "Activity / Event", shortLabel: "Activity", icon: "star", base: "activity", subtype: "activity", cta: "Add Activity", documentType: "ticket" },
+    other: { label: "Other", icon: "calendar", base: "reservation", subtype: "other", cta: "Add to Trip", documentType: "other" },
+  });
   const QUICK_ADD_KINDS = new Set([
-    "flight",
-    "hotel",
-    "train",
-    "activity",
+    ...Object.keys(MANUAL_BOOKING_TYPES),
     "reservation",
     "document",
   ]);
+  const manualAttachmentMirror = new Map(), manualDraftIds = new Map();
+  function manualBookingConfig(kind) {
+    return MANUAL_BOOKING_TYPES[String(kind || "")] || null;
+  }
+  function bookingBaseKind(kind) {
+    return manualBookingConfig(kind)?.base || String(kind || "");
+  }
+  const MANUAL_ATTACHMENT_RETRY_KEY = "tripto_manual_attachment_retry_v1";
+  function manualAttachmentRetryMap() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(MANUAL_ATTACHMENT_RETRY_KEY) || "{}");
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (_) {
+      return {};
+    }
+  }
+  function manualAttachmentRetryId(kind, bookingId) {
+    if (!bookingId || !state.trip?.id) return "";
+    return String(
+      manualAttachmentRetryMap()[`${state.trip.id}:${kind}:${bookingId}`] || "",
+    );
+  }
+  function rememberManualAttachmentRetry(kind, bookingId, draftId) {
+    if (!bookingId || !draftId || !state.trip?.id) return;
+    try {
+      const rows = manualAttachmentRetryMap();
+      rows[`${state.trip.id}:${kind}:${bookingId}`] = draftId;
+      localStorage.setItem(MANUAL_ATTACHMENT_RETRY_KEY, JSON.stringify(rows));
+    } catch (_) {}
+  }
+  function forgetManualAttachmentRetry(kind, bookingId) {
+    if (!bookingId || !state.trip?.id) return;
+    try {
+      const rows = manualAttachmentRetryMap();
+      delete rows[`${state.trip.id}:${kind}:${bookingId}`];
+      localStorage.setItem(MANUAL_ATTACHMENT_RETRY_KEY, JSON.stringify(rows));
+    } catch (_) {}
+  }
+  function manualAttachmentScope(kind, editId = "") {
+    const tripId = String(state.trip?.id || "no-trip"),
+      remembered = manualAttachmentRetryId(kind, editId),
+      draftId =
+        remembered ||
+        `manual:${tripId}:${String(kind || "booking")}:${manualBookingDraftId(kind, editId)}`;
+    return { draftId, tripId };
+  }
+  function normalizeManualAttachmentScope(scope) {
+    if (scope && typeof scope === "object") {
+      return {
+        draftId: String(scope.draftId || ""),
+        tripId: String(scope.tripId || state.trip?.id || ""),
+      };
+    }
+    return { draftId: scope, tripId: state.trip?.id };
+  }
+  function manualAttachmentKey(scope) {
+    return String(
+      scope && typeof scope === "object" ? scope.draftId || "" : scope || "",
+    );
+  }
+  function manualAttachmentsApi() {
+    const api = globalThis.TriptoManualAttachments;
+    return api && typeof api === "object" ? api : null;
+  }
+  function cachedManualAttachment(scope) {
+    return manualAttachmentMirror.get(manualAttachmentKey(scope)) || null;
+  }
+  async function listManualAttachments(scope) {
+    const normalized = normalizeManualAttachmentScope(scope),
+      key = manualAttachmentKey(normalized),
+      api = manualAttachmentsApi();
+    if (!key) return null;
+    if (!api?.list) return cachedManualAttachment(normalized);
+    try {
+      const rows = await api?.list(normalized);
+      const record = Array.isArray(rows) ? rows[0] || null : rows || null;
+      manualAttachmentMirror.set(key, record);
+      return record;
+    } catch (_) {}
+    return cachedManualAttachment(normalized);
+  }
+  async function stageManualAttachments(scope, files, meta = {}) {
+    const selected = Array.from(files || []);
+    const normalized = normalizeManualAttachmentScope(scope),
+      key = manualAttachmentKey(normalized),
+      api = manualAttachmentsApi();
+    if (!selected.length) return listManualAttachments(normalized);
+    if (api?.stage) {
+      const existing = await listManualAttachments(normalized),
+        existingBlobs = (existing?.files || []).map((file) => file.blob).filter(Boolean),
+        result = await api.stage(normalized, [...existingBlobs, ...selected], {
+          kind: meta.kind,
+          type: meta.documentType || meta.type || "other",
+          travelerIds: meta.travelerIds || [],
+        });
+      manualAttachmentMirror.set(key, result || null);
+      return result;
+    }
+    const existing = cachedManualAttachment(normalized),
+      existingFiles = existing?.files || [];
+    const added = selected.map((file) => ({
+      id: `pending-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      blob: file,
+      name: file.name,
+      size: file.size,
+      type: meta.documentType || "other",
+    }));
+    const record = {
+      draftId: normalized.draftId,
+      tripId: normalized.tripId,
+      status: "staged",
+      type: meta.documentType || "other",
+      files: [...existingFiles, ...added],
+    };
+    manualAttachmentMirror.set(key, record);
+    return record;
+  }
+  async function clearManualAttachment(scope, id) {
+    const normalized = normalizeManualAttachmentScope(scope),
+      key = manualAttachmentKey(normalized),
+      api = manualAttachmentsApi();
+    if (id != null && api?.remove) {
+      const result = await api.remove(normalized, id);
+      manualAttachmentMirror.set(key, result?.remaining || null);
+      return result?.remaining || null;
+    }
+    if (api?.clear) await api.clear(normalized);
+    manualAttachmentMirror.set(key, null);
+    return null;
+  }
+  async function failManualAttachments(scope, error) {
+    const normalized = normalizeManualAttachmentScope(scope),
+      api = manualAttachmentsApi();
+    if (!api?.fail) return cachedManualAttachment(normalized);
+    const record = await api.fail(normalized, error);
+    manualAttachmentMirror.set(manualAttachmentKey(normalized), record || null);
+    return record;
+  }
+  async function retryManualAttachment(scope, details = {}) {
+    const normalized = normalizeManualAttachmentScope(scope),
+      api = manualAttachmentsApi();
+    if (!api?.retry) return listManualAttachments(normalized);
+    const record = await api.retry(normalized, details);
+    manualAttachmentMirror.set(manualAttachmentKey(normalized), record || null);
+    return record;
+  }
+  async function retypeManualAttachment(scope, id, type) {
+    const normalized = normalizeManualAttachmentScope(scope),
+      api = manualAttachmentsApi();
+    if (!api?.retype) throw new Error("Document type could not be updated on this device.");
+    const record = await api.retype(normalized, id, type);
+    manualAttachmentMirror.set(manualAttachmentKey(normalized), record || null);
+    return record;
+  }
+  function reserveManualAttachmentWindow() {
+    const popup = window.open("about:blank", "_blank");
+    if (!popup) return null;
+    try {
+      popup.opener = null;
+      popup.document.title = "Opening travel document";
+      popup.document.body.textContent = "Opening travel document…";
+    } catch (_) {}
+    return popup;
+  }
+  async function openManualAttachment(scope, id, reservedWindow = null) {
+    try {
+      const record = await listManualAttachments(scope),
+        file = (record?.files || []).find((row) => String(row.id) === String(id));
+      if (!file?.blob) throw new Error("This local file is unavailable. Choose it again.");
+      const url = URL.createObjectURL(file.blob);
+      if (reservedWindow && !reservedWindow.closed) {
+        reservedWindow.location.replace(url);
+      } else {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = file.name || "travel-document";
+        link.click();
+      }
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      try { reservedWindow?.close(); } catch (_) {}
+      throw error;
+    }
+  }
+  async function commitManualAttachments(scope, bookingId, kind, travelerIds) {
+    const normalized = normalizeManualAttachmentScope(scope),
+      record = await listManualAttachments(normalized);
+    if (!record?.files?.length || !bookingId) return null;
+    const api = manualAttachmentsApi();
+    if (!api?.commit) throw new Error("Local document storage is unavailable.");
+    try {
+      const linked = await api.commit(normalized, {
+        tripId: state.trip?.id || null,
+        bookingId,
+        kind,
+        travelerIds,
+      });
+      manualAttachmentMirror.set(manualAttachmentKey(normalized), linked || null);
+      return linked;
+    } catch (error) {
+      try { await failManualAttachments(normalized, error); } catch (_) {}
+      throw error;
+    }
+  }
   function icon(name, size = 24, extra = "") {
     const px = Number(size) || 24;
     if (INLINE_SVG[name]) {
@@ -239,14 +452,40 @@
         state.editingEntity?.kind === "trip" && state.editingEntity.id
           ? `edit-${state.editingEntity.id}`
           : "new-trip";
+    else if (
+      state.screen === "form" &&
+      String(state.selectedId || "") === normalized &&
+      state.editingEntity?.id
+    )
+      scope = `${state.trip?.id || "no-trip"}:edit-${state.editingEntity.id}`;
     else scope = state.trip?.id || "no-trip";
     return `tripto_quick_add_draft:${scope}:${normalized}`;
   }
+  function manualBookingDraftId(kind, editId = "") {
+    if (editId) return `edit:${editId}`;
+    const key = quickDraftKey(kind);
+    if (manualDraftIds.has(key)) return manualDraftIds.get(key);
+    let draft = {};
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(key) || "{}");
+      if (saved && typeof saved === "object") draft = saved;
+    } catch (_) {}
+    let id = String(draft.__manualDraftId || "");
+    if (!/^[a-f0-9-]{20,80}$/i.test(id)) {
+      id = crypto.randomUUID();
+      draft.__manualDraftId = id;
+      try { sessionStorage.setItem(key, JSON.stringify(draft)); } catch (_) {}
+    }
+    manualDraftIds.set(key, id);
+    return id;
+  }
   function clearQuickDraft(kind = state.selectedId) {
     if (!supportsFormDraft(kind)) return;
+    const key = quickDraftKey(kind);
     try {
-      sessionStorage.removeItem(quickDraftKey(kind));
+      sessionStorage.removeItem(key);
     } catch (_) {}
+    manualDraftIds.delete(key);
   }
   function clearActiveFormDraft() {
     if (state.screen === "form") clearQuickDraft(state.selectedId);
@@ -255,13 +494,25 @@
     const normalized = String(kind || "");
     return normalized === "trip" || QUICK_ADD_KINDS.has(normalized);
   }
-  function closeDiscardDialog(discard = false) {
+  async function closeDiscardDialog(discard = false) {
     const backdrop = document.querySelector(".discard-dialog-backdrop"),
       continuation = discardDialogOpen;
     if (!backdrop) return;
     backdrop.remove();
     discardDialogOpen = false;
     if (discard) {
+      const form = document.getElementById("native-form"), scope = form?.dataset.attachmentScope;
+      if (scope) {
+        try {
+          await clearManualAttachment(scope);
+        } catch (_) {
+          const message = "The selected local files could not be discarded. Your booking details and files are still on this phone.";
+          if (form) showFormSubmissionError(form, message);
+          else showToast(message, "alert");
+          discardReturnFocus?.focus?.();
+          return;
+        }
+      }
       clearActiveFormDraft();
       formHasMeaningfulChanges = false;
       if (typeof continuation === "function") continuation();
@@ -330,11 +581,12 @@
   }
   function findBookingRecord(kind, id) {
     const wanted = String(id || "");
-    if (kind === "hotel") {
+    const baseKind = bookingBaseKind(kind);
+    if (baseKind === "hotel") {
       const entity = state.stays.find((row) => itemId(row) === wanted);
       return entity ? { kind, entity, path: "stays" } : null;
     }
-    if (["flight", "train", "ferry", "car"].includes(kind)) {
+    if (["flight", "train", "transport"].includes(baseKind) || ["ferry", "car", "car-rental", "transfer"].includes(kind)) {
       const entity = state.transport.find((row) => itemId(row) === wanted);
       return entity ? { kind, entity, path: "transport" } : null;
     }
@@ -349,10 +601,18 @@
   }
   function bookingFormKind(kind, entity) {
     if (kind === "flight") return "flight";
-    if (kind === "train" || kind === "ferry") return "train";
+    if (kind === "train") return "train";
+    if (kind === "ferry") return "ferry";
+    if (kind === "car") return "car-rental";
+    if (kind === "transfer") return "transfer";
     if (kind === "hotel") return "hotel";
     const subtype = String(val(entity || {}, "reservation_type", "activity_type", "type") || "").toLowerCase();
-    if (["reservation", "restaurant", "transfer", "car_rental", "car", "other"].includes(subtype)) return "reservation";
+    if (subtype === "restaurant") return "restaurant";
+    if (subtype === "transfer") return "transfer";
+    if (["car_rental", "car"].includes(subtype)) return "car-rental";
+    if (subtype === "other") return "other";
+    if (subtype === "cruise") return "cruise";
+    if (["reservation", "plan"].includes(subtype)) return "other";
     return "activity";
   }
   function confirmDeleteBooking(kind, id) {
@@ -409,6 +669,23 @@
   }
   function bookingHeaderActions(kind, id) {
     return `<button class="icon-button" data-action="share-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Share">${icon("share", 23)}</button>${bookingMenuButton(kind, id)}`;
+  }
+  function linkedBookingDocuments(item) {
+    const id = itemId(item || {});
+    if (!id) return [];
+    return state.localDocs.filter(
+      (document) => String(document.relatedBookingId || "") === id,
+    );
+  }
+  function linkedBookingDocumentRows(item) {
+    const documents = linkedBookingDocuments(item);
+    if (!documents.length) return "";
+    return `<section class="booking-documents" aria-labelledby="booking-documents-title"><h2 id="booking-documents-title">Tickets &amp; Documents</h2><div class="booking-documents__list">${documents
+      .map((document) => {
+        const ready = document.integrity === "verified";
+        return `<div class="booking-document-row"><button type="button" class="booking-document-row__open" data-action="open-document" data-id="${esc(document.id)}"><span class="booking-document-row__icon">${icon(document.type === "boarding_pass" ? "qr" : "document", 20)}</span><span><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${ready ? "Ready offline" : statusText(document.integrity || "checking")}</small></span></button><button type="button" class="booking-document-row__remove" data-action="remove-document" data-id="${esc(document.id)}" aria-label="Remove ${esc(document.name || "document")}">${icon("trash", 18)}</button></div>`;
+      })
+      .join("")}</div></section>`;
   }
   function bookingShareText(record) {
     const e = record.entity;
@@ -1112,12 +1389,19 @@
         );
         return;
       }
-      const request = indexedDB.open(LOCAL_DOC_DB, 1);
+      const request = indexedDB.open(LOCAL_DOC_DB, 2);
       request.onupgradeneeded = () => {
         const db = request.result;
         if (!db.objectStoreNames.contains("docs")) {
           const store = db.createObjectStore("docs", { keyPath: "id" });
           store.createIndex("tripId", "tripId", { unique: false });
+        }
+        if (!db.objectStoreNames.contains("bookingDrafts")) {
+          const drafts = db.createObjectStore("bookingDrafts", {
+            keyPath: "draftId",
+          });
+          drafts.createIndex("tripId", "tripId", { unique: false });
+          drafts.createIndex("status", "status", { unique: false });
         }
       };
       request.onsuccess = () => resolve(request.result);
@@ -2455,7 +2739,7 @@
       disclosure = disclosureRows.length
         ? `<section class="flight-more flight-more--pass"><button type="button" class="flight-more__toggle" id="${disclosureButtonId}" data-action="toggle-flight-details" aria-expanded="${state.flightDetailsOpen}" aria-controls="${disclosureId}"><span>Flight details</span><span class="flight-more__chevron" aria-hidden="true">${icon(state.flightDetailsOpen ? "chevronUp" : "chevronDown", 18)}</span></button><div class="flight-more-content${state.flightDetailsOpen ? " is-open" : ""}" id="${disclosureId}" role="region" aria-labelledby="${disclosureButtonId}"${state.flightDetailsOpen ? "" : " hidden"}><dl>${disclosureRows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section>`
         : "";
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div></main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div>${linkedBookingDocumentRows(flight)}</main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -2508,7 +2792,7 @@
             : statusTone === "attention"
               ? icon("warning", 14)
               : icon("info", 14);
-    return `<div class="phone-app"><section class="screen hotel-detail-screen">${appBar("Hotel", "", false, bookingHeaderActions("hotel", itemId(stay)))}<div class="hotel-hero ${imageUrl ? "hotel-hero--image" : "hotel-hero--fallback"}" role="img" aria-label="${imageUrl ? "Hotel property image" : "Hotel image unavailable; showing a generic local hotel-room fallback"}">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image" loading="lazy" decoding="async">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span>${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 15)} Offline · saved details</span>` : ""}</div><main class="hotel-sheet"><header class="hotel-heading"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="hotel-status hotel-status--${statusTone}">${statusIcon}<span>${esc(statusLabel)}</span></span></div>${roomName ? `<p>${esc(roomName)}</p>` : ""}</header><section class="hotel-stats" aria-label="Stay dates"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></section><div class="hotel-actions"><button class="hotel-action hotel-action--primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}>${icon("navigation", 18)}<span>Directions</span></button><button class="hotel-action" data-action="show-driver" data-id="${esc(itemId(stay))}"${driverDisabled ? " disabled" : ""}>${icon("car", 18)}<span>Show to Driver</span></button></div><section class="hotel-location" aria-label="Hotel location"><button class="hotel-address-row" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""} aria-label="${address ? `Open directions to ${esc(address)}` : "Hotel address unavailable"}"><span class="hotel-address-row__icon">${icon("pin", 21)}</span><span>${esc(address || "Location unavailable")}</span>${directionsDisabled ? "" : icon("chevron", 18)}</button>${hasCoordinates ? `<button class="hotel-map-panel" data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel location in Maps"><span class="hotel-map-panel__marker">${icon("pin", 22)}</span><span class="hotel-map-panel__copy"><strong>Saved location</strong><small>Open in Maps</small></span></button>` : ""}</section>${contactRows ? `<section class="hotel-contact-list" aria-label="Hotel contact and confirmation">${contactRows}</section>` : ""}</main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen hotel-detail-screen">${appBar("Hotel", "", false, bookingHeaderActions("hotel", itemId(stay)))}<div class="hotel-hero ${imageUrl ? "hotel-hero--image" : "hotel-hero--fallback"}" role="img" aria-label="${imageUrl ? "Hotel property image" : "Hotel image unavailable; showing a generic local hotel-room fallback"}">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image" loading="lazy" decoding="async">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span>${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 15)} Offline · saved details</span>` : ""}</div><main class="hotel-sheet"><header class="hotel-heading"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="hotel-status hotel-status--${statusTone}">${statusIcon}<span>${esc(statusLabel)}</span></span></div>${roomName ? `<p>${esc(roomName)}</p>` : ""}</header><section class="hotel-stats" aria-label="Stay dates"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></section><div class="hotel-actions"><button class="hotel-action hotel-action--primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}>${icon("navigation", 18)}<span>Directions</span></button><button class="hotel-action" data-action="show-driver" data-id="${esc(itemId(stay))}"${driverDisabled ? " disabled" : ""}>${icon("car", 18)}<span>Show to Driver</span></button></div><section class="hotel-location" aria-label="Hotel location"><button class="hotel-address-row" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""} aria-label="${address ? `Open directions to ${esc(address)}` : "Hotel address unavailable"}"><span class="hotel-address-row__icon">${icon("pin", 21)}</span><span>${esc(address || "Location unavailable")}</span>${directionsDisabled ? "" : icon("chevron", 18)}</button>${hasCoordinates ? `<button class="hotel-map-panel" data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel location in Maps"><span class="hotel-map-panel__marker">${icon("pin", 22)}</span><span class="hotel-map-panel__copy"><strong>Saved location</strong><small>Open in Maps</small></span></button>` : ""}</section>${contactRows ? `<section class="hotel-contact-list" aria-label="Hotel contact and confirmation">${contactRows}</section>` : ""}${linkedBookingDocumentRows(stay)}</main>${bottomNav("bookings")}</section></div>`;
   }
   function bookingsScreen() {
     const rows = [];
@@ -2638,37 +2922,168 @@
   }
   function premiumBookingsScreen() {
     const filters = [["all", "All"], ["transport", "Transport"], ["stays", "Stays"], ["plans", "Plans"]],
-      rows = bookingRows().filter((row) => state.bookingFilter === "all" || (state.bookingFilter === "transport" && ["flight", "train", "car"].includes(row.kind)) || (state.bookingFilter === "stays" && row.kind === "hotel") || (state.bookingFilter === "plans" && !["flight", "train", "car", "hotel"].includes(row.kind)));
+      rows = bookingRows().filter((row) => state.bookingFilter === "all" || (state.bookingFilter === "transport" && ["flight", "train", "ferry", "car", "transfer"].includes(row.kind)) || (state.bookingFilter === "stays" && row.kind === "hotel") || (state.bookingFilter === "plans" && !["flight", "train", "ferry", "car", "transfer", "hotel"].includes(row.kind)));
     const list = rows.map(({ kind, item, at }) => {
-      const transport = ["flight", "train", "car"].includes(kind),
+      const transport = ["flight", "train", "ferry", "car", "transfer"].includes(kind),
         zone = val(item, "departure_timezone", "start_timezone"),
-        title = kind === "flight" ? `${flightNumber(item)} · ${flightRoute(item).fromCode} → ${flightRoute(item).toCode}` : kind === "train" ? val(item, "title", "service_number") || "Train" : kind === "hotel" ? val(item, "property_name", "title") || "Stay" : val(item, "title") || statusText(kind),
+        title = kind === "flight" ? `${flightNumber(item)} · ${flightRoute(item).fromCode} → ${flightRoute(item).toCode}` : ["train", "ferry"].includes(kind) ? val(item, "title", "service_number") || statusText(kind) : kind === "hotel" ? val(item, "property_name", "title") || "Stay" : val(item, "title", "carrier_name") || statusText(kind),
         subtitle = kind === "hotel" ? `${formatDateOnly(val(item, "check_in_date"))} – ${formatDateOnly(val(item, "check_out_date"))}` : transport ? formatDateTime(at, zone) : `${formatDateTime(at, zone)}${val(item, "subtitle") ? ` · ${val(item, "subtitle")}` : ""}`,
         status = meaningfulBookingStatus(item);
       return `<button class="travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="travel-row__icon">${icon(transportIcon(kind), 22)}</span><span class="travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? `<em class="travel-state travel-state--attention">${esc(status)}</em>` : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
     }).join("");
     return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add" aria-label="Add booking">${icon("plus", 23)}</button>`);
   }
-  function selectedTrain() { return state.transport.find((row) => itemId(row) === String(state.selectedId) && String(val(row, "transport_type")) === "train") || state.transport.find((row) => String(val(row, "transport_type")) === "train"); }
+  function selectedTrain() {
+    const supported = new Set(["train", "ferry"]),
+      selected = state.transport.find(
+        (row) =>
+          itemId(row) === String(state.selectedId) &&
+          supported.has(String(val(row, "transport_type"))),
+      );
+    return (
+      selected ||
+      state.transport.find((row) =>
+        supported.has(String(val(row, "transport_type"))),
+      )
+    );
+  }
   function trainScreen() {
     const train = selectedTrain();
-    if (!train) return missingDetailScreen("Train unavailable", "No train booking is available.");
-    const from = locationById(val(train, "departure_location_id", "start_location_id")), to = locationById(val(train, "arrival_location_id", "end_location_id")), dep = Number(val(train, "scheduled_departure_utc", "starts_at_utc")) || null, arr = Number(val(train, "scheduled_arrival_utc", "ends_at_utc")) || null, detail = detailFor(train) || {}, doc = state.localDocs.find((d) => d.integrity === "verified" && d.type === "ticket" && (!d.travelerIds?.length || d.travelerIds.some((id) => String(val(train,"traveler_ids")||"").split(",").includes(id))));
-    const facts = [["Platform", val(train, "departure_platform", "platform")], ["Coach", val(detail, "coach")], ["Seat", val(detail, "seat")], ["Booking", val(train, "booking_reference")]].filter(([,v]) => v);
-    return mobilePage("Train Detail", `<section class="journey-pass journey-pass--train"><header><span>${icon("train", 20)} ${esc(val(train,"carrier_name") || "Train")}</span><strong>${statusText(val(train,"booking_status","status") || "confirmed")}</strong><small>Scheduled data</small></header><div class="journey-route"><div><strong>${esc(val(from,"station_code","iata_code") || "—")}</strong><span>${esc(val(from,"display_name") || "Origin unavailable")}</span></div><span class="journey-route__line">${icon("train", 25)}</span><div><strong>${esc(val(to,"station_code","iata_code") || "—")}</strong><span>${esc(val(to,"display_name") || "Destination unavailable")}</span></div></div><div class="journey-times"><div><span>Departs</span><strong>${esc(formatTime(dep,val(train,"departure_timezone")))}</strong><small>${esc(formatDay(dep,val(train,"departure_timezone")))}</small></div><div><span>Arrives</span><strong>${esc(formatTime(arr,val(train,"arrival_timezone")))}</strong><small>${esc(formatDay(arr,val(train,"arrival_timezone")))}</small></div></div><dl class="journey-facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>${doc ? primaryCta("Open Ticket","open-document","ticket",`data-id="${esc(doc.id)}"`) : `<div class="inline-recovery">${icon("warning",18)}<span><strong>Ticket not saved offline</strong><small>Add a verified ticket before travel.</small></span></div><button class="mobile-secondary-action" data-action="add-document">${icon("plus",18)} Add ticket</button>`}<button class="mobile-secondary-action" data-action="directions-item" data-id="${esc(itemId(train))}">${icon("navigation",18)} Directions to station</button></section>`, "bookings", bookingHeaderActions(String(val(train,"transport_type")||"train"), itemId(train)));
+    if (!train)
+      return missingDetailScreen(
+        "Journey unavailable",
+        "No train or ferry booking is available.",
+      );
+    const kind = String(val(train, "transport_type") || "train"),
+      ferry = kind === "ferry",
+      from = locationById(
+        val(train, "departure_location_id", "start_location_id"),
+      ),
+      to = locationById(
+        val(train, "arrival_location_id", "end_location_id"),
+      ),
+      dep = Number(
+        val(train, "scheduled_departure_utc", "starts_at_utc"),
+      ) || null,
+      arr = Number(
+        val(train, "scheduled_arrival_utc", "ends_at_utc"),
+      ) || null,
+      detail = detailFor(train) || {},
+      linkedDocuments = linkedBookingDocuments(train),
+      doc = linkedDocuments.find(
+        (document) =>
+          document.integrity === "verified" &&
+          ["ticket", "qr_code"].includes(document.type),
+      ),
+      transportIconName = ferry ? "navigation" : "train";
+    const facts = [
+      [ferry ? "Pier / berth" : "Platform", val(train, "departure_platform", "platform")],
+      [ferry ? "Cabin" : "Coach", val(detail, "coach")],
+      ["Seat", val(detail, "seat")],
+      ["Booking", val(train, "booking_reference")],
+    ].filter(([, value]) => value);
+    return mobilePage(
+      ferry ? "Ferry Detail" : "Train Detail",
+      `<section class="journey-pass journey-pass--train"><header><span>${icon(transportIconName, 20)} ${esc(val(train, "carrier_name") || (ferry ? "Ferry" : "Train"))}</span><strong>${statusText(val(train, "booking_status", "status") || "confirmed")}</strong><small>Scheduled data</small></header><div class="journey-route"><div><strong>${esc(val(from, "station_code", "iata_code") || "—")}</strong><span>${esc(val(from, "display_name") || "Origin unavailable")}</span></div><span class="journey-route__line">${icon(transportIconName, 25)}</span><div><strong>${esc(val(to, "station_code", "iata_code") || "—")}</strong><span>${esc(val(to, "display_name") || "Destination unavailable")}</span></div></div><div class="journey-times"><div><span>Departs</span><strong>${esc(formatTime(dep, val(train, "departure_timezone")))}</strong><small>${esc(formatDay(dep, val(train, "departure_timezone")))}</small></div><div><span>Arrives</span><strong>${esc(formatTime(arr, val(train, "arrival_timezone")))}</strong><small>${esc(formatDay(arr, val(train, "arrival_timezone")))}</small></div></div><dl class="journey-facts">${facts.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>${doc ? primaryCta("Open Ticket", "open-document", "ticket", `data-id="${esc(doc.id)}"`) : `<div class="inline-recovery">${icon("warning", 18)}<span><strong>Ticket not saved offline</strong><small>Add a verified ticket before travel.</small></span></div><button class="mobile-secondary-action" data-action="add-document">${icon("plus", 18)} Add ticket</button>`}<button class="mobile-secondary-action" data-action="directions-item" data-id="${esc(itemId(train))}">${icon("navigation", 18)} Directions to ${ferry ? "port" : "station"}</button></section>${linkedBookingDocumentRows(train)}`,
+      "bookings",
+      bookingHeaderActions(kind, itemId(train)),
+    );
   }
-  function selectedPlan() { return state.timeline.find((row) => itemId(row) === String(state.selectedId)) || null; }
+  function selectedPlan() {
+    const wanted = String(state.selectedId || "");
+    return (
+      state.timeline.find((row) => itemId(row) === wanted) ||
+      state.transport.find((row) => itemId(row) === wanted) ||
+      null
+    );
+  }
   function planScreen() {
     const item = selectedPlan();
-    if (!item) return missingDetailScreen("Plan unavailable", "This plan is not available.");
-    const location = locationById(val(item,"start_location_id")), contact = contactFor(item), doc = state.localDocs.find((d)=>d.integrity==="verified" && ["reservation","voucher","ticket","qr_code"].includes(d.type));
+    if (!item)
+      return missingDetailScreen("Plan unavailable", "This plan is not available.");
+    const transportKind = String(val(item, "transport_type") || ""),
+      isTransport = Boolean(transportKind),
+      location = locationById(
+        isTransport
+          ? val(item, "departure_location_id", "start_location_id")
+          : val(item, "start_location_id", "location_id"),
+      ),
+      endLocation = isTransport
+        ? locationById(val(item, "arrival_location_id", "end_location_id"))
+        : null,
+      contact = contactFor(item),
+      linkedDocuments = linkedBookingDocuments(item),
+      doc = linkedDocuments.find(
+        (document) =>
+          document.integrity === "verified" &&
+          ["reservation", "voucher", "ticket", "qr_code"].includes(
+            document.type,
+          ),
+      ),
+      startsAt = Number(
+        val(item, "scheduled_departure_utc", "starts_at_utc"),
+      ) || null,
+      timezone = val(item, "departure_timezone", "start_timezone", "timezone");
     const primary = [
-      doc ? primaryCta("Open Ticket","open-document","ticket",`data-id="${esc(doc.id)}"`) : "",
-      location ? primaryCta("Directions","directions-item","navigation",`data-id="${esc(itemId(item))}"`) : "",
-      !doc && !location && val(contact,"phone") ? primaryCta("Call","call","phone",`data-value="${esc(contact.phone)}"`) : "",
+      doc
+        ? primaryCta(
+            "Open Ticket",
+            "open-document",
+            "ticket",
+            `data-id="${esc(doc.id)}"`,
+          )
+        : "",
+      location
+        ? primaryCta(
+            "Directions",
+            "directions-item",
+            "navigation",
+            `data-id="${esc(itemId(item))}"`,
+          )
+        : "",
+      !doc && !location && val(contact, "phone")
+        ? primaryCta(
+            "Call",
+            "call",
+            "phone",
+            `data-value="${esc(contact.phone)}"`,
+          )
+        : "",
     ].join("");
-    const confirmation = val(item,"confirmation_number","reservation_reference"), notes = val(item,"activity_notes","reservation_notes","notes"), kind = val(item,"activity_type","reservation_type","type") || "Plan";
-    return mobilePage(statusText(val(item,"type") || "Plan"), `<section class="plan-hero"><span class="plan-hero__icon">${icon(timelineIcon(timelineType(item)),28)}</span><span>${esc(statusText(kind))}</span><h1>${esc(val(item,"title") || "Plan")}</h1><p>${esc(formatDateTime(Number(val(item,"starts_at_utc"))||null,val(item,"start_timezone")))}</p></section><section class="detail-list">${location ? `<div class="detail-row detail-row--static"><span>${icon("pin",20)}</span><span><small>Location</small><strong>${esc(val(location,"display_name") || val(location,"formatted_address"))}</strong></span></div>` : ""}${confirmation ? `<button class="detail-row" data-action="copy" data-value="${esc(confirmation)}"><span>${icon("copy",20)}</span><span><small>Confirmation</small><strong>${esc(confirmation)}</strong></span>${icon("copy",18)}</button>` : ""}${val(contact,"phone") ? `<button class="detail-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone",20)}</span><span><small>Contact</small><strong>${esc(val(contact,"display_name") || contact.phone)}</strong></span>${icon("chevron",18)}</button>` : ""}</section>${primary}${notes ? `<details class="mobile-disclosure"><summary>Notes ${icon("chevronDown",18)}</summary><p>${esc(notes)}</p></details>` : ""}`, "bookings", bookingHeaderActions(String(val(item,"type")||"plan"), itemId(item)));
+    const confirmation = val(
+        item,
+        "booking_reference",
+        "confirmation_number",
+        "reservation_reference",
+        "reference",
+      ),
+      notes = val(
+        item,
+        "activity_notes",
+        "reservation_notes",
+        "notes",
+      ),
+      kind =
+        transportKind ||
+        val(item, "activity_type", "reservation_type", "type") ||
+        "Plan",
+      title = val(item, "carrier_name", "title") || statusText(kind),
+      locationName = val(
+        location,
+        "display_name",
+        "formatted_address",
+      ),
+      endLocationName = val(
+        endLocation,
+        "display_name",
+        "formatted_address",
+      );
+    return mobilePage(
+      `${statusText(kind)} Detail`,
+      `<section class="plan-hero"><span class="plan-hero__icon">${icon(timelineIcon(timelineType(item)), 28)}</span><span>${esc(statusText(kind))}</span><h1>${esc(title)}</h1><p>${esc(formatDateTime(startsAt, timezone))}</p></section><section class="detail-list">${locationName ? `<div class="detail-row detail-row--static"><span>${icon("pin", 20)}</span><span><small>${endLocationName ? "From" : "Location"}</small><strong>${esc(locationName)}</strong></span></div>` : ""}${endLocationName ? `<div class="detail-row detail-row--static"><span>${icon("navigation", 20)}</span><span><small>To</small><strong>${esc(endLocationName)}</strong></span></div>` : ""}${confirmation ? `<button class="detail-row" data-action="copy" data-value="${esc(confirmation)}"><span>${icon("copy", 20)}</span><span><small>Confirmation</small><strong>${esc(confirmation)}</strong></span>${icon("copy", 18)}</button>` : ""}${val(contact, "phone") ? `<button class="detail-row" data-action="call" data-value="${esc(contact.phone)}"><span>${icon("phone", 20)}</span><span><small>Contact</small><strong>${esc(val(contact, "display_name") || contact.phone)}</strong></span>${icon("chevron", 18)}</button>` : ""}</section>${primary}${linkedBookingDocumentRows(item)}${notes ? `<details class="mobile-disclosure"><summary>Notes ${icon("chevronDown", 18)}</summary><p>${esc(notes)}</p></details>` : ""}`,
+      "bookings",
+      bookingHeaderActions(transportKind || String(val(item, "type") || "plan"), itemId(item)),
+    );
   }
 
   function documentRequirements() {
@@ -2978,7 +3393,15 @@
     let control;
     if (type === "textarea")
       control = `<textarea ${base} rows="4" placeholder="${esc(placeholder)}" autocapitalize="sentences" autocorrect="on" spellcheck="true">${esc(resolvedValue)}</textarea>`;
-    else if (type === "select") control = `<select ${base}>${choices}</select>`;
+    else if (type === "select") {
+      const optionValue = String(resolvedValue || ""), selectedChoices = optionValue
+        ? choices.replace(
+            new RegExp(`(<option\\s+value=["']${optionValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["'])(?![^>]*\\sselected)([^>]*>)`),
+            "$1 selected$2",
+          )
+        : choices;
+      control = `<select ${base}>${selectedChoices}</select>`;
+    }
     else
       control = `<input type="${type}" ${base} autocomplete="off" ${textGuards} placeholder="${esc(placeholder)}" value="${esc(resolvedValue)}">`;
     return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : optional ? " <em class=\"field-optional\">Optional</em>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
@@ -3297,14 +3720,62 @@
   function travelerIdList(entity) {
     return String(val(entity, "traveler_ids") || "").split(",").map((id) => id.trim()).filter(Boolean);
   }
+  const MANUAL_DETAIL_LABELS = Object.freeze({
+    Date: "date",
+    To: "endLocation",
+    "Return / end date": "endDate",
+    Guests: "guests",
+    Vehicle: "vehicle",
+    Driver: "driver",
+    Ship: "ship",
+    Cabin: "cabin",
+    Deck: "deck",
+    Embarkation: "embarkation",
+    "Seat / section": "seatSection",
+    Address: "streetAddress",
+    Platform: "platform",
+    Coach: "coach",
+    Contact: "contact",
+    "Reservation window": "reservationWindow",
+  });
+  function parseManualDetailNotes(value) {
+    const details = { notes: "", timeUnset: false }, free = [];
+    String(value || "").split(/\s+·\s+|\n+/).map((part) => part.trim()).filter(Boolean).forEach((part) => {
+      if (part === "Time not set yet") { details.timeUnset = true; return; }
+      const match = part.match(/^([^:]{1,40}):\s*(.*)$/), key = match ? MANUAL_DETAIL_LABELS[match[1]] : null;
+      if (key && match[2]) details[key] = match[2];
+      else if (match?.[1] === "Notes") free.push(match[2]);
+      else free.push(part);
+    });
+    details.notes = free.filter(Boolean).join(" · ");
+    return details;
+  }
+  function buildManualDetailNotes(entries, userNotes = "") {
+    return [
+      ...entries.map(([label, value]) => String(value || "").trim() ? `${label}: ${String(value).trim()}` : ""),
+      String(userNotes || "").trim() ? `Notes: ${String(userNotes).trim()}` : "",
+    ].filter(Boolean).join(" · ") || null;
+  }
+  function directItemContactById(id, type) {
+    return state.contacts.find((contact) =>
+      String(contact.trip_item_id || "") === String(id || "") && (!type || contact.contact_type === type),
+    ) || null;
+  }
+  function directItemContact(item, type) {
+    return directItemContactById(item ? itemId(item) : "", type);
+  }
   function buildBookingPrefill(kind, entity) {
-    if (kind === "hotel") {
-      const contact = contactFor(entity, "hotel") || {};
+    const baseKind = bookingBaseKind(kind);
+    if (baseKind === "hotel") {
+      const contact = directItemContact(entity, "hotel") || contactFor(entity, "hotel") || {},
+        location = locationById(val(entity, "property_location_id", "start_location_id")) || {},
+        locationName = String(val(location, "city") || (["city", "airport"].includes(String(val(location, "type") || "")) ? val(location, "display_name", "local_name") : val(location, "formatted_address")) || "");
       return {
         propertyName: String(val(entity, "property_name", "title") || ""),
         checkInDate: String(val(entity, "check_in_date") || ""),
         checkOutDate: String(val(entity, "check_out_date") || ""),
-        address: String(val(locationById(val(entity, "property_location_id", "start_location_id")), "local_address", "formatted_address", "display_name") || ""),
+        location: locationName,
+        streetAddress: String(val(location, "local_address", "formatted_address") || ""),
         checkInFrom: String(val(entity, "check_in_from") || ""),
         checkInUntil: String(val(entity, "check_in_until") || ""),
         checkOutBy: String(val(entity, "check_out_by") || ""),
@@ -3317,8 +3788,8 @@
         travelerIds: travelerIdList(entity),
       };
     }
-    if (kind === "flight") {
-      const detail = detailFor(entity) || {},
+    if (baseKind === "flight") {
+      const detail = detailFor(entity) || {}, contact = directItemContact(entity, "airline") || {},
         dep = zonedDateTimeParts(val(entity, "scheduled_departure_utc", "starts_at_utc"), val(entity, "departure_timezone", "start_timezone")),
         arr = zonedDateTimeParts(val(entity, "scheduled_arrival_utc", "ends_at_utc"), val(entity, "arrival_timezone", "end_timezone")),
         boarding = zonedDateTimeParts(val(entity, "boarding_time_utc"), val(entity, "departure_timezone", "start_timezone")),
@@ -3340,11 +3811,12 @@
         checkedBags: val(detail, "checked_bags") != null ? String(detail.checked_bags) : "",
         bookingReference: String(val(entity, "booking_reference") || ""),
         ticketNumber: String(val(detail, "ticket_number") || ""),
+        notes: String(val(contact, "notes") || ""),
         travelerIds: travelerIdList(entity),
       };
     }
-    if (kind === "train") {
-      const detail = detailFor(entity) || {},
+    if (baseKind === "train") {
+      const detail = detailFor(entity) || {}, contact = directItemContact(entity, "other") || {}, details = parseManualDetailNotes(val(contact, "notes")),
         dep = zonedDateTimeParts(val(entity, "scheduled_departure_utc", "starts_at_utc"), val(entity, "departure_timezone", "start_timezone")),
         arr = zonedDateTimeParts(val(entity, "scheduled_arrival_utc", "ends_at_utc"), val(entity, "arrival_timezone", "end_timezone"));
       return {
@@ -3356,11 +3828,40 @@
         arrivalDate: arr.date, arrivalLocalTime: arr.time,
         serviceNumber: String(val(entity, "service_number") || ""),
         carrierName: String(val(entity, "carrier_name") || ""),
-        platform: String(val(entity, "departure_platform", "platform") || val(detail, "platform") || ""),
-        coach: String(val(detail, "coach") || ""),
+        platform: String(val(entity, "departure_platform", "platform") || val(detail, "platform") || details.platform || ""),
+        coach: String(val(detail, "coach") || details.coach || ""),
         seat: String(val(detail, "seat") || ""),
+        vehicle: String(details.vehicle || ""),
         bookingReference: String(val(entity, "booking_reference") || ""),
         checkedBags: val(detail, "checked_bags") != null ? String(detail.checked_bags) : "",
+        notes: String(details.notes || ""),
+        travelerIds: travelerIdList(entity),
+      };
+    }
+    if (baseKind === "transport") {
+      const depZone = String(val(entity, "departure_timezone", "start_timezone") || ""),
+        arrZone = String(val(entity, "arrival_timezone", "end_timezone") || depZone),
+        dep = zonedDateTimeParts(val(entity, "scheduled_departure_utc", "starts_at_utc"), depZone),
+        arr = zonedDateTimeParts(val(entity, "scheduled_arrival_utc", "ends_at_utc"), arrZone),
+        from = locationInputValue(val(entity, "departure_location_id", "start_location_id"), "reservation"),
+        to = locationInputValue(val(entity, "arrival_location_id", "end_location_id"), "reservation"),
+        contact = directItemContact(entity, kind === "car-rental" ? "rental_car" : "driver") || {},
+        details = parseManualDetailNotes(val(contact, "notes"));
+      return {
+        title: String(val(entity, "carrier_name", "title") || ""),
+        location: from,
+        endLocation: to,
+        reservationDate: dep.date,
+        reservationTime: dep.time,
+        endDate: arr.date,
+        endTime: arr.time,
+        timezone: depZone,
+        endTimezone: arrZone !== depZone ? arrZone : "",
+        confirmationNumber: String(val(entity, "booking_reference") || ""),
+        vehicle: String(val(entity, "service_number") || details.vehicle || ""),
+        driver: String(details.driver || ""),
+        phone: String(val(contact, "phone") || ""),
+        notes: String(details.notes || ""),
         travelerIds: travelerIdList(entity),
       };
     }
@@ -3368,96 +3869,194 @@
     const tz = String(val(entity, "timezone", "start_timezone") || ""),
       start = zonedDateTimeParts(val(entity, "starts_at_utc"), tz),
       end = zonedDateTimeParts(val(entity, "ends_at_utc"), tz),
-      dateName = kind === "activity" ? "activityDate" : "reservationDate",
-      timeName = kind === "activity" ? "activityTime" : "reservationTime",
+      rawNotes = String(val(entity, "notes", "activity_notes", "reservation_notes") || ""),
+      details = parseManualDetailNotes(rawNotes),
+      contactType = kind === "restaurant" ? "other" : kind === "cruise" || kind === "activity" ? "tour_operator" : "other",
+      providerContact = directItemContact(entity, contactType) || contactFor(entity, contactType) || {},
+      location = locationById(val(entity, "start_location_id", "venue_location_id")) || {},
+      dateName = baseKind === "activity" ? "activityDate" : "reservationDate",
+      timeName = baseKind === "activity" ? "activityTime" : "reservationTime",
       hasTime = Number(val(entity, "starts_at_utc")) > 0;
     return {
       title: String(val(entity, "title") || ""),
-      [dateName]: start.date,
+      provider: String(val(providerContact, "display_name") || (kind === "cruise" ? val(entity, "title") : "") || ""),
+      [dateName]: start.date || details.date || "",
       [timeName]: start.time,
       timezone: tz,
       timeMode: hasTime ? "specific" : "unset",
+      endDate: end.date || details.endDate || "",
       endTime: end.time,
-      location: String(val(locationById(val(entity, "start_location_id")), "display_name", "local_name", "formatted_address") || ""),
+      location: String(kind === "restaurant" ? val(location, "city", "display_name", "local_name") : val(location, "display_name", "local_name") || ""),
+      streetAddress: String(val(location, "local_address", "formatted_address") || details.streetAddress || ""),
+      endLocation: String(details.endLocation || ""),
+      guests: String(details.guests || ""),
+      vehicle: String(details.vehicle || ""),
+      driver: String(details.driver || ""),
+      ship: String(details.ship || ""),
+      cabin: String(details.cabin || ""),
+      deck: String(details.deck || ""),
+      embarkation: String(details.embarkation || ""),
+      seatSection: String(details.seatSection || ""),
+      contact: String(details.contact || ""),
+      phone: String(val(providerContact, "phone") || ""),
       activityType: String(val(entity, "activity_type") || ""),
       reservationType: String(val(entity, "reservation_type") || ""),
       confirmationNumber: String(val(entity, "reference", "confirmation_number", "reservation_reference") || ""),
-      notes: String(val(entity, "notes", "activity_notes", "reservation_notes") || ""),
+      notes: String(details.notes || ""),
       travelerIds: travelerIdList(entity),
     };
+  }
+  function manualRouteCard(kind, from = {}, to = {}) {
+    const airport = kind === "flight";
+    const fromName = from.name || "fromLocation",
+      toName = to.name || "toLocation";
+    const placeAttrs = airport
+      ? 'data-place-types="airport" data-place-preferred="airport"'
+      : from.list
+        ? `list="${esc(from.list)}"`
+        : "";
+    const toAttrs = airport
+      ? 'data-place-types="airport" data-place-preferred="airport"'
+      : to.list
+        ? `list="${esc(to.list)}"`
+        : "";
+    const fromPlace = airport
+        ? fromName === "fromLocation"
+          ? '<input type="hidden" name="fromLocationPlace" value="">'
+          : `<input type="hidden" name="${esc(fromName)}Place" value="">`
+        : "",
+      toPlace = airport
+        ? toName === "toLocation"
+          ? '<input type="hidden" name="toLocationPlace" value="">'
+          : `<input type="hidden" name="${esc(toName)}Place" value="">`
+        : "";
+    return `<section class="manual-route-card" aria-label="${esc(from.label || "From")} to ${esc(to.label || "To")}"><div class="manual-route-card__field">${quickField(fromName, from.label || "From", { required: from.required !== false, placeholder: from.placeholder || "Enter location", attrs: `${placeAttrs} data-location-role="departure" data-place-label="${esc(from.aria || from.label || "Departure locations")}"` })}${fromPlace}</div><span class="manual-route-card__line" aria-hidden="true">${icon(kind === "flight" ? "plane" : kind === "ferry" || kind === "cruise" ? "navigation" : kind === "train" ? "train" : "chevron", 20)}</span><div class="manual-route-card__field">${quickField(toName, to.label || "To", { required: to.required !== false, placeholder: to.placeholder || "Enter location", attrs: `${toAttrs} data-location-role="arrival" data-place-label="${esc(to.aria || to.label || "Arrival locations")}"` })}${toPlace}</div></section>`;
+  }
+  function manualAttachmentSize(value) {
+    const bytes = Number(value) || 0;
+    return bytes < 1048576
+      ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+      : `${(bytes / 1048576).toFixed(1)} MB`;
+  }
+  function manualAttachmentRows(scope) {
+    const record = cachedManualAttachment(scope),
+      rows = record?.files || [];
+    if (!rows.length)
+      return `<p class="manual-attachments__empty">No files selected. You can save the booking without one.</p>`;
+    return rows.map((row) => {
+      const status = String(record?.status || "staged").toLowerCase(),
+        failed = ["failed", "error"].includes(status),
+        key = manualAttachmentKey(scope);
+      const selectedType = String(row.type || record?.type || "other"), typeOptions = [
+        ["boarding_pass", "Boarding pass"], ["ticket", "Ticket"],
+        ["hotel_confirmation", "Hotel confirmation"], ["reservation", "Reservation / voucher"],
+        ["qr_code", "QR code"], ["other", "Other document"],
+      ].map(([value, label]) => `<option value="${value}"${selectedType === value ? " selected" : ""}>${label}</option>`).join("");
+      return `<div class="manual-attachment-row document-attachment" data-attachment-id="${esc(row.id)}"><span class="manual-attachment-row__icon">${icon("document", 20)}</span><span class="manual-attachment-row__copy"><strong>${esc(row.name || "Travel document")}</strong><small>${esc(row.sizeLabel || manualAttachmentSize(row.size))}</small><label class="manual-attachment-row__type"><span class="sr-only">Document type for ${esc(row.name || "document")}</span><select data-manual-attachment-type data-scope="${esc(key)}" data-id="${esc(row.id)}" aria-label="Document type for ${esc(row.name || "document")}">${typeOptions}</select></label><em class="manual-attachment-row__status ${failed ? "is-error" : ""}">${failed ? "Needs attention" : status === "linked" ? "Available on this device" : "Ready to attach"}</em></span><button type="button" data-action="manual-attachment-open" data-scope="${esc(key)}" data-id="${esc(row.id)}" aria-label="Open ${esc(row.name || "document")}">Open</button>${failed ? `<button type="button" data-action="manual-attachment-retry" data-scope="${esc(key)}" data-id="${esc(row.id)}" aria-label="Retry ${esc(row.name || "document")}">${icon("refresh", 18)}</button>` : ""}<button type="button" data-action="manual-attachment-remove" data-scope="${esc(key)}" data-id="${esc(row.id)}" aria-label="Remove ${esc(row.name || "document")}">${icon("close", 18)}</button></div>`;
+    }).join("");
+  }
+  function manualAttachmentsSection(kind, scope) {
+    const suggested = manualBookingConfig(kind)?.documentType || "other",
+      key = manualAttachmentKey(scope);
+    const options = [
+      ["boarding_pass", "Boarding pass"], ["ticket", "Ticket"],
+      ["hotel_confirmation", "Hotel confirmation"], ["reservation", "Reservation / voucher"],
+      ["qr_code", "QR code"], ["other", "Other document"],
+    ];
+    return `<section class="manual-attachments" aria-labelledby="manual-attachments-title"><header><span>${icon("document", 21)}</span><div><h2 id="manual-attachments-title">Tickets &amp; Documents</h2><p>Optional · Stored on this device</p></div></header><div class="manual-attachments__controls"><label class="manual-attachments__picker" for="form-manualAttachments">${icon("plus", 19)}<span>Add files</span><input class="sr-only" id="form-manualAttachments" name="manualAttachments" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pkpass" multiple data-manual-attachments data-scope="${esc(key)}"></label><label class="form-field manual-attachments__type" for="form-manualDocumentType"><span>Suggested type <small>Optional</small></span><select id="form-manualDocumentType" name="manualDocumentType" aria-label="Suggested document type">${options.map(([value, label]) => `<option value="${value}"${value === suggested ? " selected" : ""}>${label}</option>`).join("")}</select></label></div><div class="manual-attachments__list" data-manual-attachment-list data-scope="${esc(key)}" aria-live="polite">${manualAttachmentRows(scope)}</div></section>`;
+  }
+  async function refreshManualAttachmentPanel(form, hydrate = false) {
+    const scope = form?.dataset.attachmentScope;
+    const panel = form?.querySelector("[data-manual-attachment-list]");
+    if (!scope || !panel) return null;
+    const record = hydrate ? await listManualAttachments(scope) : cachedManualAttachment(scope);
+    if (document.contains(form)) {
+      panel.innerHTML = manualAttachmentRows(scope);
+      if (hydrate && record?.files?.length) {
+        form.dataset.hasStagedAttachments = "true";
+        formHasMeaningfulChanges = true;
+      }
+    }
+    return record;
   }
   function mobileFormScreen() {
     const kind = String(state.selectedId || "trip");
     if (!QUICK_ADD_KINDS.has(kind)) { formPrefill = null; return basicMobileForm(kind); }
+    const config = manualBookingConfig(kind), baseKind = bookingBaseKind(kind);
     const editingRecord = state.editingEntity && state.editingEntity.kind === kind ? findBookingRecord(kind, state.editingEntity.id) : null;
     formPrefill = editingRecord ? buildBookingPrefill(kind, editingRecord.entity) : null;
     const editId = editingRecord ? itemId(editingRecord.entity) : "", editVersion = editingRecord ? Number(val(editingRecord.entity, "version")) || 1 : 0;
-    const titles = {flight:"Add Flight",hotel:"Add Hotel",train:"Add Train",activity:"Add Activity",reservation:"Add Reservation",document:"Add Document"},
-      editTitles = {flight:"Edit Flight",hotel:"Edit Hotel",train:"Edit Train",activity:"Edit Activity",reservation:"Edit Reservation",document:"Edit Document"},
-      title = editingRecord ? editTitles[kind] : (state.manualLabel || titles[kind]);
+    const title = kind === "document" ? "Add Document" : `${editingRecord ? "Edit" : "Add"} ${config?.shortLabel || config?.label || statusText(kind)}`;
     if (!state.trip) return noTripQuickAdd(kind, title);
-    const localDocumentOptions = `<option value="">No related document</option>${state.localDocs.map((document) => `<option value="${esc(document.id)}">${esc(document.name || statusText(document.type || "Document"))}</option>`).join("")}`;
-    const editing = Boolean(editingRecord), dateDefault = editing ? "" : String(val(state.trip, "starts_on", "startsOn") || "");
-    let primary="", more="", note="", list="", dataLists="", extraClass="";
+    const editing = Boolean(editingRecord), dateDefault = editing ? "" : String(val(state.trip, "starts_on", "startsOn") || ""), attachmentScope = manualAttachmentScope(kind, editId);
+    let primary="", moreContent="", note="", list="", dataLists="", extraClass="";
     if (kind === "flight") {
       list = quickLocationList("flight");
       dataLists = dataListMarkup("suggest-airlines",SUGGEST_LISTS.airlines)+dataListMarkup("suggest-cabin",SUGGEST_LISTS.cabin)+dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"Search airport or code",attrs:'data-location-role="departure" data-place-types="airport" data-place-preferred="airport" data-place-label="Origin airports"'})}<input type="hidden" name="fromLocationPlace" value="">${quickField("toLocation","Destination airport",{required:true,placeholder:"Search airport or code",attrs:'data-location-role="arrival" data-place-types="airport" data-place-preferred="airport" data-place-label="Destination airports"'})}<input type="hidden" name="toLocationPlace" value=""><input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="departure" hidden><span>Origin timezone <b aria-hidden="true">*</b></span><input type="text" name="departureTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="departureTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="arrival" hidden><span>Arrival timezone</span><input type="text" name="arrivalTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="arrivalTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
-      const flightArrivalRow = `<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div><p class="field-helper form-field--wide">Add arrival date and local time together, or leave both empty. The airport timezone is automatic.</p>`;
-      more = quickMore(kind,"More flight details", editing
-        ? `<div class="form-fields">${flightArrivalRow}${quickField("carrierName","Marketing airline",{attrs:'list="suggest-airlines"'})}${quickField("operatingAirlineCode","Operating airline",{attrs:'list="suggest-airlines"'})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false,attrs:'list="suggest-cabin"'})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`
-        : `<div class="form-fields">${flightArrivalRow}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","PNR",{wide:false})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
-      note = "Airport local times are recognized automatically from the three-letter airport codes.";
+      primary = `${quickField("carrierName","Airline",{required:true,placeholder:"Airline name",attrs:'list="suggest-airlines"'})}${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Use the airline code and number when known."})}${manualRouteCard(kind,{label:"From",placeholder:"Airport or code"},{label:"To",placeholder:"Airport or code"})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="departure" hidden><span>Origin timezone <b aria-hidden="true">*</b></span><input type="text" name="departureTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="departureTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="arrival" hidden><span>Arrival timezone</span><input type="text" name="arrivalTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="arrivalTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      moreContent = `<div class="form-fields"><div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("operatingAirlineCode","Operating airline",{attrs:'list="suggest-airlines"'})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false,attrs:'list="suggest-cabin"'})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Airport timezones are set from the selected airports. Scheduled information is never presented as live.";
     } else if (kind === "hotel") {
-      dataLists = dataListMarkup("suggest-hotels",SUGGEST_LISTS.hotel);
-      primary = `${quickField("propertyName","Hotel name",{required:true,placeholder:"Hotel name",attrs:'list="suggest-hotels"'})}${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out", formPrefill?.checkInDate||"", formPrefill?.checkOutDate||"")}${quickDateSuggestions(kind)}`;
-      more = quickMore(kind,"More stay details", editing
-        ? `<div class="form-fields">${quickField("address","Address or location",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`
-        : `<div class="form-fields">${quickField("address","Address or location",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
-      note = "Check-in and check-out times remain unavailable unless you enter them.";
-    } else if (kind === "train") {
-      const ferry = state.manualLabel === "Ferry",
-        originLabel = ferry ? "Departure port" : "Origin station",
-        destinationLabel = ferry ? "Arrival port" : "Destination station",
-        serviceLabel = ferry ? "Ferry or sailing number" : "Train or service number";
+      dataLists = dataListMarkup("suggest-hotels",SUGGEST_LISTS.hotel) + quickLocationList("reservation");
+      primary = `${quickField("propertyName","Property name",{required:true,placeholder:"Hotel or stay name",attrs:'list="suggest-hotels"'})}${quickField("location","City / location",{required:true,placeholder:"Search city or airport",attrs:'data-place-types="city,airport" data-place-preferred="city" data-place-label="Hotel cities and airports"'})}<input type="hidden" name="locationPlace" value="">${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out", formPrefill?.checkInDate||"", formPrefill?.checkOutDate||"")}`;
+      moreContent = `<div class="form-fields">${quickField("streetAddress","Address",{placeholder:"Street address",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Use the single calendar to choose check-in and check-out dates.";
+    } else if (["train","ferry"].includes(kind)) {
+      const ferry = kind === "ferry";
       list = quickLocationList("train");
       dataLists = dataListMarkup("suggest-rail",SUGGEST_LISTS.rail)+dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("fromLocation",originLabel,{required:true,placeholder:ferry?"Port of Civitavecchia":"Roma Termini",attrs:'list="quick-train-locations" data-location-role="departure"'})}${quickField("toLocation",destinationLabel,{required:true,placeholder:ferry?"Port of Olbia":"Firenze S. M. Novella",attrs:'list="quick-train-locations" data-location-role="arrival"'})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("serviceNumber",serviceLabel,{placeholder:"Optional"})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure" list="suggest-timezones"',helper:`Required when the ${ferry?"port":"station"} does not supply a reliable timezone.`})}`;
-      more = quickMore(kind,"More train details", editing
-        ? `<div class="form-fields">${quickField("carrierName","Operator",{attrs:'list="suggest-rail"'})}<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("platform","Platform",{wide:false})}${quickField("coach","Coach",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","Booking reference",{wide:false})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`
-        : `<div class="form-fields">${quickField("platform","Platform",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("bookingReference","Booking reference",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
-      note = "Departure uses the event-local timezone. Platform, arrival, coach, and seat are never guessed.";
-    } else if (kind === "activity") {
-      const cruise = state.manualLabel === "Cruise";
-      primary = `${quickField("title",cruise?"Cruise name":"Activity name",{required:true,placeholder:cruise?"Mediterranean cruise":"Vatican Museums"})}${quickField("activityDate",cruise?"Departure date":"Date",{type:"date",required:true,value:dateDefault})}${quickDateSuggestions(kind)}<fieldset class="time-mode form-field--wide"><legend>Time</legend><div class="time-mode-control"><label><input type="radio" name="timeMode" value="specific" ${formPrefill?.timeMode==="unset"?"":"checked"}><span>Has a specific time</span></label><label><input type="radio" name="timeMode" value="unset" ${formPrefill?.timeMode==="unset"?"checked":""}><span>Time not set yet</span></label></div></fieldset><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location",cruise?"Departure port":"Location",{placeholder:"Optional",attrs:'list="quick-activity-locations" data-location-role="activity"'})}<input type="hidden" name="activityType" value="${cruise?"cruise":"activity"}">`;
+      primary = `${manualRouteCard(kind,{label:ferry?"Departure port":"From station",placeholder:ferry?"Departure port":"Station",list:"quick-train-locations"},{label:ferry?"Arrival port":"To station",placeholder:ferry?"Arrival port":"Station",list:"quick-train-locations"})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickField("carrierName",ferry?"Ferry operator":"Train operator",{attrs:'list="suggest-rail"',optional:true})}${quickField("serviceNumber",ferry?"Sailing number":"Train / service number",{optional:true})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure" list="suggest-timezones"',helper:`Use the ${ferry?"port":"station"} local timezone.`})}`;
+      moreContent = `<div class="form-fields"><div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("platform",ferry?"Pier / berth":"Platform",{wide:false})}${quickField("coach","Coach / cabin",{wide:false})}${quickField("seat","Seat",{wide:false})}${ferry ? quickField("vehicle","Vehicle",{optional:true,placeholder:"Vehicle or registration"}) : ""}${quickField("bookingReference","Booking reference",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = `${ferry ? "Ports" : "Stations"} remain manual or use saved trip locations; the app does not pretend the city index is a station directory.`;
+    } else if (kind === "car-rental") {
+      list = quickLocationList("reservation");
+      dataLists = dataListMarkup("suggest-carrental",SUGGEST_LISTS.carRental)+dataListMarkup("suggest-timezones",timezoneOptions());
+      primary = `${quickField("title","Rental company",{required:true,placeholder:"Company",attrs:'list="suggest-carrental"'})}${manualRouteCard(kind,{name:"location",label:"Pickup location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"},{name:"endLocation",label:"Drop-off location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"})}${dateRangeField("reservationDate", "endDate", "Rental dates", "Pickup", "Drop-off", formPrefill?.reservationDate||dateDefault, formPrefill?.endDate||"")}<div class="form-fields form-fields--date-time">${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}${quickField("endTime","Drop-off time",{type:"time",required:true,wide:false})}</div>${quickField("timezone","Pickup timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<input type="hidden" name="transportType" value="car">`;
+      moreContent = `<div class="form-fields">${quickField("endTimezone","Drop-off timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Only needed when drop-off uses a different timezone."})}${quickField("vehicle","Vehicle / class",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("driver","Driver name",{})}${quickField("phone","Rental phone",{type:"tel"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Pickup and drop-off are kept together as one rental booking.";
+    } else if (kind === "transfer") {
+      list = quickLocationList("reservation");
+      dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
+      primary = `${quickField("title","Provider / driver",{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:"From",placeholder:"Pickup location",list:"quick-reservation-locations"},{name:"endLocation",label:"To",placeholder:"Destination",list:"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Pickup date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}</div>${quickField("timezone","Pickup timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<input type="hidden" name="transportType" value="transfer">`;
+      moreContent = `<div class="form-fields">${quickField("endTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Only needed when the destination uses a different timezone."})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone","Driver / provider phone",{type:"tel"})}${quickField("vehicle","Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Only confirmed pickup details are shown in the Timeline.";
+    } else if (kind === "cruise") {
       list = quickLocationList("activity");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      more = quickMore(kind,"More details", editing
-        ? `<div class="form-fields">${quickField("activityType","Activity type",{})}${quickField("endTime","End time",{type:"time",wide:false})}${quickField("reservationWindow","Reservation window",{wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document or ticket",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`
-        : `<div class="form-fields">${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
-      note = "A date is always required. Choose Time not set yet explicitly if the booking has no confirmed time.";
-    } else if (kind === "reservation") {
-      const reservationLabels = {"Car Rental":["Rental company or vehicle","Pickup date","Pickup time","Pickup location","car_rental"],"Transfer":["Transfer","Pickup date","Pickup time","Pickup location","transfer"],"Restaurant":["Restaurant name","Reservation date","Reservation time","Location","restaurant"],"Other":["Booking name","Date","Local time","Location","other"]}, labels=reservationLabels[state.manualLabel]||["Reservation name","Date","Local time","Location","reservation"];
-      const isCarRental = state.manualLabel === "Car Rental", titleSuggest = isCarRental ? ' list="suggest-carrental"' : "";
-      primary = `${quickField("title",labels[0],{required:true,placeholder:labels[0],attrs:titleSuggest})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",labels[1],{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",labels[2],{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("location",labels[3],{placeholder:"Optional",attrs:'list="quick-reservation-locations" data-location-role="reservation"'})}<input type="hidden" name="reservationType" value="${esc(labels[4])}">`;
+      primary = `${quickField("provider","Cruise line",{required:true,placeholder:"Cruise line"})}${quickField("ship","Ship",{optional:true,placeholder:"Ship name"})}${manualRouteCard(kind,{name:"location",label:"Departure port",placeholder:"Port",list:"quick-activity-locations"},{name:"endLocation",label:"Arrival / return port",placeholder:"Port",list:"quick-activity-locations"})}<div class="form-fields form-fields--date-time">${quickField("activityDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("activityTime","Departure time",{type:"time",optional:true,wide:false})}</div>${quickField("endDate","Return / arrival date",{type:"date",required:true})}${quickField("timezone","Departure timezone",{optional:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Needed only when you add a departure or arrival time."})}<input type="hidden" name="timeMode" value="specific"><input type="hidden" name="activityType" value="cruise">`;
+      moreContent = `<div class="form-fields">${quickField("title","Cruise name",{optional:true,placeholder:"Optional itinerary name"})}${quickField("endTime","Arrival time",{type:"time",wide:false,optional:true})}${quickField("confirmationNumber","Booking reference",{})}${quickField("cabin","Cabin",{optional:true})}${quickField("deck","Deck",{optional:true})}${quickField("embarkation","Embarkation details",{optional:true,placeholder:"Terminal, pier, or check-in point"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Port names stay manual until a dedicated port directory is available.";
+    } else if (kind === "restaurant") {
       list = quickLocationList("reservation");
-      dataLists = dataListMarkup("suggest-timezones",timezoneOptions())+(isCarRental?dataListMarkup("suggest-carrental",SUGGEST_LISTS.carRental):"");
-      more = quickMore(kind,"More details", editing
-        ? `<div class="form-fields">${quickField("reservationType","Reservation type",{})}${quickField("endTime","End time or window",{type:"time"})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider",{attrs:isCarRental?'list="suggest-carrental"':""})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("relatedDocument","Document",{type:"select",choices:localDocumentOptions})}${quickField("notes","Notes",{type:"textarea"})}</div>`
-        : `<div class="form-fields">${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`);
-      note = "Reservation time uses the event-local timezone and is required.";
+      dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
+      primary = `${quickField("title","Restaurant name",{required:true,placeholder:"Restaurant"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Reservation date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",required:true,wide:false})}</div>${quickField("guests","Guests",{type:"number",required:true,wide:false,attrs:'min="1" max="99" inputmode="numeric"'})}${quickField("location","City / location",{optional:true,placeholder:"City or saved trip location",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<input type="hidden" name="reservationType" value="restaurant">`;
+      moreContent = `<div class="form-fields">${quickField("streetAddress","Street address",{optional:true,placeholder:"Restaurant address"})}${quickField("phone","Restaurant phone",{type:"tel",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Guest count and confirmation stay with this reservation.";
+    } else if (kind === "activity") {
+      list = quickLocationList("activity");
+      dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
+      primary = `${quickField("title","Activity name",{required:true,placeholder:"Vatican Museums"})}${quickField("activityType","Type",{type:"select",required:true,choices:'<option value="activity">Activity</option><option value="tour">Tour</option><option value="concert">Concert</option><option value="theatre">Theatre</option><option value="museum">Museum</option><option value="attraction">Attraction</option><option value="sports">Sports</option><option value="meeting">Meeting</option><option value="show">Show</option><option value="other">Other</option>'})}${quickField("activityDate","Date",{type:"date",required:true,value:dateDefault})}<input type="hidden" name="timeMode" value="specific"><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location","Venue",{required:true,placeholder:"Venue or saved trip location",attrs:'list="quick-activity-locations"'})}`;
+      moreContent = `<div class="form-fields">${quickField("endTime","End time",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickField("seatSection","Seat / section",{optional:true})}${quickField("streetAddress","Address",{optional:true,placeholder:"Venue address"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Use the venue's local time. Nothing is presented as live.";
+    } else if (["other","reservation"].includes(kind)) {
+      list = quickLocationList("reservation");
+      dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
+      primary = `${quickField("title","Booking title",{required:true,placeholder:"What did you book?"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",optional:true,wide:false})}</div>${quickField("location","Location",{optional:true,placeholder:"Optional",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Needed only when you add a time."})}<input type="hidden" name="reservationType" value="other">`;
+      moreContent = `<div class="form-fields"><div class="form-fields--date-time">${quickField("endDate","End date",{type:"date",wide:false})}${quickField("endTime","End time",{type:"time",wide:false})}</div>${quickField("confirmationNumber","Confirmation number",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = "Add only the details you know; nothing is guessed.";
     } else {
       const bookingOptions = bookingRows().map(({item}) => `<option value="${esc(itemId(item))}">${esc(val(item,"title","property_name")||"Booking")}</option>`).join(""),
         travelerSpecific = state.travelers.length ? quickTravelerField() : "";
       primary = `<div class="form-field form-field--wide quick-document-file"><label class="document-file-picker" for="form-documentFile">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="form-documentFile" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div></div>${quickField("documentType","Document type",{type:"select",required:true,choices:'<option value="boarding_pass">Boarding pass</option><option value="ticket">Ticket</option><option value="hotel_confirmation">Hotel confirmation</option><option value="reservation">Reservation</option><option value="voucher">Voucher</option><option value="qr_code">QR code</option><option value="passport_copy">Passport copy</option><option value="other">Other</option>'})}<div class="document-traveler-assignment">${travelerSpecific}</div>`;
-      more = quickMore(kind,"More details",`<div class="form-fields">${quickField("relatedBooking","Related booking",{type:"select",choices:`<option value="">No related booking</option>${bookingOptions}`})}</div>`);
+      moreContent = `<div class="form-fields">${quickField("relatedBooking","Related booking",{type:"select",choices:`<option value="">No related booking</option>${bookingOptions}`})}</div>`;
       note = "Files stay on this phone.";
       extraClass = " document-quick-add";
     }
     const editAttrs = editingRecord ? ` data-edit-id="${esc(editId)}" data-edit-version="${esc(editVersion)}"` : "";
-    const submitLabel = editingRecord ? "Save changes" : (kind === "document" ? "Save on This Phone" : `Save ${esc(statusText(kind))}`);
-    const heading = editingRecord ? `Edit ${esc(statusText(kind))}` : esc(title);
-    const form = `<form class="mobile-form premium-form quick-add-form${extraClass}" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate>${quickTripContext()}<section class="form-section"><div class="quick-primary-fields">${primary}</div>${list}${dataLists}</section>${more}${note ? `<p class="form-note">${esc(note)}</p>` : ""}<div class="form-save-bar"><button type="submit" class="mobile-primary-action">${submitLabel}</button></div></form>`;
+    const submitLabel = editingRecord ? "Save changes" : (kind === "document" ? "Save on This Phone" : config?.cta || `Add ${esc(statusText(kind))}`);
+    const heading = editingRecord ? `Edit ${esc(config?.shortLabel || config?.label || statusText(kind))}` : esc(config?.shortLabel || config?.label || title);
+    const attachments = kind === "document" ? "" : manualAttachmentsSection(kind, attachmentScope);
+    const form = `<form class="mobile-form premium-form quick-add-form manual-booking-form${extraClass}" id="native-form" data-kind="${esc(kind)}" data-base-kind="${esc(baseKind)}" data-client-request-id="${esc(manualBookingDraftId(kind, editId))}" data-attachment-scope="${esc(attachmentScope.draftId)}"${editAttrs} novalidate>${quickTripContext()}<header class="manual-form-heading"><span>Manual booking</span><h1>${heading}</h1><p>Start with the essentials. Add anything else only when you need it.</p></header><section class="form-section manual-essentials" aria-labelledby="manual-essentials-title"><h2 id="manual-essentials-title">Essentials</h2><div class="quick-primary-fields">${primary}</div>${list}${dataLists}</section>${attachments}${quickMore(kind,"More Details",moreContent)}${note ? `<p class="form-note">${esc(note)}</p>` : ""}<div class="form-save-bar"><button type="submit" class="mobile-primary-action">${submitLabel}</button></div></form>`;
     return focusedTaskPage(title, form, `form-screen quick-add-screen quick-add-screen--${kind}`);
   }
   function driverScreen() {
@@ -3490,7 +4089,8 @@
     const monthStart = new Date(`${rangeMonthStart(range.month)}T12:00:00Z`), year = monthStart.getUTCFullYear(), month = monthStart.getUTCMonth(), firstWeekday = monthStart.getUTCDay(), daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate(), previousDays = new Date(Date.UTC(year, month, 0)).getUTCDate(), cells = [];
     for (let index = 0; index < 42; index += 1) {
       const dayOffset = index - firstWeekday + 1, date = new Date(Date.UTC(year, month, dayOffset)), iso = date.toISOString().slice(0, 10), inMonth = date.getUTCMonth() === month, isStart = iso === range.start, isEnd = iso === range.end, inRange = Boolean(range.start && range.end && iso > range.start && iso < range.end), label = new Intl.DateTimeFormat(undefined, { weekday:"long", month:"long", day:"numeric", year:"numeric", timeZone:"UTC" }).format(date);
-      cells.push(`<button type="button" class="range-day${inMonth ? "" : " is-outside"}${inRange ? " is-between" : ""}${isStart ? " is-start" : ""}${isEnd ? " is-end" : ""}" data-action="select-range-day" data-date="${iso}" aria-label="${esc(label)}${isStart ? ", start date" : isEnd ? ", end date" : ""}" aria-pressed="${isStart || isEnd}"><span>${date.getUTCDate()}</span></button>`);
+      const isFocused = iso === range.focusDate || (!range.focusDate && ((range.start && iso === range.start) || (!range.start && inMonth && dayOffset === 1)));
+      cells.push(`<button type="button" role="gridcell" tabindex="${isFocused ? "0" : "-1"}" class="range-day${inMonth ? "" : " is-outside"}${inRange ? " is-between" : ""}${isStart ? " is-start" : ""}${isEnd ? " is-end" : ""}" data-action="select-range-day" data-date="${iso}" aria-label="${esc(label)}${isStart ? ", start date" : isEnd ? ", end date" : ""}" aria-selected="${isStart || isEnd}"><span>${date.getUTCDate()}</span></button>`);
     }
     const summary = range.start ? range.end ? `${formatDateOnly(range.start)} – ${formatDateOnly(range.end)}` : `${formatDateOnly(range.start)} · now choose ${range.endLabel.toLowerCase()}` : `Choose ${range.startLabel.toLowerCase()}`;
     return bottomSheet("date-range", range.title, `<div class="range-picker"><div class="range-picker__summary" role="status" tabindex="-1"><small>${esc(range.startLabel)} → ${esc(range.endLabel)}</small><strong>${esc(summary)}</strong></div><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back", 20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron", 20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${range.start && range.end ? "" : " disabled"}>Use these dates</button></div>`);
@@ -3508,13 +4108,8 @@
     return focusedTaskPage(`Add to ${state.trip.title || "trip"}`, `<section class="v2-task-intro"><span>Add Booking</span><h1>How would you like<br>to add it?</h1><p>Everything you add appears in the Timeline.</p></section><div class="v2-choice-list">${choice("document","Upload Booking","Choose a ticket or confirmation file","open-upload-booking")}${choice("mail","Forward Confirmation Email","Send it to go@tripto.to","open-forward-booking")}${choice("plus","Add Manually","Enter only the confirmed details","open-manual-booking")}</div>`, "v2-add-booking");
   }
   function manualBookingSheet() {
-    const options = [
-      ["plane","Flight","flight"],["hotel","Hotel / Stay","hotel"],["train","Train","train"],
-      ["car","Car Rental","reservation"],["navigation","Transfer","reservation"],["trips","Cruise","activity"],
-      ["navigation","Ferry","train"],["restaurant","Restaurant","reservation"],["star","Activity / Event","activity"],
-      ["calendar","Other","reservation"],
-    ];
-    return bottomSheet("manual-booking","Add Manually",`<div class="sheet-options-group manual-v2-options">${options.map(([ic,title,type])=>`<button class="sheet-option" data-action="add-type" data-type="${type}" data-manual-label="${esc(title)}"><span class="info-icon">${icon(ic,21)}</span><span><strong>${esc(title)}</strong></span>${icon("chevron",20)}</button>`).join("")}</div>`);
+    const options = Object.entries(MANUAL_BOOKING_TYPES);
+    return bottomSheet("manual-booking","Add Manually",`<label class="manual-category-search" for="manual-category-search"><span class="sr-only">Search booking categories</span>${icon("search",18)}<input id="manual-category-search" type="search" inputmode="search" autocomplete="off" placeholder="Search categories" data-manual-category-search></label><div class="sheet-options-group manual-v2-options" data-manual-category-list>${options.map(([type,config])=>`<button type="button" class="sheet-option" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" data-manual-category="${esc(config.label.toLowerCase())}"><span class="info-icon">${icon(config.icon,21)}</span><span><strong>${esc(config.label)}</strong></span>${icon("chevron",20)}</button>`).join("")}</div><p class="manual-category-empty" data-manual-category-empty hidden>No matching category.</p>`);
   }
   function documentSheet() {
     const travelers = state.travelers
@@ -3842,7 +4437,8 @@
   }
   function validateFocusedForm(form) {
     clearFieldErrors(form);
-    const kind = form.dataset.kind;
+    const kind = form.dataset.kind,
+      baseKind = form.dataset.baseKind || bookingBaseKind(kind);
     if (kind === "trip") {
       const result = tripRules?.validateManualTrip({
         title: form.elements.title?.value || form.elements.destination?.value,
@@ -3856,7 +4452,7 @@
         return false;
       }
     }
-    if (kind === "hotel") {
+    if (baseKind === "hotel") {
       const checkIn = form.elements.checkInDate,
         checkOut = form.elements.checkOutDate;
       if (!checkIn?.value || !checkOut?.value) {
@@ -3868,7 +4464,30 @@
         return false;
       }
     }
-    if (kind === "flight") {
+    if (baseKind === "flight") {
+      const requiredEssentials = [
+        "carrierName",
+        "flightNumber",
+        "fromLocation",
+        "toLocation",
+        "departureDate",
+        "departureLocalTime",
+      ];
+      const invalidEssential = requiredEssentials
+        .map((name) => form.elements[name])
+        .find((control) => control && control.validity?.valid === false);
+      if (invalidEssential) {
+        showFieldError(
+          form,
+          invalidEssential,
+          invalidEssential.validity?.valueMissing
+            ? "This field is required."
+            : "Check this value and try again.",
+        );
+        return false;
+      }
+    }
+    if (baseKind === "flight") {
       const departureTimezone =
           String(form.elements.departureTimezone?.value || "") ||
           placeTimezoneForInput(form.elements.fromLocation, "flight"),
@@ -3896,7 +4515,7 @@
       form.elements.departureTimezone.value = departureTimezone;
       form.elements.arrivalTimezone.value = arrivalTimezone;
     }
-    if (["flight", "train"].includes(kind)) {
+    if (["flight", "train"].includes(baseKind)) {
       const date = form.elements.arrivalDate,
         time = form.elements.arrivalLocalTime,
         timezone = form.elements.arrivalTimezone,
@@ -3907,34 +4526,15 @@
         showFieldError(
           form,
           missing,
-          kind === "flight"
+          baseKind === "flight"
             ? "Add arrival date and local time together—or leave both unavailable. The airport timezone is automatic."
             : "Add arrival date, local time, and timezone together—or leave all three unavailable.",
         );
         return false;
       }
-      if (kind === "flight" && !hasDate && !hasTime) {
-        const flightOnly = [
-          "operatingAirlineCode",
-          "departureTerminal",
-          "departureGate",
-          "boardingTime",
-          "gateCloseTime",
-        ]
-          .map((name) => form.elements[name])
-          .find((control) => String(control?.value || "").trim());
-        if (flightOnly) {
-          showFieldError(
-            form,
-            flightOnly,
-            "Add arrival details before saving this flight-only field, or leave it unavailable for now.",
-          );
-          return false;
-        }
-      }
     }
     if (
-      kind === "activity" &&
+      baseKind === "activity" &&
       form.elements.timeMode?.value === "specific" &&
       !form.elements.activityTime?.value
     ) {
@@ -3944,6 +4544,28 @@
         "Add the local time or choose Time not set yet.",
       );
       return false;
+    }
+    if (kind === "car-rental") {
+      if (!form.elements.reservationDate?.value || !form.elements.endDate?.value) {
+        showFieldError(form, form.elements.reservationDate || form.elements.endDate, "Choose pickup and drop-off dates from one calendar.");
+        return false;
+      }
+      const start = `${form.elements.reservationDate?.value || ""}T${form.elements.reservationTime?.value || ""}`,
+        end = `${form.elements.endDate?.value || ""}T${form.elements.endTime?.value || ""}`;
+      if (start && end && end < start) {
+        showFieldError(form, form.elements.endDate, "Drop-off cannot be before pickup.");
+        return false;
+      }
+    }
+    if (["cruise", "other"].includes(kind)) {
+      const timeName = kind === "cruise" ? "activityTime" : "reservationTime",
+        time = String(form.elements[timeName]?.value || "").trim(),
+        timezone = String(form.elements.timezone?.value || "").trim(),
+        endTime = String(form.elements.endTime?.value || "").trim();
+      if ((time || endTime) && !timezone) {
+        showFieldError(form, form.elements.timezone, "Add the event's IANA timezone when a local time is provided.");
+        return false;
+      }
     }
     const invalid = form.querySelector(":invalid");
     if (!invalid) return true;
@@ -3987,11 +4609,25 @@
   }
   function bindMeaningfulChanges(form) {
     const update = () => {
-      formHasMeaningfulChanges = [...form.elements].some((control) => {
+      formHasMeaningfulChanges = form.dataset.hasStagedAttachments === "true" || [...form.elements].some((control) => {
         if (!control.name || control.disabled) return false;
         if (control.type === "file") return Boolean(control.files?.length);
         if (["checkbox", "radio"].includes(control.type))
-          return control.checked !== control.defaultChecked;
+          return control.checked !== control.hasAttribute("checked");
+        if (control.tagName === "SELECT") {
+          const selected = [...control.selectedOptions].map((option) => option.value),
+            defaults = [...control.options]
+              .filter((option) => option.defaultSelected)
+              .map((option) => option.value),
+            expected = control.multiple
+              ? defaults
+              : defaults.length
+                ? [defaults[0]]
+                : control.options.length
+                  ? [control.options[0].value]
+                  : [];
+          return selected.join("\u0000") !== expected.join("\u0000");
+        }
         return String(control.value || "") !== String(control.defaultValue || "");
       });
       if (supportsFormDraft(form.dataset.kind)) saveQuickDraft(form);
@@ -4016,6 +4652,8 @@
     values.__moreOpen =
       form.querySelector(".form-more-toggle")?.getAttribute("aria-expanded") ===
       "true";
+    if (form.dataset.clientRequestId)
+      values.__manualDraftId = form.dataset.clientRequestId;
     try {
       sessionStorage.setItem(quickDraftKey(kind), JSON.stringify(values));
     } catch (_) {}
@@ -4026,6 +4664,8 @@
       draft = JSON.parse(sessionStorage.getItem(quickDraftKey(form.dataset.kind)) || "null");
     } catch (_) {}
     if (!draft) return false;
+    if (draft.__manualDraftId && form.dataset.clientRequestId)
+      form.dataset.clientRequestId = String(draft.__manualDraftId);
     for (const control of form.elements) {
       if (!control.name || control.type === "file") continue;
       const saved = draft[control.name];
@@ -4268,6 +4908,59 @@
           if (verifyState) verifyState.textContent = "Ready to verify when saved on this phone.";
         });
       }
+      const manualFiles = nativeForm.querySelector("[data-manual-attachments]");
+      if (manualFiles) {
+        const attachmentList = nativeForm.querySelector("[data-manual-attachment-list]");
+        refreshManualAttachmentPanel(nativeForm, true)
+          .then((record) => {
+            if (record?.files?.length) formHasMeaningfulChanges = true;
+          })
+          .catch(() => {});
+        manualFiles.addEventListener("change", async () => {
+          const files = Array.from(manualFiles.files || []),
+            type = String(nativeForm.elements.manualDocumentType?.value || "other"),
+            picker = manualFiles.closest(".manual-attachments__picker"),
+            submit = nativeForm.querySelector('button[type="submit"]');
+          if (!files.length) return;
+          picker?.classList.add("is-busy");
+          nativeForm.dataset.manualAttachmentsBusy = "true";
+          manualFiles.disabled = true;
+          if (submit) submit.disabled = true;
+          try {
+            await stageManualAttachments(nativeForm.dataset.attachmentScope, files, {
+              documentType: type,
+              kind: nativeForm.dataset.kind,
+              tripId: state.trip?.id || null,
+              travelerIds: selectedTravelerIds(new FormData(nativeForm)),
+            });
+            formHasMeaningfulChanges = true;
+            await refreshManualAttachmentPanel(nativeForm);
+          } catch (error) {
+            showFormSubmissionError(nativeForm, error?.message || "The selected files could not be prepared. Your booking details are still here.");
+          } finally {
+            delete nativeForm.dataset.manualAttachmentsBusy;
+            manualFiles.disabled = false;
+            manualFiles.value = "";
+            picker?.classList.remove("is-busy");
+            if (submit && nativeForm.getAttribute("aria-busy") !== "true") submit.disabled = false;
+          }
+        });
+        attachmentList?.addEventListener("change", async (event) => {
+          const select = event.target.closest("[data-manual-attachment-type]");
+          if (!select) return;
+          select.disabled = true;
+          try {
+            await retypeManualAttachment(select.dataset.scope, select.dataset.id, select.value);
+            formHasMeaningfulChanges = true;
+            nativeForm.dataset.hasStagedAttachments = "true";
+            await refreshManualAttachmentPanel(nativeForm);
+          } catch (error) {
+            showFormSubmissionError(nativeForm, error?.message || "The document type could not be updated.");
+          } finally {
+            if (document.contains(select)) select.disabled = false;
+          }
+        });
+      }
       bindMeaningfulChanges(nativeForm);
       nativeForm.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -4291,6 +4984,23 @@
       });
     }
     setupGoogleSignIn();
+    const manualCategorySearch = document.querySelector("[data-manual-category-search]");
+    if (manualCategorySearch && !manualCategorySearch.dataset.bound) {
+      manualCategorySearch.dataset.bound = "1";
+      const filter = () => {
+        const query = normalizedLocationInput(manualCategorySearch.value),
+          rows = [...document.querySelectorAll("[data-manual-category]")];
+        let visible = 0;
+        rows.forEach((row) => {
+          const match = !query || normalizedLocationInput(row.dataset.manualCategory).includes(query);
+          row.hidden = !match;
+          if (match) visible += 1;
+        });
+        const empty = document.querySelector("[data-manual-category-empty]");
+        if (empty) empty.hidden = visible > 0;
+      };
+      manualCategorySearch.addEventListener("input", filter);
+    }
     document.querySelectorAll('input[data-action="toggle-checklist"]').forEach((input) => input.addEventListener("change", () => toggleChecklistItem(input)));
     setupSheet();
   }
@@ -4335,6 +5045,27 @@
       icaoCode: place.icao || null,
     });
   }
+  async function createManualVenueLocation(type, displayName, cityContext, streetAddress, timezone, selectedPlace, existingId = "") {
+    const name = String(displayName || cityContext || streetAddress || "").trim(),
+      city = String(cityContext || "").trim(), address = String(streetAddress || "").trim(),
+      snapshot = parsePlaceSnapshot(selectedPlace), existing = locationById(existingId);
+    if (!name) return null;
+    if (existing) {
+      const existingName = String(val(existing, "display_name", "local_name") || "").trim(),
+        existingCity = String(val(existing, "city") || "").trim(),
+        existingAddress = String(val(existing, "local_address", "formatted_address") || "").trim();
+      if (existingName === name && existingCity === city && existingAddress === address) return existing;
+    }
+    return createMobileLocation(type, name, {
+      formattedAddress: address || city || null,
+      localAddress: address || null,
+      city: snapshot?.cityName || (snapshot?.type === "city" ? snapshot.name : null) || city || null,
+      countryName: snapshot?.countryName || null,
+      countryCode: snapshot?.countryCode || null,
+      region: snapshot?.region || null,
+      timezone: snapshot?.timezone || timezone || null,
+    });
+  }
   function quickLocationParts(value, kind) {
     const known = knownLocationForInput(value, kind);
     if (known) return { known, name: String(val(known, "display_name", "local_name") || value), code: String(val(known, kind === "flight" ? "iata_code" : "station_code") || "") };
@@ -4344,7 +5075,7 @@
   async function quickLocation(value, kind, timezone = "", selectedPlace = null) {
     const parts = quickLocationParts(value, kind);
     if (parts.known) return parts.known;
-    const type = kind === "flight" ? "airport" : kind === "train" ? "station" : kind === "hotel" ? "hotel" : kind === "reservation" ? "restaurant" : "attraction";
+    const type = kind === "flight" ? "airport" : kind === "train" ? "station" : kind === "hotel" ? "hotel" : kind === "transport" ? "address" : kind === "reservation" ? "restaurant" : "attraction";
     const snapshot = parsePlaceSnapshot(selectedPlace);
     if (snapshot) return createLocationFromPlace(snapshot, type);
     return createMobileLocation(type, parts.name, {
@@ -4366,7 +5097,8 @@
     return { raw: `${match[1]} ${match[2]}`, code: match[1], number: match[2] };
   }
   async function saveTravelerFacts(tripId, itemId, travelerIds, fd) {
-    if (!itemId || travelerIds.length !== 1) return;
+    const assignedTravelerIds = [...new Set((travelerIds || []).map(String).filter(Boolean))];
+    if (!itemId || !assignedTravelerIds.length) return;
     const values = {
       seat: fd.get("seat") || null,
       cabinClass: fd.get("cabin") || null,
@@ -4374,15 +5106,81 @@
       checkedBags: fd.get("checkedBags") === "" ? null : Number(fd.get("checkedBags")),
     };
     if (!Object.values(values).some((value) => value !== null && value !== "")) return;
-    await api(`/api/v1/trips/${tripId}/booking-details`, { method: "PUT", body: JSON.stringify({ tripItemId: itemId, travelerId: travelerIds[0], ...values }) });
+    for (const travelerId of assignedTravelerIds) {
+      await api(`/api/v1/trips/${tripId}/booking-details`, { method: "PUT", body: JSON.stringify({ tripItemId: itemId, travelerId, ...values }) });
+    }
   }
-  async function saveItemContact(tripId, itemId, type, displayName, fd) {
-    const phone = String(fd.get("phone") || ""), email = String(fd.get("email") || ""), notes = String(fd.get("notes") || "");
-    if (!displayName && !phone && !email && !notes) return;
-    await api(`/api/v1/trips/${tripId}/contacts`, { method: "POST", body: JSON.stringify({ contactType: type, displayName: displayName || statusText(type), phone: phone || null, email: email || null, notes: notes || null, tripItemId: itemId }) });
+  async function saveManualContact(tripId, itemId, type, displayName, details = {}, existingEntity = null, clientRequestId = "") {
+    const phone = String(details.phone || "").trim(), email = String(details.email || "").trim(),
+      notes = String(details.notes || "").trim(), name = String(displayName || statusText(type)).trim(),
+      existing = (existingEntity ? directItemContact(existingEntity, type) : null) || directItemContactById(itemId, type),
+      body = { contactType:type, displayName:name, phone:phone || null, email:email || null, notes:notes || null, tripItemId:itemId };
+    if (!name && !phone && !email && !notes) return null;
+    if (existing?.id) {
+      return api(`/api/v1/trips/${tripId}/contacts/${encodeURIComponent(existing.id)}`, {
+        method:"PATCH", body:JSON.stringify({ ...body, version:Number(existing.version) || 1 }),
+      });
+    }
+    const requestKey = clientRequestId ? `${clientRequestId}:contact:${type}` : "";
+    return api(`/api/v1/trips/${tripId}/contacts`, {
+      method:"POST",
+      ...(requestKey ? { headers:{ "Idempotency-Key":requestKey } } : {}),
+      body:JSON.stringify(body),
+    });
+  }
+  async function saveManualSecondaryDetails(kind, tripId, itemId, fd, existingEntity, saveContact = saveManualContact, clientRequestId = "") {
+    if (!itemId) return "";
+    try {
+      const travelers = selectedTravelerIds(fd), userNotes = String(fd.get("notes") || ""),
+        config = manualBookingConfig(kind), label = config?.label || "Booking",
+        saveScopedContact = (type, displayName, details = {}) =>
+          saveContact(tripId, itemId, type, displayName, details, existingEntity, clientRequestId);
+      if (["flight", "train", "ferry"].includes(kind)) await saveTravelerFacts(tripId, itemId, travelers, fd);
+      if (kind === "flight") {
+        await saveScopedContact("airline", String(fd.get("carrierName") || "Airline"), { notes:userNotes });
+      } else if (["train", "ferry"].includes(kind)) {
+        const notes = buildManualDetailNotes([
+          ["Platform", fd.get("platform")], ["Coach", fd.get("coach")],
+          ["Vehicle", kind === "ferry" ? fd.get("vehicle") : ""],
+        ], userNotes);
+        await saveScopedContact("other", String(fd.get("carrierName") || label), { notes });
+      } else if (kind === "hotel") {
+        await saveScopedContact("hotel", String(fd.get("propertyName") || "Hotel"), {
+          phone:fd.get("phone"), email:fd.get("email"), notes:userNotes,
+        });
+      } else if (kind === "car-rental") {
+        await saveScopedContact("rental_car", String(fd.get("title") || "Car rental"), {
+          phone:fd.get("phone"), notes:buildManualDetailNotes([["Driver", fd.get("driver")]], userNotes),
+        });
+      } else if (kind === "transfer") {
+        await saveScopedContact("driver", String(fd.get("driver") || fd.get("title") || "Transfer"), {
+          phone:fd.get("phone"), notes:buildManualDetailNotes([["Driver", fd.get("driver")], ["Vehicle", fd.get("vehicle")]], userNotes),
+        });
+      } else if (kind === "cruise") {
+        await saveScopedContact("tour_operator", String(fd.get("provider") || "Cruise line"));
+      } else if (kind === "restaurant") {
+        await saveScopedContact("other", String(fd.get("title") || "Restaurant"), { phone:fd.get("phone") });
+      } else if (kind === "activity" && fd.get("provider")) {
+        await saveScopedContact("tour_operator", String(fd.get("provider")));
+      }
+      return "";
+    } catch (_) {
+      const warning = "Booking saved, but some optional details could not be saved. Edit the booking to retry those details; the booking will not be submitted again.";
+      return warning;
+    }
   }
   async function saveNativeForm(form) {
-    const kind=form.dataset.kind, fd=new FormData(form), tripId=encodeURIComponent(state.trip?.id || ""), isFirstTripCreation=kind==="trip"&&state.trips.length===0, editId=form.dataset.editId||"", editVersion=Number(form.dataset.editVersion)||1;
+    const kind=form.dataset.kind, baseKind=form.dataset.baseKind||bookingBaseKind(kind), fd=new FormData(form), tripId=encodeURIComponent(state.trip?.id || ""), isFirstTripCreation=kind==="trip"&&state.trips.length===0, editId=form.dataset.editId||"", editVersion=Number(form.dataset.editVersion)||1,
+      existingBookingEntity=editId?findBookingRecord(kind,editId)?.entity||null:null,
+      clientRequestId=String(form.dataset.clientRequestId||manualBookingDraftId(kind,editId)),
+      manualCreateHeaders={"Idempotency-Key":clientRequestId},
+      manualTransportCreateOptions=(body)=>({method:"POST",headers:manualCreateHeaders,body:JSON.stringify(body)}),
+      secondaryRecoveryCopy="Booking saved, but some optional details could not be saved. Edit the booking to retry those details; the booking will not be submitted again.";
+    let savedBookingId=editId||"",attachmentWarning="",secondaryWarning="";
+    if (form.dataset.manualAttachmentsBusy === "true") {
+      showFormSubmissionError(form, "Wait for the selected files to finish preparing before saving.");
+      return;
+    }
     if (form.getAttribute("aria-busy") === "true") return;
     setFormSaving(form, true);
     try {
@@ -4407,55 +5205,85 @@
         const result=await api("/api/v1/trips",{method:"POST",body:JSON.stringify({title:values.title,startsOn:values.startsOn,endsOn:values.endsOn,lifecycleState:"upcoming"})}); state.trips.unshift(result.trip); state.trip=result.trip; state.tripsLoaded=true; localStorage.setItem("tripto_selected_trip",result.trip.id);
         const destinationPlace=parsePlaceSnapshot(fd.get("destinationPlace"));
         if(destinationPlace) await createLocationFromPlace(destinationPlace,"city");
-      } else if (kind === "hotel") {
+      } else if (baseKind === "hotel") {
+        const existingLocationId=String(val(existingBookingEntity,"property_location_id","start_location_id")||""),
+          propertyLocation=await createManualVenueLocation("hotel",fd.get("propertyName"),fd.get("location"),fd.get("streetAddress"),"",fd.get("locationPlace"),existingLocationId),
+          locationId=propertyLocation?.id||null;
         if (editId) {
-          const existing=findBookingRecord("hotel",editId)?.entity||{}, existingAddress=String(val(locationById(val(existing,"property_location_id","start_location_id")),"local_address","formatted_address","display_name")||""), address=String(fd.get("address")||"");
-          const body={propertyName:fd.get("propertyName"),checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,version:editVersion};
-          if(address!==existingAddress){ if(address){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:address}); body.propertyLocationId=location.id; } else body.propertyLocationId=null; }
-          await api(`/api/v1/trips/${tripId}/stays/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+          const body={propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,version:editVersion};
+          const result=await api(`/api/v1/trips/${tripId}/stays/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+          savedBookingId=result.stay?.id||editId;
         } else {
-          let locationId=null; if(fd.get("address")){ const location=await createMobileLocation("hotel",fd.get("propertyName"),{formattedAddress:fd.get("address")}); locationId=location.id; }
-          const result=await api(`/api/v1/trips/${tripId}/stays`,{method:"POST",body:JSON.stringify({propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,travelerIds:selectedTravelerIds(fd)})});
-          await saveItemContact(tripId, result.stay?.id, "hotel", String(fd.get("propertyName")||""), fd);
+          const result=await api(`/api/v1/trips/${tripId}/stays`,{method:"POST",headers:manualCreateHeaders,body:JSON.stringify({propertyName:fd.get("propertyName"),propertyLocationId:locationId,checkInDate:fd.get("checkInDate"),checkOutDate:fd.get("checkOutDate"),checkInFrom:fd.get("checkInFrom")||null,checkInUntil:fd.get("checkInUntil")||null,checkOutBy:fd.get("checkOutBy")||null,confirmationNumber:fd.get("confirmationNumber")||null,roomName:fd.get("roomName")||null,bookingStatus:fd.get("bookingStatus")||null,travelerIds:selectedTravelerIds(fd)})});
+          savedBookingId=result.stay?.id||"";
         }
-      } else if (["flight","train"].includes(kind)) {
-        const depTz=String(fd.get("departureTimezone")||""), arrTz=String(fd.get("arrivalTimezone")||""), dep=resolveEventLocalDateTime(localDateTime(fd,"departureDate","departureLocalTime"),depTz), arrivalLocal=localDateTime(fd,"arrivalDate","arrivalLocalTime"), arr=arrivalLocal ? resolveEventLocalDateTime(arrivalLocal,arrTz) : null;
+      } else if (baseKind === "transport") {
+        const config=manualBookingConfig(kind),depTz=String(fd.get("timezone")||""),arrTz=String(fd.get("endTimezone")||depTz),
+          departureLocal=`${fd.get("reservationDate")||""}T${fd.get("reservationTime")||""}`,
+          dep=resolveEventLocalDateTime(departureLocal,depTz),arrivalLocal=localDateTime(fd,"endDate","endTime"),arr=arrivalLocal?resolveEventLocalDateTime(arrivalLocal,arrTz):null;
+        if(arr!=null&&arr<dep) throw new Error("The arrival or drop-off cannot be before departure or pickup.");
+        const from=await quickLocation(fd.get("location"),"transport",depTz),to=await quickLocation(fd.get("endLocation"),"transport",arrTz),travelers=selectedTravelerIds(fd),title=String(fd.get("title")||config?.label||"Transport"),body={title,carrierName:title,serviceNumber:fd.get("vehicle")||null,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arr!=null?arrTz:null,bookingReference:fd.get("confirmationNumber")||null,travelerIds:travelers};
+        if(editId){
+          const result=await api(`/api/v1/trips/${tripId}/transport/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify({...body,version:editVersion})});
+          savedBookingId=result.item?.id||editId;
+        }else{
+          const result=await api(`/api/v1/trips/${tripId}/transport`,manualTransportCreateOptions({...body,transportType:config?.subtype||"other"}));
+          savedBookingId=result.item?.id||"";
+        }
+      } else if (["flight","train"].includes(baseKind)) {
+        const depTz=String(fd.get("departureTimezone")||""), arrTz=String(fd.get("arrivalTimezone")||""),
+          departureLocal=`${fd.get("departureDate")||""}T${fd.get("departureLocalTime")||""}`,
+          arrivalDate=String(fd.get("arrivalDate")||""),arrivalTime=String(fd.get("arrivalLocalTime")||""),
+          dep=resolveEventLocalDateTime(departureLocal,depTz), arrivalLocal=arrivalDate&&arrivalTime?`${arrivalDate}T${arrivalTime}`:"", arr=arrivalLocal ? resolveEventLocalDateTime(arrivalLocal,arrTz) : null;
         if(arr!=null&&arr<dep) throw new Error("Arrival cannot be before departure.");
-        const from=await quickLocation(fd.get("fromLocation"),kind,depTz,fd.get("fromLocationPlace")), to=await quickLocation(fd.get("toLocation"),kind,arrTz,fd.get("toLocationPlace")), travelers=selectedTravelerIds(fd), flight=kind==="flight"?parseFlightNumber(fd.get("flightNumber")):null;
+        const from=await quickLocation(fd.get("fromLocation"),baseKind,depTz,fd.get("fromLocationPlace")), to=await quickLocation(fd.get("toLocation"),baseKind,arrTz,fd.get("toLocationPlace")), travelers=selectedTravelerIds(fd), flight=baseKind==="flight"?parseFlightNumber(fd.get("flightNumber")):null;
         const boarding=fd.get("boardingTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("boardingTime")}`,depTz):null, gateClose=fd.get("gateCloseTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("gateCloseTime")}`,depTz):null;
         const title=flight?flight.raw:`${fd.get("carrierName")||"Train"}${fd.get("serviceNumber")?` ${fd.get("serviceNumber")}`:""}`;
         if (editId) {
-          const body={title,carrierName:fd.get("carrierName")||null,serviceNumber:kind==="flight"?flight.number:(fd.get("serviceNumber")||null),departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,version:editVersion};
-          if(kind==="flight"){ body.marketingAirlineCode=flight?.code||null; body.marketingFlightNumber=flight?.number||null; body.operatingAirlineCode=fd.get("operatingAirlineCode")||null; body.departureTerminal=fd.get("departureTerminal")||null; body.boardingTimeUtc=boarding; body.gateCloseTimeUtc=gateClose; }
-          await api(`/api/v1/trips/${tripId}/transport/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
-          await saveTravelerFacts(tripId,editId,travelers,fd);
+          const body={title,carrierName:fd.get("carrierName")||null,serviceNumber:baseKind==="flight"?flight.number:(fd.get("serviceNumber")||null),departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,version:editVersion};
+          if(baseKind==="flight"){ body.marketingAirlineCode=flight?.code||null; body.marketingFlightNumber=flight?.number||null; body.operatingAirlineCode=fd.get("operatingAirlineCode")||null; body.departureTerminal=fd.get("departureTerminal")||null; body.departureGate=fd.get("departureGate")||null; body.boardingTimeUtc=boarding; body.gateCloseTimeUtc=gateClose; }
+          const result=await api(`/api/v1/trips/${tripId}/transport/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+          savedBookingId=result.item?.id||editId;
         } else {
-        const transportType=kind==="train"&&state.manualLabel==="Ferry"?"ferry":kind;
-        const result=await api(`/api/v1/trips/${tripId}/transport`,{method:"POST",body:JSON.stringify({transportType,title,carrierName:fd.get("carrierName")||null,serviceNumber:kind==="flight"?flight.number:(fd.get("serviceNumber")||null),marketingAirlineCode:flight?.code||null,marketingFlightNumber:flight?.number||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,departureGate:fd.get("departureGate")||null,boardingTimeUtc:boarding,gateCloseTimeUtc:gateClose,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers})});
-        await saveTravelerFacts(tripId,result.item?.id,travelers,fd);
-        if (kind === "train") {
-          const structured = [
-            fd.get("platform") ? `Platform: ${fd.get("platform")}` : "",
-            fd.get("coach") ? `Coach: ${fd.get("coach")}` : "",
-            fd.get("notes") || "",
-          ].filter(Boolean).join("\n");
-          fd.set("notes", structured);
+        const transportType=kind==="ferry"?"ferry":baseKind;
+        const result=await api(`/api/v1/trips/${tripId}/transport`,manualTransportCreateOptions({transportType,title,carrierName:fd.get("carrierName")||null,serviceNumber:baseKind==="flight"?flight.number:(fd.get("serviceNumber")||null),marketingAirlineCode:flight?.code||null,marketingFlightNumber:flight?.number||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,departureGate:fd.get("departureGate")||null,boardingTimeUtc:boarding,gateCloseTimeUtc:gateClose,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers}));
+        savedBookingId=result.item?.id||"";
         }
-        await saveItemContact(tripId,result.item?.id,kind==="flight"?"airline":"other",String(fd.get("carrierName")||title),fd);
-        }
-      } else if (["activity","reservation"].includes(kind)) {
-        const dateName=kind==="activity"?"activityDate":"reservationDate", timeName=kind==="activity"?"activityTime":"reservationTime", unset=kind==="activity"&&fd.get("timeMode")==="unset", timezone=unset?"":String(fd.get("timezone")||""), local=unset?"":localDateTime(fd,dateName,timeName), ms=unset?null:resolveEventLocalDateTime(local,timezone), locationName=String(fd.get("location")||""), location=locationName ? await quickLocation(locationName,kind,timezone) : null;
-        const end=fd.get("endTime")&&!unset?resolveEventLocalDateTime(`${fd.get(dateName)}T${fd.get("endTime")}`,timezone):null;
+      } else if (["activity","reservation"].includes(baseKind)) {
+        const dateName=baseKind==="activity"?"activityDate":"reservationDate", timeName=baseKind==="activity"?"activityTime":"reservationTime",
+          explicitDate=String(baseKind==="activity"?fd.get("activityDate"):fd.get("reservationDate")||""),
+          explicitTime=String(baseKind==="activity"?fd.get("activityTime"):fd.get("reservationTime")||""), timezone=String(fd.get("timezone")||""),
+          local=explicitDate&&explicitTime?`${explicitDate}T${explicitTime}`:"", ms=local?resolveEventLocalDateTime(local,timezone):null,
+          locationName=String(fd.get("location")||""), existingLocationId=String(val(existingBookingEntity,"start_location_id","venue_location_id")||"");
+        let location=null;
+        if (["restaurant","activity"].includes(kind) && (locationName || fd.get("streetAddress"))) {
+          location=await createManualVenueLocation(kind==="restaurant"?"restaurant":"attraction",fd.get("title"),locationName,fd.get("streetAddress"),timezone,fd.get("locationPlace"),existingLocationId);
+        } else if (kind === "cruise" && locationName) {
+          const existingLocation=locationById(existingLocationId);
+          location=existingLocation&&String(val(existingLocation,"display_name")||"")===locationName
+            ? existingLocation
+            : await createMobileLocation("port",locationName,{timezone:timezone||null});
+        } else if (locationName) location=await quickLocation(locationName,baseKind,timezone,fd.get("locationPlace"));
+        const endDate=String(fd.get("endDate")||explicitDate||""), end=fd.get("endTime")?resolveEventLocalDateTime(`${endDate}T${fd.get("endTime")}`,timezone):null;
         if(ms!=null&&end!=null&&end<ms) throw new Error("End time cannot be before the start time.");
-        const explicitDate=String(fd.get(dateName)||""), contactNote=fd.get("contact")?`Contact: ${fd.get("contact")}`:"", windowNote=fd.get("reservationWindow")?`Reservation window: ${fd.get("reservationWindow")}`:"", userNotes=String(fd.get("notes")||""), notes=[...(unset?[`Date: ${explicitDate}`,"Time not set yet"]:[]),windowNote,contactNote,userNotes].filter(Boolean).join(" · ")||null, travelers=selectedTravelerIds(fd);
+        const notes=buildManualDetailNotes([
+          ["Date",ms==null?explicitDate:""], ["To",fd.get("endLocation")],
+          ["Return / end date",fd.get("endDate")&&!fd.get("endTime")?fd.get("endDate"):""],
+          ["Guests",fd.get("guests")], ["Vehicle",fd.get("vehicle")], ["Driver",fd.get("driver")],
+          ["Ship",fd.get("ship")], ["Cabin",fd.get("cabin")], ["Deck",fd.get("deck")],
+          ["Embarkation",fd.get("embarkation")], ["Seat / section",fd.get("seatSection")],
+          ["Address",fd.get("streetAddress")], ["Contact",fd.get("contact")],
+          ["Reservation window",fd.get("reservationWindow")],
+        ],fd.get("notes")), travelers=selectedTravelerIds(fd), subtype=manualBookingConfig(kind)?.subtype,
+          itemTitle=String(fd.get("title")||fd.get("provider")||manualBookingConfig(kind)?.label||"Booking");
         if (editId) {
-          const body={kind,status:"confirmed",title:fd.get("title"),startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",version:editVersion};
-          if(kind==="activity") body.activityType=fd.get("activityType")||formPrefill?.activityType||null; else body.reservationType=fd.get("reservationType")||formPrefill?.reservationType||"reservation";
-          await api(`/api/v1/trips/${tripId}/activities/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+          const body={kind:baseKind,status:"confirmed",title:itemTitle,startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",version:editVersion};
+          if(baseKind==="activity") body.activityType=fd.get("activityType")||subtype||formPrefill?.activityType||null; else body.reservationType=fd.get("reservationType")||subtype||formPrefill?.reservationType||"reservation";
+          const result=await api(`/api/v1/trips/${tripId}/activities/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
+          savedBookingId=result.item?.id||editId;
         } else {
-        const result=await api(`/api/v1/trips/${tripId}/activities`,{method:"POST",body:JSON.stringify({kind,status:"confirmed",title:fd.get("title"),startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,activityType:kind==="activity"?(fd.get("activityType")||null):null,reservationType:kind==="reservation"?(fd.get("reservationType")||"reservation"):null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",travelerIds:travelers})});
-        if(fd.get("provider") && result.item?.id) await api(`/api/v1/trips/${tripId}/contacts`,{method:"POST",body:JSON.stringify({contactType:"tour_operator",displayName:fd.get("provider"),notes:contactNote||null,tripItemId:result.item.id})});
-        await linkLocalDocument(fd.get("relatedDocument"),result.item?.id);
+        const result=await api(`/api/v1/trips/${tripId}/activities`,{method:"POST",headers:manualCreateHeaders,body:JSON.stringify({kind:baseKind,status:"confirmed",title:itemTitle,startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,activityType:baseKind==="activity"?(fd.get("activityType")||subtype||null):null,reservationType:baseKind==="reservation"?(fd.get("reservationType")||subtype||"reservation"):null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",travelerIds:travelers})});
+        savedBookingId=result.item?.id||"";
         }
       } else if (kind === "document") {
         await saveLocalDocument(form.elements.documentFile.files?.[0],fd.get("documentType"),selectedTravelerIds(fd),fd.get("relatedBooking")||null);
@@ -4465,7 +5293,35 @@
       } else if (kind === "checklist") {
         await api(`/api/v1/trips/${tripId}/checklist`,{method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})});
       }
-      await loadTripDetails(); clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(editId?`${statusText(kind)} updated.`:`${state.manualLabel || statusText(kind)} saved.`); state.manualLabel=null; state.editingEntity=null; formPrefill=null; route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+      if (savedBookingId && manualBookingConfig(kind)) {
+        secondaryWarning=await saveManualSecondaryDetails(kind,tripId,savedBookingId,fd,existingBookingEntity,saveManualContact,clientRequestId);
+        if(secondaryWarning) secondaryWarning=secondaryRecoveryCopy;
+      }
+      if (savedBookingId && form.dataset.attachmentScope) {
+        let attachmentResult=null;
+        try {
+          attachmentResult=await commitManualAttachments(form.dataset.attachmentScope,savedBookingId,kind,selectedTravelerIds(fd));
+        }catch(error){
+          rememberManualAttachmentRetry(kind,savedBookingId,form.dataset.attachmentScope);
+          attachmentWarning="Booking saved, but one or more documents could not be attached. Edit the booking and tap Retry; the booking will not be submitted again.";
+        }
+        if(attachmentResult?.status==="linked"){
+          forgetManualAttachmentRetry(kind,savedBookingId);
+          try {
+            await clearManualAttachment(form.dataset.attachmentScope);
+          } catch (_) {
+            attachmentWarning="Booking and documents saved. Temporary copies could not be cleared from this phone, but the attached documents are safe.";
+          }
+        }
+      }
+      let saveWarning=[secondaryWarning,attachmentWarning].filter(Boolean).join(" ");
+      try {
+        await loadTripDetails();
+      } catch (error) {
+        if (!savedBookingId) throw error;
+        saveWarning=[saveWarning,"Booking saved, but the Timeline could not refresh. Reload when your connection is stable; the booking will not be submitted again."].filter(Boolean).join(" ");
+      }
+      clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(saveWarning||(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`),saveWarning?"alert":"status"); state.manualLabel=null; state.editingEntity=null; formPrefill=null; route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
@@ -4630,6 +5486,7 @@
           endName,
           start,
           end,
+          focusDate: start || new Date().toISOString().slice(0, 10),
           month: rangeMonthStart(start || end),
           title: target.dataset.rangeTitle || "Choose dates",
           startLabel: target.dataset.startLabel || "Start date",
@@ -4641,12 +5498,14 @@
       case "range-month":
         if (state.dateRange) {
           state.dateRange.month = shiftRangeMonth(state.dateRange.month, Number(target.dataset.offset) || 0);
+          state.dateRange.focusDate = state.dateRange.month;
           render();
         }
         break;
       case "select-range-day":
         if (state.dateRange) {
           const selected = String(target.dataset.date || "");
+          state.dateRange.focusDate = selected;
           if (!state.dateRange.start || state.dateRange.end) {
             state.dateRange.start = selected;
             state.dateRange.end = "";
@@ -4788,10 +5647,59 @@
       }
       case "add-type": {
         const type = target.dataset.type;
-        state.manualLabel = target.dataset.manualLabel || null;
+        state.manualLabel = manualBookingConfig(type)?.label || null;
         state.editingEntity = null;
         closeSheet();
         route("form", type);
+        break;
+      }
+      case "manual-attachment-remove": {
+        const form = document.getElementById("native-form");
+        try {
+          await clearManualAttachment(target.dataset.scope, target.dataset.id);
+          await refreshManualAttachmentPanel(form);
+          formHasMeaningfulChanges = true;
+        } catch (error) {
+          if (form) showFormSubmissionError(form, error?.message || "The file could not be removed.");
+        }
+        break;
+      }
+      case "manual-attachment-open": {
+        const reservedWindow = reserveManualAttachmentWindow();
+        try {
+          await openManualAttachment(target.dataset.scope, target.dataset.id, reservedWindow);
+        } catch (error) {
+          showToast(error?.message || "The local file could not be opened.", "alert");
+        }
+        break;
+      }
+      case "manual-attachment-retry": {
+        const form = document.getElementById("native-form");
+        target.disabled = true;
+        try {
+          const editId = String(form?.dataset.editId || ""),
+            kind = String(form?.dataset.kind || "other"),
+            details = editId
+              ? {
+                  tripId: state.trip?.id || null,
+                  bookingId: editId,
+                  kind,
+                  travelerIds: selectedTravelerIds(new FormData(form)),
+                }
+              : {},
+            record = await retryManualAttachment(target.dataset.scope, details);
+          if (record?.status === "linked") {
+            await clearManualAttachment(target.dataset.scope);
+            forgetManualAttachmentRetry(kind, editId);
+            state.localDocs = await listLocalDocs(state.trip?.id);
+            showToast("Documents attached. The booking was not submitted again.");
+          }
+          await refreshManualAttachmentPanel(form);
+        } catch (error) {
+          if (form) showFormSubmissionError(form, error?.message || "The file could not be retried.");
+        } finally {
+          if (document.contains(target)) target.disabled = false;
+        }
         break;
       }
       case "open-form": {
@@ -4825,7 +5733,7 @@
           stay = stayForItem(id);
         if (transport && String(val(transport, "transport_type")) === "flight")
           route("flight", id);
-        else if (transport && String(val(transport, "transport_type")) === "train") route("train", id);
+        else if (transport && ["train", "ferry"].includes(String(val(transport, "transport_type")))) route("train", id);
         else if (stay) route("hotel", id);
         else route("plan", id);
         break;
@@ -4835,7 +5743,7 @@
           id = target.dataset.id;
         if (kind === "flight") route("flight", id);
         else if (kind === "hotel") route("hotel", id);
-        else if (kind === "train") route("train", id);
+        else if (["train", "ferry"].includes(kind)) route("train", id);
         else route("plan", id);
         break;
       }
@@ -5173,6 +6081,36 @@
   });
   window.addEventListener("keydown", (event) => {
     document.documentElement.dataset.inputMethod = "keyboard";
+    const rangeDay = event.target?.closest?.(".range-day[data-date]");
+    if (rangeDay && state.sheet === "date-range" && state.dateRange) {
+      const offsets = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 },
+        current = new Date(`${rangeDay.dataset.date}T12:00:00Z`);
+      let next = null;
+      if (Object.hasOwn(offsets, event.key)) {
+        current.setUTCDate(current.getUTCDate() + offsets[event.key]);
+        next = current;
+      } else if (event.key === "Home") {
+        current.setUTCDate(current.getUTCDate() - current.getUTCDay());
+        next = current;
+      } else if (event.key === "End") {
+        current.setUTCDate(current.getUTCDate() + (6 - current.getUTCDay()));
+        next = current;
+      } else if (event.key === "PageUp" || event.key === "PageDown") {
+        current.setUTCMonth(current.getUTCMonth() + (event.key === "PageUp" ? -1 : 1));
+        next = current;
+      }
+      if (next) {
+        event.preventDefault();
+        const iso = next.toISOString().slice(0, 10);
+        state.dateRange.focusDate = iso;
+        state.dateRange.month = rangeMonthStart(iso);
+        render();
+        requestAnimationFrame(() =>
+          document.querySelector(`.range-day[data-date="${CSS.escape(iso)}"]`)?.focus(),
+        );
+        return;
+      }
+    }
     const disclosureButton = event.target?.closest?.(
       '[data-action="toggle-flight-details"]',
     );

@@ -38,7 +38,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('tripto-shell-product-v2-offline-places-v1'),'clean route, lazy search, or Google-auth shell cache contract changed');
+assert(sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-manual-booking-v2'),'clean route, lazy search, manual-attachment, or Google-auth shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Quiet Journey','All your trip.','One calm timeline.','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('Roscioli')&&app.includes('Dinner reservation'),'Welcome timeline preview is incomplete');
@@ -55,7 +55,7 @@ assert(app.includes('kind==="trip"?"add-booking"'),'Create Trip does not continu
 assert(app.includes('sessionStorage.setItem(quickDraftKey(kind)')&&app.includes('Discard changes?'),'form recovery missing');
 const add=app.slice(app.indexOf('function addBookingScreen('),app.indexOf('function documentSheet('));
 for(const method of ['Upload Booking','Forward Confirmation Email','Add Manually'])assert(add.includes(method),`Add method missing: ${method}`);
-for(const category of ['Flight','Hotel / Stay','Train','Car Rental','Transfer','Cruise','Ferry','Restaurant','Activity / Event','Other'])assert(add.includes(category),`manual category missing: ${category}`);
+for(const category of ['Flight','Hotel / Stay','Train','Car Rental','Transfer','Cruise','Ferry','Restaurant','Activity / Event','Other'])assert(app.includes(`label: "${category}"`),`manual category missing: ${category}`);
 const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function addBookingScreen('));
 assert(plus.includes('Add Booking')&&plus.includes('Create New Trip')&&!plus.includes('Flight'),'plus menu invalid');
 assert(app.includes('function timelineContextCard('),'Timeline priority context missing');

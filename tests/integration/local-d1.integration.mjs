@@ -22,6 +22,10 @@ const { enforceActorRateLimit, enforcePublicRateLimit }=await load('apps/worker/
 const { deletionPreview, deleteMyData }=await load('apps/worker/src/routes/privacy.js');
 const { opsSummary }=await load('apps/worker/src/routes/ops.js');
 const { createLocation }=await load('apps/worker/src/routes/locations.js');
+const { createStay }=await load('apps/worker/src/routes/stays.js');
+const { createTransport }=await load('apps/worker/src/routes/transport.js');
+const { createActivity }=await load('apps/worker/src/routes/activities.js');
+const { createContact }=await load('apps/worker/src/routes/contacts.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -59,7 +63,6 @@ const offlinePlace=await body(await createLocation(req('https://test/api/v1/trip
 assert(offlinePlace.location.place_id==='airport:iata:TLV','stable offline place id stored');
 assert(offlinePlace.location.country_name==='Israel'&&offlinePlace.location.region==='Central District','place snapshot context stored');
 assert(offlinePlace.location.timezone==='Asia/Jerusalem'&&offlinePlace.location.iata_code==='TLV','place timezone and codes stored');
-
 const previewBefore=await body(await accountMigrationPreview(req('https://test/api/v1/account/migration-preview'),env,guest));
 assert(previewBefore.migration.trips===1,'migration preview sees guest trip');
 assert(previewBefore.migration.timelineItems>=3,'migration preview sees timeline');
@@ -78,6 +81,74 @@ assert(calendarText.includes('BEGIN:VCALENDAR')&&calendarText.includes('BEGIN:VE
 const support=await body(await tripSupportBundle(req('https://test/api/v1/trips/x/support'),env,guest,tripId));
 assert(support.privacyNote.includes('No confirmation numbers'),'support bundle privacy note');
 assert(support.counts.timeline_items>=3,'support bundle counts');
+
+// Professional manual-entry semantics: arrival may remain unavailable, gate
+// data persists, and activity traveler assignments are not silently ignored.
+const fcoPlace=await body(await createLocation(req('https://test/api/v1/trips/x/locations','POST',{placeId:'airport:iata:FCO',type:'airport',displayName:'Rome Fiumicino Airport',city:'Rome',countryName:'Italy',countryCode:'IT',latitude:41.8003,longitude:12.2389,timezone:'Europe/Rome',iataCode:'FCO',icaoCode:'LIRF'}),env,guest,tripId));
+const departureOnlyFlight=await body(await createTransport(req('https://test/api/v1/trips/x/transport','POST',{transportType:'flight',title:'LY383',marketingAirlineCode:'LY',marketingFlightNumber:'383',departureLocationId:offlinePlace.location.id,arrivalLocationId:fcoPlace.location.id,scheduledDepartureUtc:Date.UTC(2026,7,28,3,10),scheduledArrivalUtc:null,departureTimezone:'Asia/Jerusalem',arrivalTimezone:'Europe/Rome',departureTerminal:'3',departureGate:'D7'}),env,guest,tripId));
+assert(departureOnlyFlight.item.scheduled_arrival_utc==null,'manual flight permits unavailable arrival');
+assert(departureOnlyFlight.item.departure_gate==='D7'&&departureOnlyFlight.item.departure_terminal==='3','manual flight terminal and gate persist');
+const travelerId=String(db.prepare(`SELECT id FROM travelers WHERE trip_id=? LIMIT 1`).get(tripId).id);
+const manualActivity=await body(await createActivity(req('https://test/api/v1/trips/x/activities','POST',{kind:'activity',title:'Vatican Museums',startsAtUtc:Date.UTC(2026,7,29,8),timezone:'Europe/Rome',activityType:'museum',travelerIds:[travelerId]}),env,guest,tripId));
+assert(db.prepare(`SELECT traveler_id FROM trip_item_travelers WHERE trip_item_id=?`).get(manualActivity.item.id).traveler_id===travelerId,'manual activity traveler assignment persists');
+
+// Direct create retries are scoped to trip + authenticated device + opaque
+// request ID. Replays return the original canonical booking, while a reused ID
+// with different normalized details is rejected and overlapping requests never
+// create a second booking.
+const stayKey='manual-stay-request-0001',stayInput={propertyName:'Idempotent Hotel',checkInDate:'2026-08-28',checkOutDate:'2026-08-30',confirmationNumber:'PRIVATE-STAY-123',travelerIds:[travelerId]};
+const createIdempotentStay=()=>createStay(req('https://test/api/v1/trips/x/stays','POST',stayInput,{'idempotency-key':stayKey}),env,guest,tripId);
+const firstStay=await body(await createIdempotentStay()),replayedStay=await body(await createIdempotentStay());
+assert(firstStay.stay.id===replayedStay.stay.id,'manual stay replay returns original booking');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND title='Idempotent Hotel'`).get(tripId).c)===1,'manual stay replay does not duplicate booking');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='stay_added'`).get(tripId,firstStay.stay.id).c)===1,'manual stay create/replay emits one sync event');
+db.prepare(`DELETE FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='stay_added'`).run(tripId,firstStay.stay.id);
+const repairedStay=await body(await createIdempotentStay());
+assert(repairedStay.stay.id===firstStay.stay.id,'manual stay repair replay returns original booking');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='stay_added'`).get(tripId,firstStay.stay.id).c)===1,'manual stay replay repairs a missing sync event exactly once');
+let stayMismatch=false;
+try{await createStay(req('https://test/api/v1/trips/x/stays','POST',{...stayInput,roomName:'Different request body'},{'idempotency-key':stayKey}),env,guest,tripId);}catch(error){stayMismatch=error.code==='IDEMPOTENCY_BODY_MISMATCH'&&error.status===409;}
+assert(stayMismatch,'manual stay rejects reused request ID with different body');
+
+// Secondary contact persistence uses its own stable key derived from the
+// booking draft. A lost response can therefore be replayed without creating a
+// second contact row or sync event.
+const contactKey='manual-contact-request-0001',contactInput={contactType:'hotel',displayName:'Idempotent Hotel',phone:'+39 06 1234',tripItemId:firstStay.stay.id};
+const createIdempotentContact=()=>createContact(req('https://test/api/v1/trips/x/contacts','POST',contactInput,{'idempotency-key':contactKey}),env,guest,tripId);
+const firstContact=await body(await createIdempotentContact()),replayedContact=await body(await createIdempotentContact());
+assert(firstContact.contact.id===replayedContact.contact.id,'secondary contact replay returns original contact');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_contacts WHERE trip_id=? AND trip_item_id=? AND contact_type='hotel' AND deleted_at IS NULL`).get(tripId,firstStay.stay.id).c)===1,'secondary contact replay does not duplicate the item/type contact');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_type='trip_contact' AND entity_id=? AND event_type='contact_created'`).get(tripId,firstContact.contact.id).c)===1,'secondary contact replay emits one sync event');
+db.prepare(`DELETE FROM change_events WHERE trip_id=? AND entity_type='trip_contact' AND entity_id=? AND event_type='contact_created'`).run(tripId,firstContact.contact.id);
+await createIdempotentContact();
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_type='trip_contact' AND entity_id=? AND event_type='contact_created'`).get(tripId,firstContact.contact.id).c)===1,'secondary contact replay repairs a missing sync event exactly once');
+let contactMismatch=false;
+try{await createContact(req('https://test/api/v1/trips/x/contacts','POST',{...contactInput,phone:'+39 06 9999'},{'idempotency-key':contactKey}),env,guest,tripId);}catch(error){contactMismatch=error.code==='IDEMPOTENCY_BODY_MISMATCH'&&error.status===409;}
+assert(contactMismatch,'secondary contact rejects a reused request ID with different details');
+
+const activityKey='manual-activity-request-0001',activityInput={kind:'activity',title:'Idempotent Museum',startsAtUtc:Date.UTC(2026,7,30,8),timezone:'Europe/Rome',activityType:'museum',travelerIds:[travelerId]};
+const firstActivity=await body(await createActivity(req('https://test/api/v1/trips/x/activities','POST',activityInput,{'x-tripto-client-request-id':activityKey}),env,guest,tripId));
+const replayedActivity=await body(await createActivity(req('https://test/api/v1/trips/x/activities','POST',activityInput,{'x-tripto-client-request-id':activityKey}),env,guest,tripId));
+assert(firstActivity.item.id===replayedActivity.item.id,'manual activity replay returns original booking');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND title='Idempotent Museum'`).get(tripId).c)===1,'manual activity replay does not duplicate booking');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='activity_added'`).get(tripId,firstActivity.item.id).c)===1,'manual activity create/replay emits one sync event');
+
+const transportKey='manual-flight-request-0001',transportInput={transportType:'flight',title:'LY 991',marketingAirlineCode:'LY',marketingFlightNumber:'991',departureLocationId:offlinePlace.location.id,arrivalLocationId:fcoPlace.location.id,scheduledDepartureUtc:Date.UTC(2026,7,31,3,10),scheduledArrivalUtc:null,departureTimezone:'Asia/Jerusalem',arrivalTimezone:'Europe/Rome',travelerIds:[travelerId]};
+const concurrentTransport=()=>createTransport(req('https://test/api/v1/trips/x/transport','POST',transportInput,{'idempotency-key':transportKey}),env,guest,tripId).then(body);
+const concurrentResults=await Promise.allSettled([concurrentTransport(),concurrentTransport()]);
+assert(concurrentResults.some(result=>result.status==='fulfilled'),'one overlapping manual transport request succeeds');
+assert(concurrentResults.filter(result=>result.status==='rejected').every(result=>result.reason?.code==='IDEMPOTENCY_IN_PROGRESS'),'overlapping loser is safely retryable');
+const replayedTransport=await concurrentTransport();
+const successfulTransport=concurrentResults.find(result=>result.status==='fulfilled').value;
+assert(replayedTransport.item.id===successfulTransport.item.id,'manual transport overlap replay returns original booking');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND title='LY 991'`).get(tripId).c)===1,'overlapping manual transport requests create one booking');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='transport_added'`).get(tripId,successfulTransport.item.id).c)===1,'manual transport overlap/replay emits one sync event');
+const duplicateFcoPlace=await body(await createLocation(req('https://test/api/v1/trips/x/locations','POST',{placeId:'airport:iata:FCO',type:'airport',displayName:'Rome Fiumicino Airport',city:'Rome',countryName:'Italy',countryCode:'IT',latitude:41.8003,longitude:12.2389,timezone:'Europe/Rome',iataCode:'FCO',icaoCode:'LIRF'}),env,guest,tripId));
+const replayedWithEquivalentLocation=await body(await createTransport(req('https://test/api/v1/trips/x/transport','POST',{...transportInput,arrivalLocationId:duplicateFcoPlace.location.id},{'idempotency-key':transportKey}),env,guest,tripId));
+assert(replayedWithEquivalentLocation.item.id===successfulTransport.item.id,'generated duplicate place ID normalizes to the original booking request');
+const idempotencyColumns=db.prepare(`PRAGMA table_info(manual_booking_idempotency)`).all().map(row=>row.name);
+assert(!idempotencyColumns.some(name=>/body|payload|response|confirmation/i.test(name)),'manual idempotency table stores no request or booking payload');
+assert(!db.prepare(`SELECT request_fingerprint FROM manual_booking_idempotency WHERE client_request_id=?`).get(stayKey).request_fingerprint.includes('PRIVATE-STAY-123'),'manual idempotency fingerprint does not expose confirmation data');
 
 // Verified auth bridge: disabled by default, then enabled for an internally verified identity.
 let disabled=false;
