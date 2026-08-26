@@ -41,6 +41,11 @@
       "/airport-timezones.js?v=airport-timezones-v1",
       "TriptoAirportTimezones",
     );
+  const ensurePlacesProvider = () =>
+    loadModule(
+      "/places-provider.js?v=places-2026-08-26",
+      "TriptoPlaces",
+    );
   const ensureSmartImport = () =>
     loadModule("/smart-import.js?v=product-v2-conf2", "TriptoSmartImport");
   // Warm the airport-timezone table in the background once the app is idle, so
@@ -2978,6 +2983,186 @@
       control = `<input type="${type}" ${base} autocomplete="off" ${textGuards} placeholder="${esc(placeholder)}" value="${esc(resolvedValue)}">`;
     return `<label class="form-field form-field--${name} ${wide ? "form-field--wide" : ""}" for="form-${name}"><span>${esc(label)}${required ? " <b aria-hidden=\"true\">*</b>" : optional ? " <em class=\"field-optional\">Optional</em>" : ""}</span>${control}${helper ? `<small class="field-helper">${esc(helper)}</small>` : ""}</label>`;
   }
+  function selectedPlaceForInput(input) {
+    const control = input?.form?.elements?.[`${input.name}Place`];
+    if (!control?.value) return null;
+    try { return JSON.parse(control.value); } catch (_) { return null; }
+  }
+  function placeInputValue(place) {
+    if (place.type === "airport" && place.iata) return `${place.iata} — ${place.name}`;
+    return place.displayName || place.name;
+  }
+  function savedPlaceResults(query, types) {
+    const wanted = normalizedLocationInput(query);
+    if (!wanted) return [];
+    return state.locations.filter((location) => {
+      const type = String(val(location, "type") || "");
+      if (!types.includes(type)) return false;
+      const text = [val(location,"display_name","local_name"),val(location,"city"),val(location,"country_name"),val(location,"iata_code"),val(location,"icao_code")].filter(Boolean).join(" ");
+      return normalizedLocationInput(text).includes(wanted);
+    }).slice(0, 4).map((location) => ({
+      id:String(val(location,"place_id") || `saved:${location.id}`),
+      type:String(val(location,"type")),
+      name:String(val(location,"display_name","local_name") || "Saved place"),
+      displayName:String(val(location,"display_name","local_name") || "Saved place"),
+      ...(val(location,"local_name") ? {localName:String(location.local_name)} : {}),
+      ...(val(location,"country_name") ? {countryName:String(location.country_name)} : {}),
+      ...(val(location,"country_code") ? {countryCode:String(location.country_code)} : {}),
+      ...(val(location,"region") ? {region:String(location.region)} : {}),
+      ...(val(location,"city") ? {cityName:String(location.city)} : {}),
+      ...(val(location,"iata_code") ? {iata:String(location.iata_code)} : {}),
+      ...(val(location,"icao_code") ? {icao:String(location.icao_code)} : {}),
+      ...(val(location,"latitude") != null ? {latitude:Number(location.latitude)} : {}),
+      ...(val(location,"longitude") != null ? {longitude:Number(location.longitude)} : {}),
+      ...(val(location,"timezone") ? {timezone:String(location.timezone)} : {}),
+      savedLocationId:String(location.id),
+    }));
+  }
+  function setManualTimezoneFallback(form, input, visible) {
+    const role = input.dataset.locationRole;
+    if (!role) return;
+    const fallback = form.querySelector(`[data-timezone-fallback-for="${CSS.escape(role)}"]`);
+    if (fallback) {
+      fallback.hidden = !visible;
+      const manual = fallback.querySelector("[data-timezone-manual-for]");
+      if (manual) manual.required = visible;
+    }
+  }
+  function bindPlaceAutocomplete(form, input) {
+    if (input.dataset.placesBound === "1") return;
+    input.dataset.placesBound = "1";
+    const types = String(input.dataset.placeTypes || "city,airport").split(",").filter(Boolean),
+      preferredType = input.dataset.placePreferred || undefined,
+      listId = `${input.id}-place-list`,
+      popup = document.createElement("div");
+    popup.className = "place-suggestions";
+    popup.id = listId;
+    popup.setAttribute("role", "listbox");
+    popup.setAttribute("aria-label", input.dataset.placeLabel || "Places");
+    popup.hidden = true;
+    input.insertAdjacentElement("afterend", popup);
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-haspopup", "listbox");
+    input.setAttribute("aria-controls", listId);
+    input.setAttribute("aria-expanded", "false");
+    let results = [], active = -1, request = 0, timer = 0;
+    const snapshot = selectedPlaceForInput(input);
+    if (snapshot) input.dataset.selectedValue = input.value;
+    const close = () => {
+      popup.hidden = true;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+      active = -1;
+    };
+    const open = () => {
+      popup.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      requestAnimationFrame(() => popup.scrollIntoView({ block:"nearest" }));
+    };
+    const setActive = (next) => {
+      const options = [...popup.querySelectorAll('[role="option"]')];
+      if (!options.length) return;
+      active = (next + options.length) % options.length;
+      options.forEach((option, index) => {
+        option.classList.toggle("is-active", index === active);
+        option.setAttribute("aria-selected", String(index === active));
+      });
+      input.setAttribute("aria-activedescendant", options[active].id);
+      options[active].scrollIntoView({ block:"nearest" });
+    };
+    const choose = (place) => {
+      const hidden = form.elements[`${input.name}Place`];
+      if (!hidden) return;
+      const value = placeInputValue(place);
+      input.value = value;
+      input.dataset.selectedValue = value;
+      input.dataset.placeId = place.id;
+      hidden.value = JSON.stringify(place);
+      hidden.dispatchEvent(new Event("input", { bubbles:true }));
+      setManualTimezoneFallback(form, input, false);
+      syncQuickTimezone(form, input);
+      input.dispatchEvent(new Event("change", { bubbles:true }));
+      close();
+      input.focus({ preventScroll:true });
+    };
+    const renderResults = (rows) => {
+      results = rows;
+      active = -1;
+      if (!rows.length) {
+        popup.innerHTML = `<div class="place-empty" role="status"><strong>No results found</strong><span>Check the spelling or enter this place yourself.</span><button type="button" data-place-manual>Enter manually</button></div>`;
+        open();
+        return;
+      }
+      popup.innerHTML = rows.map((place, index) => {
+        const secondary = place.type === "airport"
+          ? [place.cityName, place.countryName].filter(Boolean).join(" · ")
+          : [place.region, place.countryName].filter(Boolean).join(" · ");
+        return `<button type="button" class="place-option" id="${listId}-${index}" role="option" aria-selected="false" data-place-index="${index}"><span class="place-option__kind" aria-hidden="true">${icon(place.type === "airport" ? "plane" : "pin", 19)}</span><span class="place-option__copy"><strong>${esc(place.name)}</strong><small>${esc(secondary || place.displayName)}</small></span>${place.iata ? `<b class="place-option__code">${esc(place.iata)}</b>` : `<em class="place-option__type">City</em>`}</button>`;
+      }).join("");
+      open();
+    };
+    const search = async () => {
+      const query = input.value.trim(), ownRequest = ++request;
+      if (query.length < 2) { close(); return; }
+      popup.innerHTML = `<div class="place-loading" role="status"><span class="button-spinner" aria-hidden="true"></span>Searching saved places…</div>`;
+      open();
+      try {
+        const places = await ensurePlacesProvider(), offlineRows = await places.provider.searchPlaces(query, { types, preferredType, limit:8 }),
+          rows = [...savedPlaceResults(query, types), ...offlineRows].filter((place, index, all) => all.findIndex((row) => row.id === place.id || (row.iata && row.iata === place.iata)) === index).slice(0, 8);
+        if (ownRequest === request) renderResults(rows);
+      } catch (_) {
+        if (ownRequest !== request) return;
+        popup.innerHTML = `<div class="place-empty place-empty--error" role="status"><strong>Place search is unavailable</strong><span>You can retry or continue by entering the location yourself.</span><div><button type="button" data-place-retry>Try again</button><button type="button" data-place-manual>Enter manually</button></div></div>`;
+        open();
+      }
+    };
+    const queueSearch = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(search, 70);
+    };
+    input.addEventListener("input", () => {
+      if (input.dataset.selectedValue !== input.value) {
+        const hidden = form.elements[`${input.name}Place`];
+        if (hidden) hidden.value = "";
+        delete input.dataset.placeId;
+        delete input.dataset.selectedValue;
+      }
+      queueSearch();
+    });
+    input.addEventListener("focus", queueSearch);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { close(); return; }
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        if (popup.hidden) queueSearch();
+        else setActive(active + (event.key === "ArrowDown" ? 1 : -1));
+        event.preventDefault();
+      } else if (event.key === "Enter" && !popup.hidden && active >= 0 && results[active]) {
+        event.preventDefault();
+        choose(results[active]);
+      }
+    });
+    input.addEventListener("blur", () => window.setTimeout(() => {
+      if (!popup.contains(document.activeElement)) close();
+    }, 100));
+    popup.addEventListener("pointerdown", (event) => event.preventDefault());
+    popup.addEventListener("click", (event) => {
+      const option = event.target.closest("[data-place-index]");
+      if (option) { choose(results[Number(option.dataset.placeIndex)]); return; }
+      if (event.target.closest("[data-place-retry]")) {
+        globalThis.TriptoPlaces?.provider?.retry?.();
+        search();
+        return;
+      }
+      if (event.target.closest("[data-place-manual]")) {
+        const hidden = form.elements[`${input.name}Place`];
+        if (hidden) hidden.value = "";
+        setManualTimezoneFallback(form, input, true);
+        close();
+        input.focus();
+      }
+    });
+  }
   function dateRangeField(startName, endName, label, startLabel, endLabel, startValue = "", endValue = "") {
     const fieldId = `range-${startName}-${endName}`;
     return `<fieldset class="date-range-field form-field--wide" id="${fieldId}"><legend>${esc(label)}</legend><input class="date-range-input" type="hidden" name="${esc(startName)}" id="form-${esc(startName)}"${startValue ? ` value="${esc(startValue)}"` : ""}><input class="date-range-input" type="hidden" name="${esc(endName)}" id="form-${esc(endName)}"${endValue ? ` value="${esc(endValue)}"` : ""}><button class="date-range-trigger" type="button" data-action="open-date-range" data-start-name="${esc(startName)}" data-end-name="${esc(endName)}" data-range-title="${esc(label)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}" aria-label="${esc(label)}. Choose ${esc(startLabel.toLowerCase())} and ${esc(endLabel.toLowerCase())}" aria-describedby="${fieldId}-status"><span class="date-range-trigger__icon">${icon("calendar", 21)}</span><span class="date-range-trigger__copy"><small>Select dates</small><strong>Choose dates</strong></span>${icon("chevron", 18)}</button><span class="sr-only" id="${fieldId}-status" aria-live="polite">No date range selected.</span></fieldset>`;
@@ -3070,9 +3255,19 @@
         checklist: { title:"Add Essential", lead:"Travel essential", fields:[["title","Item","text",true,true],["category","Group","select-checklist",true,true],["priority","Priority","select-priority",true,true]] },
       }, cfg = configs[kind] || configs.trip;
     const tripPlaceholders = { destination: "City, country, or region", title: "e.g. Summer in Italy" };
-    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => { let choices=""; const current=name==="displayName"?val(editingTraveler||{},"display_name"):name==="travelerType"?val(editingTraveler||{},"traveler_type"):(editingTrip&&name==="destination")?val(editingTrip,"title"):""; if(type==="select")choices=['adult','child','infant'].map((option)=>`<option value="${option}" ${current===option?"selected":""}>${statusText(option)}</option>`).join(""); if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>'; if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>'; return kind === "trip" && type === "date" ? "" : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices,value:current,placeholder:kind==="trip"?(tripPlaceholders[name]||""):"",optional:kind==="trip"&&!required}); });
+    const mappedFields = cfg.fields.map(([name,label,type,required,wide]) => {
+      let choices="";
+      const current=name==="displayName"?val(editingTraveler||{},"display_name"):name==="travelerType"?val(editingTraveler||{},"traveler_type"):(editingTrip&&name==="destination")?val(editingTrip,"title"):"";
+      if(type==="select")choices=['adult','child','infant'].map((option)=>`<option value="${option}" ${current===option?"selected":""}>${statusText(option)}</option>`).join("");
+      if(type==="select-checklist")choices='<option value="documents">Documents</option><option value="before_you_leave">Before You Leave</option><option value="packing">Packing</option>';
+      if(type==="select-priority")choices='<option value="medium">Normal</option><option value="high">Important</option><option value="critical">Critical</option>';
+      const attrs = kind === "trip" && name === "destination"
+        ? 'data-place-types="city,airport" data-place-preferred="city" data-place-label="Destination cities and airports"'
+        : "";
+      return kind === "trip" && type === "date" ? "" : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices,value:current,placeholder:kind==="trip"?(tripPlaceholders[name]||""):"",optional:kind==="trip"&&!required,attrs});
+    });
     const fields = kind === "trip"
-      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${mappedFields[3]}</div>`
+      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<input type="hidden" name="destinationPlace" value="">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${mappedFields[3]}</div>`
       : `<div class="form-fields">${mappedFields.join("")}</div>`;
     const editAttrs=editingTraveler?` data-edit-id="${esc(editingTraveler.id)}" data-edit-version="${esc(editingTraveler.version||1)}"`:editingTrip?` data-edit-id="${esc(editingTrip.id)}" data-edit-version="${esc(val(editingTrip,"version")||1)}"`:"";
     const deleteBar=editingTrip?`<button type="button" class="trip-delete-text" data-action="delete-trip">Delete this trip</button>`:"";
@@ -3206,8 +3401,8 @@
     let primary="", more="", note="", list="", dataLists="", extraClass="";
     if (kind === "flight") {
       list = quickLocationList("flight");
-      dataLists = dataListMarkup("suggest-airlines",SUGGEST_LISTS.airlines)+dataListMarkup("suggest-cabin",SUGGEST_LISTS.cabin);
-      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"TLV — Ben Gurion Airport",attrs:'list="quick-flight-locations" data-location-role="departure"'})}${quickField("toLocation","Destination airport",{required:true,placeholder:"FCO — Rome Fiumicino",attrs:'list="quick-flight-locations" data-location-role="arrival"'})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      dataLists = dataListMarkup("suggest-airlines",SUGGEST_LISTS.airlines)+dataListMarkup("suggest-cabin",SUGGEST_LISTS.cabin)+dataListMarkup("suggest-timezones",timezoneOptions());
+      primary = `${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Airline code and number together."})}${quickField("fromLocation","Origin airport",{required:true,placeholder:"Search airport or code",attrs:'data-location-role="departure" data-place-types="airport" data-place-preferred="airport" data-place-label="Origin airports"'})}<input type="hidden" name="fromLocationPlace" value="">${quickField("toLocation","Destination airport",{required:true,placeholder:"Search airport or code",attrs:'data-location-role="arrival" data-place-types="airport" data-place-preferred="airport" data-place-label="Destination airports"'})}<input type="hidden" name="toLocationPlace" value=""><input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="departure" hidden><span>Origin timezone <b aria-hidden="true">*</b></span><input type="text" name="departureTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="departureTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="arrival" hidden><span>Arrival timezone</span><input type="text" name="arrivalTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="arrivalTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
       const flightArrivalRow = `<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div><p class="field-helper form-field--wide">Add arrival date and local time together, or leave both empty. The airport timezone is automatic.</p>`;
       more = quickMore(kind,"More flight details", editing
         ? `<div class="form-fields">${flightArrivalRow}${quickField("carrierName","Marketing airline",{attrs:'list="suggest-airlines"'})}${quickField("operatingAirlineCode","Operating airline",{attrs:'list="suggest-airlines"'})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false,attrs:'list="suggest-cabin"'})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`
@@ -3674,27 +3869,27 @@
       }
     }
     if (kind === "flight") {
-      const departureTimezone = timezoneForLocationInput(
-          form.elements.fromLocation?.value,
-          "flight",
-        ),
-        arrivalTimezone = timezoneForLocationInput(
-          form.elements.toLocation?.value,
-          "flight",
-        );
+      const departureTimezone =
+          String(form.elements.departureTimezone?.value || "") ||
+          placeTimezoneForInput(form.elements.fromLocation, "flight"),
+        arrivalTimezone =
+          String(form.elements.arrivalTimezone?.value || "") ||
+          placeTimezoneForInput(form.elements.toLocation, "flight");
       if (!departureTimezone) {
+        setManualTimezoneFallback(form, form.elements.fromLocation, true);
         showFieldError(
           form,
-          form.elements.fromLocation,
-          "Airport not recognized. Enter its three-letter airport code.",
+          form.elements.departureTimezoneManual || form.elements.fromLocation,
+          "Select a known airport or enter its IANA timezone.",
         );
         return false;
       }
       if (!arrivalTimezone) {
+        setManualTimezoneFallback(form, form.elements.toLocation, true);
         showFieldError(
           form,
-          form.elements.toLocation,
-          "Airport not recognized. Enter its three-letter airport code.",
+          form.elements.arrivalTimezoneManual || form.elements.toLocation,
+          "Select a known airport or enter its IANA timezone.",
         );
         return false;
       }
@@ -3899,7 +4094,8 @@
     const kind = form.dataset.kind,
       role = input.dataset.locationRole,
       locationKind = kind === "flight" ? "flight" : kind === "train" ? "train" : "activity",
-      timezone = timezoneForLocationInput(input.value, locationKind),
+      selectedPlace = selectedPlaceForInput(input),
+      timezone = String(selectedPlace?.timezone || timezoneForLocationInput(input.value, locationKind) || ""),
       timezoneName = role === "arrival" ? "arrivalTimezone" : kind === "activity" || kind === "reservation" ? "timezone" : "departureTimezone",
       control = form.elements[timezoneName],
       field = input.closest(".form-field");
@@ -3921,6 +4117,13 @@
       delete control.dataset.derived;
       field?.classList.remove("is-derived-timezone");
     }
+  }
+  function placeTimezoneForInput(input, kind = "flight") {
+    return String(
+      selectedPlaceForInput(input)?.timezone ||
+        timezoneForLocationInput(input?.value, kind) ||
+        "",
+    );
   }
   function syncQuickConditionalFields(form) {
     if (form.dataset.kind === "activity") {
@@ -4014,6 +4217,9 @@
       bindDateRangeControls(nativeForm);
       syncQuickConditionalFields(nativeForm);
       nativeForm
+        .querySelectorAll("[data-place-types]")
+        .forEach((input) => bindPlaceAutocomplete(nativeForm, input));
+      nativeForm
         .querySelectorAll("[data-location-role]")
         .forEach((input) => {
           const sync = () => {
@@ -4024,6 +4230,16 @@
           input.addEventListener("change", sync);
           sync();
         });
+      nativeForm.querySelectorAll("[data-timezone-manual-for]").forEach((input) => {
+        input.addEventListener("input", () => {
+          const control = nativeForm.elements[input.dataset.timezoneManualFor];
+          if (control) {
+            control.value = input.value.trim();
+            delete control.dataset.derived;
+          }
+          saveQuickDraft(nativeForm);
+        });
+      });
       nativeForm
         .querySelectorAll('input[name="timeMode"],select[name="documentType"]')
         .forEach((control) =>
@@ -4094,16 +4310,43 @@
     const result = await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/locations`, { method:"POST", body:JSON.stringify({ type, displayName:name, ...extra }) });
     return result.location;
   }
+  function parsePlaceSnapshot(value) {
+    if (!value) return null;
+    try { return typeof value === "string" ? JSON.parse(value) : value; }
+    catch (_) { return null; }
+  }
+  async function createLocationFromPlace(place, fallbackType) {
+    if (!place) return null;
+    if (place.savedLocationId) {
+      const saved = state.locations.find((location) => String(location.id) === String(place.savedLocationId));
+      if (saved) return saved;
+    }
+    return createMobileLocation(place.type || fallbackType, place.displayName || place.name, {
+      placeId: place.id || null,
+      localName: place.localName || null,
+      latitude: Number.isFinite(place.latitude) ? place.latitude : null,
+      longitude: Number.isFinite(place.longitude) ? place.longitude : null,
+      countryName: place.countryName || null,
+      countryCode: place.countryCode || null,
+      region: place.region || null,
+      city: place.cityName || (place.type === "city" ? place.name : null),
+      timezone: place.timezone || null,
+      iataCode: place.iata || null,
+      icaoCode: place.icao || null,
+    });
+  }
   function quickLocationParts(value, kind) {
     const known = knownLocationForInput(value, kind);
     if (known) return { known, name: String(val(known, "display_name", "local_name") || value), code: String(val(known, kind === "flight" ? "iata_code" : "station_code") || "") };
     const text = String(value || "").trim(), match = text.match(/^([A-Z0-9]{2,12})\s+[—-]\s+(.+)$/i), airportCode = kind === "flight" ? airportCodeForInput(text) : null;
     return { known: null, name: match ? match[2].trim() : text, code: airportCode || (match ? match[1].toUpperCase() : "") };
   }
-  async function quickLocation(value, kind, timezone = "") {
+  async function quickLocation(value, kind, timezone = "", selectedPlace = null) {
     const parts = quickLocationParts(value, kind);
     if (parts.known) return parts.known;
     const type = kind === "flight" ? "airport" : kind === "train" ? "station" : kind === "hotel" ? "hotel" : kind === "reservation" ? "restaurant" : "attraction";
+    const snapshot = parsePlaceSnapshot(selectedPlace);
+    if (snapshot) return createLocationFromPlace(snapshot, type);
     return createMobileLocation(type, parts.name, {
       ...(timezone ? { timezone } : {}),
       ...(kind === "flight" && parts.code ? { iataCode: parts.code } : {}),
@@ -4157,9 +4400,13 @@
         if (form.dataset.editId) {
           const result=await api(`/api/v1/trips/${encodeURIComponent(form.dataset.editId)}`,{method:"PATCH",body:JSON.stringify({title:values.title,startsOn:values.startsOn,endsOn:values.endsOn,version:Number(form.dataset.editVersion)||1})});
           const updated=result.trip; state.trips=state.trips.map((trip)=>String(trip.id)===String(updated.id)?updated:trip); if(String(state.trip?.id)===String(updated.id)) state.trip=updated; clearQuickDraft(kind); state.editingEntity=null;
+          const destinationPlace=parsePlaceSnapshot(fd.get("destinationPlace"));
+          if(destinationPlace) await createLocationFromPlace(destinationPlace,"city");
           formHasMeaningfulChanges=false; showToast("Trip updated."); route("timeline",null,true); return;
         }
         const result=await api("/api/v1/trips",{method:"POST",body:JSON.stringify({title:values.title,startsOn:values.startsOn,endsOn:values.endsOn,lifecycleState:"upcoming"})}); state.trips.unshift(result.trip); state.trip=result.trip; state.tripsLoaded=true; localStorage.setItem("tripto_selected_trip",result.trip.id);
+        const destinationPlace=parsePlaceSnapshot(fd.get("destinationPlace"));
+        if(destinationPlace) await createLocationFromPlace(destinationPlace,"city");
       } else if (kind === "hotel") {
         if (editId) {
           const existing=findBookingRecord("hotel",editId)?.entity||{}, existingAddress=String(val(locationById(val(existing,"property_location_id","start_location_id")),"local_address","formatted_address","display_name")||""), address=String(fd.get("address")||"");
@@ -4174,7 +4421,7 @@
       } else if (["flight","train"].includes(kind)) {
         const depTz=String(fd.get("departureTimezone")||""), arrTz=String(fd.get("arrivalTimezone")||""), dep=resolveEventLocalDateTime(localDateTime(fd,"departureDate","departureLocalTime"),depTz), arrivalLocal=localDateTime(fd,"arrivalDate","arrivalLocalTime"), arr=arrivalLocal ? resolveEventLocalDateTime(arrivalLocal,arrTz) : null;
         if(arr!=null&&arr<dep) throw new Error("Arrival cannot be before departure.");
-        const from=await quickLocation(fd.get("fromLocation"),kind,depTz), to=await quickLocation(fd.get("toLocation"),kind,arrTz), travelers=selectedTravelerIds(fd), flight=kind==="flight"?parseFlightNumber(fd.get("flightNumber")):null;
+        const from=await quickLocation(fd.get("fromLocation"),kind,depTz,fd.get("fromLocationPlace")), to=await quickLocation(fd.get("toLocation"),kind,arrTz,fd.get("toLocationPlace")), travelers=selectedTravelerIds(fd), flight=kind==="flight"?parseFlightNumber(fd.get("flightNumber")):null;
         const boarding=fd.get("boardingTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("boardingTime")}`,depTz):null, gateClose=fd.get("gateCloseTime")?resolveEventLocalDateTime(`${fd.get("departureDate")}T${fd.get("gateCloseTime")}`,depTz):null;
         const title=flight?flight.raw:`${fd.get("carrierName")||"Train"}${fd.get("serviceNumber")?` ${fd.get("serviceNumber")}`:""}`;
         if (editId) {

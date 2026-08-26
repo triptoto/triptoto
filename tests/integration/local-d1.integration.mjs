@@ -21,6 +21,7 @@ const { betaStatus, recordClientBetaEvent }=await load('apps/worker/src/routes/b
 const { enforceActorRateLimit, enforcePublicRateLimit }=await load('apps/worker/src/rate-limit.js');
 const { deletionPreview, deleteMyData }=await load('apps/worker/src/routes/privacy.js');
 const { opsSummary }=await load('apps/worker/src/routes/ops.js');
+const { createLocation }=await load('apps/worker/src/routes/locations.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -53,6 +54,11 @@ const demo=await body(await createDemoTrip(req('https://test/api/v1/internal/dem
 assert(demo.demo.tripId,'demo trip created');
 const tripId=demo.demo.tripId;
 assert(Number(db.prepare(`SELECT COUNT(*) c FROM connections WHERE trip_id=?`).get(tripId).c)===1,'self-transfer connection seeded');
+
+const offlinePlace=await body(await createLocation(req('https://test/api/v1/trips/x/locations','POST',{placeId:'airport:iata:TLV',type:'airport',displayName:'Ben Gurion International Airport',city:'Tel Aviv',countryName:'Israel',countryCode:'IL',region:'Central District',latitude:32.0114,longitude:34.8867,timezone:'Asia/Jerusalem',iataCode:'tlv',icaoCode:'llbg'}),env,guest,tripId));
+assert(offlinePlace.location.place_id==='airport:iata:TLV','stable offline place id stored');
+assert(offlinePlace.location.country_name==='Israel'&&offlinePlace.location.region==='Central District','place snapshot context stored');
+assert(offlinePlace.location.timezone==='Asia/Jerusalem'&&offlinePlace.location.iata_code==='TLV','place timezone and codes stored');
 
 const previewBefore=await body(await accountMigrationPreview(req('https://test/api/v1/account/migration-preview'),env,guest));
 assert(previewBefore.migration.trips===1,'migration preview sees guest trip');
