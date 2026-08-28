@@ -21,13 +21,18 @@ export async function previewUploadedDocument(request:Request,env:Env,auth:AuthC
   const raw=body.candidate;
   if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new HttpError(400,'VALIDATION_ERROR','A structured recognition candidate is required.');
   const candidate=normalizeUploadCandidate(raw as Record<string,unknown>);
-  const duplicate=await env.DB.prepare(`SELECT * FROM imports WHERE source_type='upload' AND (source_fingerprint=? OR source_fingerprint LIKE ?) ORDER BY created_at LIMIT 1`).bind(checksum,`${checksum}:%`).first<Record<string,unknown>>();
+  // Namespace the dedup fingerprint by trip so an identical file uploaded to
+  // another account/trip can neither be READ back here nor collide on the
+  // global UNIQUE(source_type, source_fingerprint). Mirrors the forwarded-email
+  // path, which already folds trip_id into its fingerprint.
+  const scopedChecksum=`${tripId}:${checksum}`;
+  const duplicate=await env.DB.prepare(`SELECT * FROM imports WHERE source_type='upload' AND trip_id=? AND (source_fingerprint=? OR source_fingerprint LIKE ?) ORDER BY created_at LIMIT 1`).bind(tripId,scopedChecksum,`${scopedChecksum}:%`).first<Record<string,unknown>>();
   const addAnyway=body.duplicateDisposition==='add_anyway';
   if(duplicate&&!addAnyway){
     const candidates=(await env.DB.prepare(`SELECT id,candidate_type,payload_json,confidence,validation_status,created_at FROM import_candidates WHERE import_id=? ORDER BY created_at`).bind(duplicate.id).all<Record<string,unknown>>()).results??[];
     return json({duplicate:true,import:duplicate,candidates:candidates.map(shapeCandidate),actions:['review_existing','update_existing','add_anyway']},{},request,env);
   }
-  const now=nowMs(),importId=uuid(),candidateId=uuid(),fingerprint=addAnyway?`${checksum}:${uuid()}`:checksum;
+  const now=nowMs(),importId=uuid(),candidateId=uuid(),fingerprint=addAnyway?`${scopedChecksum}:${uuid()}`:scopedChecksum;
   await env.DB.batch([
     env.DB.prepare(`INSERT INTO imports(id,trip_id,user_id,source_type,status,source_fingerprint,recovery_action,created_at) VALUES (?,?,?,'upload','needs_confirmation',?,'Review every recognized field before confirming.',?)`).bind(importId,tripId,auth.userId??null,fingerprint,now),
     env.DB.prepare(`INSERT INTO import_messages(id,import_id,sequence_no,subject,normalized_hash,created_at) VALUES (?,?,1,?,?,?)`).bind(uuid(),importId,filename,checksum,now),
@@ -104,13 +109,25 @@ export async function resolveImportCandidate(request:Request,env:Env,auth:AuthCo
   const resolvedType=candidate.source_type==='upload'&&payload.candidateType?enumValue(payload.candidateType,'candidateType',uploadTypes):String(candidate.candidate_type);
   const entitySource=candidate.source_type==='upload'?'upload':'email';
   delete payload.candidateType;
+  // Claim the candidate atomically BEFORE materializing. Two concurrent confirms
+  // (double-tap / retry) both pass the read-time pending check above, so the
+  // pending->confirmed flip is the real gate: only the writer that changes a row
+  // proceeds to create a booking; the loser gets 409 instead of a duplicate.
+  const claim=await env.DB.prepare(`UPDATE import_candidates SET validation_status='confirmed',candidate_type=?,payload_json=? WHERE id=? AND validation_status='pending'`).bind(resolvedType,JSON.stringify(payload),candidateId).run();
+  if(Number(claim.meta?.changes??0)!==1)throw new HttpError(409,'IMPORT_ALREADY_RESOLVED','This import candidate has already been resolved.');
   let entityId:string;
-  if(resolvedType==='flight')entityId=await materializeFlight(env,tripId,importId,payload,entitySource);
-  else if(resolvedType==='stay'||resolvedType==='hotel')entityId=await materializeStay(env,tripId,importId,payload,entitySource);
-  else if(['train','car','transfer','ferry'].includes(resolvedType))entityId=await materializeTransport(env,tripId,importId,resolvedType,payload);
-  else if(['activity','restaurant','reservation','generic_ticket'].includes(resolvedType))entityId=await materializePlan(env,tripId,importId,resolvedType,payload);
-  else throw new HttpError(400,'UNSUPPORTED_IMPORT_CANDIDATE','This candidate type cannot be confirmed.');
-  await env.DB.prepare(`UPDATE import_candidates SET validation_status='confirmed',candidate_type=?,payload_json=? WHERE id=? AND validation_status='pending'`).bind(resolvedType,JSON.stringify(payload),candidateId).run();
+  try{
+    if(resolvedType==='flight')entityId=await materializeFlight(env,tripId,importId,payload,entitySource);
+    else if(resolvedType==='stay'||resolvedType==='hotel')entityId=await materializeStay(env,tripId,importId,payload,entitySource);
+    else if(['train','car','transfer','ferry'].includes(resolvedType))entityId=await materializeTransport(env,tripId,importId,resolvedType,payload);
+    else if(['activity','restaurant','reservation','generic_ticket'].includes(resolvedType))entityId=await materializePlan(env,tripId,importId,resolvedType,payload);
+    else throw new HttpError(400,'UNSUPPORTED_IMPORT_CANDIDATE','This candidate type cannot be confirmed.');
+  }catch(error){
+    // Materialize failed after the claim: release the candidate back to pending
+    // so the user can retry rather than being stuck at a confirmed-but-empty row.
+    await env.DB.prepare(`UPDATE import_candidates SET validation_status='pending' WHERE id=? AND validation_status='confirmed'`).bind(candidateId).run();
+    throw error;
+  }
   await updateImportStatus(env,importId);
   await recordBetaEvent(env,auth,'import_confirmed',tripId);
   await recordBookingMilestones(env,auth,tripId);

@@ -315,3 +315,21 @@ OFFLINE / REQUEST FAILURE
 ├─ Label stale/unavailable data
 └─ Reconnect → sync → expose unresolved conflicts
 ```
+
+## Contextual Trip Map
+
+```
+CENTRAL + MENU
+├─ Add Booking
+├─ View Trip Map        (only if canShowTripMap(): 2+ distinct mappable places)
+│   └─ TRIP MAP (full screen)
+│       ├─ Back → Timeline
+│       ├─ Day filter (All Trip + per-day)
+│       ├─ Type-coded markers + NEXT (soonest future booking)
+│       ├─ Marker preview → View Booking | Navigate (Google Maps URL)
+│       ├─ "Also on this trip" address list (Navigate each)
+│       └─ Provider unavailable → Timeline + addresses still work
+└─ Create New Trip
+```
+
+No GPS is ever requested. Address-only places resolve via the same-origin, keyless /api/v1/geocode proxy; offline falls back to the address list. See TRIP_MAP_V2.md.

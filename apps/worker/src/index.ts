@@ -34,7 +34,7 @@ import { listTimeMarkers, createTimeMarker, updateTimeMarker, deleteTimeMarker }
 import { expandedTripHealth } from './routes/intelligence.ts';
 import { syncStatus, syncChanges, acknowledgeSync, queueSyncOperation, listSyncConflicts } from './routes/sync-v2.ts';
 import { readiness } from './routes/readiness.ts';
-import { currentWeather } from './routes/weather.ts';
+import { currentWeather, geocodePlace } from './routes/weather.ts';
 import { receiveBookingEmail, type InboundEmailMessage } from './inbound-email.ts';
 
 export default {
@@ -54,6 +54,10 @@ export default {
       if (request.method === 'GET' && path === '/api/v1/weather') {
         await enforcePublicRateLimit(request,env,{action:'weather',limit:120,windowMs:60*60*1000});
         return currentWeather(request, env);
+      }
+      if (request.method === 'GET' && path === '/api/v1/geocode') {
+        await enforcePublicRateLimit(request,env,{action:'geocode',limit:120,windowMs:60*60*1000});
+        return geocodePlace(request, env);
       }
       if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-candidate-1' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {

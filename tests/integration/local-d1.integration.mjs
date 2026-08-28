@@ -255,7 +255,27 @@ assert(uploadDuplicate.duplicate===true&&uploadDuplicate.actions.includes('add_a
 const uploadResolved=await body(await resolveImportCandidate(req('https://test/api/v1/trips/x/imports/y/resolve','POST',{candidateId:upload.candidates[0].id,action:'confirm',payload:{candidateType:'hotel'}}),env,owner,tripId,upload.import.id));
 assert(uploadResolved.candidateType==='hotel','reviewed upload type preserved');
 assert(db.prepare(`SELECT source_type FROM trip_items WHERE id=?`).get(uploadResolved.entityId).source_type==='upload','confirmed upload materializes upload-sourced item');
+// Regression (resolve idempotency): a second confirm of an already-resolved
+// candidate must not create a second booking. The status flip is the atomic
+// claim gate, so the replay is rejected with 409 IMPORT_ALREADY_RESOLVED.
+const tripItemsAfterResolve=Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=?`).get(tripId).c);
+let resolveReplayRejected=false;
+try{await resolveImportCandidate(req('https://test/api/v1/trips/x/imports/y/resolve','POST',{candidateId:upload.candidates[0].id,action:'confirm',payload:{candidateType:'hotel'}}),env,owner,tripId,upload.import.id);}catch(error){resolveReplayRejected=error.code==='IMPORT_ALREADY_RESOLVED'&&error.status===409;}
+assert(resolveReplayRejected,'re-confirming a resolved candidate is rejected with 409');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=?`).get(tripId).c)===tripItemsAfterResolve,'resolve replay creates no duplicate booking');
 assert(db.prepare(`SELECT COUNT(*) c FROM import_messages WHERE import_id=? AND normalized_hash=?`).get(upload.import.id,checksum).c===1,'only checksum metadata is stored');
+// Regression (cross-tenant upload dedup): the dedup domain must be per-trip. The
+// stored fingerprint is namespaced by trip, and the SAME file checksum uploaded
+// to a DIFFERENT trip is NOT flagged as a duplicate of another trip's import
+// (before the fix the global UNIQUE(source_type,source_fingerprint) + untrip-scoped
+// SELECT leaked another owner's import and blocked the upload).
+assert(String(db.prepare(`SELECT source_fingerprint f FROM imports WHERE id=?`).get(upload.import.id).f).startsWith(`${tripId}:`),'upload dedup fingerprint is namespaced by trip');
+const crossTenantTripId='cross-tenant-trip';
+const crossNow=Date.now();
+db.prepare(`INSERT INTO trips(id,owner_user_id,created_by_device_id,title,lifecycle_state,starts_on,ends_on,created_at,updated_at,version) VALUES (?,?,NULL,'Other trip','upcoming','2026-09-01','2026-09-03',?,?,1)`).run(crossTenantTripId,login.userId,crossNow,crossNow);
+const crossTenantUpload=await body(await previewUploadedDocument(req('https://test/api/v1/trips/x/imports/upload/preview','POST',uploadBody),env,owner,crossTenantTripId));
+assert(crossTenantUpload.duplicate!==true&&crossTenantUpload.candidates?.[0]?.candidate_type==='hotel','identical checksum in another trip is not treated as a cross-trip duplicate');
+assert(String(db.prepare(`SELECT source_fingerprint f FROM imports WHERE id=?`).get(crossTenantUpload.import.id).f).startsWith(`${crossTenantTripId}:`),'second trip gets its own trip-scoped fingerprint');
 
 // Google account controls are gated and sign-out rotates to a new guest device without deleting account data.
 env.GOOGLE_CLIENT_ID='test-client.apps.googleusercontent.com';

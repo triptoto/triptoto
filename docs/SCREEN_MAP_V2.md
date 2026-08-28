@@ -150,3 +150,7 @@ same route map.
 27. Document not available offline / device-local state
 
 The contact sheet must show the complete core and document state inventory together and verify one consistent hierarchy, terminology, navigation model, and component language.
+
+## Contextual Trip Map
+
+28. Trip Map (contextual) — reachable only via the central + menu, and only when the current trip has 2+ distinct mappable places. It is a full-screen state that returns to the Timeline; it is not a tab and there is no Timeline|Map switch. Sub-states: map with type-coded markers + NEXT marker, marker preview (View Booking + Navigate), "Also on this trip" address list, and the provider-unavailable state. See TRIP_MAP_V2.md.

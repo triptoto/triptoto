@@ -263,3 +263,7 @@ Components accept real data and explicit availability/provenance. They do not ma
 ## Visual QA gate
 
 The approved direction is applied to the complete core and document-state inventory and reviewed together in one contact sheet. A screen is not approved in isolation if it introduces inconsistent navigation, spacing, terminology, or interaction behavior.
+
+## Contextual Trip Map
+
+The Trip Map reuses the approved Harbor visual system: themeable accent for the active day chip, selected marker, NEXT badge, and route polyline; grayscale content tokens everywhere else. Markers are teardrop pins carrying the existing type glyphs (flight/hotel/train/ferry/car/restaurant/activity/event) — no new icon family. The marker preview and "Also on this trip" rows use the same card, spacing, and secondary-action button language as the detail screens. Touch targets stay >=44px. The map is entered contextually and returns to the Timeline; it introduces no new navigation model. Components render only real data and explicit availability — an unresolvable place is listed by address rather than plotted with a fabricated point, and provider failure states are honest ("Map unavailable right now"). See TRIP_MAP_V2.md.

@@ -202,7 +202,7 @@ assert(formBranches.flight.includes("manualRouteCard(kind"), "flight must requir
 
 assertFormFields(formBranches.hotel, {
   propertyName: { required: true },
-  location: { required: true },
+  location: { optional: true },
   streetAddress: {},
   confirmationNumber: {},
   checkInFrom: {},
@@ -237,7 +237,7 @@ assert(formBranches.rail.includes("manualRouteCard(kind"), "train and ferry must
 assertFormFields(formBranches.car, {
   title: { required: true },
   reservationTime: { required: true },
-  endTime: { required: true },
+  endTime: { optional: true },
   endTimezone: {},
   vehicle: {},
   confirmationNumber: {},
@@ -268,7 +268,7 @@ assertFormFields(formBranches.cruise, {
   ship: { optional: true },
   activityDate: { required: true },
   activityTime: { optional: true },
-  endDate: { required: true },
+  endDate: { optional: true },
   endTime: {},
   title: { optional: true },
   confirmationNumber: {},
@@ -282,8 +282,8 @@ assert(formBranches.cruise.includes("manualRouteCard(kind"), "cruise must requir
 assertFormFields(formBranches.restaurant, {
   title: { required: true },
   reservationDate: { required: true },
-  reservationTime: { required: true },
-  guests: { required: true },
+  reservationTime: { optional: true },
+  guests: { optional: true },
   location: { optional: true },
   streetAddress: {},
   confirmationNumber: {},
@@ -293,10 +293,10 @@ assertFormFields(formBranches.restaurant, {
 
 assertFormFields(formBranches.activity, {
   title: { required: true },
-  activityType: { required: true },
+  activityType: { optional: true },
   activityDate: { required: true },
-  activityTime: { required: true },
-  location: { required: true },
+  activityTime: { optional: true },
+  location: { optional: true },
   endTime: {},
   confirmationNumber: {},
   provider: {},
@@ -419,16 +419,17 @@ for (const token of [
   );
 }
 
-const attachmentPopup = section(
+const attachmentViewer = section(
   app,
-  "function reserveManualAttachmentWindow()",
+  "function openDocumentViewer(",
   "async function commitManualAttachments(",
 );
 assert(
-  attachmentPopup.includes('window.open("about:blank", "_blank")') &&
-    attachmentPopup.includes("popup.opener = null") &&
-    attachmentPopup.includes("reservedWindow.location.replace(url)"),
-  "Open must reserve a safe browser window during the original tap before IndexedDB work",
+  attachmentViewer.includes('overlay.className = "doc-viewer"') &&
+    attachmentViewer.includes('data-action="close-doc-viewer"') &&
+    attachmentViewer.includes("document.body.appendChild(overlay)") &&
+    attachmentViewer.includes("URL.createObjectURL(blob)"),
+  "Open must render an in-app document viewer with a Back-to-app control instead of leaving the PWA",
 );
 const attachmentOpenAction = section(
   app,
@@ -436,11 +437,9 @@ const attachmentOpenAction = section(
   'case "manual-attachment-retry": {',
 );
 assert(
-  attachmentOpenAction.indexOf("reserveManualAttachmentWindow()") >= 0 &&
-    attachmentOpenAction.indexOf("reserveManualAttachmentWindow()") <
-      attachmentOpenAction.indexOf("await openManualAttachment(") &&
-    /openManualAttachment\([^;]*reservedWindow\)/.test(attachmentOpenAction),
-  "the attachment popup must be created synchronously and passed through the async Blob lookup",
+  attachmentOpenAction.includes("await openManualAttachment(target.dataset.scope, target.dataset.id)") &&
+    !attachmentOpenAction.includes("reserveManualAttachmentWindow"),
+  "the attachment Open handler must delegate to the in-app viewer",
 );
 
 const attachmentContext = Object.create(null);

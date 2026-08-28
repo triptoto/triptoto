@@ -70,6 +70,7 @@
     passport: "identification-card", map: "map-trifold", close: "x",
     shield: "shield-check", refresh: "arrows-clockwise",
     edit: "pencil-simple", trash: "trash",
+    more: "dots-three-vertical", weather: "cloud-sun",
   });
   const INLINE_SVG = Object.freeze({
     edit: '<path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152a15.86,15.86,0,0,0-4.69,11.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160,144,67.31,160.68,84,68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188,172,95.31,188.68,112Z"/>',
@@ -79,13 +80,21 @@
     "hotel-solid": { vb: "0 0 24 24", path: '<path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>' },
     "restaurant-solid": { vb: "0 0 24 24", path: '<path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>' },
     "wx-sun": { vb: "0 0 24 24", path: '<circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2.5" x2="12" y2="4.6"/><line x1="12" y1="19.4" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="4.6" y2="12"/><line x1="19.4" y1="12" x2="21.5" y2="12"/><line x1="5.2" y1="5.2" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="18.8" y2="18.8"/><line x1="5.2" y1="18.8" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="18.8" y2="5.2"/></g>' },
+    more: { vb: "0 0 24 24", path: '<g fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></g>' },
+    sim: { vb: "0 0 24 24", path: '<path d="M7.5 3h6.2L18 7.3V19a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><rect x="8.4" y="11.2" width="7.2" height="6.6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="12" y1="11.2" x2="12" y2="17.8" stroke="currentColor" stroke-width="1.4"/><line x1="8.4" y1="14.5" x2="15.6" y2="14.5" stroke="currentColor" stroke-width="1.4"/>' },
+    external: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10.5 13.5"/><path d="M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/></g>' },
+    bolt: { vb: "0 0 24 24", path: '<path d="M13 2 4.5 13.2A.7.7 0 0 0 5 14.3h5.2l-1.4 7.4a.4.4 0 0 0 .73.3L19.5 10.8A.7.7 0 0 0 19 9.7h-5.2l1.2-7.3a.4.4 0 0 0-.73-.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' },
+    globe: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.8"/><ellipse cx="12" cy="12" rx="4" ry="8.8"/><line x1="3.4" y1="9" x2="20.6" y2="9"/><line x1="3.4" y1="15" x2="20.6" y2="15"/></g>' },
     "wx-moon": { vb: "0 0 24 24", path: '<path d="M20 14.6A8 8 0 0 1 9.4 4 6.6 6.6 0 1 0 20 14.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
     "wx-cloud": { vb: "0 0 24 24", path: '<path d="M17 18.5H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 18.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
     "wx-cloud-sun": { vb: "0 0 24 24", path: '<g stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"><circle cx="8" cy="7.5" r="2.9"/><line x1="8" y1="1.6" x2="8" y2="3"/><line x1="2.1" y1="7.5" x2="3.5" y2="7.5"/><line x1="3.8" y1="3.3" x2="4.8" y2="4.3"/><line x1="12.2" y1="3.3" x2="11.2" y2="4.3"/></g><path d="M18 20H10a3.6 3.6 0 0 1-.45-7.16 5 5 0 0 1 9.6-.55A3.35 3.35 0 0 1 18 20Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
+    weather: { vb: "0 0 24 24", path: '<g stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"><circle cx="8" cy="7.5" r="2.9"/><line x1="8" y1="1.6" x2="8" y2="3"/><line x1="2.1" y1="7.5" x2="3.5" y2="7.5"/><line x1="3.8" y1="3.3" x2="4.8" y2="4.3"/><line x1="12.2" y1="3.3" x2="11.2" y2="4.3"/></g><path d="M18 20H10a3.6 3.6 0 0 1-.45-7.16 5 5 0 0 1 9.6-.55A3.35 3.35 0 0 1 18 20Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
     "wx-cloud-rain": { vb: "0 0 24 24", path: '<path d="M17 15H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 15Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="18" x2="8" y2="21"/><line x1="13" y1="18" x2="12" y2="21"/><line x1="17" y1="18" x2="16" y2="21"/></g>' },
     "wx-cloud-snow": { vb: "0 0 24 24", path: '<path d="M17 15H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 15Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g fill="currentColor"><circle cx="9" cy="19.3" r="1.05"/><circle cx="13" cy="19.3" r="1.05"/><circle cx="17" cy="19.3" r="1.05"/></g>' },
     "wx-fog": { vb: "0 0 24 24", path: '<path d="M17 13H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 13Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="17" x2="16" y2="17"/><line x1="8" y1="20.5" x2="18" y2="20.5"/></g>' },
     "wx-storm": { vb: "0 0 24 24", path: '<path d="M17 14H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 14Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12.5 16l-3 3.6h2.4L11 23" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' },
+    "wx-drop": { vb: "0 0 24 24", path: '<path d="M12 3.2S6 9.4 6 14a6 6 0 0 0 12 0c0-4.6-6-10.8-6-10.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>' },
+    "wx-wind": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5"/><path d="M3 12h13a2.5 2.5 0 1 1-2.5 2.5"/><path d="M3 16h7"/></g>' },
     // Destination-flavored marks for the Trips list (solid, read well at 27px).
     "dest-mountain": { vb: "0 0 24 24", path: '<path d="M14 4l9 16H5L14 4z"/><path d="M7 12l6 8H1L7 12z"/>' },
     "dest-beach": { vb: "0 0 24 24", path: '<circle cx="12" cy="7.6" r="3.4"/><path d="M2.5 15c1.6 0 1.6 1.7 3.2 1.7S7.3 15 8.9 15s1.6 1.7 3.2 1.7S13.7 15 15.3 15s1.6 1.7 3.2 1.7 1.6-1.7 3.2-1.7v2.4c-1.6 0-1.6 1.7-3.2 1.7s-1.6-1.7-3.2-1.7-1.6 1.7-3.2 1.7S8.5 17.4 6.9 17.4 5.3 19.1 3.7 19.1 2.5 17.4 2.5 17.4z"/>' },
@@ -139,22 +148,44 @@
     tripsLoaded: false,
     googleAuthHandoffStatus: null,
     googleAuthHandoffMessage: "",
-    theme: "harbor",
+    theme: "daylight",
   };
   const THEMES = [
+    { id: "daylight", name: "Daylight", note: "Bright white & blue", chips: ["#ffffff", "#eef4ff", "#ffbf1a"] },
     { id: "harbor", name: "Harbor", note: "Dark navy & amber", chips: ["#0d1626", "#182338", "#f5ae41"] },
   ];
-  function themeCanvasColor() {
-    return "#080e1a";
+  const THEME_IDS = new Set(THEMES.map((t) => t.id));
+  function normalizeTheme(id) {
+    return THEME_IDS.has(id) ? id : "daylight";
   }
-  function applyTheme() {
-    document.documentElement.classList.add("theme-harbor");
-    document.documentElement.classList.remove("theme-classic");
-    state.theme = "harbor";
-    try { localStorage.setItem("tripto_theme", "harbor"); } catch (_error) {}
-    if (!document.documentElement.classList.contains("first-run-open")) {
+  function loadStoredTheme() {
+    try {
+      return normalizeTheme(localStorage.getItem("tripto_theme_v2"));
+    } catch (_error) {
+      return "daylight";
+    }
+  }
+  function themeCanvasColor(themeId = state.theme) {
+    return normalizeTheme(themeId) === "harbor" ? "#080e1a" : "#ffffff";
+  }
+  function setThemeClass(themeId) {
+    const cls = document.documentElement.classList,
+      resolved = normalizeTheme(themeId);
+    cls.toggle("theme-harbor", resolved === "harbor");
+    cls.toggle("theme-daylight", resolved === "daylight");
+    cls.remove("theme-classic");
+  }
+  function applyTheme(themeId) {
+    const next = normalizeTheme(themeId || state.theme);
+    state.theme = next;
+    try { localStorage.setItem("tripto_theme_v2", next); } catch (_error) {}
+    // Welcome / pre-auth keeps the premium dark Harbor identity regardless of
+    // the chosen app theme; the authenticated app uses the selected theme.
+    const welcome = document.documentElement.classList.contains("first-run-open");
+    setThemeClass(welcome ? "harbor" : next);
+    if (!welcome) {
       const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", themeCanvasColor());
+      if (meta) meta.setAttribute("content", themeCanvasColor(next));
     }
   }
   let flightDetailsCloseTimer = null;
@@ -341,35 +372,63 @@
     manualAttachmentMirror.set(manualAttachmentKey(normalized), record || null);
     return record;
   }
-  function reserveManualAttachmentWindow() {
-    const popup = window.open("about:blank", "_blank");
-    if (!popup) return null;
-    try {
-      popup.opener = null;
-      popup.document.title = "Opening travel document";
-      popup.document.body.textContent = "Opening travel document…";
-    } catch (_) {}
-    return popup;
+  function closeDocumentViewer() {
+    const el = document.getElementById("doc-viewer");
+    if (!el) return;
+    const url = el.dataset.blobUrl;
+    el.remove();
+    document.documentElement.classList.remove("doc-viewer-open");
+    if (url) { try { URL.revokeObjectURL(url); } catch (_) {} }
   }
-  async function openManualAttachment(scope, id, reservedWindow = null) {
-    try {
-      const record = await listManualAttachments(scope),
-        file = (record?.files || []).find((row) => String(row.id) === String(id));
-      if (!file?.blob) throw new Error("This local file is unavailable. Choose it again.");
-      const url = URL.createObjectURL(file.blob);
-      if (reservedWindow && !reservedWindow.closed) {
-        reservedWindow.location.replace(url);
-      } else {
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = file.name || "travel-document";
-        link.click();
+  function openDocumentViewer(blob, name) {
+    closeDocumentViewer();
+    const url = URL.createObjectURL(blob),
+      safeName = esc(name || "Travel document"),
+      isImage =
+        /^image\//i.test(blob.type || "") ||
+        /\.(png|jpe?g|gif|webp|heic|heif|bmp)$/i.test(name || "");
+    if (!isImage) {
+      // Our strict CSP forbids blob: inside <iframe>/<object> (frame-src /
+      // object-src 'none'), and mobile Safari renders PDFs blank in a frame
+      // regardless. So non-image files open in a top-level tab, where the
+      // browser uses its own native viewer. Try it immediately (works while we
+      // still hold the click gesture); if the browser blocks it, fall through
+      // to a tap-to-open panel that reopens on a fresh gesture.
+      let opened = null;
+      try {
+        opened = window.open(url, "_blank");
+      } catch (_) {}
+      if (opened) {
+        setTimeout(() => {
+          try { URL.revokeObjectURL(url); } catch (_) {}
+        }, 60000);
+        return;
       }
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch (error) {
-      try { reservedWindow?.close(); } catch (_) {}
-      throw error;
     }
+    const media = isImage
+        ? `<img class="doc-viewer__media" src="${url}" alt="${safeName}">`
+        : `<div class="doc-viewer__fallback">${icon("document", 46)}<strong>${safeName}</strong><p>Tap to open this file in your browser's viewer.</p><button type="button" class="mobile-primary-action doc-viewer__open">Open file</button></div>`,
+      overlay = document.createElement("div");
+    overlay.id = "doc-viewer";
+    overlay.className = "doc-viewer";
+    overlay.dataset.blobUrl = url;
+    overlay.innerHTML = `<header class="doc-viewer__bar"><button type="button" class="doc-viewer__back" data-action="close-doc-viewer">${icon("back", 20)}<span>Back to app</span></button><strong class="doc-viewer__title">${safeName}</strong><a class="doc-viewer__ext" href="${url}" download="${safeName}" target="_blank" rel="noopener" aria-label="Download ${safeName}">${icon("download", 20)}</a></header><div class="doc-viewer__body">${media}</div>`;
+    document.body.appendChild(overlay);
+    document.documentElement.classList.add("doc-viewer-open");
+    overlay
+      .querySelector(".doc-viewer__back")
+      ?.addEventListener("click", closeDocumentViewer);
+    overlay
+      .querySelector(".doc-viewer__open")
+      ?.addEventListener("click", () => {
+        try { window.open(url, "_blank"); } catch (_) {}
+      });
+  }
+  async function openManualAttachment(scope, id) {
+    const record = await listManualAttachments(scope),
+      file = (record?.files || []).find((row) => String(row.id) === String(id));
+    if (!file?.blob) throw new Error("This local file is unavailable. Choose it again.");
+    openDocumentViewer(file.blob, file.name);
   }
   async function commitManualAttachments(scope, bookingId, kind, travelerIds) {
     const normalized = normalizeManualAttachmentScope(scope),
@@ -647,6 +706,40 @@
     document.body.append(backdrop);
     requestAnimationFrame(() => cancel.focus());
   }
+  function confirmDeleteDocument(id) {
+    const doc = state.localDocs.find((row) => String(row.id) === String(id));
+    if (!doc) return;
+    const title = doc.name || docTypeLabel(doc.type) || "document",
+      returnFocus = document.activeElement;
+    const backdrop = document.createElement("div");
+    backdrop.className = "discard-dialog-backdrop";
+    backdrop.innerHTML = `<section class="discard-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-doc-title" aria-describedby="delete-doc-copy"><h2 id="delete-doc-title">Delete this document?</h2><p id="delete-doc-copy">“${esc(title)}” will be removed from this phone. This cannot be undone.</p><div class="discard-dialog-actions"><button type="button" class="mobile-secondary-action" data-delete-action="cancel">Keep document</button><button type="button" class="mobile-danger-action" data-delete-action="confirm">Delete</button></div></section>`;
+    const cancel = backdrop.querySelector('[data-delete-action="cancel"]'),
+      confirmBtn = backdrop.querySelector('[data-delete-action="confirm"]');
+    const close = () => { backdrop.remove(); returnFocus?.focus?.(); };
+    cancel.addEventListener("click", close);
+    backdrop.addEventListener("click", (event) => { if (event.target === backdrop) close(); });
+    backdrop.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { event.preventDefault(); close(); return; }
+      if (event.key !== "Tab") return;
+      const controls = [cancel, confirmBtn], index = controls.indexOf(document.activeElement);
+      event.preventDefault();
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+    });
+    confirmBtn.addEventListener("click", async () => {
+      confirmBtn.disabled = true; cancel.disabled = true;
+      try {
+        await removeLocalDocument(id);
+        backdrop.remove();
+        render();
+      } catch (error) {
+        confirmBtn.disabled = false; cancel.disabled = false;
+        showToast(error?.message || "The document could not be deleted.", "alert");
+      }
+    });
+    document.body.append(backdrop);
+    requestAnimationFrame(() => cancel.focus());
+  }
   async function deleteBookingRecord(record) {
     const version = Number(val(record.entity, "version")) || 1;
     if (!PREVIEW_MODE) {
@@ -665,10 +758,10 @@
     route("timeline", null, true);
   }
   function bookingMenuButton(kind, id) {
-    return `<button class="icon-button" data-action="manage-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Edit or delete">${icon("edit", 23)}</button>`;
+    return `<button class="icon-button" data-action="manage-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Edit or delete">${icon("edit", 18)}</button>`;
   }
   function bookingHeaderActions(kind, id) {
-    return `<button class="icon-button" data-action="share-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Share">${icon("share", 23)}</button>${bookingMenuButton(kind, id)}`;
+    return `<button class="icon-button" data-action="share-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Share">${icon("share", 18)}</button>${bookingMenuButton(kind, id)}`;
   }
   function linkedBookingDocuments(item) {
     const id = itemId(item || {});
@@ -913,6 +1006,327 @@
     }
     return null;
   }
+
+  // ==================== Trip Map (contextual) ====================
+  // Canonical eligibility + distinct-location model. UI never re-derives this
+  // rule: the only question a component asks is canShowTripMap().
+  function mapLocationGeo(loc) {
+    if (!loc) return { hasCoords: false, lat: null, lon: null, address: null };
+    const rawLat = val(loc, "latitude"),
+      rawLon = val(loc, "longitude"),
+      lat = Number(rawLat),
+      lon = Number(rawLon),
+      hasCoords =
+        rawLat != null &&
+        rawLon != null &&
+        Number.isFinite(lat) &&
+        Number.isFinite(lon) &&
+        Math.abs(lat) <= 90 &&
+        Math.abs(lon) <= 180 &&
+        !(lat === 0 && lon === 0);
+    return {
+      hasCoords,
+      lat: hasCoords ? lat : null,
+      lon: hasCoords ? lon : null,
+      address: val(loc, "local_address", "formatted_address") || null,
+    };
+  }
+  // A place is mappable when it has reliable coordinates OR a street-level
+  // address the geocoder can resolve. A city-only label (no address, no
+  // coordinates) is deliberately excluded — it is not a specific map point.
+  function locationIsMappable(loc) {
+    const geo = mapLocationGeo(loc);
+    return Boolean(geo.hasCoords || geo.address);
+  }
+  // Two references collapse to one physical place when they share coordinates
+  // (rounded) or a normalized address, so the same hotel used as stay + return
+  // point counts once.
+  function mapPlaceKey(loc) {
+    const geo = mapLocationGeo(loc);
+    if (geo.hasCoords) return `c:${geo.lat.toFixed(4)},${geo.lon.toFixed(4)}`;
+    if (geo.address)
+      return `a:${geo.address.replace(/\s+/g, " ").trim().toLowerCase()}`;
+    const name = val(loc, "display_name", "local_name");
+    return name ? `n:${String(name).trim().toLowerCase()}` : `id:${loc?.id ?? ""}`;
+  }
+  function mapMarkerIcon(kind) {
+    const k = String(kind || "").toLowerCase();
+    if (["flight", "plane", "air"].includes(k)) return "plane";
+    if (["hotel", "stay", "lodging", "accommodation"].includes(k)) return "hotel";
+    if (["train", "rail"].includes(k)) return "train";
+    if (["ferry", "cruise", "boat", "port"].includes(k)) return "navigation";
+    if (["car", "car_rental", "transfer", "taxi", "shuttle"].includes(k)) return "car";
+    if (["restaurant", "dining", "food"].includes(k)) return "restaurant";
+    if (["activity", "tour", "attraction", "museum", "sightseeing"].includes(k)) return "star";
+    if (["event", "concert", "theatre", "theater", "show"].includes(k)) return "ticket";
+    return "pin";
+  }
+  // Enumerate active (non-cancelled) bookings that reference a location. Each
+  // reference carries the booking it belongs to so a marker can open it.
+  function mappableBookingRefs() {
+    const refs = [];
+    (state.transport || [])
+      .filter((t) => !isCancelled(t))
+      .forEach((t) => {
+        const kind = String(val(t, "transport_type") || "transport"),
+          dep = val(t, "departure_location_id", "start_location_id"),
+          arr = val(t, "arrival_location_id", "end_location_id"),
+          depWhen = Number(val(t, "scheduled_departure_utc", "starts_at_utc")) || null,
+          arrWhen = Number(val(t, "scheduled_arrival_utc", "ends_at_utc")) || depWhen;
+        if (dep) refs.push({ kind, item: t, entityKind: kind, locId: dep, when: depWhen, role: "from" });
+        if (arr) refs.push({ kind, item: t, entityKind: kind, locId: arr, when: arrWhen, role: "to" });
+      });
+    (state.stays || [])
+      .filter((s) => !isCancelled(s))
+      .forEach((s) => {
+        const loc = val(s, "property_location_id", "start_location_id"),
+          when = Date.parse(`${val(s, "check_in_date") || ""}T12:00:00Z`) || null;
+        if (loc) refs.push({ kind: "hotel", item: s, entityKind: "hotel", locId: loc, when, role: "stay" });
+      });
+    (state.timeline || [])
+      .filter((it) => !isCancelled(it))
+      .forEach((it) => {
+        if (transportForItem(itemId(it))) return; // transport counted above
+        if (it.type === "stay") return; // stays counted above
+        const loc = val(it, "start_location_id", "location_id");
+        if (!loc) return;
+        const kind = timelineType(it);
+        refs.push({
+          kind,
+          item: it,
+          entityKind: String(val(it, "type") || kind || "plan"),
+          locId: loc,
+          when: Number(val(it, "starts_at_utc")) || null,
+          role: "plan",
+        });
+      });
+    return refs;
+  }
+  // THE canonical list. Distinct usable places for the current trip, each with
+  // resolved geo (stored coordinates or a cached geocode), booking associations
+  // and the soonest associated time.
+  function getMappableTripLocations() {
+    const byKey = new Map();
+    mappableBookingRefs().forEach((ref) => {
+      const loc = locationById(ref.locId);
+      if (!locationIsMappable(loc)) return;
+      const key = mapPlaceKey(loc);
+      let place = byKey.get(key);
+      if (!place) {
+        const geo = mapLocationGeo(loc);
+        const cached = !geo.hasCoords ? geocodeLookup(geocodeQueryFor(loc)) : null;
+        place = {
+          key,
+          location: loc,
+          name:
+            val(loc, "display_name", "local_name", "station_code", "iata_code") ||
+            val(loc, "city") ||
+            "Place",
+          type: String(val(loc, "type") || ""),
+          address: geo.address,
+          lat: geo.hasCoords ? geo.lat : cached ? cached.lat : null,
+          lon: geo.hasCoords ? geo.lon : cached ? cached.lon : null,
+          hasCoords: geo.hasCoords,
+          geocoded: !geo.hasCoords && Boolean(cached),
+          bookings: [],
+          when: null,
+        };
+        byKey.set(key, place);
+      }
+      place.bookings.push(ref);
+      if (ref.when && (place.when == null || ref.when < place.when)) place.when = ref.when;
+      // A place's primary marker icon follows its most specific booking type.
+      if (!place.markerKind || place.markerKind === "transport") place.markerKind = ref.entityKind || ref.kind;
+    });
+    return Array.from(byKey.values());
+  }
+  // Canonical rule: 2+ distinct usable places → Trip Map is available.
+  function canShowTripMap() {
+    return getMappableTripLocations().length >= 2;
+  }
+  function geocodeQueryFor(loc) {
+    return (
+      val(loc, "formatted_address", "local_address") ||
+      [val(loc, "display_name", "local_name"), val(loc, "city")]
+        .filter(Boolean)
+        .join(", ") ||
+      ""
+    );
+  }
+  // --- keyless geocode cache (server proxies Open-Meteo; same-origin, CSP-safe)
+  const geocodeCache = new Map();
+  let geocodeCacheLoaded = false;
+  function loadGeocodeCache() {
+    if (geocodeCacheLoaded) return;
+    geocodeCacheLoaded = true;
+    try {
+      const raw = JSON.parse(localStorage.getItem("tripto_geocode_cache") || "{}");
+      Object.entries(raw).forEach(([k, v]) => {
+        if (v && Number.isFinite(v.lat) && Number.isFinite(v.lon)) geocodeCache.set(k, v);
+      });
+    } catch (_) {}
+  }
+  function geocodeLookup(query) {
+    if (!query) return null;
+    loadGeocodeCache();
+    return geocodeCache.get(query.trim().toLowerCase()) || null;
+  }
+  function persistGeocodeCache() {
+    try {
+      const obj = {};
+      geocodeCache.forEach((v, k) => (obj[k] = v));
+      localStorage.setItem("tripto_geocode_cache", JSON.stringify(obj));
+    } catch (_) {}
+  }
+  async function geocodeMissingTripPlaces() {
+    if (state.offline) return false;
+    loadGeocodeCache();
+    const pending = getMappableTripLocations().filter(
+      (p) => p.lat == null && geocodeQueryFor(p.location),
+    );
+    let changed = false;
+    // Resolve sequentially (respect the free geocoder) and cap per open.
+    for (const place of pending.slice(0, 8)) {
+      const query = geocodeQueryFor(place.location),
+        key = query.trim().toLowerCase();
+      if (geocodeCache.has(key)) continue;
+      try {
+        const res = await fetch(`/api/v1/geocode?q=${encodeURIComponent(query)}`, {
+          headers: { accept: "application/json" },
+        });
+        if (!res.ok) {
+          geocodeCache.set(key, { lat: NaN, lon: NaN, failed: true });
+          continue;
+        }
+        const payload = await res.json(),
+          hit = payload?.location;
+        if (hit && Number.isFinite(Number(hit.latitude)) && Number.isFinite(Number(hit.longitude))) {
+          geocodeCache.set(key, { lat: Number(hit.latitude), lon: Number(hit.longitude) });
+          changed = true;
+        } else {
+          geocodeCache.set(key, { lat: NaN, lon: NaN, failed: true });
+        }
+      } catch (_) {
+        return changed; // network died — stop; Timeline/list still work
+      }
+    }
+    if (changed) persistGeocodeCache();
+    return changed;
+  }
+  function tripMapDayKey(when) {
+    return when ? new Date(when).toISOString().slice(0, 10) : null;
+  }
+  function tripMapDayLabel(dayKey) {
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      }).format(new Date(`${dayKey}T12:00:00Z`));
+    } catch (_) {
+      return dayKey;
+    }
+  }
+  function tripMapNextKey(places) {
+    const now = Date.now();
+    let best = null;
+    places.forEach((p) => {
+      p.bookings.forEach((b) => {
+        if (b.when && b.when >= now && (!best || b.when < best.when))
+          best = { when: b.when, key: p.key };
+      });
+    });
+    return best?.key || null;
+  }
+  function tripMapNavQuery(place) {
+    if (place.lat != null && place.lon != null) return `${place.lat},${place.lon}`;
+    return place.address || place.name || "";
+  }
+  // The trip's mappable places for a given day (or the whole trip), ordered by
+  // time. Falls back to the whole trip when a stale/empty day filter is passed.
+  function orderedTripMapPlaces(dayKey) {
+    const all = getMappableTripLocations();
+    const filtered = dayKey
+      ? all.filter((p) => p.bookings.some((b) => tripMapDayKey(b.when) === dayKey))
+      : all;
+    const use = filtered.length ? filtered : all;
+    return use
+      .slice()
+      .sort((a, b) => (a.when || Infinity) - (b.when || Infinity));
+  }
+  function tripMapPointToken(p) {
+    if (p.lat != null && p.lon != null) return `${p.lat},${p.lon}`;
+    return p.address || p.name || "";
+  }
+  // Build a Google Maps URL that opens ALL the trip's points at once. One point
+  // → a search pin; multiple points → a multi-stop route through them (the only
+  // keyless, CSP-safe way to show several places in Google Maps). The URL API
+  // supports origin + up to 9 waypoints + destination (11 points); extras are
+  // dropped and reported so we never silently hide stops.
+  function tripMapAllPointsUrl(places) {
+    const tokens = places.map(tripMapPointToken).filter(Boolean);
+    if (!tokens.length) return { url: "", used: 0, dropped: 0 };
+    if (tokens.length === 1)
+      return {
+        url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tokens[0])}`,
+        used: 1,
+        dropped: 0,
+      };
+    const MAX = 11;
+    const used = tokens.length > MAX ? [...tokens.slice(0, MAX - 1), tokens[tokens.length - 1]] : tokens;
+    const origin = encodeURIComponent(used[0]);
+    const destination = encodeURIComponent(used[used.length - 1]);
+    const waypoints = used
+      .slice(1, -1)
+      .map((t) => encodeURIComponent(t))
+      .join("|");
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+    if (waypoints) url += `&waypoints=${waypoints}`;
+    return { url, used: used.length, dropped: tokens.length - used.length };
+  }
+  function tripMapScreen() {
+    if (!state.trip)
+      return missingDetailScreen("Trip Map", "Select a trip to see its map.");
+    const places = getMappableTripLocations();
+    if (places.length < 2)
+      return missingDetailScreen(
+        "Trip Map",
+        "This trip does not have enough places to map yet. Add another booking with a location and the map will appear.",
+      );
+    const nextKey = tripMapNextKey(places),
+      dayKeys = Array.from(
+        new Set(
+          places
+            .flatMap((p) => p.bookings.map((b) => tripMapDayKey(b.when)))
+            .filter(Boolean),
+        ),
+      ).sort(),
+      activeDay = dayKeys.includes(state.tripMapDay) ? state.tripMapDay : null,
+      ordered = orderedTripMapPlaces(activeDay),
+      tripDates = esc(formatTripDates(state.trip) || "");
+    const chips = dayKeys.length
+      ? `<div class="trip-map__days" role="group" aria-label="Filter map by day"><button type="button" class="trip-map__day ${activeDay ? "" : "is-active"}" data-action="trip-map-day" data-day="" aria-pressed="${!activeDay}">All Trip</button>${dayKeys
+          .map(
+            (d) =>
+              `<button type="button" class="trip-map__day ${activeDay === d ? "is-active" : ""}" data-action="trip-map-day" data-day="${esc(d)}" aria-pressed="${activeDay === d}">${esc(tripMapDayLabel(d))}</button>`,
+          )
+          .join("")}</div>`
+      : "";
+    const openAll = `<button type="button" class="mobile-primary-action trip-map__open" data-action="trip-map-open-all" data-day="${esc(activeDay || "")}"${state.offline ? " aria-disabled=\"true\"" : ""}>${icon("map", 20)} Open all points in Google Maps</button>`;
+    const rows = ordered
+      .map((p) => {
+        const isNext = p.key === nextKey,
+          when = p.when ? esc(formatDateTime(p.when)) : "",
+          addr = esc(p.address || (p.hasCoords ? "Saved location" : "Address on file")),
+          meta = [when, addr].filter(Boolean).join(" · ");
+        return `<div class="trip-map__row ${isNext ? "is-next" : ""}"><button type="button" class="trip-map__row-main" data-action="trip-map-navigate" data-query="${esc(tripMapNavQuery(p))}" aria-label="Open ${esc(p.name)} in Google Maps"><span class="trip-map__row-icon">${icon(mapMarkerIcon(p.markerKind || p.type), 18)}</span><span class="trip-map__row-copy"><strong>${esc(p.name)}${isNext ? `<span class="trip-map__next">NEXT</span>` : ""}</strong><small>${meta}</small></span><span class="trip-map__row-nav">${icon("navigation", 20)}</span></button></div>`;
+      })
+      .join("");
+    const offlineNote = state.offline
+      ? `<div class="trip-map__offline" role="status">${icon("info", 18)}<span>Offline — your places are saved on this phone. Connect to open Google Maps.</span></div>`
+      : "";
+    return `<div class="phone-app"><section class="screen trip-map-screen">${appBar("Trip Map", tripDates ? `${state.trip.title || "Trip"} · ${formatTripDates(state.trip)}` : state.trip.title || "Trip", true)}<main class="trip-map">${chips}${offlineNote}${openAll}<section class="trip-map__list" aria-label="Trip places">${rows}</section><p class="trip-map__note">Opens Google Maps with your whole trip so you can view it and save it offline there. tripto.to never uses your location — your places stay saved on this phone.</p></main></section></div>`;
+  }
   // Short localized weekday for a "YYYY-MM-DD" date (noon avoids TZ edge cases).
   function weekdayLabel(date) {
     try {
@@ -923,9 +1337,35 @@
       return "";
     }
   }
+  // Is a destination-local hour ("...THH:MM") daytime? Rough sunrise/sunset split
+  // just to pick a sun vs moon glyph — no location, no precision needed.
+  function isHourDay(iso) {
+    const hh = typeof iso === "string" ? Number(iso.slice(11, 13)) : NaN;
+    if (!Number.isFinite(hh)) return true;
+    return hh >= 6 && hh < 19;
+  }
+  // "HH:MM" straight from the destination-local ISO string (no TZ conversion).
+  function hourLabel(iso) {
+    return typeof iso === "string" && iso.length >= 16 ? iso.slice(11, 16) : "";
+  }
+  // "Wed, May 26, 22:00" from a destination-local ISO string, shown literally so
+  // the time matches the destination clock rather than the phone's timezone.
+  function formatWeatherMoment(iso) {
+    if (typeof iso !== "string" || iso.length < 16) return "";
+    const datePart = iso.slice(0, 10), time = iso.slice(11, 16);
+    try {
+      const d = new Date(`${datePart}T12:00:00`),
+        wd = new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(d),
+        md = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(d);
+      return `${wd}, ${md}, ${time}`;
+    } catch (_error) {
+      return time;
+    }
+  }
   // Map WMO weather codes (what Open-Meteo returns) to a short label + icon.
   function weatherFromCode(code, isDay) {
     const c = Number(code);
+    if (!Number.isFinite(c)) return { label: "Weather", iconName: "wx-cloud" };
     if (c === 0) return { label: isDay ? "Clear sky" : "Clear night", iconName: isDay ? "wx-sun" : "wx-moon" };
     if (c === 1) return { label: "Mostly clear", iconName: isDay ? "wx-sun" : "wx-moon" };
     if (c === 2) return { label: "Partly cloudy", iconName: "wx-cloud-sun" };
@@ -939,63 +1379,161 @@
     if (c >= 95) return { label: "Thunderstorm", iconName: "wx-storm" };
     return { label: "Weather", iconName: "wx-cloud" };
   }
+  // Stable cache key for a weather target (rounded coords, or place query).
+  function weatherKeyFor(target) {
+    return target.query
+      ? `q:${String(target.query).trim().toLowerCase()}`
+      : `c:${Number(target.lat).toFixed(4)},${Number(target.lon).toFixed(4)}`;
+  }
+  // Distinct weather-worthy places for this trip so a multi-stop trip can show a
+  // per-place forecast. Deduped by city (falling back to the fetch key), each
+  // entry carries a display label, country, fetch target and soonest time.
+  function weatherPlaces() {
+    const out = [];
+    const seenCity = new Set();
+    const seenKey = new Set();
+    getMappableTripLocations().forEach((p) => {
+      // Weather is city-accurate, so coordinates are ideal; when a place has
+      // none, prefer a city/place NAME the keyless geocoder can resolve. A full
+      // street address (geocodeQueryFor's first choice) would 404 there, so it
+      // is only the last resort before the raw place name.
+      const target =
+        p.lat != null && p.lon != null
+          ? { lat: p.lat, lon: p.lon }
+          : {
+              query:
+                val(p.location, "city") ||
+                [val(p.location, "display_name", "local_name"), val(p.location, "country")]
+                  .filter(Boolean)
+                  .join(", ") ||
+                geocodeQueryFor(p.location) ||
+                p.name,
+            };
+      if (target.query == null && target.lat == null) return;
+      const key = weatherKeyFor(target);
+      const city = val(p.location, "city");
+      const cityKey = city ? String(city).trim().toLowerCase() : "";
+      if (cityKey && seenCity.has(cityKey)) return;
+      if (seenKey.has(key)) return;
+      if (cityKey) seenCity.add(cityKey);
+      seenKey.add(key);
+      out.push({
+        key,
+        label: city || p.name,
+        country: val(p.location, "country") || null,
+        target,
+        when: p.when || null,
+      });
+    });
+    out.sort((a, b) => (a.when || Infinity) - (b.when || Infinity));
+    if (!out.length) {
+      const t = tripWeatherLocation();
+      if (t) {
+        const target = t.query ? { query: t.query } : { lat: t.lat, lon: t.lon };
+        out.push({ key: weatherKeyFor(target), label: t.place || "Destination", country: null, target, when: null });
+      }
+    }
+    return out;
+  }
+  // The place whose forecast the Weather screen currently shows: the user's
+  // selection when it still matches a place, otherwise the primary (first) one.
+  function currentWeatherPlace() {
+    const places = weatherPlaces();
+    if (!places.length) return null;
+    return places.find((p) => p.key === state.weatherSel) || places[0];
+  }
   let weatherInFlight = null;
-  // Fetch destination weather in the background and re-render when it lands.
+  // Fetch a place's weather in the background and re-render when it lands.
   // apiGet already caches per-path in localStorage, so it degrades gracefully
   // offline. Skips the network when we already have fresh data for this place.
   async function ensureWeather(force) {
     if (PREVIEW_MODE) return;
-    const target = tripWeatherLocation();
-    if (!target) {
-      if (state.weather) { state.weather = null; render(); }
+    const place = currentWeatherPlace();
+    if (!place) {
+      if (state.weatherByPlace && Object.keys(state.weatherByPlace).length) {
+        state.weatherByPlace = {};
+        render();
+      }
       return;
     }
-    const key = target.query
-      ? `q:${target.query}`
-      : `c:${target.lat.toFixed(4)},${target.lon.toFixed(4)}`;
+    if (!state.weatherByPlace) state.weatherByPlace = {};
+    const key = place.key;
+    const target = place.target;
+    const existing = state.weatherByPlace[key];
     const fresh =
       !force &&
-      state.weather &&
-      state.weather.key === key &&
-      Date.now() - Number(state.weather.fetchedAt || 0) < 30 * 60 * 1000;
+      existing &&
+      Date.now() - Number(existing.fetchedAt || 0) < 30 * 60 * 1000;
     if (fresh) return;
     if (weatherInFlight === key) return;
     weatherInFlight = key;
+    // Surface a "Loading forecast…" state whenever we have nothing to show yet,
+    // so a first-time fetch never looks like a dead "No forecast yet" screen.
+    if (!existing) {
+      state.weatherRefreshing = true;
+      if (state.screen === "weather") render();
+    }
     const path = target.query
       ? `/api/v1/weather?q=${encodeURIComponent(target.query)}`
-      : `/api/v1/weather?lat=${target.lat.toFixed(4)}&lon=${target.lon.toFixed(4)}`;
+      : `/api/v1/weather?lat=${Number(target.lat).toFixed(4)}&lon=${Number(target.lon).toFixed(4)}`;
     try {
       const data = await apiGet(path);
       const wx = data?.weather;
       if (!wx || wx.temperatureC == null) return;
       const view = weatherFromCode(wx.weatherCode, wx.isDay);
-      state.weather = {
+      const daily = Array.isArray(wx.daily)
+        ? wx.daily
+            .filter((day) => day && day.tempMaxC != null)
+            .map((day) => {
+              const dayView = weatherFromCode(day.weatherCode, true);
+              return {
+                date: day.date,
+                weekday: weekdayLabel(day.date),
+                iconName: dayView.iconName,
+                hi: Math.round(day.tempMaxC),
+                lo: day.tempMinC != null ? Math.round(day.tempMinC) : null,
+                precip: day.precipProb != null ? Math.round(day.precipProb) : null,
+                wind: day.windMs != null ? Math.round(day.windMs) : null,
+              };
+            })
+        : [];
+      const hourly = Array.isArray(wx.hourly)
+        ? wx.hourly
+            .filter((h) => h && h.tempC != null)
+            .map((h) => {
+              const hView = weatherFromCode(h.weatherCode, isHourDay(h.time));
+              return {
+                time: h.time,
+                iconName: hView.iconName,
+                temp: Math.round(h.tempC),
+                precip: h.precipProb != null ? Math.round(h.precipProb) : null,
+                wind: h.windMs != null ? Math.round(h.windMs) : null,
+              };
+            })
+        : [];
+      state.weatherByPlace[key] = {
         key,
-        place: wx.place || target.place,
+        place: wx.place || place.label,
         tempC: Number(wx.temperatureC),
         label: view.label,
         iconName: view.iconName,
-        daily: Array.isArray(wx.daily)
-          ? wx.daily
-              .filter((day) => day && day.tempMaxC != null)
-              .map((day) => {
-                const dayView = weatherFromCode(day.weatherCode, true);
-                return {
-                  date: day.date,
-                  weekday: weekdayLabel(day.date),
-                  iconName: dayView.iconName,
-                  hi: Math.round(day.tempMaxC),
-                  lo: day.tempMinC != null ? Math.round(day.tempMinC) : null,
-                };
-              })
-          : [],
+        observedAt: wx.observedAt || null,
+        timezone: wx.timezone || null,
+        hi: daily[0]?.hi ?? null,
+        lo: daily[0]?.lo ?? null,
+        daily,
+        hourly,
         fetchedAt: Number(wx.fetchedAt) || Date.now(),
       };
-      if (state.screen === "timeline") render();
+      if (state.screen === "timeline" || state.screen === "weather") render();
     } catch (_error) {
       // Weather is non-essential; leave any previous value in place.
     } finally {
       weatherInFlight = null;
+      if (state.weatherRefreshing) {
+        state.weatherRefreshing = false;
+        if (state.screen === "weather") render();
+      }
     }
   }
   function locationLabel(id) {
@@ -1197,6 +1735,12 @@
   }
   function primaryCta(label, action, iconName = "chevron", attrs = "") {
     return `<button class="primary-cta" data-action="${action}" ${attrs}><span class="cta-left">${icon(iconName, 24)}<span>${esc(label)}</span></span>${icon("chevron", 25)}</button>`;
+  }
+  function detailAction(label, action, iconName = "chevron", attrs = "") {
+    return `<button class="mobile-secondary-action detail-action" data-action="${action}" ${attrs}>${icon(iconName, 18)} ${esc(label)}</button>`;
+  }
+  function addDocumentButton(id = "") {
+    return detailAction("Add document", "add-document", "plus", id ? `data-id="${esc(id)}"` : "");
   }
 
   function sessionExpiry(token) {
@@ -1549,9 +2093,7 @@
       );
       return;
     }
-    const url = URL.createObjectURL(row.blob);
-    window.open(url, "_blank", "noopener");
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    openDocumentViewer(row.blob, row.name);
   }
   // Populate trips/account/selected-trip from the local cache so relaunching
   // paints the last-known screen instantly instead of the loading skeleton.
@@ -1717,10 +2259,6 @@
           state.screen = "form";
           state.selectedId = "trip";
           history.replaceState(null, "", routeUrl("form", "trip"));
-        } else if (["trips", "bookings"].includes(state.screen)) {
-          state.screen = "timeline";
-          state.selectedId = null;
-          history.replaceState(null, "", routeUrl("timeline"));
         }
       }
     } catch (error) {
@@ -1772,6 +2310,7 @@
       `/api/v1/trips/${id}/contacts`,
       `/api/v1/trips/${id}/sync/status`,
       `/api/v1/trips/${id}/activities`,
+      `/api/v1/trips/${id}/imports`,
     ];
   }
   function applyTripDetails(results) {
@@ -1799,6 +2338,13 @@
     const activityDetails = take(13, "activities", []),
       activityById = new Map(activityDetails.map((item) => [String(item.id), item]));
     state.timeline = state.timeline.map((item) => activityById.has(String(item.id)) ? { ...item, ...activityById.get(String(item.id)) } : item);
+    state.imports = take(14, "imports", []);
+  }
+  // Imports that still need the traveler to review/confirm them (the unread set).
+  function pendingImportCount() {
+    return (state.imports || []).filter((row) =>
+      ["needs_confirmation", "pending", "changed"].includes(String(row.status || "").toLowerCase()),
+    ).length;
   }
   // Synchronously populate trip detail state from the local cache so a returning
   // user sees the timeline instantly instead of the loading skeleton. Returns
@@ -2466,6 +3012,9 @@
       "first-run-reduced-motion",
       active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
     );
+    // Welcome / pre-auth always wears the dark Harbor identity; the
+    // authenticated app uses the user's selected theme.
+    setThemeClass(active ? "harbor" : state.theme);
     const theme = document.querySelector('meta[name="theme-color"]');
     if (theme) theme.setAttribute("content", active ? "#0a1020" : themeCanvasColor(state.theme));
   }
@@ -2565,9 +3114,8 @@
           )
           .join("")
       : `<div class="timeline-empty">${emptySetup ? '<span class="timeline-empty__eyebrow">Start building</span>' : ""}<span class="timeline-empty__icon">${icon(emptySetup ? "plus" : "calendar", 30)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${emptySetup ? `<div class="timeline-empty__actions"><button class="primary-cta timeline-empty__add" data-action="open-add-booking"><span>Add booking</span>${icon("plus",18)}</button><button class="text-action timeline-empty__skip" data-screen="trips">Skip for now</button></div>` : primaryCta("Add booking", "open-add", "plus")}</div>`;
-    const headerAction = `<div class="trip-v2-actions">${emptySetup
-      ? ""
-      : `<button class="icon-button" data-screen="documents" aria-label="Tickets and documents">${icon("document",18)}</button>`}<button class="icon-button" data-action="edit-trip" aria-label="Edit trip details">${icon("edit",18)}</button></div>`;
+    const pendingImports = pendingImportCount();
+    const headerAction = `<div class="trip-v2-actions"><button class="icon-button icon-button--badged" data-action="open-trip-menu" aria-label="More options${pendingImports ? `, ${pendingImports} booking${pendingImports === 1 ? "" : "s"} to review` : ""}">${icon("more",20)}${pendingImports ? `<span class="unread-badge" aria-hidden="true">${pendingImports > 9 ? "9+" : pendingImports}</span>` : ""}</button></div>`;
     const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
     return `<div class="phone-app"><section class="screen timeline-screen">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${emptySetup ? "" : timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
   }
@@ -2581,17 +3129,6 @@
         active = starts != null && starts <= Date.now() && Number(val(next,"ends_at_utc","endsAtUtc") || starts) > Date.now();
       if (active || (starts != null && starts - Date.now() <= 6 * 60 * 60 * 1000))
         return `<section class="timeline-context timeline-context--next"><span>${active ? "Now" : "Next"}</span><h2>${esc(next.title || "Next plan")}</h2><p>${esc(starts ? `${formatTime(starts,zone)} · ${next.subtitle || statusText(next.status)}` : next.subtitle || "Time unavailable")}</p><button data-action="timeline-detail" data-id="${esc(itemId(next))}">Open${icon("chevron",17)}</button></section>`;
-    }
-    const wx = state.weather;
-    if (wx && wx.tempC != null) {
-      const days = Array.isArray(wx.daily) ? wx.daily.slice(0, 5) : [];
-      const strip = days
-        .map(
-          (day, i) =>
-            `<div class="timeline-context__wx-day"><span>${esc(i === 0 ? "Today" : day.weekday || "")}</span>${icon(day.iconName, 20)}<strong>${esc(day.hi)}°</strong></div>`,
-        )
-        .join("");
-      return `<section class="timeline-context timeline-context--weather"><button class="timeline-context__wx-now timeline-context__wx-refresh${state.weatherRefreshing ? " is-refreshing" : ""}" data-action="refresh-weather" aria-label="Refresh weather"${state.weatherRefreshing ? " disabled" : ""}>${icon("refresh", 22)}</button><div class="timeline-context__wx-forecast">${strip}</div></section>`;
     }
     const start = val(state.trip,"starts_on","startsOn");
     if (start) {
@@ -2739,7 +3276,7 @@
       disclosure = disclosureRows.length
         ? `<section class="flight-more flight-more--pass"><button type="button" class="flight-more__toggle" id="${disclosureButtonId}" data-action="toggle-flight-details" aria-expanded="${state.flightDetailsOpen}" aria-controls="${disclosureId}"><span>Flight details</span><span class="flight-more__chevron" aria-hidden="true">${icon(state.flightDetailsOpen ? "chevronUp" : "chevronDown", 18)}</span></button><div class="flight-more-content${state.flightDetailsOpen ? " is-open" : ""}" id="${disclosureId}" role="region" aria-labelledby="${disclosureButtonId}"${state.flightDetailsOpen ? "" : " hidden"}><dl>${disclosureRows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section>`
         : "";
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div>${linkedBookingDocumentRows(flight)}</main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div>${linkedBookingDocumentRows(flight)}${addDocumentButton()}</main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -2792,7 +3329,7 @@
             : statusTone === "attention"
               ? icon("warning", 14)
               : icon("info", 14);
-    return `<div class="phone-app"><section class="screen hotel-detail-screen">${appBar("Hotel", "", false, bookingHeaderActions("hotel", itemId(stay)))}<div class="hotel-hero ${imageUrl ? "hotel-hero--image" : "hotel-hero--fallback"}" role="img" aria-label="${imageUrl ? "Hotel property image" : "Hotel image unavailable; showing a generic local hotel-room fallback"}">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image" loading="lazy" decoding="async">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span>${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 15)} Offline · saved details</span>` : ""}</div><main class="hotel-sheet"><header class="hotel-heading"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="hotel-status hotel-status--${statusTone}">${statusIcon}<span>${esc(statusLabel)}</span></span></div>${roomName ? `<p>${esc(roomName)}</p>` : ""}</header><section class="hotel-stats" aria-label="Stay dates"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></section><div class="hotel-actions"><button class="hotel-action hotel-action--primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}>${icon("navigation", 18)}<span>Directions</span></button><button class="hotel-action" data-action="show-driver" data-id="${esc(itemId(stay))}"${driverDisabled ? " disabled" : ""}>${icon("car", 18)}<span>Show to Driver</span></button></div><section class="hotel-location" aria-label="Hotel location"><button class="hotel-address-row" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""} aria-label="${address ? `Open directions to ${esc(address)}` : "Hotel address unavailable"}"><span class="hotel-address-row__icon">${icon("pin", 21)}</span><span>${esc(address || "Location unavailable")}</span>${directionsDisabled ? "" : icon("chevron", 18)}</button>${hasCoordinates ? `<button class="hotel-map-panel" data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel location in Maps"><span class="hotel-map-panel__marker">${icon("pin", 22)}</span><span class="hotel-map-panel__copy"><strong>Saved location</strong><small>Open in Maps</small></span></button>` : ""}</section>${contactRows ? `<section class="hotel-contact-list" aria-label="Hotel contact and confirmation">${contactRows}</section>` : ""}${linkedBookingDocumentRows(stay)}</main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen hotel-detail-screen">${appBar("Hotel", "", false, bookingHeaderActions("hotel", itemId(stay)))}<div class="hotel-hero ${imageUrl ? "hotel-hero--image" : "hotel-hero--fallback"}" role="img" aria-label="${imageUrl ? "Hotel property image" : "Hotel image unavailable; showing a generic local hotel-room fallback"}">${imageUrl ? `<img src="${esc(imageUrl)}" alt="" class="hotel-hero-image" loading="lazy" decoding="async">` : ""}<span class="hotel-hero-scrim" aria-hidden="true"></span>${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 15)} Offline · saved details</span>` : ""}</div><main class="hotel-sheet"><header class="hotel-heading"><div class="hotel-title-row"><h1>${esc(val(stay, "property_name", "title") || "Stay")}</h1><span class="hotel-status hotel-status--${statusTone}">${statusIcon}<span>${esc(statusLabel)}</span></span></div>${roomName ? `<p>${esc(roomName)}</p>` : ""}</header><section class="hotel-stats" aria-label="Stay dates"><div><span>Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time unavailable")}</small></div><div><span>Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time unavailable")}</small></div><div><span>Nights</span><strong>${esc(nights(stay))}</strong></div></section><div class="hotel-actions"><button class="hotel-action hotel-action--primary" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}>${icon("navigation", 18)}<span>Directions</span></button><button class="hotel-action" data-action="show-driver" data-id="${esc(itemId(stay))}"${driverDisabled ? " disabled" : ""}>${icon("car", 18)}<span>Show to Driver</span></button></div><section class="hotel-location" aria-label="Hotel location"><button class="hotel-address-row" data-action="directions-hotel" data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""} aria-label="${address ? `Open directions to ${esc(address)}` : "Hotel address unavailable"}"><span class="hotel-address-row__icon">${icon("pin", 21)}</span><span>${esc(address || "Location unavailable")}</span>${directionsDisabled ? "" : icon("chevron", 18)}</button>${hasCoordinates ? `<button class="hotel-map-panel" data-action="directions-hotel" data-id="${esc(itemId(stay))}" aria-label="Open hotel location in Maps"><span class="hotel-map-panel__marker">${icon("pin", 22)}</span><span class="hotel-map-panel__copy"><strong>Saved location</strong><small>Open in Maps</small></span></button>` : ""}</section>${contactRows ? `<section class="hotel-contact-list" aria-label="Hotel contact and confirmation">${contactRows}</section>` : ""}${linkedBookingDocumentRows(stay)}${addDocumentButton()}</main>${bottomNav("bookings")}</section></div>`;
   }
   function bookingsScreen() {
     const rows = [];
@@ -2824,7 +3361,7 @@
       .map((document) => {
         const integrity = document.integrity || "unverified";
         const travelerNames = (document.travelerIds || []).map((id) => state.travelers.find((traveler) => String(traveler.id) === String(id))?.display_name).filter(Boolean).join(", "), status = integrity === "verified" ? "Ready offline" : statusText(integrity);
-        return `<button class="document-row" data-action="open-document" data-id="${esc(document.id)}"><span class="document-row__icon ${document.type === "hotel_confirmation" ? "purple" : document.type === "boarding_pass" ? "green" : ""}">${icon(document.type === "boarding_pass" ? "qr" : document.type === "hotel_confirmation" ? "hotel" : "document", 24)}</span><span class="document-row__copy"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${esc(travelerNames || document.subtitle || docTypeLabel(document.type))}</small><span class="document-row__status ${integrity === "verified" ? "is-ready" : "is-warning"}">${integrity === "verified" ? icon("check", 14) : icon("warning", 14)} ${esc(status)}</span></span>${icon("chevron", 20, "chevron")}</button>`;
+        return `<div class="document-row-wrap"><button class="document-row" data-action="open-document" data-id="${esc(document.id)}"><span class="document-row__icon ${document.type === "hotel_confirmation" ? "purple" : document.type === "boarding_pass" ? "green" : ""}">${icon(document.type === "boarding_pass" ? "qr" : document.type === "hotel_confirmation" ? "hotel" : "document", 24)}</span><span class="document-row__copy"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${esc(travelerNames || document.subtitle || docTypeLabel(document.type))}</small><span class="document-row__status ${integrity === "verified" ? "is-ready" : "is-warning"}">${integrity === "verified" ? icon("check", 14) : icon("warning", 14)} ${esc(status)}</span></span>${icon("chevron", 20, "chevron")}</button><button type="button" class="document-row__remove" data-action="remove-document" data-id="${esc(document.id)}" aria-label="Delete ${esc(document.name || "document")}">${icon("trash", 18)}</button></div>`;
       })
       .join("");
     const verified = state.localDocs.filter((document) => document.integrity === "verified").length;
@@ -2834,8 +3371,11 @@
   function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
     return `<div class="phone-app"><section class="screen mobile-v1-screen ${esc(extraClass)}">${appBar(title, "", false, right)}${mobileAlert()}<main class="mobile-page">${body}</main>${bottomNav(active)}</section></div>`;
   }
-  function focusedTaskPage(title, body, className = "") {
-    return `<div class="phone-app"><section class="screen mobile-v1-screen focused-task ${esc(className)}">${appBar(title)}${mobileAlert()}<main class="focused-page">${body}</main></section></div>`;
+  function focusedTaskPage(title, body, className = "", right = "") {
+    return `<div class="phone-app"><section class="screen mobile-v1-screen focused-task ${esc(className)}">${appBar(title, "", false, right)}${mobileAlert()}<main class="focused-page">${body}</main></section></div>`;
+  }
+  function formHeaderSave(formId, label) {
+    return `<button type="submit" form="${esc(formId)}" class="app-bar-save mobile-primary-action">${esc(label)}</button>`;
   }
   function lifecycleLabel(value) {
     const key = String(value || "upcoming").toLowerCase();
@@ -2984,7 +3524,7 @@
     ].filter(([, value]) => value);
     return mobilePage(
       ferry ? "Ferry Detail" : "Train Detail",
-      `<section class="journey-pass journey-pass--train"><header><span>${icon(transportIconName, 20)} ${esc(val(train, "carrier_name") || (ferry ? "Ferry" : "Train"))}</span><strong>${statusText(val(train, "booking_status", "status") || "confirmed")}</strong><small>Scheduled data</small></header><div class="journey-route"><div><strong>${esc(val(from, "station_code", "iata_code") || "—")}</strong><span>${esc(val(from, "display_name") || "Origin unavailable")}</span></div><span class="journey-route__line">${icon(transportIconName, 25)}</span><div><strong>${esc(val(to, "station_code", "iata_code") || "—")}</strong><span>${esc(val(to, "display_name") || "Destination unavailable")}</span></div></div><div class="journey-times"><div><span>Departs</span><strong>${esc(formatTime(dep, val(train, "departure_timezone")))}</strong><small>${esc(formatDay(dep, val(train, "departure_timezone")))}</small></div><div><span>Arrives</span><strong>${esc(formatTime(arr, val(train, "arrival_timezone")))}</strong><small>${esc(formatDay(arr, val(train, "arrival_timezone")))}</small></div></div><dl class="journey-facts">${facts.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>${doc ? primaryCta("Open Ticket", "open-document", "ticket", `data-id="${esc(doc.id)}"`) : `<div class="inline-recovery">${icon("warning", 18)}<span><strong>Ticket not saved offline</strong><small>Add a verified ticket before travel.</small></span></div><button class="mobile-secondary-action" data-action="add-document">${icon("plus", 18)} Add ticket</button>`}<button class="mobile-secondary-action" data-action="directions-item" data-id="${esc(itemId(train))}">${icon("navigation", 18)} Directions to ${ferry ? "port" : "station"}</button></section>${linkedBookingDocumentRows(train)}`,
+      `<section class="journey-pass journey-pass--train"><header><span>${icon(transportIconName, 20)} ${esc(val(train, "carrier_name") || (ferry ? "Ferry" : "Train"))}</span><strong>${statusText(val(train, "booking_status", "status") || "confirmed")}</strong><small>Scheduled data</small></header><div class="journey-route"><div><strong>${esc(val(from, "station_code", "iata_code") || "—")}</strong><span>${esc(val(from, "display_name") || "Origin unavailable")}</span></div><span class="journey-route__line">${icon(transportIconName, 25)}</span><div><strong>${esc(val(to, "station_code", "iata_code") || "—")}</strong><span>${esc(val(to, "display_name") || "Destination unavailable")}</span></div></div><div class="journey-times"><div><span>Departs</span><strong>${esc(formatTime(dep, val(train, "departure_timezone")))}</strong><small>${esc(formatDay(dep, val(train, "departure_timezone")))}</small></div><div><span>Arrives</span><strong>${esc(formatTime(arr, val(train, "arrival_timezone")))}</strong><small>${esc(formatDay(arr, val(train, "arrival_timezone")))}</small></div></div><dl class="journey-facts">${facts.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>${doc ? detailAction("Open Ticket", "open-document", "ticket", `data-id="${esc(doc.id)}"`) + addDocumentButton() : `<div class="inline-recovery">${icon("warning", 18)}<span><strong>Ticket not saved offline</strong><small>Add a verified ticket before travel.</small></span></div>` + detailAction("Add ticket", "add-document", "plus")}${detailAction(`Directions to ${ferry ? "port" : "station"}`, "directions-item", "navigation", `data-id="${esc(itemId(train))}"`)}</section>${linkedBookingDocumentRows(train)}`,
       "bookings",
       bookingHeaderActions(kind, itemId(train)),
     );
@@ -3026,7 +3566,7 @@
       timezone = val(item, "departure_timezone", "start_timezone", "timezone");
     const primary = [
       doc
-        ? primaryCta(
+        ? detailAction(
             "Open Ticket",
             "open-document",
             "ticket",
@@ -3034,21 +3574,22 @@
           )
         : "",
       location
-        ? primaryCta(
+        ? detailAction(
             "Directions",
             "directions-item",
             "navigation",
             `data-id="${esc(itemId(item))}"`,
           )
         : "",
-      !doc && !location && val(contact, "phone")
-        ? primaryCta(
+      val(contact, "phone")
+        ? detailAction(
             "Call",
             "call",
             "phone",
             `data-value="${esc(contact.phone)}"`,
           )
         : "",
+      addDocumentButton(),
     ].join("");
     const confirmation = val(
         item,
@@ -3260,9 +3801,9 @@
     // No AI guessing. You review every field before it is added.
     const forward = state.importMode === "forward";
     const control = forward
-      ? `<section class="forward-booking-address"><span>${icon("mail",24)}</span><div><strong>go@tripto.to</strong><small>Forward from your verified Google email. If more than one trip could match, we will ask you to choose.</small></div></section><label><span>Paste confirmation for immediate review</span><textarea name="body" rows="7" placeholder="Paste the forwarded confirmation email"></textarea></label>`
+      ? `<section class="forward-booking-address"><span>${icon("mail",24)}</span><div><strong>go@tripto.to</strong><small>Forward any booking confirmation here and we'll read it and add the flight, stay, or train to your timeline for you — no manual entry. Send from your verified Google email so we can confirm it's you; if more than one trip could match, we'll ask you to choose.</small></div></section><label><span>Paste confirmation for immediate review</span><textarea name="body" rows="7" placeholder="Paste the forwarded confirmation email"></textarea></label>`
       : `<label class="smart-import-file"><span>Booking document</span><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,.eml,.docx,.ics,.pkpass,application/pdf,image/*,text/plain,message/rfc822,text/calendar"><small>Best accuracy: the original PDF, .eml, .ics, or .pkpass. Photos and screenshots are read with OCR and may need corrections. · 10 MB max</small></label>`;
-    return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Only verified senders are accepted. Review uncertain fields before adding anything." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon(forward ? "mail" : "document",19)} Review recognized fields</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
+    return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Forward your booking emails to go@tripto.to and we'll pull the flight, hotel, or train details onto your timeline automatically — no manual entry. Only verified senders are accepted; review anything uncertain before it's added." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task", formHeaderSave("import-form", "Review"));
   }
   function importReviewScreen() {
     const candidates = state.importReview?.candidates || [];
@@ -3302,8 +3843,8 @@
     const upcoming = state.trips.filter((trip)=>!["completed","archived","cancelled"].includes(String(val(trip,"lifecycle_state","lifecycleState")||"upcoming"))).length,
       past = state.trips.length - upcoming,
       identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
-    const themePicker = "";
-    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div>${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}${themePicker}<div class="section-label">Booking email</div>${row("mail","go@tripto.to",mode === "account" ? "Forward from your verified Google email" : "Sign in to verify a sender","","booking-email-info")}<div class="section-label">Preferences</div>${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")} <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
+    const themePicker = `<div class="section-label">Appearance</div><div class="theme-picker" role="group" aria-label="App theme">${THEMES.map((t) => `<button type="button" class="theme-swatch${state.theme === t.id ? " is-active" : ""}" data-action="set-theme" data-theme="${esc(t.id)}" aria-pressed="${state.theme === t.id}"><span class="theme-swatch__chips" aria-hidden="true">${t.chips.map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</span><span class="theme-swatch__copy"><strong>${esc(t.name)}</strong><small>${esc(t.note)}</small></span></button>`).join("")}</div>`;
+    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div>${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}${themePicker}<div class="section-label">Booking email</div>${row("mail","go@tripto.to",mode === "account" ? "Forward confirmations to add them automatically" : "Sign in to verify a sender","","booking-email-info")}<div class="section-label">Preferences</div>${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")} <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
   }
 
   let googleScriptPromise=null,googleRedirectExchangePromise=null;
@@ -3481,7 +4022,6 @@
     const open = () => {
       popup.hidden = false;
       input.setAttribute("aria-expanded", "true");
-      requestAnimationFrame(() => popup.scrollIntoView({ block:"nearest" }));
     };
     const setActive = (next) => {
       const options = [...popup.querySelectorAll('[role="option"]')];
@@ -3560,15 +4100,15 @@
         if (popup.hidden) queueSearch();
         else setActive(active + (event.key === "ArrowDown" ? 1 : -1));
         event.preventDefault();
-      } else if (event.key === "Enter" && !popup.hidden && active >= 0 && results[active]) {
+      } else if (event.key === "Enter" && !popup.hidden && results.length) {
         event.preventDefault();
-        choose(results[active]);
+        choose(results[active >= 0 ? active : 0]);
       }
     });
     input.addEventListener("blur", () => window.setTimeout(() => {
       if (!popup.contains(document.activeElement)) close();
     }, 100));
-    popup.addEventListener("pointerdown", (event) => event.preventDefault());
+    popup.addEventListener("mousedown", (event) => event.preventDefault());
     popup.addEventListener("click", (event) => {
       const option = event.target.closest("[data-place-index]");
       if (option) { choose(results[Number(option.dataset.placeIndex)]); return; }
@@ -3584,6 +4124,94 @@
         close();
         input.focus();
       }
+    });
+  }
+  function bindDatalistAutocomplete(form, input) {
+    if (input.dataset.datalistBound === "1") return;
+    const listId = input.getAttribute("list");
+    const source = listId ? form.querySelector(`datalist#${CSS.escape(listId)}`) : null;
+    if (!source) return;
+    input.dataset.datalistBound = "1";
+    const values = [...source.querySelectorAll("option")].map((option) => option.value).filter(Boolean);
+    input.removeAttribute("list");
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("autocorrect", "off");
+    input.setAttribute("autocapitalize", "off");
+    input.setAttribute("spellcheck", "false");
+    const popupId = `${input.id || input.name}-suggest-list`,
+      popup = document.createElement("div");
+    popup.className = "place-suggestions";
+    popup.id = popupId;
+    popup.setAttribute("role", "listbox");
+    popup.setAttribute("aria-label", input.dataset.suggestLabel || "Suggestions");
+    popup.hidden = true;
+    input.insertAdjacentElement("afterend", popup);
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-haspopup", "listbox");
+    input.setAttribute("aria-controls", popupId);
+    input.setAttribute("aria-expanded", "false");
+    let matches = [], active = -1;
+    const close = () => {
+      popup.hidden = true;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+      active = -1;
+    };
+    const setActive = (next) => {
+      const options = [...popup.querySelectorAll('[role="option"]')];
+      if (!options.length) return;
+      active = (next + options.length) % options.length;
+      options.forEach((option, index) => {
+        option.classList.toggle("is-active", index === active);
+        option.setAttribute("aria-selected", String(index === active));
+      });
+      input.setAttribute("aria-activedescendant", options[active].id);
+      options[active].scrollIntoView({ block: "nearest" });
+    };
+    const choose = (value) => {
+      input.value = value;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      close();
+      input.focus({ preventScroll: true });
+    };
+    const render = () => {
+      const query = input.value.trim().toLowerCase();
+      matches = (query
+        ? values.filter((value) => value.toLowerCase().includes(query))
+            .sort((a, b) => a.toLowerCase().indexOf(query) - b.toLowerCase().indexOf(query))
+        : values
+      ).slice(0, 8);
+      active = -1;
+      if (!matches.length) { close(); return; }
+      popup.innerHTML = matches.map((value, index) =>
+        `<button type="button" class="place-option place-option--plain" id="${popupId}-${index}" role="option" aria-selected="false" data-suggest-index="${index}"><span class="place-option__copy"><strong>${esc(value)}</strong></span></button>`,
+      ).join("");
+      popup.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+    };
+    input.addEventListener("input", render);
+    input.addEventListener("focus", render);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { close(); return; }
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        if (popup.hidden) render();
+        else setActive(active + (event.key === "ArrowDown" ? 1 : -1));
+        event.preventDefault();
+      } else if (event.key === "Enter" && !popup.hidden) {
+        event.preventDefault();
+        if (active >= 0 && matches[active]) choose(matches[active]);
+        else close();
+      }
+    });
+    input.addEventListener("blur", () => window.setTimeout(() => {
+      if (!popup.contains(document.activeElement)) close();
+    }, 100));
+    popup.addEventListener("mousedown", (event) => event.preventDefault());
+    popup.addEventListener("click", (event) => {
+      const option = event.target.closest("[data-suggest-index]");
+      if (option) choose(matches[Number(option.dataset.suggestIndex)]);
     });
   }
   function dateRangeField(startName, endName, label, startLabel, endLabel, startValue = "", endValue = "") {
@@ -3657,10 +4285,8 @@
     if (!state.trip) return "";
     const start = val(state.trip, "starts_on", "startsOn"), end = val(state.trip, "ends_on", "endsOn");
     if (kind === "hotel" && start && end)
-      return `<div class="date-suggestions" aria-label="Date suggestions"><button type="button" data-action="apply-trip-dates" data-start="${esc(start)}" data-end="${esc(end)}">Use trip dates</button></div>`;
-    const target = kind === "activity" || kind === "reservation" ? `${kind}Date` : "departureDate",
-      chips = [["Use trip start date", start], ["Use trip end date", end]].filter(([, value]) => value);
-    return chips.length ? `<div class="date-suggestions" aria-label="Date suggestions">${chips.map(([label, value]) => `<button type="button" data-action="apply-date-suggestion" data-field="${target}" data-value="${esc(value)}">${esc(label)}</button>`).join("")}</div>` : "";
+      return `<div class="date-suggestions" aria-label="Date suggestions"><button type="button" data-action="apply-trip-dates" data-start="${esc(start)}" data-end="${esc(end)}">${icon("calendar",15)}<span>Trip dates <b>${esc(formatDateOnly(start))} – ${esc(formatDateOnly(end))}</b></span></button></div>`;
+    return "";
   }
   function noTripQuickAdd(kind, title) {
     return focusedTaskPage(title, `<section class="quick-no-trip"><span>${icon("trips", 30)}</span><h1>Choose a trip first</h1><p>This ${esc(kind)} needs a trip so it cannot become an orphan booking.</p><div class="quick-trip-list">${state.trips.map((trip) => `<button type="button" data-action="select-trip-for-add" data-id="${esc(trip.id)}"><span><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small></span>${icon("chevron", 19)}</button>`).join("")}</div><button class="mobile-primary-action" type="button" data-action="create-trip">Create trip</button></section>`, "form-screen quick-add-screen");
@@ -3697,7 +4323,8 @@
     const submitLabel=kind==="trip"?(editingTrip?"Save changes":"Create trip"):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
     const heading=kind==="trip"?(editingTrip?"Edit trip details":"Where are you going?"):esc(cfg.title);
     const subhead=kind==="trip"?(editingTrip?"<p>Update the name or dates, or delete the trip.</p>":"<p>Keep it simple. Add the details later.</p>"):"";
-    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${heading}</h1>${subhead}</header>${fields}</section><div class="form-save-bar"><button type="submit" class="mobile-primary-action">${submitLabel}</button>${deleteBar}</div></form>`, "form-screen");
+    const headerActions=`${editingTrip?`<button type="button" class="icon-button app-bar-delete" data-action="delete-trip" aria-label="Delete this trip">${icon("trash",22)}</button>`:""}<button type="submit" form="native-form" class="app-bar-save mobile-primary-action">${submitLabel}</button>`;
+    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${heading}</h1>${subhead}</header>${fields}</section></form>`, "form-screen", headerActions);
   }
   function zonedDateTimeParts(ms, timeZone) {
     const value = Number(ms);
@@ -3963,7 +4590,7 @@
       ["hotel_confirmation", "Hotel confirmation"], ["reservation", "Reservation / voucher"],
       ["qr_code", "QR code"], ["other", "Other document"],
     ];
-    return `<section class="manual-attachments" aria-labelledby="manual-attachments-title"><header><span>${icon("document", 21)}</span><div><h2 id="manual-attachments-title">Tickets &amp; Documents</h2><p>Optional · Stored on this device</p></div></header><div class="manual-attachments__controls"><label class="manual-attachments__picker" for="form-manualAttachments">${icon("plus", 19)}<span>Add files</span><input class="sr-only" id="form-manualAttachments" name="manualAttachments" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pkpass" multiple data-manual-attachments data-scope="${esc(key)}"></label><label class="form-field manual-attachments__type" for="form-manualDocumentType"><span>Suggested type <small>Optional</small></span><select id="form-manualDocumentType" name="manualDocumentType" aria-label="Suggested document type">${options.map(([value, label]) => `<option value="${value}"${value === suggested ? " selected" : ""}>${label}</option>`).join("")}</select></label></div><div class="manual-attachments__list" data-manual-attachment-list data-scope="${esc(key)}" aria-live="polite">${manualAttachmentRows(scope)}</div></section>`;
+    return `<section class="manual-attachments" aria-labelledby="manual-attachments-title"><header><span>${icon("document", 21)}</span><div><h2 id="manual-attachments-title">Tickets &amp; Documents</h2><p>Optional · Stored on this device</p></div></header><label class="manual-attachments__picker" for="form-manualAttachments"><span class="manual-attachments__picker-icon">${icon("plus", 20)}</span><span class="manual-attachments__picker-copy"><strong>Add files</strong><small>PDF, images, or passes · up to 10 MB each</small></span><input class="sr-only" id="form-manualAttachments" name="manualAttachments" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pkpass" multiple data-manual-attachments data-scope="${esc(key)}"></label><label class="form-field manual-attachments__type" for="form-manualDocumentType"><span>Suggested type <small>Optional</small></span><select id="form-manualDocumentType" name="manualDocumentType" aria-label="Suggested document type">${options.map(([value, label]) => `<option value="${value}"${value === suggested ? " selected" : ""}>${label}</option>`).join("")}</select></label><div class="manual-attachments__list" data-manual-attachment-list data-scope="${esc(key)}" aria-live="polite">${manualAttachmentRows(scope)}</div></section>`;
   }
   async function refreshManualAttachmentPanel(form, hydrate = false) {
     const scope = form?.dataset.attachmentScope;
@@ -3985,64 +4612,66 @@
     const config = manualBookingConfig(kind), baseKind = bookingBaseKind(kind);
     const editingRecord = state.editingEntity && state.editingEntity.kind === kind ? findBookingRecord(kind, state.editingEntity.id) : null;
     formPrefill = editingRecord ? buildBookingPrefill(kind, editingRecord.entity) : null;
+    const isReturnFlight = !editingRecord && kind === "flight" && Boolean(state.pendingReturnFlight);
+    if (isReturnFlight) formPrefill = state.pendingReturnFlight;
     const editId = editingRecord ? itemId(editingRecord.entity) : "", editVersion = editingRecord ? Number(val(editingRecord.entity, "version")) || 1 : 0;
-    const title = kind === "document" ? "Add Document" : `${editingRecord ? "Edit" : "Add"} ${config?.shortLabel || config?.label || statusText(kind)}`;
+    const title = kind === "document" ? "Add Document" : `${editingRecord ? "Edit" : isReturnFlight ? "Add return" : "Add"} ${config?.shortLabel || config?.label || statusText(kind)}`;
     if (!state.trip) return noTripQuickAdd(kind, title);
-    const editing = Boolean(editingRecord), dateDefault = editing ? "" : String(val(state.trip, "starts_on", "startsOn") || ""), attachmentScope = manualAttachmentScope(kind, editId);
+    const editing = Boolean(editingRecord), dateDefault = editing ? "" : isReturnFlight ? String(val(state.trip, "ends_on", "endsOn") || "") : String(val(state.trip, "starts_on", "startsOn") || ""), tzDefault = editing ? "" : tripDefaultTimezone(), attachmentScope = manualAttachmentScope(kind, editId);
     let primary="", moreContent="", note="", list="", dataLists="", extraClass="";
     if (kind === "flight") {
       list = quickLocationList("flight");
       dataLists = dataListMarkup("suggest-airlines",SUGGEST_LISTS.airlines)+dataListMarkup("suggest-cabin",SUGGEST_LISTS.cabin)+dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("carrierName","Airline",{required:true,placeholder:"Airline name",attrs:'list="suggest-airlines"'})}${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383",helper:"Use the airline code and number when known."})}${manualRouteCard(kind,{label:"From",placeholder:"Airport or code"},{label:"To",placeholder:"Airport or code"})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="departure" hidden><span>Origin timezone <b aria-hidden="true">*</b></span><input type="text" name="departureTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="departureTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="arrival" hidden><span>Arrival timezone</span><input type="text" name="arrivalTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="arrivalTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
+      primary = `${isReturnFlight ? `<div class="round-trip-banner form-field--wide">${icon("navigation",16)}<span>Return flight — route reversed. Just set the return date and time.</span></div>` : ""}${!editing && !isReturnFlight ? `<label class="round-trip-toggle form-field--wide"><span class="round-trip-toggle__copy"><strong>Round trip</strong><small>We'll set up the return flight after you save</small></span><input type="checkbox" name="roundTrip" value="1" role="switch"><span class="round-trip-toggle__track" aria-hidden="true"><span class="round-trip-toggle__thumb"></span></span></label>` : ""}${quickField("carrierName","Airline",{required:true,placeholder:"Airline name",attrs:'list="suggest-airlines"'})}${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383"})}${manualRouteCard(kind,{label:"From",placeholder:"Airport or code"},{label:"To",placeholder:"Airport or code"})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="departure" hidden><span>Origin timezone <b aria-hidden="true">*</b></span><input type="text" name="departureTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="departureTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="arrival" hidden><span>Arrival timezone</span><input type="text" name="arrivalTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="arrivalTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickDateSuggestions(kind)}`;
       moreContent = `<div class="form-fields"><div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("operatingAirlineCode","Operating airline",{attrs:'list="suggest-airlines"'})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("boardingTime","Boarding time",{type:"time",wide:false})}${quickField("gateCloseTime","Gate closes",{type:"time",wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false,attrs:'list="suggest-cabin"'})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Airport timezones are set from the selected airports. Scheduled information is never presented as live.";
     } else if (kind === "hotel") {
       dataLists = dataListMarkup("suggest-hotels",SUGGEST_LISTS.hotel) + quickLocationList("reservation");
-      primary = `${quickField("propertyName","Property name",{required:true,placeholder:"Hotel or stay name",attrs:'list="suggest-hotels"'})}${quickField("location","City / location",{required:true,placeholder:"Search city or airport",attrs:'data-place-types="city,airport" data-place-preferred="city" data-place-label="Hotel cities and airports"'})}<input type="hidden" name="locationPlace" value="">${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out", formPrefill?.checkInDate||"", formPrefill?.checkOutDate||"")}`;
+      primary = `${quickField("propertyName","Property name",{required:true,placeholder:"Hotel or stay name",attrs:'list="suggest-hotels"'})}${quickField("location","City / location",{optional:true,placeholder:"Search city or airport",attrs:'data-place-types="city,airport" data-place-preferred="city" data-place-label="Hotel cities and airports"'})}<input type="hidden" name="locationPlace" value="">${dateRangeField("checkInDate", "checkOutDate", "Stay dates", "Check-in", "Check-out", formPrefill?.checkInDate||"", formPrefill?.checkOutDate||"")}`;
       moreContent = `<div class="form-fields">${quickField("streetAddress","Address",{placeholder:"Street address",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("checkInFrom","Check-in from",{type:"time",wide:false})}${quickField("checkInUntil","Check-in until",{type:"time",wide:false})}${quickField("checkOutBy","Check-out by",{type:"time",wide:false})}${quickField("roomName","Room name or type",{})}${quickField("bookingStatus","Booking status",{})}${quickTravelerField()}${quickField("phone","Hotel phone",{type:"tel",wide:false})}${quickField("email","Hotel email",{type:"email",wide:false})}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Use the single calendar to choose check-in and check-out dates.";
     } else if (["train","ferry"].includes(kind)) {
       const ferry = kind === "ferry";
       list = quickLocationList("train");
       dataLists = dataListMarkup("suggest-rail",SUGGEST_LISTS.rail)+dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${manualRouteCard(kind,{label:ferry?"Departure port":"From station",placeholder:ferry?"Departure port":"Station",list:"quick-train-locations"},{label:ferry?"Arrival port":"To station",placeholder:ferry?"Arrival port":"Station",list:"quick-train-locations"})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>${quickField("carrierName",ferry?"Ferry operator":"Train operator",{attrs:'list="suggest-rail"',optional:true})}${quickField("serviceNumber",ferry?"Sailing number":"Train / service number",{optional:true})}${quickField("departureTimezone","Departure timezone",{required:true,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure" list="suggest-timezones"',helper:`Use the ${ferry?"port":"station"} local timezone.`})}`;
-      moreContent = `<div class="form-fields"><div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("platform",ferry?"Pier / berth":"Platform",{wide:false})}${quickField("coach","Coach / cabin",{wide:false})}${quickField("seat","Seat",{wide:false})}${ferry ? quickField("vehicle","Vehicle",{optional:true,placeholder:"Vehicle or registration"}) : ""}${quickField("bookingReference","Booking reference",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      primary = `${manualRouteCard(kind,{label:ferry?"Departure port":"From station",placeholder:ferry?"Departure port":"Station",list:"quick-train-locations"},{label:ferry?"Arrival port":"To station",placeholder:ferry?"Arrival port":"Station",list:"quick-train-locations"})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>`;
+      moreContent = `<div class="form-fields">${quickField("departureTimezone","Departure timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure" list="suggest-timezones"'})}${quickField("carrierName",ferry?"Ferry operator":"Train operator",{attrs:'list="suggest-rail"',optional:true})}${quickField("serviceNumber",ferry?"Sailing number":"Train / service number",{optional:true})}<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("platform",ferry?"Pier / berth":"Platform",{wide:false})}${quickField("coach","Coach / cabin",{wide:false})}${quickField("seat","Seat",{wide:false})}${ferry ? quickField("vehicle","Vehicle",{optional:true,placeholder:"Vehicle or registration"}) : ""}${quickField("bookingReference","Booking reference",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = `${ferry ? "Ports" : "Stations"} remain manual or use saved trip locations; the app does not pretend the city index is a station directory.`;
     } else if (kind === "car-rental") {
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-carrental",SUGGEST_LISTS.carRental)+dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Rental company",{required:true,placeholder:"Company",attrs:'list="suggest-carrental"'})}${manualRouteCard(kind,{name:"location",label:"Pickup location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"},{name:"endLocation",label:"Drop-off location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"})}${dateRangeField("reservationDate", "endDate", "Rental dates", "Pickup", "Drop-off", formPrefill?.reservationDate||dateDefault, formPrefill?.endDate||"")}<div class="form-fields form-fields--date-time">${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}${quickField("endTime","Drop-off time",{type:"time",required:true,wide:false})}</div>${quickField("timezone","Pickup timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<input type="hidden" name="transportType" value="car">`;
-      moreContent = `<div class="form-fields">${quickField("endTimezone","Drop-off timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Only needed when drop-off uses a different timezone."})}${quickField("vehicle","Vehicle / class",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("driver","Driver name",{})}${quickField("phone","Rental phone",{type:"tel"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      primary = `${quickField("title","Rental company",{required:true,placeholder:"Company",attrs:'list="suggest-carrental"'})}${manualRouteCard(kind,{name:"location",label:"Pickup location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"},{name:"endLocation",label:"Drop-off location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"})}${dateRangeField("reservationDate", "endDate", "Rental dates", "Pickup", "Drop-off", formPrefill?.reservationDate||dateDefault, formPrefill?.endDate||"")}<div class="form-fields form-fields--date-time">${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}${quickField("endTime","Drop-off time",{type:"time",optional:true,wide:false})}</div><input type="hidden" name="transportType" value="car">`;
+      moreContent = `<div class="form-fields">${quickField("timezone","Pickup timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("endTimezone","Drop-off timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("vehicle","Vehicle / class",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("driver","Driver name",{})}${quickField("phone","Rental phone",{type:"tel"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Pickup and drop-off are kept together as one rental booking.";
     } else if (kind === "transfer") {
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Provider / driver",{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:"From",placeholder:"Pickup location",list:"quick-reservation-locations"},{name:"endLocation",label:"To",placeholder:"Destination",list:"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Pickup date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}</div>${quickField("timezone","Pickup timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<input type="hidden" name="transportType" value="transfer">`;
-      moreContent = `<div class="form-fields">${quickField("endTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Only needed when the destination uses a different timezone."})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone","Driver / provider phone",{type:"tel"})}${quickField("vehicle","Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      primary = `${quickField("title","Provider / driver",{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:"From",placeholder:"Pickup location",list:"quick-reservation-locations"},{name:"endLocation",label:"To",placeholder:"Destination",list:"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Pickup date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}</div><input type="hidden" name="transportType" value="transfer">`;
+      moreContent = `<div class="form-fields">${quickField("timezone","Pickup timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("endTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone","Driver / provider phone",{type:"tel"})}${quickField("vehicle","Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Only confirmed pickup details are shown in the Timeline.";
     } else if (kind === "cruise") {
       list = quickLocationList("activity");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("provider","Cruise line",{required:true,placeholder:"Cruise line"})}${quickField("ship","Ship",{optional:true,placeholder:"Ship name"})}${manualRouteCard(kind,{name:"location",label:"Departure port",placeholder:"Port",list:"quick-activity-locations"},{name:"endLocation",label:"Arrival / return port",placeholder:"Port",list:"quick-activity-locations"})}<div class="form-fields form-fields--date-time">${quickField("activityDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("activityTime","Departure time",{type:"time",optional:true,wide:false})}</div>${quickField("endDate","Return / arrival date",{type:"date",required:true})}${quickField("timezone","Departure timezone",{optional:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Needed only when you add a departure or arrival time."})}<input type="hidden" name="timeMode" value="specific"><input type="hidden" name="activityType" value="cruise">`;
-      moreContent = `<div class="form-fields">${quickField("title","Cruise name",{optional:true,placeholder:"Optional itinerary name"})}${quickField("endTime","Arrival time",{type:"time",wide:false,optional:true})}${quickField("confirmationNumber","Booking reference",{})}${quickField("cabin","Cabin",{optional:true})}${quickField("deck","Deck",{optional:true})}${quickField("embarkation","Embarkation details",{optional:true,placeholder:"Terminal, pier, or check-in point"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      primary = `${quickField("provider","Cruise line",{required:true,placeholder:"Cruise line"})}${manualRouteCard(kind,{name:"location",label:"Departure port",placeholder:"Port",list:"quick-activity-locations"},{name:"endLocation",label:"Arrival / return port",placeholder:"Port",list:"quick-activity-locations"})}<div class="form-fields form-fields--date-time">${quickField("activityDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("activityTime","Departure time",{type:"time",optional:true,wide:false})}</div>${quickField("endDate","Return / arrival date",{type:"date",optional:true})}<input type="hidden" name="timeMode" value="specific"><input type="hidden" name="activityType" value="cruise">`;
+      moreContent = `<div class="form-fields">${quickField("ship","Ship",{optional:true,placeholder:"Ship name"})}${quickField("timezone","Departure timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("title","Cruise name",{optional:true,placeholder:"Optional itinerary name"})}${quickField("endTime","Arrival time",{type:"time",wide:false,optional:true})}${quickField("confirmationNumber","Booking reference",{})}${quickField("cabin","Cabin",{optional:true})}${quickField("deck","Deck",{optional:true})}${quickField("embarkation","Embarkation details",{optional:true,placeholder:"Terminal, pier, or check-in point"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Port names stay manual until a dedicated port directory is available.";
     } else if (kind === "restaurant") {
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Restaurant name",{required:true,placeholder:"Restaurant"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Reservation date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",required:true,wide:false})}</div>${quickField("guests","Guests",{type:"number",required:true,wide:false,attrs:'min="1" max="99" inputmode="numeric"'})}${quickField("location","City / location",{optional:true,placeholder:"City or saved trip location",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{required:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<input type="hidden" name="reservationType" value="restaurant">`;
-      moreContent = `<div class="form-fields">${quickField("streetAddress","Street address",{optional:true,placeholder:"Restaurant address"})}${quickField("phone","Restaurant phone",{type:"tel",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      primary = `${quickField("title","Restaurant name",{required:true,placeholder:"Restaurant"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Reservation date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",optional:true,wide:false})}</div>${quickField("guests","Guests",{type:"number",optional:true,wide:false,attrs:'min="1" max="99" inputmode="numeric"'})}<input type="hidden" name="reservationType" value="restaurant">`;
+      moreContent = `<div class="form-fields">${quickField("location","City / location",{optional:true,placeholder:"City or saved trip location",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("streetAddress","Street address",{optional:true,placeholder:"Restaurant address"})}${quickField("phone","Restaurant phone",{type:"tel",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Guest count and confirmation stay with this reservation.";
     } else if (kind === "activity") {
       list = quickLocationList("activity");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Activity name",{required:true,placeholder:"Vatican Museums"})}${quickField("activityType","Type",{type:"select",required:true,choices:'<option value="activity">Activity</option><option value="tour">Tour</option><option value="concert">Concert</option><option value="theatre">Theatre</option><option value="museum">Museum</option><option value="attraction">Attraction</option><option value="sports">Sports</option><option value="meeting">Meeting</option><option value="show">Show</option><option value="other">Other</option>'})}${quickField("activityDate","Date",{type:"date",required:true,value:dateDefault})}<input type="hidden" name="timeMode" value="specific"><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",required:true,wide:false})}${quickField("timezone","Timezone",{required:true,wide:false,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location","Venue",{required:true,placeholder:"Venue or saved trip location",attrs:'list="quick-activity-locations"'})}`;
+      primary = `${quickField("title","Activity name",{required:true,placeholder:"Vatican Museums"})}${quickField("activityType","Type",{type:"select",optional:true,choices:'<option value="activity">Activity</option><option value="tour">Tour</option><option value="concert">Concert</option><option value="theatre">Theatre</option><option value="museum">Museum</option><option value="attraction">Attraction</option><option value="sports">Sports</option><option value="meeting">Meeting</option><option value="show">Show</option><option value="other">Other</option>'})}${quickField("activityDate","Date",{type:"date",required:true,value:dateDefault})}<input type="hidden" name="timeMode" value="specific"><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",optional:true,wide:false})}${quickField("timezone","Timezone",{optional:true,wide:false,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location","Venue",{optional:true,placeholder:"Venue or saved trip location",attrs:'list="quick-activity-locations"'})}`;
       moreContent = `<div class="form-fields">${quickField("endTime","End time",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickField("seatSection","Seat / section",{optional:true})}${quickField("streetAddress","Address",{optional:true,placeholder:"Venue address"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Use the venue's local time. Nothing is presented as live.";
     } else if (["other","reservation"].includes(kind)) {
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Booking title",{required:true,placeholder:"What did you book?"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",optional:true,wide:false})}</div>${quickField("location","Location",{optional:true,placeholder:"Optional",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"',helper:"Needed only when you add a time."})}<input type="hidden" name="reservationType" value="other">`;
-      moreContent = `<div class="form-fields"><div class="form-fields--date-time">${quickField("endDate","End date",{type:"date",wide:false})}${quickField("endTime","End time",{type:"time",wide:false})}</div>${quickField("confirmationNumber","Confirmation number",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      primary = `${quickField("title","Booking title",{required:true,placeholder:"What did you book?"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",optional:true,wide:false})}</div><input type="hidden" name="reservationType" value="other">`;
+      moreContent = `<div class="form-fields">${quickField("location","Location",{optional:true,placeholder:"Optional",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<div class="form-fields--date-time">${quickField("endDate","End date",{type:"date",wide:false})}${quickField("endTime","End time",{type:"time",wide:false})}</div>${quickField("confirmationNumber","Confirmation number",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Add only the details you know; nothing is guessed.";
     } else {
       const bookingOptions = bookingRows().map(({item}) => `<option value="${esc(itemId(item))}">${esc(val(item,"title","property_name")||"Booking")}</option>`).join(""),
@@ -4056,8 +4685,8 @@
     const submitLabel = editingRecord ? "Save changes" : (kind === "document" ? "Save on This Phone" : config?.cta || `Add ${esc(statusText(kind))}`);
     const heading = editingRecord ? `Edit ${esc(config?.shortLabel || config?.label || statusText(kind))}` : esc(config?.shortLabel || config?.label || title);
     const attachments = kind === "document" ? "" : manualAttachmentsSection(kind, attachmentScope);
-    const form = `<form class="mobile-form premium-form quick-add-form manual-booking-form${extraClass}" id="native-form" data-kind="${esc(kind)}" data-base-kind="${esc(baseKind)}" data-client-request-id="${esc(manualBookingDraftId(kind, editId))}" data-attachment-scope="${esc(attachmentScope.draftId)}"${editAttrs} novalidate>${quickTripContext()}<header class="manual-form-heading"><span>Manual booking</span><h1>${heading}</h1><p>Start with the essentials. Add anything else only when you need it.</p></header><section class="form-section manual-essentials" aria-labelledby="manual-essentials-title"><h2 id="manual-essentials-title">Essentials</h2><div class="quick-primary-fields">${primary}</div>${list}${dataLists}</section>${attachments}${quickMore(kind,"More Details",moreContent)}${note ? `<p class="form-note">${esc(note)}</p>` : ""}<div class="form-save-bar"><button type="submit" class="mobile-primary-action">${submitLabel}</button></div></form>`;
-    return focusedTaskPage(title, form, `form-screen quick-add-screen quick-add-screen--${kind}`);
+    const form = `<form class="mobile-form premium-form quick-add-form manual-booking-form${extraClass}" id="native-form" data-kind="${esc(kind)}" data-base-kind="${esc(baseKind)}" data-client-request-id="${esc(manualBookingDraftId(kind, editId))}" data-attachment-scope="${esc(attachmentScope.draftId)}"${editAttrs} novalidate>${quickTripContext()}<header class="manual-form-heading"><span>Manual booking</span><h1>${heading}</h1></header><section class="form-section manual-essentials" aria-labelledby="manual-essentials-title"><h2 id="manual-essentials-title">Essentials</h2><div class="quick-primary-fields">${primary}</div>${list}${dataLists}</section>${attachments}${quickMore(kind,"More Details",moreContent)}</form>`;
+    return focusedTaskPage(title, form, `form-screen quick-add-screen quick-add-screen--${kind}`, formHeaderSave("native-form", editingRecord ? "Save" : "Save"));
   }
   function driverScreen() {
     const stay = selectedStay(),
@@ -4102,6 +4731,82 @@
       `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="open-add-booking"><span class="info-icon">${icon("plus",22)}</span><span><strong>Add Booking</strong><small>Add something to ${esc(state.trip?.title || "your trip")}</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-action="create-trip"><span class="info-icon">${icon("plane",22)}</span><span><strong>Create New Trip</strong><small>Start planning another trip</small></span>${icon("chevron",22)}</button></div>`,
     );
   }
+  function tripMenuSheet() {
+    const mapHint = canShowTripMap()
+      ? "See this trip's places on a map"
+      : "Add 2+ places to map this trip";
+    const pending = pendingImportCount();
+    const importsHint = pending
+      ? `${pending} booking${pending === 1 ? "" : "s"} to review`
+      : "Forwarded and uploaded bookings";
+    return bottomSheet(
+      "trip-menu",
+      "Trip options",
+      `<div class="sheet-options-group sheet-options-group--v2 sheet-options-group--trip"><button class="sheet-option" data-action="open-weather"><span class="info-icon">${icon("weather",22)}</span><span><strong>Weather</strong><small>Forecast for your destination</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-action="open-trip-map"><span class="info-icon">${icon("map",22)}</span><span><strong>Trip Map</strong><small>${esc(mapHint)}</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-action="open-esim"><span class="info-icon">${icon("sim",22)}</span><span><strong>Travel eSIM</strong><small>Data abroad, no roaming — 15% off</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-screen="import-history"><span class="info-icon">${icon("mail",22)}</span><span><strong>Booking imports</strong><small>${esc(importsHint)}</small></span>${pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : icon("chevron",22)}</button><button class="sheet-option" data-screen="documents" aria-label="Tickets and documents"><span class="info-icon">${icon("document",22)}</span><span><strong>Documents</strong><small>Tickets and confirmations</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-action="edit-trip"><span class="info-icon">${icon("edit",22)}</span><span><strong>Edit trip</strong><small>Name, dates and details</small></span>${icon("chevron",22)}</button></div>`,
+    );
+  }
+  function weatherScreen() {
+    if (!state.trip)
+      return missingDetailScreen("Weather", "Select a trip to see its forecast.");
+    const sub = state.trip.title || "Trip";
+    const places = weatherPlaces();
+    const place = currentWeatherPlace();
+    const wx = place && state.weatherByPlace ? state.weatherByPlace[place.key] : null;
+    // Per-place selector, only when the trip visits more than one place.
+    const selector =
+      places.length > 1
+        ? `<div class="wx-places" role="tablist" aria-label="Places">${places
+            .map(
+              (p) =>
+                `<button type="button" role="tab" class="wx-place-chip${p.key === place.key ? " is-active" : ""}" data-action="weather-place" data-key="${esc(p.key)}" aria-selected="${p.key === place.key}">${icon("pin", 14)}<span>${esc(p.label)}</span></button>`,
+            )
+            .join("")}</div>`
+        : "";
+    let body;
+    if (wx && wx.tempC != null) {
+      const hourly = Array.isArray(wx.hourly) ? wx.hourly.slice(0, 6) : [];
+      const daily = Array.isArray(wx.daily) ? wx.daily.slice(0, 7) : [];
+      const hourItems = hourly
+        .map(
+          (h, i) =>
+            `<li class="wx-hour${i === 0 ? " is-now" : ""}"><span class="wx-hour__t">${i === 0 ? "Now" : esc(hourLabel(h.time))}</span>${icon(h.iconName, 28)}<span class="wx-hour__temp">${esc(h.temp)}°</span><span class="wx-hour__meta">${icon("wx-drop", 13)}${h.precip != null ? esc(h.precip) : 0}%</span><span class="wx-hour__meta">${icon("wx-wind", 13)}${h.wind != null ? esc(h.wind) : 0}</span></li>`,
+        )
+        .join("");
+      const dayItems = daily
+        .map(
+          (day, i) =>
+            `<li class="wx-day${i === 0 ? " is-today" : ""}"><span class="wx-day__label">${esc(i === 0 ? "Today" : day.weekday || "")}</span><span class="wx-day__meta">${icon("wx-drop", 13)}${day.precip != null ? esc(day.precip) : 0}%</span><span class="wx-day__meta">${icon("wx-wind", 13)}${day.wind != null ? esc(day.wind) : 0} m/s</span><span class="wx-day__ico">${icon(day.iconName, 26)}</span><span class="wx-day__hi">${esc(day.hi)}°</span><span class="wx-day__lo">${day.lo != null ? esc(day.lo) + "°" : "—"}</span></li>`,
+        )
+        .join("");
+      const country = place.country ? `<span class="wx-hero__country">${esc(place.country)}</span>` : "";
+      const moment = formatWeatherMoment(wx.observedAt);
+      body = `<section class="wx-hero">${icon(wx.iconName, 42)}<strong class="wx-hero__temp">${esc(Math.round(wx.tempC))}°</strong><span class="wx-hero__cond">${esc(wx.label)}</span><span class="wx-hero__hilo">H:${wx.hi != null ? esc(wx.hi) + "°" : "—"} L:${wx.lo != null ? esc(wx.lo) + "°" : "—"}</span></section>${hourItems ? `<section class="wx-block" aria-label="Hourly forecast"><h2 class="wx-block__title">Hourly</h2><ul class="wx-hours">${hourItems}</ul></section>` : ""}${dayItems ? `<section class="wx-block wx-block--days" aria-label="Daily forecast"><h2 class="wx-block__title">7-day forecast</h2><ul class="wx-days">${dayItems}</ul></section>` : ""}<p class="weather-note">Forecast for your destination. tripto.to never uses your location.</p>`;
+    } else if (state.offline) {
+      body = `<section class="weather-empty"><span>${icon("info", 30)}</span><h1>Weather needs a connection</h1><p>Connect to load the forecast for your destination.</p></section>`;
+    } else {
+      body = `<section class="weather-empty"><span>${icon("weather", 30)}</span><h1>${state.weatherRefreshing ? "Loading forecast…" : "No forecast yet"}</h1><p>We could not find a forecast for this trip's destination.</p><button type="button" class="mobile-secondary-action" data-action="refresh-weather">${icon("refresh", 18)} Try again</button></section>`;
+    }
+    return `<div class="phone-app"><section class="screen weather-screen">${appBar("Weather", sub, true)}<main class="weather-page">${selector}${body}</main></section></div>`;
+  }
+  function esimScreen() {
+    const dest =
+      (weatherPlaces()[0] && weatherPlaces()[0].label) ||
+      (state.trip && state.trip.title) ||
+      "your destination";
+    const features = [
+      ["bolt", "Ready in minutes", "Buy online and scan a QR — you're connected before you land."],
+      ["globe", "200+ destinations", "One provider covers your whole trip, country to country."],
+      ["phone", "Keep your number", "Your physical SIM stays active for calls and texts."],
+      ["shield", "No roaming bills", "Pay local data rates, not surprise carrier surcharges."],
+    ];
+    const featureRows = features
+      .map(
+        ([ic, t, d]) =>
+          `<div class="esim-feature"><span class="esim-feature__icon">${icon(ic, 22)}</span><div><strong>${esc(t)}</strong><small>${esc(d)}</small></div></div>`,
+      )
+      .join("");
+    return `<div class="phone-app"><section class="screen esim-screen">${appBar("Travel eSIM", "Partner offer", true)}<main class="esim-page"><section class="esim-hero"><span class="esim-hero__icon">${icon("sim", 40)}</span><h1>Land in ${esc(dest)} with data already on</h1><p>Skip the SIM-card queue and roaming bills — a travel eSIM works the moment you arrive.</p><div class="esim-offer"><strong>15% off</strong><span>your first plan with code</span><button type="button" class="esim-code" data-action="copy-esim-code" aria-label="Copy code FKWQX6ES">FKWQX6ES ${icon("copy", 15)}</button></div></section><section class="esim-features">${featureRows}</section><section class="esim-steps"><h2>How it works</h2><ol><li><span>1</span><p>Tap <strong>Get my eSIM</strong> below to open 7g.</p></li><li><span>2</span><p>Pick your destination and plan — enter code <strong>FKWQX6ES</strong> for 15% off.</p></li><li><span>3</span><p>Scan the QR to install it, then land connected.</p></li></ol></section><button type="button" class="mobile-primary-action esim-cta" data-action="esim-signup">${icon("external", 18)} Get my eSIM — 15% off</button><p class="esim-note">tripto.to partners with 7g. This opens 7g in a new tab and we may earn a commission — it never changes your price. tripto.to never uses your location.</p></main></section></div>`;
+  }
   function addBookingScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
     const choice = (ic,title,copy,action) => `<button class="v2-choice" data-action="${action}"><span>${icon(ic,23)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",20)}</button>`;
@@ -4109,7 +4814,7 @@
   }
   function manualBookingSheet() {
     const options = Object.entries(MANUAL_BOOKING_TYPES);
-    return bottomSheet("manual-booking","Add Manually",`<label class="manual-category-search" for="manual-category-search"><span class="sr-only">Search booking categories</span>${icon("search",18)}<input id="manual-category-search" type="search" inputmode="search" autocomplete="off" placeholder="Search categories" data-manual-category-search></label><div class="sheet-options-group manual-v2-options" data-manual-category-list>${options.map(([type,config])=>`<button type="button" class="sheet-option" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" data-manual-category="${esc(config.label.toLowerCase())}"><span class="info-icon">${icon(config.icon,21)}</span><span><strong>${esc(config.label)}</strong></span>${icon("chevron",20)}</button>`).join("")}</div><p class="manual-category-empty" data-manual-category-empty hidden>No matching category.</p>`);
+    return bottomSheet("manual-booking","Add Manually",`<div class="sheet-options-group manual-v2-options" data-manual-category-list>${options.map(([type,config])=>`<button type="button" class="sheet-option" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}"><span class="info-icon">${icon(config.icon,21)}</span><span><strong>${esc(config.label)}</strong></span>${icon("chevron",20)}</button>`).join("")}</div>`);
   }
   function documentSheet() {
     const travelers = state.travelers
@@ -4285,11 +4990,15 @@
         case "import-history": html = importHistoryScreen(); break;
         case "sync": html = syncScreen(); break;
         case "form": html = mobileFormScreen(); break;
+        case "trip-map": html = tripMapScreen(); break;
+        case "weather": html = weatherScreen(); break;
+        case "esim": html = esimScreen(); break;
         default:
           html = state.trip ? timelineScreen() : firstRunScreen();
       }
     html = decorateScreen(html);
     if (state.sheet === "add") html += addSheet();
+    if (state.sheet === "trip-menu") html += tripMenuSheet();
     if (state.sheet === "document") html += documentSheet();
     if (state.sheet === "trips") html += tripSwitchSheet();
     if (state.sheet === "first-run-how") html += firstRunHowSheet();
@@ -4499,21 +5208,24 @@
         showFieldError(
           form,
           form.elements.departureTimezoneManual || form.elements.fromLocation,
-          "Select a known airport or enter its IANA timezone.",
+          "Select a known airport or enter its time zone.",
         );
         return false;
       }
-      if (!arrivalTimezone) {
+      const arrivalProvided =
+        Boolean(String(form.elements.arrivalDate?.value || "").trim()) ||
+        Boolean(String(form.elements.arrivalLocalTime?.value || "").trim());
+      if (arrivalProvided && !arrivalTimezone) {
         setManualTimezoneFallback(form, form.elements.toLocation, true);
         showFieldError(
           form,
           form.elements.arrivalTimezoneManual || form.elements.toLocation,
-          "Select a known airport or enter its IANA timezone.",
+          "Select a known airport or enter its time zone.",
         );
         return false;
       }
       form.elements.departureTimezone.value = departureTimezone;
-      form.elements.arrivalTimezone.value = arrivalTimezone;
+      if (arrivalTimezone) form.elements.arrivalTimezone.value = arrivalTimezone;
     }
     if (["flight", "train"].includes(baseKind)) {
       const date = form.elements.arrivalDate,
@@ -4536,12 +5248,13 @@
     if (
       baseKind === "activity" &&
       form.elements.timeMode?.value === "specific" &&
-      !form.elements.activityTime?.value
+      form.elements.activityTime?.value &&
+      form.elements.activityTime.validity?.valid === false
     ) {
       showFieldError(
         form,
         form.elements.activityTime,
-        "Add the local time or choose Time not set yet.",
+        "Check the local time and try again.",
       );
       return false;
     }
@@ -4551,8 +5264,9 @@
         return false;
       }
       const start = `${form.elements.reservationDate?.value || ""}T${form.elements.reservationTime?.value || ""}`,
-        end = `${form.elements.endDate?.value || ""}T${form.elements.endTime?.value || ""}`;
-      if (start && end && end < start) {
+        end = `${form.elements.endDate?.value || ""}T${form.elements.endTime?.value || ""}`,
+        bothTimed = Boolean(form.elements.reservationTime?.value) && Boolean(form.elements.endTime?.value);
+      if (bothTimed && end < start) {
         showFieldError(form, form.elements.endDate, "Drop-off cannot be before pickup.");
         return false;
       }
@@ -4563,7 +5277,7 @@
         timezone = String(form.elements.timezone?.value || "").trim(),
         endTime = String(form.elements.endTime?.value || "").trim();
       if ((time || endTime) && !timezone) {
-        showFieldError(form, form.elements.timezone, "Add the event's IANA timezone when a local time is provided.");
+        showFieldError(form, form.elements.timezone, "Add the event's time zone when a local time is provided.");
         return false;
       }
     }
@@ -4608,6 +5322,7 @@
     alert.scrollIntoView({ block: "center" });
   }
   function bindMeaningfulChanges(form) {
+    let draftTimer = 0;
     const update = () => {
       formHasMeaningfulChanges = form.dataset.hasStagedAttachments === "true" || [...form.elements].some((control) => {
         if (!control.name || control.disabled) return false;
@@ -4630,10 +5345,15 @@
         }
         return String(control.value || "") !== String(control.defaultValue || "");
       });
-      if (supportsFormDraft(form.dataset.kind)) saveQuickDraft(form);
     };
-    form.addEventListener("input", update);
-    form.addEventListener("change", update);
+    const persist = (immediate) => {
+      if (!supportsFormDraft(form.dataset.kind)) return;
+      clearTimeout(draftTimer);
+      if (immediate) { saveQuickDraft(form); return; }
+      draftTimer = setTimeout(() => saveQuickDraft(form), 400);
+    };
+    form.addEventListener("input", () => { update(); persist(false); });
+    form.addEventListener("change", () => { update(); persist(true); });
     update();
   }
   function saveQuickDraft(form) {
@@ -4691,6 +5411,24 @@
       18,
     );
   }
+  function revealPrefilledQuickMore(form) {
+    const toggle = form.querySelector(".form-more-toggle"),
+      panel = toggle
+        ? document.getElementById(toggle.getAttribute("aria-controls"))
+        : null;
+    if (!panel || !panel.hidden) return;
+    const populated = Array.from(
+      panel.querySelectorAll("input, select, textarea"),
+    ).some((el) => {
+      if (el.type === "checkbox" || el.type === "radio") return el.checked;
+      const value = String(el.value || "").trim();
+      if (!value) return false;
+      if (el.tagName === "SELECT")
+        return el.selectedIndex > 0 && value !== (el.options[0]?.value || "");
+      return true;
+    });
+    if (populated) setQuickMoreOpen(form, true);
+  }
   function normalizedLocationInput(value) {
     return String(value || "")
       .trim()
@@ -4719,6 +5457,21 @@
   function airportCodeForInput(value) {
     return globalThis.TriptoAirportTimezones?.airportCodeFromInput?.(value) || null;
   }
+  function tripDefaultTimezone() {
+    const counts = {};
+    for (const item of state.timeline || []) {
+      const tz = String(val(item, "start_timezone", "startTimezone") || "");
+      if (tz) counts[tz] = (counts[tz] || 0) + 2;
+    }
+    for (const location of state.locations || []) {
+      const tz = String(val(location, "timezone") || "");
+      if (tz) counts[tz] = (counts[tz] || 0) + 1;
+    }
+    let best = "", bestCount = 0;
+    for (const [tz, count] of Object.entries(counts))
+      if (count > bestCount) { best = tz; bestCount = count; }
+    return best;
+  }
   function timezoneForLocationInput(value, kind) {
     const location = knownLocationForInput(value, kind);
     if (kind === "flight") {
@@ -4745,11 +5498,11 @@
     if (timezone) {
       control.value = timezone;
       control.dataset.derived = "true";
-      if (field && kind !== "flight") {
+      if (field) {
         field.classList.add("is-derived-timezone");
         field.insertAdjacentHTML(
           "afterend",
-          `<p class="timezone-derived" data-timezone-status="${esc(role || "location")}">${icon("check", 15)} ${esc(timezone)} from the selected ${kind === "train" ? "station" : "location"}</p>`,
+          `<p class="timezone-derived" data-timezone-status="${esc(role || "location")}">${icon("check", 15)} ${esc(timezone)} — the selected ${kind === "flight" ? "airport's local time" : kind === "train" ? "station's local time" : "location's local time"}</p>`,
         );
       }
     } else {
@@ -4790,9 +5543,16 @@
         assignment.hidden = state.travelers.length <= 1 && !travelerSpecific;
     }
   }
+  function formSubmitButton(form) {
+    if (!form) return null;
+    return (
+      form.querySelector('button[type="submit"]') ||
+      (form.id ? document.querySelector(`button[type="submit"][form="${form.id}"]`) : null)
+    );
+  }
   function setFormSaving(form, saving, label = "Saving…") {
     if (!form) return;
-    const submit = form.querySelector('button[type="submit"]');
+    const submit = formSubmitButton(form);
     if (!submit) return;
     if (!submit.dataset.defaultLabel)
       submit.dataset.defaultLabel = submit.innerHTML;
@@ -4808,25 +5568,28 @@
     const focused = document.activeElement;
     if (!focused?.matches?.("input,select,textarea")) return;
     requestAnimationFrame(() =>
-      focused.scrollIntoView({
-        block: "center",
-        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "auto"
-          : "smooth",
-      }),
+      focused.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" }),
     );
+  }
+  let keyboardOpen = false, fieldFocused = false, lastObscured = -1;
+  const KEYBOARD_FIELD_SELECTOR = "input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]),select,textarea";
+  function applyKeyboardState() {
+    document.documentElement.classList.toggle("keyboard-open", keyboardOpen || fieldFocused);
   }
   function syncVisualViewport() {
     const viewport = window.visualViewport,
       obscured = viewport
         ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
-        : 0;
-    document.documentElement.style.setProperty(
-      "--keyboard-offset",
-      `${Math.round(obscured)}px`,
-    );
-    document.documentElement.classList.toggle("keyboard-open", obscured > 80);
-    if (obscured > 80) keepFocusedFieldVisible();
+        : 0,
+      rounded = Math.round(obscured);
+    if (rounded !== lastObscured) {
+      lastObscured = rounded;
+      document.documentElement.style.setProperty("--keyboard-offset", `${rounded}px`);
+    }
+    const open = obscured > 80;
+    if (open && !keyboardOpen) keepFocusedFieldVisible();
+    keyboardOpen = open;
+    applyKeyboardState();
   }
   function bindDynamic() {
     const form = document.getElementById("document-form");
@@ -4854,11 +5617,23 @@
     if (nativeForm && !nativeForm.dataset.bound) {
       nativeForm.dataset.bound = "1";
       restoreQuickDraft(nativeForm);
+      if (nativeForm.dataset.editId) revealPrefilledQuickMore(nativeForm);
+      if (nativeForm.dataset.kind === "flight" && state.pendingReturnFlight) {
+        const ret = state.pendingReturnFlight,
+          fromPlace = nativeForm.elements.fromLocationPlace,
+          toPlace = nativeForm.elements.toLocationPlace;
+        if (fromPlace && ret.fromLocationPlace) fromPlace.value = ret.fromLocationPlace;
+        if (toPlace && ret.toLocationPlace) toPlace.value = ret.toLocationPlace;
+        state.pendingReturnFlight = null;
+      }
       bindDateRangeControls(nativeForm);
       syncQuickConditionalFields(nativeForm);
       nativeForm
         .querySelectorAll("[data-place-types]")
         .forEach((input) => bindPlaceAutocomplete(nativeForm, input));
+      nativeForm
+        .querySelectorAll("input[list]")
+        .forEach((input) => bindDatalistAutocomplete(nativeForm, input));
       nativeForm
         .querySelectorAll("[data-location-role]")
         .forEach((input) => {
@@ -4920,7 +5695,7 @@
           const files = Array.from(manualFiles.files || []),
             type = String(nativeForm.elements.manualDocumentType?.value || "other"),
             picker = manualFiles.closest(".manual-attachments__picker"),
-            submit = nativeForm.querySelector('button[type="submit"]');
+            submit = formSubmitButton(nativeForm);
           if (!files.length) return;
           picker?.classList.add("is-busy");
           nativeForm.dataset.manualAttachmentsBusy = "true";
@@ -4984,31 +5759,14 @@
       });
     }
     setupGoogleSignIn();
-    const manualCategorySearch = document.querySelector("[data-manual-category-search]");
-    if (manualCategorySearch && !manualCategorySearch.dataset.bound) {
-      manualCategorySearch.dataset.bound = "1";
-      const filter = () => {
-        const query = normalizedLocationInput(manualCategorySearch.value),
-          rows = [...document.querySelectorAll("[data-manual-category]")];
-        let visible = 0;
-        rows.forEach((row) => {
-          const match = !query || normalizedLocationInput(row.dataset.manualCategory).includes(query);
-          row.hidden = !match;
-          if (match) visible += 1;
-        });
-        const empty = document.querySelector("[data-manual-category-empty]");
-        if (empty) empty.hidden = visible > 0;
-      };
-      manualCategorySearch.addEventListener("input", filter);
-    }
     document.querySelectorAll('input[data-action="toggle-checklist"]').forEach((input) => input.addEventListener("change", () => toggleChecklistItem(input)));
     setupSheet();
   }
   function resolveEventLocalDateTime(localValue, timeZone) {
-    if (!localValue || !timeZone) throw new Error("Local time and IANA timezone are required.");
+    if (!localValue || !timeZone) throw new Error("Local time and time zone are required.");
     const match = String(localValue).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
     if (!match) throw new Error("Enter a valid local date and time.");
-    try { new Intl.DateTimeFormat("en-US", { timeZone }).format(new Date()); } catch (_) { throw new Error("Use a valid IANA timezone, for example Europe/Rome."); }
+    try { new Intl.DateTimeFormat("en-US", { timeZone }).format(new Date()); } catch (_) { throw new Error("Use a valid time zone, for example Europe/Rome."); }
     const target = Date.UTC(+match[1], +match[2]-1, +match[3], +match[4], +match[5]), offsets = new Set();
     for (let h=-36; h<=36; h+=3) { const instant=target+h*3600000, parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(instant)), row={}; parts.forEach((part)=>{if(part.type!=="literal")row[part.type]=part.value;}); offsets.add(Math.round((Date.UTC(+row.year,+row.month-1,+row.day,+row.hour,+row.minute)-instant)/60000)); }
     const wanted=`${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}`, candidates=[...offsets].map((offset)=>target-offset*60000).filter((instant)=>{ const parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(instant)), row={}; parts.forEach((part)=>{if(part.type!=="literal")row[part.type]=part.value;}); return `${row.year}-${row.month}-${row.day}T${row.hour}:${row.minute}`===wanted; });
@@ -5321,7 +6079,14 @@
         if (!savedBookingId) throw error;
         saveWarning=[saveWarning,"Booking saved, but the Timeline could not refresh. Reload when your connection is stable; the booking will not be submitted again."].filter(Boolean).join(" ");
       }
-      clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(saveWarning||(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`),saveWarning?"alert":"status"); state.manualLabel=null; state.editingEntity=null; formPrefill=null; route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+      clearQuickDraft(kind); formHasMeaningfulChanges=false; state.manualLabel=null; state.editingEntity=null; formPrefill=null;
+      const wantsReturnFlight = kind==="flight" && !editId && String(fd.get("roundTrip")||"")==="1" && savedBookingId;
+      if (wantsReturnFlight) {
+        state.pendingReturnFlight={fromLocation:String(fd.get("toLocation")||""),fromLocationPlace:String(fd.get("toLocationPlace")||""),toLocation:String(fd.get("fromLocation")||""),toLocationPlace:String(fd.get("fromLocationPlace")||""),carrierName:String(fd.get("carrierName")||""),departureTimezone:String(fd.get("arrivalTimezone")||""),arrivalTimezone:String(fd.get("departureTimezone")||"")};
+        showToast(saveWarning||"Outbound flight saved. Now add your return.",saveWarning?"alert":"status"); route("form","flight",true);
+      } else {
+        showToast(saveWarning||(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`),saveWarning?"alert":"status"); route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+      }
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
@@ -5463,6 +6228,38 @@
         closeSheet();
         route("add-booking");
         break;
+      case "open-trip-menu":
+        if (!state.trip) break;
+        openSheet("trip-menu", target);
+        break;
+      case "open-weather":
+        closeSheet();
+        state.weatherSel = null;
+        route("weather");
+        void ensureWeather();
+        break;
+      case "open-esim":
+        closeSheet();
+        route("esim");
+        break;
+      case "esim-signup":
+        // Referral partner (7g eSIM, code FKWQX6ES → 15% off). Opens externally
+        // in a new tab so the trip stays open; noopener isolates the app context.
+        window.open("https://esim-7g.app.link/free-credit", "_blank", "noopener,noreferrer");
+        break;
+      case "copy-esim-code":
+        try {
+          await navigator.clipboard.writeText("FKWQX6ES");
+          showToast("Code FKWQX6ES copied.");
+        } catch (_) {
+          showToast("Code: FKWQX6ES");
+        }
+        break;
+      case "weather-place":
+        state.weatherSel = target.dataset.key || null;
+        render();
+        void ensureWeather();
+        break;
       case "open-upload-booking":
         state.importMode = "upload";
         route("import");
@@ -5473,6 +6270,43 @@
         break;
       case "open-manual-booking":
         openSheet("manual-booking", target);
+        break;
+      case "open-trip-map":
+        closeSheet();
+        if (!canShowTripMap()) {
+          showToast("This trip needs at least two places to map.");
+          break;
+        }
+        state.tripMapDay = null;
+        route("trip-map");
+        // Resolve any address-only places to precise coordinates for the
+        // Google Maps link, then repaint if positions arrived.
+        geocodeMissingTripPlaces().then((changed) => {
+          if (changed && state.screen === "trip-map") render();
+        });
+        break;
+      case "trip-map-day":
+        state.tripMapDay = target.dataset.day || null;
+        render();
+        break;
+      case "trip-map-open-all": {
+        if (state.offline) {
+          showToast("Connect to open Google Maps. Your places stay saved here offline.");
+          break;
+        }
+        const activeDay = target.dataset.day || state.tripMapDay || null,
+          built = tripMapAllPointsUrl(orderedTripMapPlaces(activeDay));
+        if (!built.url) {
+          showToast("No mappable places to open yet.");
+          break;
+        }
+        if (built.dropped > 0)
+          showToast(`Opening the first ${built.used} stops in Google Maps (${built.dropped} more not shown).`);
+        window.location.href = built.url;
+        break;
+      }
+      case "trip-map-navigate":
+        openMaps(target.dataset.query || "");
         break;
       case "open-first-run-how":
         openSheet("first-run-how", target);
@@ -5552,6 +6386,7 @@
         route("form", "trip");
         break;
       case "delete-trip":
+        closeSheet();
         confirmDeleteTrip();
         break;
       case "manage-booking":
@@ -5664,10 +6499,13 @@
         }
         break;
       }
+      case "close-doc-viewer": {
+        closeDocumentViewer();
+        break;
+      }
       case "manual-attachment-open": {
-        const reservedWindow = reserveManualAttachmentWindow();
         try {
-          await openManualAttachment(target.dataset.scope, target.dataset.id, reservedWindow);
+          await openManualAttachment(target.dataset.scope, target.dataset.id);
         } catch (error) {
           showToast(error?.message || "The local file could not be opened.", "alert");
         }
@@ -5725,7 +6563,7 @@
         await openLocalDocument(target.dataset.id);
         break;
       case "remove-document":
-        await removeLocalDocument(target.dataset.id);
+        confirmDeleteDocument(target.dataset.id);
         break;
       case "timeline-detail": {
         const id = target.dataset.id,
@@ -5770,7 +6608,7 @@
         try{showToast("Preparing support bundle…");await apiDownload(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/support`,`tripto-support-${String(state.trip.id).slice(0,8)}.json`);}catch(error){showToast(error.message,"alert");}
         break;
       case "set-theme":
-        applyTheme();
+        applyTheme(target.dataset.theme);
         render();
         break;
       case "open-help":
@@ -5785,7 +6623,7 @@
         route("trips");
         break;
       case "booking-email-info":
-        showToast("Forward booking confirmations to go@tripto.to from your verified Google email.");
+        showToast("Email your booking confirmations to go@tripto.to and we'll read them and add each flight, stay, or train to your timeline automatically — no manual typing. Forward from your verified Google email so we know it's really you.");
         break;
       case "remove-local-data": {
         const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
@@ -5895,7 +6733,7 @@
           await ensureWeather(true);
         } finally {
           state.weatherRefreshing = false;
-          if (state.screen === "timeline") render();
+          if (state.screen === "timeline" || state.screen === "weather") render();
         }
         break;
       case "call":
@@ -6073,11 +6911,21 @@
     event.returnValue = "";
   });
   window.visualViewport?.addEventListener("resize", syncVisualViewport);
-  window.visualViewport?.addEventListener("scroll", syncVisualViewport);
   window.addEventListener("resize", syncVisualViewport);
   document.addEventListener("focusin", (event) => {
-    if (event.target?.matches?.("input,select,textarea"))
+    if (event.target?.matches?.(KEYBOARD_FIELD_SELECTOR)) {
+      fieldFocused = true;
+      applyKeyboardState();
       setTimeout(keepFocusedFieldVisible, 80);
+    }
+  });
+  document.addEventListener("focusout", () => {
+    setTimeout(() => {
+      fieldFocused = Boolean(
+        document.activeElement?.matches?.(KEYBOARD_FIELD_SELECTOR),
+      );
+      applyKeyboardState();
+    }, 120);
   });
   window.addEventListener("keydown", (event) => {
     document.documentElement.dataset.inputMethod = "keyboard";
@@ -6154,7 +7002,7 @@
     }
   });
   syncVisualViewport();
-  applyTheme(state.theme);
+  applyTheme(loadStoredTheme());
   if ("serviceWorker" in navigator && !PREVIEW_MODE)
     window.addEventListener("load", () =>
       navigator.serviceWorker.register("/sw.js").catch(() => {}),

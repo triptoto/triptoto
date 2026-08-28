@@ -6,7 +6,7 @@ assert(index.includes('/mobile-app.css')&&index.includes('/mobile-app.js')&&inde
 assert(!index.includes('/airport-timezones.js')&&!index.includes('/places-provider.js')&&!index.includes('/places-search-worker.js'),'flow-specific search assets must stay lazy');
 assert(!index.includes('/app.js')&&!app.includes('/legacy.html')&&!sw.includes('/legacy.html'),'legacy presentation leaked into Product V2');
 assert(css.includes('--app-width:430px')&&css.includes('env(safe-area-inset-bottom)')&&css.includes('env(safe-area-inset-top)'),'mobile sizing or safe areas missing');
-assert(css.includes('Nunito')&&css.includes('-apple-system')&&!css.includes('"Inter"'),'approved typography and system fallback changed');
+assert(css.includes('-apple-system')&&css.includes('BlinkMacSystemFont')&&css.includes('SF Pro')&&!css.includes('Nunito')&&!css.includes('"Inter"'),'approved typography (SF system font) changed');
 for(const color of ['--paper:#f8f9fb','--surface:#f2f4f6','--icon:#6b7176','--muted:#6b7176','--ink:#313133'])assert(css.includes(color),`approved grayscale palette missing: ${color}`);
 for(const oldColor of ['#141948','#2f3bab','#febf02','#f2f4f7','#f7f8fa'])assert(!css.toLowerCase().includes(oldColor)&&!manifest.toLowerCase().includes(oldColor),`old palette remains: ${oldColor}`);
 assert(manifest.includes('"background_color": "#FFFFFF"')&&manifest.includes('"theme_color": "#FFFFFF"'),'PWA palette is stale');
@@ -15,7 +15,7 @@ assert(css.includes('@media(prefers-reduced-motion:reduce)')&&css.includes('min-
 const nav=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
 assert(nav.includes('["trips", "trips", "Trips"]')&&nav.includes('["add", "plus", "Add"]')&&nav.includes('["account", "user", "Account"]'),'V2 navigation order is wrong');
 assert(!nav.includes('"Home"')&&!nav.includes('"Bookings"'),'V1 navigation leaked');
-assert(app.includes('function selectRelevantTrip(')&&app.includes('state.account?.mode === "account"')&&app.includes('history.replaceState(null, "", routeUrl("timeline"))'),'authenticated relevant-trip routing missing');
+assert(app.includes('function selectRelevantTrip(')&&app.includes('state.account?.mode === "account"')&&app.includes('history.replaceState(null, "", routeUrl("form", "trip"))'),'authenticated relevant-trip routing missing');
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;
 assert(router&&typeof router.parsePath==='function'&&typeof router.pathFor==='function','clean route module missing');
 const routeCases=[
@@ -65,7 +65,8 @@ assert(css.includes('.timeline-page--empty')&&css.includes('min-height:calc(100d
 assert(app.includes('timeline-empty__add')&&app.includes('emptySetup ? "plus" : "calendar"'),'Product V2 empty-trip structure missing');
 for(const concept of ['need attention','Now','Next','Before you go'])assert(app.includes(concept),`Timeline state missing: ${concept}`);
 assert(app.includes('timeline-day__header')&&app.includes('journey-event journey-event--${phase}')&&app.includes('timelineDay(starts, zone)'),'Timeline structure/local grouping missing');
-assert(app.includes('data-action="switch-trip"')&&app.includes('data-screen="documents" aria-label="Tickets and documents"'),'trip selector/documents missing');
+assert(app.includes('data-action="switch-trip"')&&app.includes('data-action="open-trip-menu"'),'trip selector / more-options menu missing');
+assert(app.includes('function tripMenuSheet(')&&app.includes('state.sheet === "trip-menu"')&&app.includes('data-screen="documents"'),'trip options menu (weather/map/documents/edit/delete) missing');
 assert(app.includes('tripto-local-docs-v1')&&app.includes('crypto.subtle.digest("SHA-256"')&&app.includes('integrity === "verified"'),'document integrity missing');
 assert(app.includes('saved on this phone')&&app.includes('Scheduled booking data is never presented as live')&&app.includes('<small>Scheduled data</small>'),'data truth labeling missing');
 assert(app.includes('Not assigned')&&!app.includes('To be confirmed'),'unavailable data labeling invalid');
@@ -73,7 +74,7 @@ assert(app.includes('resolveEventLocalDateTime')&&app.includes('ambiguous or una
 const flightFormStart=app.indexOf('if (kind === "flight")',app.indexOf('function mobileFormScreen(')),flightFormEnd=app.indexOf('} else if (kind === "hotel")',flightFormStart),flightForm=app.slice(flightFormStart,flightFormEnd);
 assert(flightForm.includes('type="hidden" name="departureTimezone"')&&flightForm.includes('type="hidden" name="arrivalTimezone"'),'flight timezone values are not retained internally');
 assert(!flightForm.includes('quickField("departureTimezone"')&&!flightForm.includes('quickField("arrivalTimezone"'),'traveler-facing flight timezone field remains');
-assert(app.includes('placeTimezoneForInput(')&&app.includes('Select a known airport or enter its IANA timezone.'),'deterministic airport timezone recovery missing');
+assert(app.includes('placeTimezoneForInput(')&&app.includes('Select a known airport or enter its time zone.'),'deterministic airport timezone recovery missing');
 assert(css.includes('.form-fields--date-time,.form-fields--activity-time{grid-column:1/-1')&&css.includes('.date-suggestions button{min-height:44px'),'date/time layout or touch targets regressed');
 assert(app.includes('Nothing was overwritten.')&&app.includes('Review pending changes before removing local data.'),'sync safety missing');
 assert(app.includes('method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})'),'native checklist creation missing');
