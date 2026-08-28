@@ -39,6 +39,18 @@ async function geocode(query: string): Promise<{ latitude: number; longitude: nu
   }
 }
 
+// Expose the keyless geocoder as its own endpoint so the Trip Map can resolve
+// address-only places to coordinates without a paid Maps API. Same-origin proxy
+// keeps the strict CSP intact; the edge cache absorbs repeats.
+export async function geocodePlace(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const query = (url.searchParams.get('q') ?? '').trim().slice(0, 200);
+  if (!query) throw new HttpError(400, 'VALIDATION_ERROR', 'q is required.');
+  const located = await geocode(query);
+  if (!located) throw new HttpError(404, 'PLACE_NOT_FOUND', 'Could not locate that place.');
+  return json({ location: located }, {}, request, env);
+}
+
 export async function currentWeather(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const latRaw = url.searchParams.get('lat');
@@ -65,8 +77,10 @@ export async function currentWeather(request: Request, env: Env): Promise<Respon
   upstream.searchParams.set('latitude', latitude.toFixed(4));
   upstream.searchParams.set('longitude', longitude.toFixed(4));
   upstream.searchParams.set('current', 'temperature_2m,weather_code,is_day');
-  upstream.searchParams.set('daily', 'weather_code,temperature_2m_max,temperature_2m_min');
-  upstream.searchParams.set('forecast_days', '5');
+  upstream.searchParams.set('hourly', 'temperature_2m,weather_code,precipitation_probability,wind_speed_10m');
+  upstream.searchParams.set('daily', 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max');
+  upstream.searchParams.set('wind_speed_unit', 'ms');
+  upstream.searchParams.set('forecast_days', '7');
   upstream.searchParams.set('timezone', 'auto');
 
   let payload: any;
@@ -85,14 +99,35 @@ export async function currentWeather(request: Request, env: Env): Promise<Respon
   const temperature = Number(current.temperature_2m);
   if (!Number.isFinite(temperature)) throw new HttpError(502, 'WEATHER_UNAVAILABLE', 'Weather data is temporarily unavailable.');
 
+  const num = (v: unknown): number | null => (Number.isFinite(Number(v)) ? Math.round(Number(v)) : null);
+
   const d = payload?.daily ?? {};
   const dates: unknown[] = Array.isArray(d.time) ? d.time : [];
-  const daily = dates.slice(0, 5).map((date, i) => ({
+  const daily = dates.slice(0, 7).map((date, i) => ({
     date: String(date),
     weatherCode: Number.isFinite(Number(d.weather_code?.[i])) ? Number(d.weather_code[i]) : null,
-    tempMaxC: Number.isFinite(Number(d.temperature_2m_max?.[i])) ? Math.round(Number(d.temperature_2m_max[i])) : null,
-    tempMinC: Number.isFinite(Number(d.temperature_2m_min?.[i])) ? Math.round(Number(d.temperature_2m_min[i])) : null,
+    tempMaxC: num(d.temperature_2m_max?.[i]),
+    tempMinC: num(d.temperature_2m_min?.[i]),
+    precipProb: num(d.precipitation_probability_max?.[i]),
+    windMs: num(d.wind_speed_10m_max?.[i]),
   }));
+
+  // Hourly strip: the next 6 hours starting at the current hour.
+  const h = payload?.hourly ?? {};
+  const htimes: unknown[] = Array.isArray(h.time) ? h.time : [];
+  const nowHour = typeof current.time === 'string' ? current.time.slice(0, 13) : '';
+  let startIdx = htimes.findIndex((t) => String(t).slice(0, 13) >= nowHour);
+  if (startIdx < 0) startIdx = 0;
+  const hourly = htimes.slice(startIdx, startIdx + 6).map((t, k) => {
+    const i = startIdx + k;
+    return {
+      time: String(t),
+      weatherCode: Number.isFinite(Number(h.weather_code?.[i])) ? Number(h.weather_code[i]) : null,
+      tempC: num(h.temperature_2m?.[i]),
+      precipProb: num(h.precipitation_probability?.[i]),
+      windMs: num(h.wind_speed_10m?.[i]),
+    };
+  });
 
   const weather = {
     latitude,
@@ -103,6 +138,7 @@ export async function currentWeather(request: Request, env: Env): Promise<Respon
     isDay: Number(current.is_day) === 1,
     observedAt: typeof current.time === 'string' ? current.time : null,
     timezone: typeof payload?.timezone === 'string' ? payload.timezone : null,
+    hourly,
     daily,
     fetchedAt: Date.now(),
   };

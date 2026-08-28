@@ -4,6 +4,10 @@ const worker=read('apps/worker/src/index.ts'),auth=read('apps/worker/src/verifie
 assert(worker.includes('async email(')&&worker.includes('receiveBookingEmail'),'Email Worker handler missing');
 assert(email.includes("'go@tripto.to'")&&email.includes('verified_sender_emails'),'public booking address or verified sender mapping missing');
 assert(email.includes("trips.length !== 1")&&email.includes("status:'needs_trip'")&&email.includes("'AMBIGUOUS_TRIP'"),'ambiguous trip association can be guessed');
+// An auto-created draft trip for a homeless booking must be written in the SAME
+// batch as the import (never its own env.DB.batch) so a failure can't leave an
+// orphan draft that later reprocessing duplicates.
+assert(email.includes('...draftStatements')&&(email.match(/env\.DB\.batch\(/g)||[]).length===1,'draft trip must be created atomically within the import batch');
 assert(email.includes('message_fingerprint')&&email.includes('SELECT id FROM inbound_booking_emails'),'email replay/deduplication missing');
 assert(email.includes('MAX_BYTES')&&email.includes('readBounded'),'inbound size limit missing');
 assert(!email.includes('console.log')&&!email.includes('rawBody'),'sensitive inbound body can enter logs/storage');

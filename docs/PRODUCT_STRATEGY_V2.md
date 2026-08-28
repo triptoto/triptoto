@@ -394,3 +394,9 @@ If OAuth nonce/replay state cannot be safely held in a signed short-lived cookie
 ## Recommended challenge to the brief
 
 The product should require authentication before creating new V2 data, as specified, but previously cached guest trips should remain readable on their original device during a temporary auth outage. Forcing a hard login wall over already available offline travel data would violate the product's safety and offline promise. The Welcome/auth layer should therefore gate new cloud use while an explicit recovery path protects previously cached trips.
+
+## Contextual Trip Map
+
+The map is a lens, not a home. It surfaces as a contextual + menu action only when a trip has 2+ distinct mappable places, keeping the Timeline the single primary surface. This avoids a low-value permanent Map tab while still answering "where is everything on this trip?" when the data supports it.
+
+Constraints that shape the strategy: tripto.to never requests GPS (no current-location permission, no location history), so the map never claims proximity or live position. The default basemap is a keyless, CSP-safe schematic; embedded Google Maps is gated behind explicit owner setup and is never enabled implicitly, so the product incurs no silent paid-API dependency. Navigation is delegated to Google Maps via URL and works independently of which basemap renders. See TRIP_MAP_V2.md.
