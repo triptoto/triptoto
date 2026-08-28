@@ -171,7 +171,9 @@ async function updateImportStatus(env:Env,importId:string):Promise<void>{
   const pending=map.pending??0,confirmed=map.confirmed??0,rejected=map.rejected??0,invalid=map.invalid??0;
   let status='needs_confirmation'; let completedAt:null|number=null;
   if(pending===0){completedAt=nowMs();status=confirmed>0?(rejected||invalid?'partial':'completed'):'unsupported';}
-  await env.DB.prepare(`UPDATE imports SET status=?,completed_at=? WHERE id=?`).bind(status,completedAt,importId).run();
+  const statements=[env.DB.prepare(`UPDATE imports SET status=?,completed_at=? WHERE id=?`).bind(status,completedAt,importId)];
+  if(status==='unsupported')statements.push(env.DB.prepare(`UPDATE inbound_booking_emails SET status='rejected',rejection_code='NO_CONFIRMED_CANDIDATE' WHERE import_id=?`).bind(importId));
+  await env.DB.batch(statements);
 }
 function shapeCandidate(row:Record<string,unknown>){return {...row,payload:parsePayload(row.payload_json)};}
 function parsePayload(value:unknown):Record<string,unknown>{try{return JSON.parse(String(value)) as Record<string,unknown>;}catch{return {};}}

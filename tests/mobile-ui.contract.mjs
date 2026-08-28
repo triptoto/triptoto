@@ -27,7 +27,7 @@ const routeCases=[
   ['health',null,'/trip-health'],['travelers',null,'/travelers'],
   ['traveler','traveler-1','/travelers/traveler-1'],['checklist',null,'/before-you-go'],
   ['import',null,'/bookings/import'],['import-review','review-1','/bookings/import/review/review-1'],
-  ['import-history',null,'/bookings/import/history'],['sync',null,'/pending-changes'],
+  ['import-history',null,'/bookings/import/history'],['booking-email-inbox',null,'/bookings/email-inbox'],['sync',null,'/pending-changes'],
   ['form','trip','/trips/new'],['form','traveler','/travelers/new'],
   ['form','checklist','/before-you-go/new'],['form','flight','/bookings/new/flight'],
 ];
@@ -38,7 +38,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-manual-booking-v2'),'clean route, lazy search, manual-attachment, or Google-auth shell cache contract changed');
+assert(sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-email-inbox-v1'),'clean route, lazy search, manual-attachment, email-inbox, or Google-auth shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Quiet Journey','All your trip.','One calm timeline.','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('Roscioli')&&app.includes('Dinner reservation'),'Welcome timeline preview is incomplete');
@@ -79,7 +79,7 @@ assert(app.includes('Nothing was overwritten.')&&app.includes('Review pending ch
 assert(app.includes('method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})'),'native checklist creation missing');
 assert(app.includes('data-edit-version')&&app.includes('method:editId?"PATCH":"POST"'),'native traveler editing missing');
 const account=app.slice(app.indexOf('function accountScreen('),app.indexOf('let googleScriptPromise'));
-for(const copy of ['My trips','Booking email','go@tripto.to','Take the tour','Sign out'])assert(account.includes(copy),`Account missing: ${copy}`);
+for(const copy of ['My trips','Booking email','Email Inbox','go@tripto.to','Take the tour','Sign out'])assert(account.includes(copy),`Account missing: ${copy}`);
 for(const internal of ['Trip Health','Smart Essentials','Smart Import'])assert(!account.includes(internal),`internal name exposed: ${internal}`);
 assert(sw.includes("url.pathname.startsWith('/api/')")&&sw.includes("navigationCacheKey=isMobileShell?'/index.html':url.pathname"),'service worker isolation missing');
 assert(index.indexOf('/mobile-trip-rules.js')<index.indexOf('/mobile-app.js'),'trip rules load order wrong');

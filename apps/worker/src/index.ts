@@ -36,6 +36,7 @@ import { syncStatus, syncChanges, acknowledgeSync, queueSyncOperation, listSyncC
 import { readiness } from './routes/readiness.ts';
 import { currentWeather } from './routes/weather.ts';
 import { receiveBookingEmail, type InboundEmailMessage } from './inbound-email.ts';
+import { assignBookingEmail, dismissBookingEmail, listBookingEmails } from './routes/booking-emails.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -86,6 +87,13 @@ export default {
       if (request.method === 'GET' && path === '/api/v1/beta/status') return betaStatus(request,env,auth);
       if (request.method === 'POST' && path === '/api/v1/beta/events') return recordClientBetaEvent(request,env,auth);
       if (request.method === 'GET' && path === '/api/v1/internal/ops/summary') return opsSummary(request,env,auth);
+      let match: RegExpMatchArray | null;
+      if (request.method === 'GET' && path === '/api/v1/booking-emails') return listBookingEmails(request,env,auth);
+      match = path.match(/^\/api\/v1\/booking-emails\/([^/]+)\/(assign|dismiss)$/);
+      if (match && request.method === 'POST') {
+        const emailId=decodeURIComponent(match[1]);
+        return match[2] === 'assign' ? assignBookingEmail(request,env,auth,emailId) : dismissBookingEmail(request,env,auth,emailId);
+      }
       if (request.method === 'POST' && path === '/api/v1/invites/preview') return previewInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/invites/accept') return acceptInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/internal/demo-trips') return createDemoTrip(request, env, auth);
@@ -94,7 +102,7 @@ export default {
         if (request.method === 'POST') return createTrip(request, env, auth);
       }
 
-      let match = path.match(/^\/api\/v1\/trips\/([^/]+)$/);
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)$/);
       if (match) {
         const tripId = decodeURIComponent(match[1]);
         if (request.method === 'GET') return getTrip(request, env, auth, tripId);

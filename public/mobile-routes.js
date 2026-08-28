@@ -15,6 +15,7 @@
     travelers: "/travelers",
     import: "/bookings/import",
     "import-history": "/bookings/import/history",
+    "booking-email-inbox": "/bookings/email-inbox",
     sync: "/pending-changes",
   });
 

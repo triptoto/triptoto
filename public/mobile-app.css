@@ -1101,6 +1101,22 @@ html.theme-harbor .sheet-note{text-align:center;color:var(--muted-soft);font-siz
 .booking-document-row__remove{display:grid;place-items:center;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;color:var(--muted)}
 .dark-detail .booking-documents{color:#fff}.dark-detail .booking-documents>h2{color:#fff}.dark-detail .booking-document-row{border-color:rgba(255,255,255,.14)}.dark-detail .booking-document-row__open{color:#fff}.dark-detail .booking-document-row__open small{color:rgba(255,255,255,.68)}
 
+.booking-email-address{display:grid;gap:5px;margin:0 0 16px;padding:18px;border-radius:16px;background:var(--ink-strong);color:#fff}
+.booking-email-address small{color:rgba(255,255,255,.66);font-size:12px;font-weight:650}
+.booking-email-address strong{font-size:24px;letter-spacing:-.035em}
+.booking-email-address p{margin:3px 0 0;color:rgba(255,255,255,.75);font-size:13px;line-height:1.42}
+.booking-email-list{display:grid;margin-bottom:16px;border-top:1px solid var(--line)}
+.booking-email-row{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:10px;min-width:0;padding:14px 0;border-bottom:1px solid var(--line)}
+.booking-email-row__icon{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--surface);color:var(--icon)}
+.booking-email-row__body{display:grid;gap:3px;min-width:0}
+.booking-email-row__body strong,.booking-email-row__body small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.booking-email-row__body strong{color:var(--ink-strong);font-size:14px}.booking-email-row__body small{color:var(--muted);font-size:11px}
+.booking-email-row__body .travel-state{justify-self:start;margin-top:2px}
+.booking-email-row__action{display:flex;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:0 2px 0 8px;border:0;background:transparent;color:var(--accent);font-size:12px;font-weight:750;white-space:nowrap}
+.booking-email-row__action:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 60%,transparent);outline-offset:2px}
+.booking-email-empty{padding-block:36px}.booking-email-empty>span{color:var(--icon)}
+.booking-email-trip-note{margin:0 0 12px;padding:0 4px;color:var(--muted)}
+
 @media(max-width:374px){
   .manual-form-heading h1{font-size:31px}
   .manual-route-card{grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);gap:4px}

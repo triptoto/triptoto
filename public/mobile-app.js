@@ -129,7 +129,8 @@
     importLocalDocumentId: null,
     importUploadRequest: null,
     imports: [],
-    importReview: null,
+    bookingEmails: [],
+    bookingEmailSelectionId: null,
     bookingFilter: "all",
     importMode: "upload",
     manualLabel: null,
@@ -1664,6 +1665,13 @@
         state.trip = { ...state.trip, title: "Legacy trip", starts_on: null, ends_on: null };
         state.trips = [state.trip];
       }
+      if (QA_STATE === "email-inbox") {
+        state.account = { mode: "account", user: { display_name: "Arthur", primary_email: "travelinkme@gmail.com" } };
+        state.bookingEmails = [
+          { id:"preview-email-1", import_id:"preview-import-1", trip_id:null, subject:"Your flight confirmation", status:"needs_trip", import_status:"needs_confirmation", candidate_count:1, candidate_type:"flight", received_at:Date.now()-120000 },
+          { id:"preview-email-2", import_id:"preview-import-2", trip_id:"preview-trip", trip_title:"Rome 2026", subject:"Hotel Artemide reservation", status:"needs_confirmation", import_status:"needs_confirmation", candidate_count:1, candidate_type:"hotel", received_at:Date.now()-3600000 },
+        ];
+      }
       if (QA_STATE === "active-no-upcoming") {
         const past = Date.now() - 7 * 24 * 60 * 60 * 1000;
         state.trip = { ...state.trip, lifecycle_state: "active" };
@@ -1703,6 +1711,14 @@
       ]);
       state.trips = tripsResult?.trips || [];
       state.account = accountResult?.account || null;
+      if (state.account?.mode === "account") {
+        try {
+          const inboxResult = await apiGet("/api/v1/booking-emails");
+          state.bookingEmails = inboxResult?.bookingEmails || [];
+        } catch (_error) {
+          state.bookingEmails = [];
+        }
+      } else state.bookingEmails = [];
       const selected = localStorage.getItem("tripto_selected_trip");
       state.trip =
         state.trips.find((trip) => String(trip.id) === selected) ||
@@ -1840,6 +1856,11 @@
     state.localDocs = await listLocalDocs(tripId);
     if (state.trip?.id !== tripId) return;
     void ensureWeather();
+  }
+  async function refreshBookingEmailInbox() {
+    if (PREVIEW_MODE || state.account?.mode !== "account") return;
+    const result = await apiGet("/api/v1/booking-emails");
+    state.bookingEmails = result?.bookingEmails || [];
   }
   // Optimistic trip entry: if cached detail exists, navigate immediately and
   // revalidate in the background; otherwise fall back to the loading skeleton.
@@ -3262,7 +3283,7 @@
     const control = forward
       ? `<section class="forward-booking-address"><span>${icon("mail",24)}</span><div><strong>go@tripto.to</strong><small>Forward from your verified Google email. If more than one trip could match, we will ask you to choose.</small></div></section><label><span>Paste confirmation for immediate review</span><textarea name="body" rows="7" placeholder="Paste the forwarded confirmation email"></textarea></label>`
       : `<label class="smart-import-file"><span>Booking document</span><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,.eml,.docx,.ics,.pkpass,application/pdf,image/*,text/plain,message/rfc822,text/calendar"><small>Best accuracy: the original PDF, .eml, .ics, or .pkpass. Photos and screenshots are read with OCR and may need corrections. · 10 MB max</small></label>`;
-    return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Only verified senders are accepted. Review uncertain fields before adding anything." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon(forward ? "mail" : "document",19)} Review recognized fields</button></div></form><button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`, "import-task");
+    return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Only verified senders are accepted. We extract possible booking details, then you choose the trip and confirm before anything is added." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p><div class="form-save-bar"><button class="mobile-primary-action" type="submit">${icon(forward ? "mail" : "document",19)} Review recognized fields</button></div></form>${forward?`<button class="mobile-secondary-action import-history-action" data-screen="booking-email-inbox">${icon("mail",19)} Open Email Inbox</button>`:`<button class="mobile-secondary-action import-history-action" data-screen="import-history">${icon("clock",19)} Import History</button>`}`, "import-task");
   }
   function importReviewScreen() {
     const candidates = state.importReview?.candidates || [];
@@ -3277,6 +3298,38 @@
   function importHistoryScreen() {
     const rows = (state.imports || []).map((row)=>`<button class="travel-row" data-action="review-import" data-id="${esc(row.id)}"><span class="travel-row__icon">${icon(timelineIcon(row.candidate_type),20)}</span><span class="travel-row__body"><strong>${esc(row.subject || statusText(row.candidate_type || "Booking"))}</strong><small>${esc(row.created_at ? formatDateTime(Number(row.created_at)) : "Date unavailable")}</small><em class="travel-state ${row.status==="imported"?"":"travel-state--attention"}">${esc(row.status==="imported"?"Imported":"Needs confirmation")}</em></span>${icon("chevron",18)}</button>`).join("");
     return mobilePage("Import History", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No imports yet</h1><p>Forwarded bookings you review will appear here.</p></section>`}</div><button class="mobile-secondary-action" data-screen="import">${icon("plus",19)} Import booking</button>`, "account");
+  }
+  function bookingEmailDisplayStatus(row) {
+    const importStatus=String(val(row,"import_status")||""), status=String(row.status||"");
+    if (["completed","partial"].includes(importStatus)) return importStatus === "completed" ? "Added" : "Partly added";
+    if (status === "needs_trip") return "Choose trip";
+    if (status === "needs_confirmation" || importStatus === "needs_confirmation") return "Review details";
+    if (status === "rejected") return "Dismissed";
+    return "Couldn’t read";
+  }
+  function bookingEmailInboxScreen() {
+    const signedIn=state.account?.mode === "account";
+    const rows=(state.bookingEmails||[]).map((row)=>{
+      const status=bookingEmailDisplayStatus(row), needsTrip=row.status==="needs_trip", reviewable=Boolean(row.import_id)&&["needs_trip","needs_confirmation"].includes(String(row.status)), done=["completed","partial"].includes(String(val(row,"import_status")||""));
+      const action=needsTrip?"choose-booking-email-trip":reviewable?"review-booking-email":!done&&row.status!=="rejected"?"dismiss-booking-email":"", actionLabel=needsTrip?"Choose trip":reviewable?"Review":"Dismiss";
+      return `<article class="booking-email-row"><span class="booking-email-row__icon">${icon(timelineIcon(row.candidate_type||"reservation"),20)}</span><div class="booking-email-row__body"><strong>${esc(row.subject||"Booking confirmation")}</strong><small>${esc(row.trip_title?`${row.trip_title} · ${row.received_at?formatDateTime(Number(row.received_at)):"Date unavailable"}`:(row.received_at?formatDateTime(Number(row.received_at)):"Date unavailable"))}</small><em class="travel-state ${done?"":"travel-state--attention"}">${esc(status)}</em></div>${action?`<button type="button" class="booking-email-row__action" data-action="${action}" data-id="${esc(row.id)}">${esc(actionLabel)} ${action==="dismiss-booking-email"?"":icon("chevron",17)}</button>`:""}</article>`;
+    }).join("");
+    const content=!signedIn?`<section class="mobile-empty booking-email-empty"><span>${icon("mail",30)}</span><h1>Sign in to use booking email</h1><p>Google verifies which email address is allowed to send confirmations.</p><button class="mobile-primary-action" data-screen="account">Sign in with Google</button></section>`:rows||`<section class="mobile-empty booking-email-empty"><span>${icon("mail",30)}</span><h1>No forwarded confirmations</h1><p>Forward a booking email from your verified Google address. It will appear here for review.</p></section>`;
+    return mobilePage("Email Inbox", `<section class="booking-email-address"><small>Forward confirmations to</small><strong>go@tripto.to</strong><p>We never add a booking until you choose its trip and confirm the extracted details.</p></section><div class="booking-email-list">${content}</div>${signedIn?`<button class="mobile-secondary-action" data-action="refresh-booking-email-inbox">${icon("refresh",18)} Refresh inbox</button>`:""}`, "account");
+  }
+  async function openBookingEmailReview(email) {
+    if (!email?.import_id || !email?.trip_id) throw new Error("Choose a trip before reviewing this confirmation.");
+    const trip=state.trips.find((row)=>String(row.id)===String(email.trip_id));
+    if (!trip) throw new Error("The assigned trip is unavailable.");
+    state.trip=trip;
+    localStorage.setItem("tripto_selected_trip",trip.id);
+    if (PREVIEW_MODE) {
+      state.importReview={import:{id:email.import_id,trip_id:trip.id,status:"needs_confirmation"},candidates:[{id:"preview-email-candidate",candidate_type:email.candidate_type||"flight",confidence:.82,payload:{airlineCode:"LY",flightNumber:"383",departureIata:"TLV",arrivalIata:"FCO",warnings:["Confirm event-local dates and times."]}}]};
+    } else {
+      await loadTripDetails();
+      state.importReview=await api(`/api/v1/trips/${encodeURIComponent(trip.id)}/imports/${encodeURIComponent(email.import_id)}`);
+    }
+    route("import-review",email.import_id);
   }
   function syncScreen() {
     const pending = Number(val(state.syncStatus,"pendingOperations","pending_operations")||0) + pendingMutations().filter((x)=>x.status!=="done").length, conflicts = Number(val(state.syncStatus,"openConflicts","open_conflicts")||0), last = val(state.syncStatus,"lastSuccessfulSyncAt","last_successful_sync_at");
@@ -3303,7 +3356,8 @@
       past = state.trips.length - upcoming,
       identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
     const themePicker = "";
-    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div>${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}${themePicker}<div class="section-label">Booking email</div>${row("mail","go@tripto.to",mode === "account" ? "Forward from your verified Google email" : "Sign in to verify a sender","","booking-email-info")}<div class="section-label">Preferences</div>${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")} <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
+    const pendingEmails=(state.bookingEmails||[]).filter((row)=>["needs_trip","needs_confirmation"].includes(String(row.status))).length;
+    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div>${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}${themePicker}<div class="section-label">Booking email</div>${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}<div class="section-label">Preferences</div>${row("refresh","Pending changes",pending?`${pending} waiting for review or sync`:"Everything is synced","sync")}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")} <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
   }
 
   let googleScriptPromise=null,googleRedirectExchangePromise=null;
@@ -4133,6 +4187,10 @@
         .join(""),
     );
   }
+  function bookingEmailTripSheet() {
+    const email=state.bookingEmails.find((row)=>String(row.id)===String(state.bookingEmailSelectionId));
+    return bottomSheet("booking-email-trip","Choose trip",`<p class="sheet-note booking-email-trip-note">${esc(email?.subject||"Booking confirmation")}</p><div class="sheet-options-group">${state.trips.map((trip)=>`<button type="button" class="sheet-option" data-action="assign-booking-email" data-email-id="${esc(email?.id||"")}" data-trip-id="${esc(trip.id)}"><span class="info-icon">${icon("trips",21)}</span><span><strong>${esc(trip.title||"Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small></span>${icon("chevron",20,"chevron")}</button>`).join("")||`<p class="sheet-note">Create a trip before assigning this confirmation.</p><button type="button" class="mobile-primary-action" data-action="create-trip">Create trip</button>`}</div>`);
+  }
   function firstRunHowSheet() {
     const steps = [
       ["trips", "Create your trip"],
@@ -4158,7 +4216,7 @@
     return bottomSheet(
       "help",
       "Help, privacy & terms",
-      `<div class="sheet-options-group sheet-options-group--v2">${rowAct("info", "How tripto.to works", "A quick tour of the basics", "open-first-run-how")}${rowAct("mail", "Booking email", "Forward confirmations to go@tripto.to", "booking-email-info")}${rowLink("shield", "Privacy Policy", "How your trip data is handled", "/privacy")}${rowLink("document", "Terms of Service", "The agreement for using tripto.to", "/terms")}${hasTrip ? rowAct("download", "Download support bundle", "Diagnostics for this trip — no private details", "export-support") : ""}</div><p class="sheet-note">tripto.to Product V2</p>`,
+      `<div class="sheet-options-group sheet-options-group--v2">${rowAct("info", "How tripto.to works", "A quick tour of the basics", "open-first-run-how")}${rowAct("mail", "Email Inbox", "Forward confirmations to go@tripto.to", "booking-email-info")}${rowLink("shield", "Privacy Policy", "How your trip data is handled", "/privacy")}${rowLink("document", "Terms of Service", "The agreement for using tripto.to", "/terms")}${hasTrip ? rowAct("download", "Download support bundle", "Diagnostics for this trip — no private details", "export-support") : ""}</div><p class="sheet-note">tripto.to Product V2</p>`,
     );
   }
 
@@ -4167,7 +4225,7 @@
   }
   function loadingSkeleton(screen = state.screen) {
     const common = `<div class="skeleton-appbar"><i></i><b></b><i></i></div>`,
-      listing = ["trips", "bookings", "documents", "travelers", "import-history"].includes(screen),
+      listing = ["trips", "bookings", "documents", "travelers", "import-history", "booking-email-inbox"].includes(screen),
       detail = ["flight", "hotel", "train", "plan", "traveler"].includes(screen);
     let body;
     if (screen === "timeline")
@@ -4283,6 +4341,7 @@
         case "import": html = importScreen(); break;
         case "import-review": html = importReviewScreen(); break;
         case "import-history": html = importHistoryScreen(); break;
+        case "booking-email-inbox": html = bookingEmailInboxScreen(); break;
         case "sync": html = syncScreen(); break;
         case "form": html = mobileFormScreen(); break;
         default:
@@ -4297,6 +4356,7 @@
     if (state.sheet === "manual-booking") html += manualBookingSheet();
     if (state.sheet === "manage-booking") html += manageBookingSheet();
     if (state.sheet === "date-range") html += dateRangeSheet();
+    if (state.sheet === "booking-email-trip") html += bookingEmailTripSheet();
     app.innerHTML = html + toast();
     bindDynamic();
   }
@@ -5747,6 +5807,44 @@
         else route("plan", id);
         break;
       }
+      case "refresh-booking-email-inbox":
+        try { await refreshBookingEmailInbox(); render(); showToast("Email inbox refreshed."); }
+        catch (error) { showToast(error.message,"alert"); }
+        break;
+      case "choose-booking-email-trip":
+        state.bookingEmailSelectionId=target.dataset.id||null;
+        openSheet("booking-email-trip",target);
+        break;
+      case "assign-booking-email": {
+        const emailId=target.dataset.emailId,tripId=target.dataset.tripId;
+        if (!emailId||!tripId) break;
+        target.disabled=true;
+        try {
+          let assigned;
+          if (PREVIEW_MODE) assigned={emailId,tripId,importId:state.bookingEmails.find((row)=>String(row.id)===String(emailId))?.import_id||"preview-import"};
+          else assigned=await api(`/api/v1/booking-emails/${encodeURIComponent(emailId)}/assign`,{method:"POST",body:JSON.stringify({tripId})});
+          const email=state.bookingEmails.find((row)=>String(row.id)===String(emailId));
+          if (email) Object.assign(email,{trip_id:tripId,trip_title:state.trips.find((trip)=>String(trip.id)===String(tripId))?.title||null,status:"needs_confirmation",rejection_code:null,import_id:assigned.importId||email.import_id});
+          state.sheet=null;
+          state.bookingEmailSelectionId=null;
+          await openBookingEmailReview(email);
+        } catch (error) { target.disabled=false; showToast(error.message,"alert"); }
+        break;
+      }
+      case "review-booking-email": {
+        const email=state.bookingEmails.find((row)=>String(row.id)===String(target.dataset.id));
+        try { await openBookingEmailReview(email); }
+        catch (error) { showToast(error.message,"alert"); }
+        break;
+      }
+      case "dismiss-booking-email":
+        try {
+          if (!PREVIEW_MODE) await api(`/api/v1/booking-emails/${encodeURIComponent(target.dataset.id)}/dismiss`,{method:"POST",body:"{}"});
+          state.bookingEmails=state.bookingEmails.filter((row)=>String(row.id)!==String(target.dataset.id));
+          render();
+          showToast("Booking email dismissed.");
+        } catch (error) { showToast(error.message,"alert"); }
+        break;
       case "review-import":
         if(PREVIEW_MODE){state.importReview={candidates:[{id:"candidate-1",type:"flight",title:"LY 383 · TLV → FCO",confidence:"low",warnings:["Timezone missing"]}]};route("import-review");}
         else {try{state.importReview=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/${encodeURIComponent(target.dataset.id)}`);route("import-review");}catch(error){showToast(error.message,"alert");}}
@@ -5785,7 +5883,8 @@
         route("trips");
         break;
       case "booking-email-info":
-        showToast("Forward booking confirmations to go@tripto.to from your verified Google email.");
+        state.sheet = null;
+        route("booking-email-inbox");
         break;
       case "remove-local-data": {
         const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);

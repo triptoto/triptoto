@@ -26,6 +26,9 @@ const { createStay }=await load('apps/worker/src/routes/stays.js');
 const { createTransport }=await load('apps/worker/src/routes/transport.js');
 const { createActivity }=await load('apps/worker/src/routes/activities.js');
 const { createContact }=await load('apps/worker/src/routes/contacts.js');
+const { createTrip }=await load('apps/worker/src/routes/trips.js');
+const { receiveBookingEmail }=await load('apps/worker/src/inbound-email.js');
+const { assignBookingEmail, listBookingEmails }=await load('apps/worker/src/routes/booking-emails.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -244,6 +247,33 @@ assert(db.prepare(`SELECT source_type FROM trip_items WHERE id=?`).get(resolvedI
 const importsAfter=await body(await listImports(req('https://test/api/v1/trips/x/imports'),env,owner,tripId));
 assert(importsAfter.imports.some(x=>x.id===previewImport.import.id&&x.status==='completed'),'import completes after confirmation');
 assert(!Object.keys(db.prepare(`SELECT * FROM import_messages WHERE import_id=?`).get(previewImport.import.id)).some(k=>/body|raw|content/i.test(k)),'import message schema stores no raw body');
+
+// Routed booking email: a multi-trip account is never guessed. The message is
+// parsed once into an unassigned review, appears only in the owner's inbox,
+// and materializes nothing until the traveler chooses a trip and confirms.
+const secondTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Milan work trip',lifecycleState:'upcoming',startsOn:'2026-10-02',endsOn:'2026-10-05'}),env,owner));
+const routedRaw='Booking reference: ROUTED123\nFlight: LY 385\nTLV -> MXP\nDeparture: 2026-10-02 08:30\nArrival: 2026-10-02 11:50';
+const itemCountBeforeRouted=Number(db.prepare(`SELECT COUNT(*) c FROM trip_items`).get().c);
+let routedReject='';
+await receiveBookingEmail({from:'Owner <owner@example.test>',to:'go@tripto.to',raw:new Blob([routedRaw]).stream(),headers:new Headers({'subject':'Fwd: Milan flight','message-id':'<routed-1@example.test>'}),setReject(reason){routedReject=reason;}},env);
+assert(!routedReject,'verified routed email accepted');
+const routedRow=db.prepare(`SELECT * FROM inbound_booking_emails WHERE subject='Fwd: Milan flight'`).get();
+assert(routedRow.status==='needs_trip'&&routedRow.trip_id==null&&routedRow.import_id,'multi-trip routed email remains unassigned but reviewable');
+const routedImport=db.prepare(`SELECT * FROM imports WHERE id=?`).get(routedRow.import_id);
+assert(routedImport.trip_id==null&&routedImport.status==='needs_confirmation','routed import is parsed without guessing a trip');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM import_candidates WHERE import_id=?`).get(routedRow.import_id).c)===1,'routed email produced review candidate');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items`).get().c)===itemCountBeforeRouted,'routed email does not create a booking before confirmation');
+const routedInbox=await body(await listBookingEmails(req('https://test/api/v1/booking-emails'),env,owner));
+assert(routedInbox.bookingEmails.some(row=>row.id===routedRow.id&&row.status==='needs_trip'&&row.candidate_count===1),'owner inbox exposes trip-selection state');
+const strangerInbox=await body(await listBookingEmails(req('https://test/api/v1/booking-emails'),env,{deviceId:'guest-device',userId:'unrelated-user'}));
+assert(strangerInbox.bookingEmails.length===0,'another account cannot list routed emails');
+const assignedEmail=await body(await assignBookingEmail(req('https://test/api/v1/booking-emails/x/assign','POST',{tripId:secondTrip.trip.id}),env,owner,routedRow.id));
+assert(assignedEmail.tripId===secondTrip.trip.id&&assignedEmail.importId===routedRow.import_id,'traveler assigns routed email to selected trip');
+assert(db.prepare(`SELECT trip_id,status FROM imports WHERE id=?`).get(routedRow.import_id).trip_id===secondTrip.trip.id,'assignment updates import trip');
+const routedCandidate=db.prepare(`SELECT id FROM import_candidates WHERE import_id=?`).get(routedRow.import_id);
+const routedResolved=await body(await resolveImportCandidate(req('https://test/api/v1/trips/x/imports/y/resolve','POST',{candidateId:routedCandidate.id,action:'confirm',payload:{airlineCode:'LY',flightNumber:'385',departureIata:'TLV',arrivalIata:'MXP',scheduledDepartureUtc:Date.UTC(2026,9,2,5,30),scheduledArrivalUtc:Date.UTC(2026,9,2,9,50),departureTimezone:'Asia/Jerusalem',arrivalTimezone:'Europe/Rome',confirmationNumber:'ROUTED123'}}),env,owner,secondTrip.trip.id,routedRow.import_id));
+assert(routedResolved.resolved==='confirmed','assigned routed email confirms through existing review pipeline');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND source_type='email'`).get(secondTrip.trip.id).c)===1,'confirmed routed email adds one booking to chosen trip');
 
 // Smart upload import receives structured fields and checksum only, detects duplicates, and materializes after review.
 const checksum='a'.repeat(64),uploadBody={checksum,filename:'hotel-confirmation.pdf',documentKind:'pdf',candidate:{type:'hotel',confidence:.86,fields:{propertyName:{value:'Hotel Test',confidence:.9,source:'embedded_text'},checkInDate:{value:'2026-09-01',confidence:.8,source:'embedded_text'},checkOutDate:{value:'2026-09-03',confidence:.8,source:'embedded_text'},confirmationNumber:{value:'HOT123',confidence:.8,source:'barcode'}},warnings:[]}};
