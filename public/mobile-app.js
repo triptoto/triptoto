@@ -113,6 +113,7 @@
     brain: null,
     impacts: [],
     transport: [],
+    liveFlights: { enabled: false, available: false, betaOnly: true, reason: "disabled" },
     stays: [],
     locations: [],
     weather: null,
@@ -1784,6 +1785,9 @@
     state.brain = take(2, "brain", null);
     state.impacts = take(3, "impacts", []);
     state.transport = take(4, "transport", []);
+    state.liveFlights = results[4] && results[4].status === "fulfilled"
+      ? (results[4].value?.liveFlights || { enabled: false, available: false, betaOnly: true, reason: "disabled" })
+      : { enabled: false, available: false, betaOnly: true, reason: "unavailable" };
     state.stays = take(5, "stays", []);
     state.locations = take(6, "locations", []);
     state.travelers = take(7, "travelers", []);
@@ -1820,6 +1824,7 @@
       state.brain = null;
       state.impacts = [];
       state.transport = [];
+      state.liveFlights = { enabled: false, available: false, betaOnly: true, reason: "disabled" };
       state.stays = [];
       state.locations = [];
       state.travelers = [];
@@ -2333,15 +2338,62 @@
     return detailFor(flight) || {};
   }
 
+  function liveFlightPresentation(flight) {
+    const enabled = Number(val(flight, "live_data_enabled")) === 1,
+      matched = val(flight, "live_match_status") === "matched",
+      updatedAt = Number(val(flight, "live_last_success_at", "live_fetched_at")) || null,
+      freshUntil = Number(val(flight, "freshness_expires_at")) || null,
+      fresh = enabled && matched && updatedAt != null && freshUntil != null && freshUntil > Date.now() && !state.offline,
+      stale = enabled && matched && updatedAt != null && !fresh,
+      phase = String(val(flight, "operational_phase") || "scheduled").toLowerCase(),
+      disruption = String(val(flight, "disruption_state") || "none").toLowerCase(),
+      delay = Number(val(flight, "delay_minutes")) || 0,
+      cancellationConfirmed = Boolean(val(flight, "cancellation_confirmed_at")),
+      cancellationReported = Boolean(val(flight, "cancellation_first_reported_at")) && !cancellationConfirmed;
+    let label = "Scheduled data", tone = "neutral";
+    if (fresh) {
+      if (cancellationConfirmed) { label = "Cancelled"; tone = "danger"; }
+      else if (cancellationReported) { label = "Cancellation reported"; tone = "warning"; }
+      else if (disruption === "diverted") { label = "Diverted"; tone = "danger"; }
+      else if (disruption === "delayed" || delay > 0) { label = delay > 0 ? `Delayed ${delay} min` : "Delayed"; tone = "warning"; }
+      else if (phase === "boarding") { label = "Boarding"; tone = "active"; }
+      else if (["departed", "en_route"].includes(phase)) { label = phase === "departed" ? "Departed" : "En route"; tone = "active"; }
+      else if (phase === "landed") { label = "Landed"; tone = "active"; }
+      else if (String(val(flight, "provider_status") || "").toLowerCase() === "expected") { label = "On time"; tone = "good"; }
+      else label = "Live update";
+    } else if (stale) {
+      const lastKnown = cancellationConfirmed ? "Cancelled"
+        : cancellationReported ? "Cancellation reported"
+          : disruption === "diverted" ? "Diverted"
+            : disruption === "delayed" || delay > 0 ? (delay > 0 ? `Delayed ${delay} min` : "Delayed")
+              : phase === "landed" ? "Landed"
+                : phase === "departed" ? "Departed"
+                  : phase === "en_route" ? "En route"
+                    : phase === "boarding" ? "Boarding" : "Scheduled";
+      label = state.offline ? `Last status: ${lastKnown}` : "Saved update · may be out of date";
+    }
+    return {
+      enabled, matched, fresh, stale, label, tone, updatedAt,
+      provenance: fresh ? `Live update · ${ageLabel(updatedAt)}` : stale ? `Updated ${ageLabel(updatedAt)}${state.offline ? " · Offline" : ""}` : "Scheduled data",
+      departure: fresh ? Number(val(flight, "actual_departure_utc", "estimated_departure_utc")) || flightDeparture(flight) : flightDeparture(flight),
+      arrival: fresh ? Number(val(flight, "actual_arrival_utc", "estimated_arrival_utc")) || flightArrival(flight) : flightArrival(flight),
+      departureLabel: fresh && val(flight, "actual_departure_utc") ? "Actual" : fresh && val(flight, "estimated_departure_utc") ? "Estimated" : "Departs",
+      arrivalLabel: fresh && val(flight, "actual_arrival_utc") ? "Actual" : fresh && val(flight, "estimated_arrival_utc") ? "Estimated" : "Arrives",
+      terminal: fresh ? val(flight, "live_departure_terminal") || val(flight, "departure_terminal") : val(flight, "departure_terminal"),
+      gate: fresh ? val(flight, "live_departure_gate") || val(flight, "departure_gate", "gate") : val(flight, "departure_gate", "gate"),
+    };
+  }
+
   function flightPass(flight, detailVariant = false) {
     const route = flightRoute(flight),
       detail = primaryFlightDetail(flight),
-      departure = flightDeparture(flight),
-      arrival = flightArrival(flight),
+      live = liveFlightPresentation(flight),
+      departure = live.departure,
+      arrival = live.arrival,
       departureZone = val(flight, "departure_timezone", "start_timezone"),
       arrivalZone = val(flight, "arrival_timezone", "end_timezone"),
-      terminal = val(flight, "departure_terminal"),
-      gate = val(flight, "departure_gate", "gate"),
+      terminal = live.terminal,
+      gate = live.gate,
       seat = val(detail, "seat"),
       cabin = val(detail, "cabin_class"),
       status = statusText(
@@ -2370,8 +2422,10 @@
         ? compactFlightNumber(flight)
         : flightNumber(flight);
 
-    const routeMarkup = `<div class="flight-pass__route"><div class="flight-pass__airport"><div class="flight-pass__airport-code">${esc(fromCode)}</div><span class="flight-pass__airport-name">${esc(route.fromName)}</span></div><div class="flight-pass__route-center"><div class="flight-pass__route-line">${icon("plane", 22)}</div>${duration ? `<span class="flight-pass__duration">${icon("clock", 14)} ${esc(duration)}</span>` : ""}</div><div class="flight-pass__airport flight-pass__airport--right"><div class="flight-pass__airport-code">${esc(toCode)}</div><span class="flight-pass__airport-name">${esc(route.toName)}</span></div></div>`;
-    const header = `<div class="flight-pass__header"><span class="flight-pass__pill">${icon("plane", 22)} ${esc(displayedFlightNumber)}</span><div class="flight-pass__status ${confirmed ? "is-confirmed" : ""}"${detailVariant ? ` role="status" aria-label="${esc(status)}. Scheduled booking data is never presented as live."` : ""}><strong>${confirmed ? checkDot() : ""}${esc(status)}</strong><small>Scheduled data</small></div>${detailVariant ? `<span class="flight-pass__status-chevron" aria-hidden="true">${icon("chevron", 22)}</span>` : ""}</div>`;
+    const routeMarkup = `<div class="flight-pass__route"><div class="flight-pass__airport"><div class="flight-pass__airport-code">${esc(fromCode)}</div><span class="flight-pass__airport-name">${esc(route.fromName)}</span></div><div class="flight-pass__route-center"><div class="flight-pass__route-line">${icon("plane", 22)}</div>${duration ? `<span class="flight-pass__duration">${icon("clock", 14)} ${esc(duration)}</span>` : ""}</div><div class="flight-pass__airport flight-pass__airport--right"><div class="flight-pass__airport-code">${esc(toCode)}</div><span class="flight-pass__airport-name">${esc(route.toName)}</span></div></div>`,
+      statusDetail = live.fresh || live.stale ? `<small>${esc(live.label)}</small>` : "<small>Scheduled data</small>",
+      scheduledProvenance = "Scheduled booking data is never presented as live.";
+    const header = `<div class="flight-pass__header"><span class="flight-pass__pill">${icon("plane", 22)} ${esc(displayedFlightNumber)}</span><div class="flight-pass__status ${confirmed ? "is-confirmed" : ""}"${detailVariant ? ` role="status" aria-label="Booking ${esc(status)}. ${esc(live.label)}. ${esc(live.provenance)}. ${esc(scheduledProvenance)}"` : ""}><strong>${confirmed ? checkDot() : ""}${esc(status)}</strong>${statusDetail}</div>${detailVariant ? `<span class="flight-pass__status-chevron" aria-hidden="true">${icon("chevron", 22)}</span>` : ""}</div>`;
     const primaryAction = primaryCta(
       actionLabel,
       action,
@@ -2380,10 +2434,10 @@
     );
 
     if (!detailVariant) {
-      return `<section class="flight-pass flight-pass--home" aria-label="Next scheduled flight"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span>Departure</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)}</small>` : ""}</div><div class="flight-pass__fact"><span>Terminal</span><strong>${esc(terminal || "—")}</strong>${terminal ? "<small>Departure</small>" : ""}</div><div class="flight-pass__fact"><span>Seat</span><strong>${esc(seat || "—")}</strong>${cabin ? `<small>${esc(cabin)}</small>` : ""}</div></div><div class="flight-pass__actions flight-pass__actions--single">${primaryAction}</div></div></section>`;
+      return `<section class="flight-pass flight-pass--home" aria-label="Next flight"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${live.fresh || live.stale ? `<div class="live-flight-strip live-flight-strip--${esc(live.tone)}" role="status"><strong>${esc(live.label)}</strong><span>${esc(live.provenance)}</span></div>` : ""}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span>${esc(live.departureLabel)}</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)}</small>` : ""}</div><div class="flight-pass__fact"><span>Terminal</span><strong>${esc(terminal || "—")}</strong>${terminal ? `<small>${live.fresh ? "Live update" : "Departure"}</small>` : ""}</div><div class="flight-pass__fact"><span>Seat</span><strong>${esc(seat || "—")}</strong>${cabin ? `<small>${esc(cabin)}</small>` : ""}</div></div><div class="flight-pass__actions flight-pass__actions--single">${primaryAction}</div></div></section>`;
     }
 
-    return `<section class="flight-pass flight-pass--detail" aria-label="Scheduled flight details"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__times" aria-label="Scheduled departure and arrival in event-local time"><div class="flight-pass__time"><span class="flight-pass__event-icon">${icon("night", 25)}</span><span class="flight-pass__time-copy"><span>Departs</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)} · Local time</small>` : ""}</span></div><div class="flight-pass__time-separator"></div><div class="flight-pass__time flight-pass__time--right"><span class="flight-pass__time-copy"><span>Arrives</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong>${arrivalDay ? `<small>${esc(arrivalDay)} · Local time</small>` : ""}</span><span class="flight-pass__event-icon flight-pass__event-icon--day">${icon("day", 25)}</span></div></div><div class="flight-pass__divider flight-pass__divider--facts"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("terminal", 23)}</span><span class="flight-pass__fact-copy"><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("gate", 23)}</span><span class="flight-pass__fact-copy"><span>Gate</span><strong>${esc(gate || "—")}</strong><small>${gate ? "Departure" : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("seat", 23)}</span><span class="flight-pass__fact-copy"><span>Seat</span><strong>${esc(seat || "—")}</strong>${seat ? (cabin ? `<small>${esc(cabin)}</small>` : "") : "<small>Not assigned</small>"}</span></div></div><div class="flight-pass__actions">${primaryAction}<button class="flight-pass__secondary" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 18)}<span>Directions</span></button></div></div></section>`;
+    return `<section class="flight-pass flight-pass--detail" aria-label="Flight details"><i class="flight-pass__notch flight-pass__notch--left" aria-hidden="true"></i><i class="flight-pass__notch flight-pass__notch--right" aria-hidden="true"></i><div class="flight-pass__inner">${header}${live.fresh || live.stale ? `<div class="live-flight-strip live-flight-strip--${esc(live.tone)}" role="status"><strong>${esc(live.label)}</strong><span>${esc(live.provenance)}</span></div>` : ""}${routeMarkup}<div class="flight-pass__divider"></div><div class="flight-pass__times" aria-label="Departure and arrival in event-local time"><div class="flight-pass__time"><span class="flight-pass__event-icon">${icon("night", 25)}</span><span class="flight-pass__time-copy"><span>${esc(live.departureLabel)}</span><strong>${esc(formatTime(departure, departureZone))}</strong>${departureDay ? `<small>${esc(departureDay)} · Local time</small>` : ""}</span></div><div class="flight-pass__time-separator"></div><div class="flight-pass__time flight-pass__time--right"><span class="flight-pass__time-copy"><span>${esc(live.arrivalLabel)}</span><strong>${esc(formatTime(arrival, arrivalZone))}</strong>${arrivalDay ? `<small>${esc(arrivalDay)} · Local time</small>` : ""}</span><span class="flight-pass__event-icon flight-pass__event-icon--day">${icon("day", 25)}</span></div></div><div class="flight-pass__divider flight-pass__divider--facts"></div><div class="flight-pass__facts"><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("terminal", 23)}</span><span class="flight-pass__fact-copy"><span>Terminal</span><strong>${esc(terminal || "—")}</strong><small>${terminal ? (live.fresh ? "Live update" : "Departure") : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("gate", 23)}</span><span class="flight-pass__fact-copy"><span>Gate</span><strong>${esc(gate || "—")}</strong><small>${gate ? (live.fresh ? "Live update" : "Departure") : "Not assigned"}</small></span></div><div class="flight-pass__fact"><span class="flight-pass__fact-icon">${icon("seat", 23)}</span><span class="flight-pass__fact-copy"><span>Seat</span><strong>${esc(seat || "—")}</strong>${seat ? (cabin ? `<small>${esc(cabin)}</small>` : "") : "<small>Not assigned</small>"}</span></div></div><div class="flight-pass__actions">${primaryAction}<button class="flight-pass__secondary" data-action="directions-flight" data-id="${esc(itemId(flight))}">${icon("navigation", 18)}<span>Directions</span></button></div></div></section>`;
   }
 
   function flightTicket(flight) {
@@ -2625,6 +2679,16 @@
   }
 
   function timelineException(item) {
+    const liveTransport = transportForItem(itemId(item)),
+      live = liveTransport && String(val(liveTransport, "transport_type")) === "flight"
+        ? liveFlightPresentation(liveTransport)
+        : null;
+    if (live?.fresh) {
+      if (live.tone === "danger") return { label: live.label, tone: "danger" };
+      if (live.tone === "warning") return { label: live.label, tone: "warning" };
+      if (["Boarding", "Departed", "En route", "Landed"].includes(live.label)) return { label: live.label, tone: "neutral" };
+    }
+    if (live?.stale) return { label: "Saved update", tone: "neutral" };
     const status = String(val(item, "status", "booking_status") || "")
         .toLowerCase()
         .replace(/_/g, " "),
@@ -2734,12 +2798,16 @@
             ]
           : null,
       ].filter(Boolean),
+      live = liveFlightPresentation(flight),
+      liveControls = state.liveFlights?.available
+        ? `<section class="live-flight-controls" aria-label="Live flight updates"><div><strong>${live.enabled ? "Live updates enabled" : "Live updates available"}</strong><small>${live.enabled ? (live.provenance || "Provider status will remain separate from your booking") : "Beta · quota-aware · scheduled facts remain unchanged"}</small></div>${live.enabled ? `<button type="button" data-action="refresh-live-flight" data-id="${esc(itemId(flight))}"${state.offline ? " disabled" : ""}>${icon("refresh", 17)} Refresh</button>` : `<button type="button" data-action="toggle-live-flight" data-enabled="true" data-id="${esc(itemId(flight))}"${state.offline ? " disabled" : ""}>Enable</button>`}</section>`
+        : "",
       disclosureId = "flight-details-panel",
       disclosureButtonId = "flight-details-toggle",
       disclosure = disclosureRows.length
         ? `<section class="flight-more flight-more--pass"><button type="button" class="flight-more__toggle" id="${disclosureButtonId}" data-action="toggle-flight-details" aria-expanded="${state.flightDetailsOpen}" aria-controls="${disclosureId}"><span>Flight details</span><span class="flight-more__chevron" aria-hidden="true">${icon(state.flightDetailsOpen ? "chevronUp" : "chevronDown", 18)}</span></button><div class="flight-more-content${state.flightDetailsOpen ? " is-open" : ""}" id="${disclosureId}" role="region" aria-labelledby="${disclosureButtonId}"${state.flightDetailsOpen ? "" : " hidden"}><dl>${disclosureRows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section>`
         : "";
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div>${linkedBookingDocumentRows(flight)}</main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${liveControls}${doc ? "" : `<div class="missing-document-state flight-pass__missing" role="status">${icon("warning", 18)} No checksum-verified boarding pass is stored on this phone.</div>`}${disclosure}</div>${linkedBookingDocumentRows(flight)}</main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -5833,6 +5901,40 @@
             ),
           ),
         );
+        break;
+      }
+      case "toggle-live-flight": {
+        if (!state.trip || !target.dataset.id) break;
+        target.disabled = true;
+        try {
+          await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/transport/${encodeURIComponent(target.dataset.id)}/live`, {
+            method: "PATCH",
+            body: JSON.stringify({ enabled: target.dataset.enabled === "true" }),
+          });
+          await loadTripDetails();
+          render();
+          showToast("Live flight updates enabled.");
+        } catch (error) {
+          target.disabled = false;
+          showToast(error instanceof Error ? error.message : "Live updates could not be enabled.", "alert");
+        }
+        break;
+      }
+      case "refresh-live-flight": {
+        if (!state.trip || !target.dataset.id) break;
+        target.disabled = true;
+        try {
+          const result = await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/transport/${encodeURIComponent(target.dataset.id)}/live/refresh`, {
+            method: "POST",
+            body: "{}",
+          });
+          await loadTripDetails();
+          render();
+          showToast(result?.refresh?.outcome === "updated" ? "Live flight status updated." : "Live flight status is current.");
+        } catch (error) {
+          target.disabled = false;
+          showToast(error instanceof Error ? error.message : "Live status could not be refreshed.", "alert");
+        }
         break;
       }
       case "toggle-flight-details":

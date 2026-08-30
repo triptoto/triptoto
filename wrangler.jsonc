@@ -12,6 +12,15 @@
   ],
   "vars": {
     "LIVE_FLIGHTS_ENABLED": "false",
+    "LIVE_FLIGHT_PROVIDER": "aerodatabox",
+    "LIVE_FLIGHT_DAILY_REQUEST_BUDGET": "8",
+    "LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET": "240",
+    "LIVE_FLIGHT_MIN_REFRESH_MINUTES": "60",
+    "LIVE_FLIGHT_MAX_BATCH_SIZE": "2",
+    "LIVE_FLIGHT_BETA_ONLY": "true",
+    "LIVE_FLIGHT_BETA_USER_IDS": "",
+    "AERODATABOX_RAPIDAPI_HOST": "aerodatabox.p.rapidapi.com",
+    "AERODATABOX_API_TIMEOUT_MS": "7000",
     "AI_ENABLED": "false",
     "GMAIL_SYNC_ENABLED": "false",
     "R2_DOCUMENTS_ENABLED": "false",
@@ -23,6 +32,9 @@
     "BETA_RELEASE": "product-v2-production",
     "BETA_METRICS_ENABLED": "true",
     "OPS_ENABLED": "false"
+  },
+  "triggers": {
+    "crons": ["*/30 * * * *"]
   },
   "assets": {
     "directory": "./public",

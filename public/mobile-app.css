@@ -1113,3 +1113,13 @@ html.theme-harbor .sheet-note{text-align:center;color:var(--muted-soft);font-siz
 @media(prefers-reduced-motion:reduce){
   .manual-attachments__picker,.manual-attachment-row,.manual-booking-form .form-more-panel{transition:none!important}
 }
+
+/* Live flight status is deliberately separate from immutable booking facts. */
+.live-flight-strip{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 4px;padding:8px 10px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.06);color:#fff;font-size:11px}
+.live-flight-strip strong{font-size:12px}.live-flight-strip span{color:rgba(255,255,255,.68);text-align:right}
+.live-flight-strip--good strong,.live-flight-strip--active strong{color:#72e39e}.live-flight-strip--warning strong{color:#ffd16f}.live-flight-strip--danger strong{color:#ff8994}.live-flight-strip--neutral strong{color:#d9e0e6}
+.live-flight-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin:0 2px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.14);color:#fff}
+.live-flight-controls div{display:grid;gap:3px}.live-flight-controls strong{font-size:13px}.live-flight-controls small{color:rgba(255,255,255,.66);font-size:11px;line-height:1.35}
+.live-flight-controls button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:86px;min-height:44px;padding:0 13px;border:1px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:12px;font-weight:750}
+.live-flight-controls button:disabled{opacity:.5}.live-flight-controls button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media(max-width:374px){.live-flight-strip{align-items:flex-start;flex-direction:column;gap:2px}.live-flight-strip span{text-align:left}.live-flight-controls{gap:8px}.live-flight-controls button{min-width:78px;padding-inline:9px}}

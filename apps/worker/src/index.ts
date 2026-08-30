@@ -36,6 +36,8 @@ import { syncStatus, syncChanges, acknowledgeSync, queueSyncOperation, listSyncC
 import { readiness } from './routes/readiness.ts';
 import { currentWeather } from './routes/weather.ts';
 import { receiveBookingEmail, type InboundEmailMessage } from './inbound-email.ts';
+import { refreshLiveFlight, updateLiveFlightMonitoring } from './routes/live-flights.ts';
+import { runScheduledLiveFlightRefresh } from './live-flights.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -140,6 +142,10 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listTransport(request,env,auth,tripId); if(request.method==='POST') return createTransport(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport\/([^/]+)$/);
       if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateTransport(request,env,auth,tripId,itemId); if(request.method==='DELETE') return deleteTransport(request,env,auth,tripId,itemId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport\/([^/]+)\/live$/);
+      if (match && request.method==='PATCH') return updateLiveFlightMonitoring(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport\/([^/]+)\/live\/refresh$/);
+      if (match && request.method==='POST') return refreshLiveFlight(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/stays$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listStays(request,env,auth,tripId); if(request.method==='POST') return createStay(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/stays\/([^/]+)$/);
@@ -227,5 +233,8 @@ export default {
   },
   async email(message: InboundEmailMessage, env: Env): Promise<void> {
     await receiveBookingEmail(message, env);
+  },
+  async scheduled(_controller: unknown, env: Env): Promise<void> {
+    await runScheduledLiveFlightRefresh(env);
   },
 };

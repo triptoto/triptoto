@@ -1,0 +1,50 @@
+{
+  "boarding": [{
+    "number": "LY 383", "status": "Boarding", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" }, "terminal": "3", "gate": "B18" },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" } }
+  }],
+  "departed": [{
+    "number": "LY 383", "status": "Departed", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" }, "runwayTime": { "utc": "2026-08-20T06:31:00Z" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" } }
+  }],
+  "enRoute": [{
+    "number": "LY 383", "status": "EnRoute", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" }, "runwayTime": { "utc": "2026-08-20T06:31:00Z" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" }, "predictedTime": { "utc": "2026-08-20T10:35:00Z" } }
+  }],
+  "landed": [{
+    "number": "LY 383", "status": "Arrived", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" }, "runwayTime": { "utc": "2026-08-20T06:31:00Z" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" }, "runwayTime": { "utc": "2026-08-20T10:34:00Z" }, "baggageBelt": "8" }
+  }],
+  "diverted": [{
+    "number": "LY 383", "status": "Diverted", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" } }
+  }],
+  "missingFields": [{
+    "number": "LY 383", "status": "Expected", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" } }
+  }],
+  "dateLine": [{
+    "number": "HA 457", "status": "Expected", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "HA" },
+    "departure": { "airport": { "iata": "HNL" }, "scheduledTime": { "utc": "2026-08-21T09:00:00Z", "local": "2026-08-20 23:00-10:00" } },
+    "arrival": { "airport": { "iata": "NRT" }, "scheduledTime": { "utc": "2026-08-21T17:00:00Z", "local": "2026-08-22 02:00+09:00" } }
+  }],
+  "dst": [{
+    "number": "BA 178", "status": "Expected", "codeshareStatus": "IsOperator",
+    "airline": { "iata": "BA" },
+    "departure": { "airport": { "iata": "JFK" }, "scheduledTime": { "utc": "2026-11-01T05:30:00Z", "local": "2026-11-01 01:30-04:00" } },
+    "arrival": { "airport": { "iata": "LHR" }, "scheduledTime": { "utc": "2026-11-01T12:10:00Z", "local": "2026-11-01 12:10+00:00" } }
+  }]
+}
