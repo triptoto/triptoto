@@ -26,6 +26,7 @@ const { createStay }=await load('apps/worker/src/routes/stays.js');
 const { createTransport }=await load('apps/worker/src/routes/transport.js');
 const { createActivity }=await load('apps/worker/src/routes/activities.js');
 const { createContact }=await load('apps/worker/src/routes/contacts.js');
+const { liveFlightUsageSummary, refreshLiveFlightById, runScheduledLiveFlightRefresh, scheduleLiveFlightMonitoring }=await load('apps/worker/src/live-flights.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -149,6 +150,56 @@ assert(replayedWithEquivalentLocation.item.id===successfulTransport.item.id,'gen
 const idempotencyColumns=db.prepare(`PRAGMA table_info(manual_booking_idempotency)`).all().map(row=>row.name);
 assert(!idempotencyColumns.some(name=>/body|payload|response|confirmation/i.test(name)),'manual idempotency table stores no request or booking payload');
 assert(!db.prepare(`SELECT request_fingerprint FROM manual_booking_idempotency WHERE client_request_id=?`).get(stayKey).request_fingerprint.includes('PRIVATE-STAY-123'),'manual idempotency fingerprint does not expose confirmation data');
+
+// Live flights are zero-call while disabled. When explicitly enabled for a
+// beta environment, cache reuse does not consume quota or count as a second
+// cancellation observation; only a later provider response can confirm it.
+let providerCalls=0;
+const disabledSchedule=await runScheduledLiveFlightRefresh(env,{provider:{name:'test',health:async()=>'healthy',getStatus:async()=>{providerCalls+=1;throw new Error('disabled provider called');}}});
+assert(disabledSchedule.enabled===false&&providerCalls===0,'disabled live-flight cron makes zero provider calls');
+Object.assign(env,{LIVE_FLIGHTS_ENABLED:'true',LIVE_FLIGHT_PROVIDER:'aerodatabox',LIVE_FLIGHT_BETA_ONLY:'false',LIVE_FLIGHT_DAILY_REQUEST_BUDGET:'2',LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET:'2',LIVE_FLIGHT_MIN_REFRESH_MINUTES:'60',AERODATABOX_RAPIDAPI_KEY:'integration-server-only-key'});
+const monitoredFlightId=successfulTransport.item.id,scheduledDeparture=Number(successfulTransport.item.scheduled_departure_utc),firstLiveNow=scheduledDeparture-4*60*60*1000;
+await scheduleLiveFlightMonitoring(env,guest,tripId,monitoredFlightId,true,firstLiveNow);
+let providerNow=firstLiveNow;
+const cancellationProvider={name:'aerodatabox',health:async()=>'healthy',getStatus:async()=>{providerCalls+=1;return{available:true,provider:'aerodatabox',providerFlightId:'aerodatabox:LY991',matchStatus:'matched',confidence:100,operationalPhase:'scheduled',disruptionState:'cancelled',scheduledDepartureUtc:scheduledDeparture,departureTerminal:'3',departureGate:'D7',providerStatus:'Canceled',fetchedAt:providerNow};}};
+let liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+assert(liveResult.outcome==='updated'&&providerCalls===1,'first provider observation stored');
+let liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveRow.cancellation_signals===1&&liveRow.cancellation_confirmed_at==null,'first cancellation remains provisional');
+providerNow=firstLiveNow+61*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveResult.outcome==='cached'&&providerCalls===1,'shared cache avoids a provider request');
+assert(liveRow.cancellation_signals===1&&liveRow.cancellation_confirmed_at==null,'cached observation cannot confirm cancellation');
+providerNow=firstLiveNow+121*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveResult.providerCalled===true&&providerCalls===2,'expired cache calls provider once');
+assert(liveRow.cancellation_signals===2&&liveRow.cancellation_confirmed_at!=null,'independent provider observation confirms cancellation');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='flight_cancelled_reported'`).get(tripId,monitoredFlightId).c)===1,'first cancellation creates one provisional event');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='flight_cancelled_confirmed'`).get(tripId,monitoredFlightId).c)===1,'second independent signal creates one confirmation event');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM impact_assessments WHERE trip_id=? AND item_id=? AND status='active' AND explanation_code='FLIGHT_CANCELLATION_CONFIRMED'`).get(tripId,monitoredFlightId).c)===1,'confirmed cancellation creates one high-priority deterministic impact');
+providerNow=firstLiveNow+182*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+assert(liveResult.outcome==='quota_exhausted'&&providerCalls===2,'local quota blocks provider before network');
+const liveUsage=await liveFlightUsageSummary(env);
+assert(liveUsage.usedMonth===2&&liveUsage.remainingMonth===0,'monthly usage ledger and guard are accurate');
+
+// Cron selection remains bounded and prioritizes the flight departing soonest.
+Object.assign(env,{LIVE_FLIGHT_DAILY_REQUEST_BUDGET:'20',LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET:'20',LIVE_FLIGHT_MAX_BATCH_SIZE:'2'});
+const cronFlights=[];
+for(const [suffix,offsetHours] of [['A',2/3],['B',24],['C',120]]){
+  const input={...transportInput,title:`Cron priority ${suffix}`,serviceNumber:`LY 99${suffix}`,marketingFlightNumber:`99${suffix}`,scheduledDepartureUtc:firstLiveNow+offsetHours*60*60*1000};
+  const created=await body(await createTransport(req('https://test/api/v1/trips/x/transport','POST',input,{'idempotency-key':`cron-priority-flight-${suffix}`}),env,guest,tripId));
+  cronFlights.push(created.item.id);
+  await scheduleLiveFlightMonitoring(env,guest,tripId,created.item.id,true,firstLiveNow);
+}
+let cronProviderCalls=0;
+const cronProvider={name:'aerodatabox',health:async()=>'healthy',getStatus:async lookup=>{cronProviderCalls+=1;return{available:true,provider:'aerodatabox',providerFlightId:`aerodatabox:${lookup.flightNumber}`,matchStatus:'matched',confidence:100,operationalPhase:'scheduled',disruptionState:'none',scheduledDepartureUtc:firstLiveNow+40*60*1000,providerStatus:'Expected',fetchedAt:firstLiveNow};}};
+const cronRun=await runScheduledLiveFlightRefresh(env,{provider:cronProvider,now:firstLiveNow});
+assert(cronRun.results.length===2&&cronProviderCalls<=2,'cron honors maximum batch size');
+assert(cronRun.results.some(result=>result.itemId===cronFlights[0]),'cron prioritizes the flight departing in 40 minutes');
+env.LIVE_FLIGHTS_ENABLED='false';
 
 // Verified auth bridge: disabled by default, then enabled for an internally verified identity.
 let disabled=false;

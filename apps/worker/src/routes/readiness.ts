@@ -1,7 +1,7 @@
 import type { Env } from '../types.ts';
 import { json } from '../http.ts';
 
-const requiredTables=['trips','trip_items','journey_groups','traveler_booking_details','trip_contacts','trip_time_markers','trip_sync_cursors','sync_idempotency','manual_booking_idempotency','trip_health_runs'];
+const requiredTables=['trips','trip_items','journey_groups','traveler_booking_details','trip_contacts','trip_time_markers','trip_sync_cursors','sync_idempotency','manual_booking_idempotency','trip_health_runs','flight_live_status','flight_provider_cache','flight_provider_usage'];
 
 export async function readiness(request:Request,env:Env):Promise<Response>{
   const checks:{name:string;ok:boolean;detail?:string}[]=[];
