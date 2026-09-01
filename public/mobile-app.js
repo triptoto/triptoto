@@ -1902,6 +1902,22 @@
     );
     return Number.isFinite(count) && count >= 0 ? String(count) : "—";
   }
+  function tripDayCount(trip) {
+    if (!trip) return 0;
+    const start = val(trip, "starts_on"),
+      end = val(trip, "ends_on");
+    if (!start || !end) return 0;
+    const days =
+      Math.round(
+        (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) /
+          86400000,
+      ) + 1;
+    return Number.isFinite(days) && days > 0 ? days : 0;
+  }
+  function tripDurationLabel(trip) {
+    const days = tripDayCount(trip);
+    return days ? `${days} day${days === 1 ? "" : "s"}` : "";
+  }
   function localImageUrl(value) {
     const source = String(value || "");
     return source.startsWith("/") || source.startsWith("data:image/")
@@ -3929,7 +3945,7 @@
           return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
         });
       if (!trips.length) return "";
-      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => `<button class="trip-row ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small></span>${icon("chevron", 18, "chevron")}</button>`).join("")}</div></section>`;
+      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); return `<button class="trip-row ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small></span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
     }).join("");
     const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "past" ? "past" : "upcoming"} trips</h1><p>${filter === "past" ? "Completed trips will appear here." : "Trips you have coming up will appear here."}</p></section>`;
     return page(pageTitle, body);

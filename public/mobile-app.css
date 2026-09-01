@@ -916,7 +916,7 @@ html.keyboard-open .form-save-bar{display:none}
 .traveler-pills{display:flex;flex-wrap:wrap;gap:7px}.traveler-pill input{position:absolute;opacity:0}.traveler-pill span{display:inline-flex;align-items:center;min-height:var(--button-compact-height);padding:0 12px;border:1px solid var(--line-strong);border-radius:999px;background:#fff;font-size:12px}.traveler-pill input:checked+span{border-color:var(--indigo);background:var(--blue-soft);color:var(--indigo)}
 .document-file-picker{display:flex;align-items:center;gap:12px;min-height:var(--button-row-height);padding:11px 13px;border:1px dashed var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--indigo)}.document-file-picker>span{display:grid;gap:3px}.document-file-picker small,.document-file-meta,.document-verify-state{color:var(--muted);font-size:12px}.document-file-meta,.document-verify-state{margin-top:6px}
 
-.sheet-open body{overflow:hidden}.sheet-backdrop{position:fixed;inset:0;z-index:70;background:rgba(17,18,21,.34);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.sheet-open body{overflow:hidden}.sheet-backdrop{position:fixed;inset:0;z-index:70;background:rgba(6,10,16,.55);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .bottom-sheet{position:fixed;left:50%;bottom:0;z-index:71;width:min(100%,var(--app-width));max-height:min(82dvh,760px);padding:8px 20px calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);border-radius:26px 26px 0 0;background:var(--surface);box-shadow:0 -14px 36px rgba(17,18,21,.14);overflow:hidden}
 .sheet-handle{width:38px;height:4px;margin:0 auto 6px;border-radius:999px;background:var(--line)}.sheet-title-row{display:flex;align-items:center;justify-content:space-between;min-height:var(--button-primary-height)}.sheet-title-row h2{margin:0;font-size:20px;letter-spacing:-.035em}.sheet-scroll{max-height:calc(min(82dvh,760px) - 76px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}.sheet-options-group{display:grid}.sheet-option{grid-template-columns:44px minmax(0,1fr) 24px}.sheet-option>span:nth-child(2){display:grid;gap:3px}.sheet-option small{color:var(--muted);font-size:12px}.sheet-option>span:nth-child(2) strong,.sheet-option>span:nth-child(2) small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.manual-v2-options{grid-template-columns:1fr 1fr;gap:0 16px}.first-run-how-list{display:grid;gap:0;margin:0;padding:0;list-style:none}.first-run-how-list li{display:grid;grid-template-columns:28px 40px 1fr;align-items:center;gap:10px;min-height:var(--button-row-height);border-bottom:1px solid var(--line)}.first-run-how-list__number{color:var(--muted);font-size:12px}.first-run-how-list__icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--blue-soft);color:var(--icon)}.first-run-how-done{margin-top:16px}
 .bottom-sheet--date-range{max-height:min(88dvh,760px)}.range-picker{padding:2px 0}.range-picker__summary{display:grid;gap:4px;min-height:52px;padding:10px 12px;border-radius:12px;background:var(--blue-soft)}.range-picker__summary small{color:var(--indigo);font-size:12px;font-weight:600;text-transform:uppercase}.range-picker__summary strong{font-size:16px}.range-month{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:10px 0 4px;text-align:center}.range-month strong{font-size:16px}.range-weekdays,.range-days{display:grid;grid-template-columns:repeat(7,1fr)}.range-weekdays span{display:grid;place-items:center;height:28px;color:var(--muted);font-size:12px;font-weight:600}.range-day{position:relative;display:grid;place-items:center;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:var(--navy);font-size:14px}.range-day span{position:relative;z-index:2;display:grid;place-items:center;width:36px;height:36px;border-radius:50%}.range-day.is-outside{color:var(--muted-soft)}.range-day.is-between{background:var(--blue-soft)}.range-day.is-start,.range-day.is-end{color:#fff}.range-day.is-start span,.range-day.is-end span{background:var(--indigo)}.range-picker__apply{margin-top:12px}
@@ -927,7 +927,7 @@ html.keyboard-open .form-save-bar{display:none}
 .loading-screen{display:grid;place-items:center;min-height:100dvh;background:var(--paper)}.loading-mark{font-size:28px;font-weight:700;letter-spacing:-.05em}.loading-mark span{color:var(--yellow)}
 .skeleton-appbar,.skeleton-heading,.skeleton-list-row,.skeleton-date,.skeleton-detail-hero,.skeleton-home-pass,.skeleton-profile{background:var(--surface)}.skeleton-appbar{height:var(--header-h);border-bottom:1px solid var(--line)}.skeleton-heading{width:46%;height:28px;margin:24px 20px;border-radius:8px}.skeleton-list{padding:0 20px}.skeleton-list-row{height:64px;margin-bottom:1px;border-radius:8px}
 .driver-screen{min-height:100dvh;padding:calc(18px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));background:var(--navy);color:#fff}.driver-top{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;text-align:center}.driver-label{display:flex;align-items:center;gap:12px;margin-top:70px;color:var(--icon)}.driver-name{margin:28px 0 8px;font-size:40px;line-height:.95;letter-spacing:-.055em}.driver-local{color:var(--icon);font-size:28px}.driver-rule{height:1px;margin:28px 0;background:rgba(255,255,255,.22)}.driver-address{display:flex;align-items:flex-start;gap:12px;font-size:20px;line-height:1.35}.driver-cta{position:absolute;right:20px;bottom:calc(24px + env(safe-area-inset-bottom));left:20px}.driver-cta .primary-cta{background:#fff;color:var(--ink)}
-.discard-dialog-backdrop{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(17,18,21,.38)}.discard-dialog{width:min(100%,350px);padding:20px;border-radius:22px;background:#fff}.discard-dialog h2{margin:0 0 6px}.discard-dialog p{color:var(--muted)}.discard-dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.discard-dialog-actions .mobile-primary-action,.discard-dialog-actions .mobile-secondary-action{min-height:var(--button-secondary-height);margin:0;border-radius:12px}
+.discard-dialog-backdrop{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(6,10,16,.58)}.discard-dialog{width:min(100%,350px);padding:20px;border-radius:22px;background:var(--card)}.discard-dialog h2{margin:0 0 6px}.discard-dialog p{color:var(--muted)}.discard-dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.discard-dialog-actions .mobile-primary-action,.discard-dialog-actions .mobile-secondary-action{min-height:var(--button-secondary-height);margin:0;border-radius:12px}
 
 @media(max-width:374px){
   .mobile-page,.focused-page,.content,.timeline-page{padding-inline:16px}
@@ -1480,6 +1480,7 @@ html.theme-harbor .journey-event--active .journey-marker{color:var(--accent) !im
 /* ---- Bottom sheets — flat & compact (no cards) -----------------------
    Matches the app's flat editorial style: bare glyphs, hairline dividers,
    tightened rows. */
+html.theme-harbor .bottom-sheet{background:var(--paper)}
 html.theme-harbor .bottom-sheet .sheet-title-row h2{font-weight:700;letter-spacing:-.035em}
 html.theme-harbor .bottom-sheet .sheet-option{min-height:0;padding:9px 0;gap:12px}
 html.theme-harbor .bottom-sheet .sheet-option strong{font-weight:600}
@@ -1566,6 +1567,7 @@ html.theme-harbor .sheet-note{text-align:center;color:var(--muted-soft);font-siz
 .dark-detail .booking-documents{color:#fff}.dark-detail .booking-documents>h2{color:#fff}.dark-detail .booking-document-row{border-color:rgba(255,255,255,.14)}.dark-detail .booking-document-row__open{color:#fff}.dark-detail .booking-document-row__open small{color:rgba(255,255,255,.68)}
 
 .booking-email-address{display:grid;gap:5px;margin:0 0 16px;padding:18px;border-radius:16px;background:var(--ink-strong);color:#fff}
+html.theme-harbor .booking-email-address,html.theme-slate .booking-email-address{background:var(--chrome)}
 .booking-email-address small{color:rgba(255,255,255,.66);font-size:12px;font-weight:650}
 .booking-email-address strong{font-size:24px;letter-spacing:-.035em}
 .booking-email-address p{margin:3px 0 0;color:rgba(255,255,255,.75);font-size:13px;line-height:1.42}
@@ -1833,34 +1835,27 @@ html.theme-slate .welcome-thread .first-run-google-preview,
   .welcome-thread .welcome-v2__footer{min-height:22px}
 }
 /* Notifications sheet: trip change feed (imports, stops, time markers, docs) + forwarded-booking reviews */
-.notif-list{display:flex;flex-direction:column;padding:2px 0 4px}
-.notif-item{display:flex;align-items:flex-start;gap:14px;width:100%;padding:15px 6px;border:0;border-radius:0;background:transparent;color:var(--ink);text-align:left;font:inherit}
-.notif-item+.notif-item{border-top:1px solid rgba(0,0,0,.07)}
+.notif-list{display:flex;flex-direction:column;gap:4px;padding:0}
+.notif-item{display:flex;align-items:flex-start;gap:11px;width:100%;padding:11px 4px;border:0;border-radius:12px;background:transparent;color:var(--ink);text-align:left;font:inherit}
 button.notif-item{cursor:pointer;transition:background .16s ease}
-button.notif-item:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
-button.notif-item:active{background:color-mix(in srgb,var(--ink) 7%,transparent)}
-button.notif-item:focus-visible{outline:3px solid var(--accent);outline-offset:-2px;border-radius:10px}
-.notif-item__icon{flex:0 0 auto;width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;border-radius:13px;background:rgba(0,0,0,.05);color:var(--muted)}
-.notif-item.is-unread .notif-item__icon{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
-.notif-item__copy{display:flex;flex-direction:column;gap:3px;flex:1 1 auto;min-width:0;padding-top:1px}
-.notif-item__copy strong{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:650;line-height:1.25;color:var(--ink)}
-.notif-item.is-unread .notif-item__copy strong{font-weight:750}
-.notif-item__dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--accent)}
-.notif-item__desc{font-size:13px;line-height:1.4;color:var(--muted)}
-.notif-item__copy small{font-size:12px;color:var(--muted-soft);font-variant-numeric:tabular-nums}
-.notif-item__chevron{flex:0 0 auto;align-self:center;color:var(--muted-soft)}
-.notif-item--warning .notif-item__icon{background:rgba(196,120,0,.12);color:#b5730a}
-.notif-item--danger .notif-item__icon{background:rgba(199,40,50,.12);color:#c72832}
-.notif-item--good .notif-item__icon{background:rgba(22,130,74,.12);color:#16824a}
+button.notif-item:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+button.notif-item:active{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px}
+.notif-item__icon{flex:0 0 22px;display:inline-flex;align-items:center;justify-content:center;color:var(--accent);opacity:.8;margin-top:1px}
+.notif-item.is-unread .notif-item__icon{opacity:1}
+.notif-item__copy{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
+.notif-item__copy strong{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:650;line-height:1.25;color:var(--ink)}
+.notif-item.is-unread .notif-item__copy strong{font-weight:750;color:var(--accent)}
+.notif-item__dot{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.notif-item__desc{font-size:12.5px;line-height:1.38;color:var(--muted)}
+.notif-item__copy small{font-size:11.5px;color:var(--muted-soft);font-variant-numeric:tabular-nums;margin-top:1px}
+.notif-item__chevron{flex:0 0 auto;align-self:center;color:var(--accent);opacity:.5}
+.notif-item--warning .notif-item__icon{color:var(--amber)}
+.notif-item--danger .notif-item__icon{color:var(--red)}
+.notif-item--good .notif-item__icon{color:var(--green)}
 .notif-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:26px 16px 30px;color:var(--muted)}
 .notif-empty h3{margin:6px 0 0;font-size:15px;color:var(--ink)}
 .notif-empty p{margin:0;font-size:13px;max-width:240px;line-height:1.45}
-html.theme-harbor .notif-item{background:transparent}
-html.theme-harbor .notif-item+.notif-item{border-top-color:rgba(255,255,255,.10)}
-html.theme-harbor .notif-item__icon{background:rgba(255,255,255,.07)}
-html.theme-harbor button.notif-item:hover{background:rgba(255,255,255,.05)}
-html.theme-harbor button.notif-item:active{background:rgba(255,255,255,.08)}
-html.theme-harbor .notif-item.is-unread .notif-item__icon{background:color-mix(in srgb,var(--accent) 26%,transparent);color:#fff}
 
 /* Live flight status is deliberately separate from immutable booking facts. */
 .live-flight-strip{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 4px;padding:8px 10px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.06);color:#fff;font-size:11px}
