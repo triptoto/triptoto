@@ -90,6 +90,12 @@ const buttonOptions = auth.buildButtonOptions(
   "https://tripto.to",
 );
 assert.equal(buttonOptions.type, "standard");
+assert.equal(buttonOptions.theme, "outline");
+assert.equal(buttonOptions.size, "large");
+assert.equal(buttonOptions.text, "continue_with");
+assert.equal(buttonOptions.shape, "rectangular");
+assert.equal(buttonOptions.logo_alignment, "left");
+assert.equal(buttonOptions.width, "400");
 assert.equal(buttonOptions.locale, "en");
 assert.equal("state" in buttonOptions, false);
 

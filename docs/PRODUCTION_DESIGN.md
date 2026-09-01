@@ -20,7 +20,9 @@ The app is mobile-first from 360px through 430px and remains centered at a maxim
 - Verified success text: `#1B704B`
 - Notification badge: `#B72B35` with white text
 
-The Welcome screen is the single intentional exception to the authenticated canvas: it uses one uninterrupted bright coral `#FF6B6B` background from edge to edge. The journey artwork is blended into that canvas and must not appear as a separate dark card or second background. This is part of the same production design, not a selectable theme.
+The Welcome screen is the single intentional exception to the authenticated canvas: it uses one uninterrupted bright brand background `#CB2957` from edge to edge with white typography. The journey is an editable local SVG route (`welcome-thread-line-v1.svg`) with three independently positioned HTML icon markers; it must not appear as a separate card or second background. This is part of the same production design, not a selectable theme.
+
+Welcome typography, artwork, spacing, and action heights scale against both viewport width and available viewport height. The layout uses `100svh`, remains no-scroll with mobile browser chrome present, and retains 44px minimum interactive targets.
 
 ## Typography and controls
 

@@ -42,11 +42,11 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-production-single-v55'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, or Google-auth shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-welcome-passport-v3-responsive'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, or Google-auth shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['One thread','whole trip.','Add bookings.','We keep the journey clear.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
-assert(app.includes('welcome-journey-ink-v2.png')&&app.includes('Example journey from departure to stay to what matters next'),'Welcome journey preview is incomplete');
-assert(css.includes('background:#ff6b6b;background-image:none')&&css.includes('background:#ff6b6b;color:#111217')&&css.includes('mix-blend-mode:multiply'),'Welcome must use one uninterrupted bright background');
+assert(app.includes('welcome-thread-line-v1.svg')&&app.includes('welcome-thread-stop--depart')&&app.includes('welcome-thread-stop--stay')&&app.includes('welcome-thread-stop--next')&&app.includes('Example journey from departure to stay to what matters next'),'Welcome journey preview is incomplete');
+assert(css.includes('background:#cb2957;background-image:none')&&css.includes('background:#cb2957;color:#fff')&&css.includes('.welcome-thread-stop--next'),'Welcome must use the selected editable Passport Cover visual');
 assert(!welcome.includes('bottomNav(')&&app.includes('(state.account?.mode || "guest") !== "account"')&&app.includes('state.trips.length === 0'),'Welcome gate/navigation invalid');
 assert(app.includes('["empty", "empty-offline", "empty-reduced-motion"].includes(QA_STATE)'),'isolated first-run visual QA state missing');
 assert(/\/google-auth-client\.js\?v=google-auth-ios-v\d+/.test(index)&&index.indexOf('/google-auth-client.js')<index.indexOf('/mobile-app.js')&&app.includes('/api/v1/auth/google/challenge')&&app.includes('/api/v1/auth/google')&&app.includes('/api/v1/auth/google/exchange'),'Google sign-in or secure iOS redirect handoff wiring missing');
@@ -94,7 +94,8 @@ assert(!index.includes('/airport-timezones.js')&&app.includes('ensureAirportTime
 assert(!index.match(/https?:\/\/(?!fonts\.googleapis\.com|fonts\.gstatic\.com)[^"']+\.(?:css|woff2?)/i),'unexpected external font/style introduced');
 assert(index.includes('/vendor/phosphor/phosphor.css')&&sw.includes('/vendor/phosphor/Phosphor.woff2'),'local icon library missing');
 assert(!app.includes('const ICONS')&&app.includes('const INLINE_SVG = Object.freeze({')&&app.includes("edit: '<path")&&app.includes("trash: '<path")&&(app.match(/<svg/g)||[]).length===1,'local icon system changed or expanded beyond the approved edit/trash fallbacks');
-assert(css.includes('.first-run-screen.welcome-thread')&&css.includes('html.first-run-open .welcome-thread .first-run-title__rose')&&css.includes('linear-gradient('),'approved production Welcome visual system missing');
+assert(css.includes('.first-run-screen.welcome-thread')&&css.includes('height:100svh')&&css.includes('--welcome-title:clamp(40px,min(13vw,7.4svh),56px)')&&css.includes('--welcome-art-height:clamp(118px,min(50vw,23svh),214px)')&&css.includes('@media(max-height:620px)')&&css.includes('max-width:400px'),'approved height-aware responsive Welcome visual system missing');
+assert(!css.includes('#google-signin-button>div{max-width:100%!important;border-radius')&&!css.includes('#google-signin-button>div{max-width:100%!important;overflow:hidden'),'Google Identity button internals must not be cropped or restyled');
 const sandbox={};runInNewContext(rules,sandbox);const validate=sandbox.TriptoTripRules?.validateManualTrip;
 assert(typeof validate==='function','trip validation unavailable');
 assert(validate({title:'Rome',startsOn:'2026-09-03',endsOn:'2026-09-02'}).valid===false,'end before start accepted');

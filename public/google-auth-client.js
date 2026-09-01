@@ -66,12 +66,12 @@
   function buildButtonOptions(challenge, navigatorLike, origin) {
     const options = {
       type: "standard",
-      theme: "filled_black",
+      theme: "outline",
       size: "large",
       text: "continue_with",
-      shape: "pill",
-      logo_alignment: "center",
-      width: 300,
+      shape: "rectangular",
+      logo_alignment: "left",
+      width: "400",
       locale: "en",
     };
     if (isAppleMobileWebKit(navigatorLike))

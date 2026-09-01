@@ -234,6 +234,13 @@ h1,h2{font-weight:700;letter-spacing:-.03em}
 
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid rgba(17,18,21,.32);outline-offset:3px}
 button{-webkit-tap-highlight-color:transparent}
+/* Immediate, reliable taps: disable the iOS double-tap-zoom gesture (and its
+   ~300ms click delay) on every interactive control. Without this a single tap
+   is sometimes swallowed while Safari waits for a possible second tap, so the
+   user has to press multiple times. `manipulation` still allows scroll/pan and
+   pinch-zoom of the page. (2026-09-01, per user "finger touch sometimes not
+   working, need press many times".) */
+button,a,label,input,select,textarea,[data-action],[data-screen],[role="button"],.cl-row,.cl-row__toggle,.cl-row__act,.nav-item,.nav-add,.trip-row,.simple-row,.checklist-row{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button:active{transform:scale(.985)}
 
 /* Chrome */
@@ -305,71 +312,10 @@ button:active{transform:scale(.985)}
 .mobile-alert{display:flex;align-items:flex-start;gap:10px;margin:12px 20px 0;padding:12px 14px;border-radius:var(--radius-sm);background:var(--amber-soft);color:var(--muted);font-size:14px;line-height:1.35}
 .mobile-alert--offline{background:var(--blue-soft);color:var(--indigo)}
 
-/* Welcome: selected Quiet Journey direction */
-html.first-run-open,html.first-run-open body{background:#0a1020}
-html.first-run-open .phone-app{background:#0a1020}
-.first-run-screen{min-height:100svh;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:calc(20px + env(safe-area-inset-top)) 26px calc(24px + env(safe-area-inset-bottom));background:var(--paper);display:flex;flex-direction:column;position:relative}
-.first-run-sky{display:none}
-.first-run-brand-row,.first-run-main{position:relative;z-index:1}
-.first-run-brand-row{display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;min-height:42px}
-.first-run-brand{font-size:28px;line-height:1}
-.first-run-main{display:flex;flex-direction:column;gap:14px;min-height:0;padding-top:18px}
-.first-run-hero{align-self:stretch}
-.first-run-kicker{display:inline-flex;align-items:center;gap:9px;margin-bottom:10px;color:var(--indigo);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.first-run-kicker span{color:var(--ink)}
-.first-run-kicker__sep{color:var(--line);font-weight:500}
-.first-run-kicker::before{content:"";width:2px;height:20px;background:var(--indigo);border-radius:2px}
-.first-run-hero h1{margin:0;max-width:350px;color:var(--navy);font-size:42px;font-weight:800;line-height:.92;letter-spacing:-.05em}
-.first-run-title__muted{color:#adb5bd}
-.first-run-hero p{max-width:340px;margin:15px 0 0;color:var(--muted);font-size:20px;line-height:1.4}
-.first-run-preview{position:relative;align-self:stretch;width:auto;max-width:none;margin:16px -26px 10px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
-.first-run-preview img{display:block;width:100%;height:auto}
-.first-run-preview__event{position:relative;display:grid;grid-template-columns:52px 1fr;align-items:center;gap:14px;min-height:84px}
-.first-run-preview__marker{position:relative;z-index:1;display:grid;place-items:center;width:46px;height:46px;border:0;border-radius:50%;background:var(--surface);color:var(--ink)}
-.first-run-preview__event--fade{opacity:.32}
-.first-run-preview__copy{display:grid;gap:2px;min-width:0}
-.first-run-preview__copy small{color:var(--ink);font-size:14px;font-weight:400}
-.first-run-preview__copy strong{color:var(--ink);font-size:16px;font-weight:600;line-height:1.15;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.first-run-preview__copy span{color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.first-run-actions{position:relative;display:grid;gap:10px;margin-top:6px;padding-top:10px}
-.first-run-actions__fade{position:absolute;left:0;right:0;bottom:100%;height:44px;pointer-events:none;background:linear-gradient(to top,var(--paper),transparent)}
-.first-run-google{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:0;background:transparent}
-.first-run-google-preview{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:320px;min-height:52px;border:0;border-radius:999px;background:#131314;color:#fff;font-size:16px;font-weight:500;letter-spacing:-.01em;box-shadow:0 10px 24px -12px rgba(17,18,21,.5),0 2px 6px -3px rgba(17,18,21,.3);transition:transform .16s var(--ease),box-shadow .16s var(--ease)}
-.first-run-google-preview:active{transform:translateY(1px) scale(.99)}
-.first-run-google-preview img{width:20px;height:20px;padding:3px;border-radius:50%;background:#fff}
+/* Google Identity owns its rendered button visuals. The host only provides a
+   responsive layout box; never crop, recolor or decorate the SDK child. */
 #google-signin-button{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px}
-#google-signin-button>div{max-width:100%!important;border-radius:999px!important;overflow:hidden;box-shadow:0 0 0 1.5px rgba(245,174,65,.9),0 16px 34px -16px rgba(245,174,65,.42),0 4px 12px -6px rgba(0,0,0,.5)!important}
-.signin-error{margin:0;color:var(--red);font-size:12px;text-align:center}
-.first-run-secondary{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:0;background:transparent;color:var(--indigo);font-weight:600}
-.welcome-v2__footer{display:flex;align-items:center;justify-content:center;gap:12px;min-height:32px;font-size:12px;color:var(--muted)}
-.welcome-v2__footer a{display:inline-flex;align-items:center;min-height:32px;text-decoration:none}
-.welcome-v2__footer>span{width:3px;height:3px;border-radius:50%;background:var(--line-strong)}
-/* Welcome page: black theme */
-.first-run-screen{background:#0a1020;color:#fff}
-.first-run-screen::before{content:"";position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--app-width);z-index:0;background:#0a1020}
-.first-run-screen::after{content:"";position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--app-width);z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,10,20,.72) 0%,rgba(6,10,20,.30) 24%,rgba(6,10,20,.05) 46%,rgba(6,10,20,.16) 62%,rgba(6,10,20,.60) 82%,rgba(6,10,20,.95) 100%)}
-.first-run-actions__fade{display:none}
-.first-run-brand{text-shadow:0 1px 14px rgba(0,0,0,.5)}
-.first-run-screen .first-run-brand,.first-run-screen .first-run-brand span{color:#fff}
-.first-run-screen .first-run-kicker{color:#f5ae41;text-shadow:0 1px 10px rgba(0,0,0,.4)}
-.first-run-screen .first-run-kicker span{color:#fff}
-.first-run-screen .first-run-kicker::before{background:#f5ae41;box-shadow:0 0 12px rgba(245,174,65,.7)}
-.first-run-screen .first-run-hero h1{color:#fff;text-shadow:0 2px 28px rgba(0,0,0,.5),0 1px 3px rgba(0,0,0,.35)}
-.first-run-screen .first-run-title__muted{color:#f5ae41}
-.first-run-screen .first-run-hero p{color:rgba(255,255,255,.82);text-shadow:0 1px 12px rgba(0,0,0,.45)}
-.first-run-screen .first-run-secondary{color:#fff}
-.first-run-screen .first-run-actions__fade{background:linear-gradient(to top,var(--chrome),transparent)}
-.first-run-screen .welcome-v2__footer{color:rgba(255,255,255,.6)}
-.first-run-screen .welcome-v2__footer>span{background:rgba(255,255,255,.34)}
-.first-run-screen .first-run-google-preview{background:#fff;color:#1a1a1c;box-shadow:0 12px 26px -14px rgba(0,0,0,.6)}
-.first-run-screen .first-run-google-preview img{background:transparent;padding:0}
-.first-run-screen .first-run-preview::before{top:46px;bottom:46px;left:22px;width:2px;background:linear-gradient(180deg,#f5ae41,rgba(245,174,65,.15));border-radius:2px;box-shadow:0 0 14px rgba(245,174,65,.35)}
-.first-run-screen .first-run-preview__event{background:transparent}
-.first-run-screen .first-run-preview__marker{background:linear-gradient(145deg,#f5ae41,#e0912a);color:#20304c;box-shadow:0 8px 20px -8px rgba(245,174,65,.6),0 0 0 5px rgba(245,174,65,.12)}
-.first-run-screen .first-run-preview__event--fade .first-run-preview__marker{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}
-.first-run-screen .first-run-preview__copy small{color:rgba(255,255,255,.72);text-shadow:0 1px 8px rgba(0,0,0,.6)}
-.first-run-screen .first-run-preview__copy strong{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.6)}
-.first-run-screen .first-run-preview__copy span{color:rgba(255,255,255,.78);text-shadow:0 1px 8px rgba(0,0,0,.55)}
+#google-signin-button>div{max-width:100%!important}
 
 /* Timeline */
 .trip-v2-header{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;min-height:var(--header-h);padding:0 16px 0 20px}
@@ -840,7 +786,7 @@ html.first-run-open .phone-app{background:#0a1020}
 /* Trips, Bookings, Account */
 .segmented-control{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:20px;padding:3px;border-radius:12px;background:var(--surface)}.segmented-control button{min-height:var(--button-compact-height);padding:0 7px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;font-weight:600}.segmented-control button.is-active{background:#fff;color:var(--navy)}
 .travel-state{justify-self:start;color:var(--green);font-size:12px;font-style:normal;font-weight:600}.travel-state--attention{color:var(--amber)}
-.account-section{padding-bottom:8px}.account-card{padding:8px 0 20px;border-bottom:1px solid var(--line)}.account-profile{display:flex;align-items:center;gap:13px}.account-profile__id{flex:1 1 auto;min-width:0}.account-profile__id strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.account-signout-btn{flex:0 0 auto;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600;box-shadow:none}.avatar,.traveler-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;font-size:20px;font-weight:600}.account-profile strong{font-size:20px}.account-meta{margin-top:3px;color:var(--muted);font-size:12px}.account-signin{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface)}.account-signin h2{margin:0 0 5px;font-size:20px}.account-signin p{color:var(--muted);font-size:14px;line-height:1.4}.account-signin--active{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 12px 16px;border-color:rgba(255,255,255,.1);background:#313133;color:#fff}.account-signin--active .account-signin__label{display:flex;align-items:center;gap:9px;min-width:0}.account-signin--active .account-signin__label strong{color:#fff;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.account-signin--active .account-signin__out{flex:0 0 auto;width:auto;min-height:44px;margin:0;padding:0 20px;border:0;border-radius:999px;background:#fff;color:#1a1a1c;box-shadow:none}.simple-row--danger{color:var(--red)}.app-version{text-align:center;margin:28px 0 0;color:var(--muted-soft);font-size:12px}
+.account-section{padding-bottom:8px}.account-card{padding:8px 0 20px;border-bottom:1px solid var(--line)}.account-profile{display:flex;align-items:center;gap:13px}.account-profile__id{flex:1 1 auto;min-width:0}.account-profile__id strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.account-signout-btn{flex:0 0 auto;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600;box-shadow:none}.avatar,.traveler-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;font-size:20px;font-weight:600}.account-profile strong{font-size:20px}.account-meta{margin-top:3px;color:var(--muted);font-size:12px}.account-signin{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface)}.account-signin h2{margin:0 0 5px;font-size:20px}.account-signin p{color:var(--muted);font-size:14px;line-height:1.4}.account-signin--active{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 12px 16px;border-color:rgba(255,255,255,.1);background:#111217;color:#fff}.account-signin--active .account-signin__label{display:flex;align-items:center;gap:9px;min-width:0}.account-signin--active .account-signin__label strong{color:#fff;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.account-signin--active .account-signin__out{flex:0 0 auto;width:auto;min-height:44px;margin:0;padding:0 20px;border:0;border-radius:999px;background:#fff;color:#111217;box-shadow:none}.simple-row--danger{color:var(--red)}.app-version{text-align:center;margin:28px 0 0;color:var(--muted-soft);font-size:12px}
 .sheet-note{text-align:center;margin:16px 0 0;color:var(--muted-soft);font-size:12px}
 /* Big tripto.to wordmark anchoring the foot of the Account screen. Pushed to
    the bottom (just above the nav) so there's no dead space below it. */
@@ -906,10 +852,6 @@ html.keyboard-open .form-save-bar{display:none}
 
 @media(max-width:374px){
   .mobile-page,.focused-page,.content,.timeline-page{padding-inline:16px}
-  .first-run-screen{padding-inline:20px}
-  .first-run-hero h1{font-size:40px}
-  .first-run-main{gap:8px;padding-top:10px}
-  .first-run-preview__event{min-height:76px}
   .flight-pass__inner{padding:16px}
   .flight-pass__route{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
   .flight-pass__airport-code{font-size:40px}
@@ -919,13 +861,8 @@ html.keyboard-open .form-save-bar{display:none}
 }
 
 @media(max-height:820px){
-  .first-run-screen{padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:calc(8px + env(safe-area-inset-bottom))}
-  .first-run-brand-row{min-height:34px}.first-run-brand{font-size:28px}
-  .first-run-main{grid-template-rows:none;gap:9px;padding-top:10px}
-  .first-run-preview__event{min-height:68px}
-  .first-run-kicker{margin-bottom:7px}.first-run-hero h1{font-size:39px}.first-run-hero p{margin-top:10px;font-size:16px}
-  .first-run-preview{margin-bottom:4px}
-  .first-run-google{min-height:52px}.first-run-secondary{min-height:42px}.welcome-v2__footer{min-height:24px}
+  /* Welcome sizing is handled by height-aware variables in its single
+     production block below. */
 }
 
 @media(min-width:431px){.phone-app{box-shadow:0 0 0 1px var(--line)}}
@@ -1159,7 +1096,7 @@ html .account-signin__label .ph{color:var(--accent)}
 html .form-field input:focus,html .form-field select:focus,html .form-field textarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--blue-soft)}
 /* Protect content that is meant to stay dark. The document viewer keeps a dark
    chrome bar over its dark media stage. */
-html .doc-viewer__bar{background:#1b1c1f;border-bottom-color:rgba(255,255,255,.12)}
+html .doc-viewer__bar{background:#111217;border-bottom-color:rgba(255,255,255,.12)}
 /* The "dark-detail" booking/pass screens are now light (paper is white); the
    linked-document rows had hardcoded #fff text for the old dark hero. */
 html .dark-detail .booking-documents,html .dark-detail .booking-documents>h2,html .dark-detail .booking-document-row__open{color:var(--ink)}
@@ -1415,7 +1352,7 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 .doc-viewer__back{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;min-height:var(--button-compact-height);padding:0 14px 0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-size:14px;font-weight:600}
 .doc-viewer__title{flex:1 1 auto;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 .doc-viewer__ext{flex:0 0 auto;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;text-decoration:none}
-.doc-viewer__body{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:#1b1c1f;display:flex}
+.doc-viewer__body{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:#111217;display:flex}
 .doc-viewer__media{flex:1 1 auto;width:100%;height:100%;border:0}
 img.doc-viewer__media{object-fit:contain;align-self:center}
 .doc-viewer__fallback{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px 24px;text-align:center;color:#fff}
@@ -1503,7 +1440,7 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 .cl-section{display:flex;flex-direction:column;gap:8px}
 .cl-section>h2{margin:4px 2px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .cl-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--line)}
-.cl-row{display:flex;align-items:center;gap:2px;min-height:56px;padding:0 6px 0 4px;border-bottom:1px solid var(--line)}
+.cl-row{display:flex;align-items:center;gap:2px;min-height:56px;padding:0 6px 0 4px;border-bottom:0}
 .cl-row:last-child{border-bottom:0}
 .cl-row__toggle{flex:1 1 auto;display:flex;align-items:center;gap:12px;min-height:56px;min-width:0;padding:6px 8px;border:0;background:transparent;color:var(--ink);font-size:16px;text-align:left;cursor:pointer}
 .cl-check{flex:0 0 auto;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;border:2px solid var(--surface);background:transparent;color:transparent;transition:background .16s var(--ease),border-color .16s var(--ease)}
@@ -1561,117 +1498,79 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 .help-support p{margin:0 0 12px;font-size:14px;color:var(--muted)}
 .help-support__actions{display:flex;flex-direction:column;gap:10px}
 
-/* Approved Welcome — One thread through your whole trip.
-   Strictly scoped so the authenticated application remains unchanged. */
-html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#121a21}
+/* Selected Welcome option 5 — Passport Cover.
+   The authenticated app is intentionally untouched. Text, controls, markers,
+   icons and the route path remain independently editable HTML/CSS/SVG layers. */
+html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#cb2957;background-image:none}
 .first-run-screen.welcome-thread{
-  height:100svh;overflow:hidden;
-  padding:calc(20px + env(safe-area-inset-top)) 24px calc(20px + env(safe-area-inset-bottom));
-  background:#0f1821;color:#f5f5f5;
+  --welcome-x:clamp(22px,7vw,32px);
+  --welcome-top:clamp(18px,min(8vw,5.4svh),42px);
+  --welcome-brand:clamp(18px,4.9vw,21px);
+  --welcome-title:clamp(40px,min(13vw,7.4svh),56px);
+  --welcome-subtitle:clamp(13px,min(3.7vw,2.3svh),16px);
+  --welcome-art-height:clamp(118px,min(50vw,23svh),214px);
+  --welcome-google-height:clamp(48px,min(13vw,6.8svh),54px);
+  --welcome-tour-height:clamp(48px,min(13vw,6.8svh),54px);
+  position:relative;display:flex;flex-direction:column;height:100svh;min-height:0;overflow:hidden;
+  padding:max(var(--welcome-top),env(safe-area-inset-top)) var(--welcome-x) max(8px,env(safe-area-inset-bottom));
+  background:#cb2957;color:#fff;
 }
-.first-run-screen.welcome-thread::before{background:#0f1821}
-.first-run-screen.welcome-thread::after{display:none}
-.welcome-thread .first-run-brand-row{justify-content:center;min-height:42px}
+.first-run-screen.welcome-thread::before,.first-run-screen.welcome-thread::after{display:none}
+.welcome-thread .first-run-brand-row,.welcome-thread .first-run-main{position:relative;z-index:1}
+.welcome-thread .first-run-brand-row{display:flex;align-items:center;justify-content:flex-start;flex:0 0 auto;min-height:clamp(20px,5.5vw,24px)}
 .welcome-thread .first-run-brand{
-  color:#f5f5f5;font-size:21px;font-weight:500;letter-spacing:-.03em;
-  line-height:1;text-shadow:0 8px 24px rgba(0,0,0,.22)
+  color:#fff;font-size:var(--welcome-brand);font-weight:700;line-height:1;letter-spacing:-.055em;text-shadow:none
 }
-html.first-run-open .welcome-thread .first-run-brand__name{color:#f5f5f5}
-.welcome-thread .first-run-offline{position:absolute;right:0;top:0}
-.welcome-thread .first-run-main{gap:8px;padding-top:10px;min-height:0;flex:1}
-.welcome-thread .first-run-hero{text-align:center}
+html.first-run-open .welcome-thread .first-run-brand__name,
+html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first-run-brand__dot,.first-run-brand__to){color:#fff}
+.welcome-thread .first-run-offline{position:absolute;right:0;top:0;color:#fff}
+.welcome-thread .first-run-main{display:flex;flex:1;flex-direction:column;gap:0;min-height:0;padding-top:clamp(8px,min(3vw,1.8svh),13px)}
+.welcome-thread .first-run-hero{flex:0 0 auto;text-align:left}
 .welcome-thread .first-run-hero h1{
-  max-width:none;margin:0;color:#f5f5f5;font-size:34px;
-  font-weight:700;line-height:.98;letter-spacing:-.052em;text-shadow:0 10px 30px rgba(0,0,0,.20)
+  max-width:none;margin:0;color:#fff;font-size:var(--welcome-title);font-weight:700;
+  line-height:.92;letter-spacing:-.065em;text-shadow:none
 }
 .welcome-thread .first-run-title__line{display:block;white-space:nowrap}
-html.first-run-open .welcome-thread .first-run-title__sand{color:#d7b394}
-html.first-run-open .welcome-thread .first-run-title__rose{color:#e55d5b}
 .welcome-thread .first-run-hero p{
-  max-width:none;margin:12px 0 0;color:#9f9ea0;font-size:14px;line-height:1.3;text-shadow:none
+  max-width:none;margin:clamp(8px,min(3vw,1.8svh),13px) 0 0;color:#fff;font-size:var(--welcome-subtitle);font-weight:500;line-height:1.3;text-shadow:none
 }
-html.first-run-open .welcome-thread .first-run-hero p span{color:#d7b394}
 .welcome-thread .first-run-preview{
-  width:calc(100% + 48px);max-width:none;margin:12px -24px 0;padding:0;
-  background:#0f1821;line-height:0;flex:1 1 auto;min-height:0;display:grid;place-items:center
+  position:relative;display:block;flex:0 0 var(--welcome-art-height);width:calc(100% + (2 * var(--welcome-x)));height:var(--welcome-art-height);
+  min-height:0;max-height:none;margin:clamp(10px,min(4vw,2.2svh),18px) calc(-1 * var(--welcome-x)) 2px;padding:0;overflow:hidden;background:#cb2957;box-shadow:none;line-height:0
 }
-html.first-run-open .welcome-thread .first-run-preview::before{display:none;content:none}
-.welcome-thread .first-run-preview img{display:block;max-height:100%;max-width:100%;width:auto;height:auto;margin:0 auto;pointer-events:none;user-select:none}
-.welcome-thread .first-run-actions{gap:6px;margin-top:12px;padding:0}
-.welcome-thread .welcome-v2__footer{margin-top:12px}
-.welcome-thread .first-run-google{width:100%;min-height:52px}
+.welcome-thread .welcome-thread-path{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}
+.welcome-thread-stop{
+  position:absolute;display:grid;place-items:center;width:clamp(52px,min(16vw,8.8svh),68px);height:clamp(52px,min(16vw,8.8svh),68px);
+  border:3px solid #111217;border-radius:50%;background:#cb2957;color:#111217;line-height:1;transform:translate(-50%,-50%)
+}
+.welcome-thread-stop .ph,.welcome-thread-stop .ph-svg{color:#111217}
+.welcome-thread-stop--depart{left:32%;top:16%}
+.welcome-thread-stop--stay{left:57%;top:55%}
+.welcome-thread-stop--next{left:84%;top:82%}
+.welcome-thread .first-run-actions{display:grid;gap:clamp(8px,min(2.8vw,1.8svh),12px);margin:auto 0 0;padding:0;flex:0 0 auto}
+.welcome-thread .first-run-google{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--welcome-google-height);padding:0;background:transparent}
 .welcome-thread .first-run-google-preview{
-  width:min(240px,100%);min-height:44px;gap:10px;border:0;border-radius:24px;
-  background:#131314;color:#fff;font-size:15px;font-weight:500;letter-spacing:0;
-  box-shadow:0 1px 2px rgba(0,0,0,.30),0 1px 3px rgba(0,0,0,.15)
+  display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;min-height:var(--welcome-google-height);gap:10px;padding:0 16px;border:1px solid #747775;border-radius:8px;
+  background:#fff;color:#1f1f1f;font-family:Arial,sans-serif;font-size:14px;font-weight:600;letter-spacing:0;box-shadow:none
 }
-.welcome-thread .first-run-google-preview img{width:18px;height:18px;padding:2px;border-radius:50%;background:#fff}
-.welcome-thread #google-signin-button{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;padding:0}
-.welcome-thread #google-signin-button>div{box-shadow:0 0 0 1.5px rgba(229,93,91,.95),0 16px 34px -16px rgba(229,93,91,.45),0 4px 12px -6px rgba(0,0,0,.5)!important}
-.welcome-thread .signin-error{color:#e55d5b}
+.welcome-thread .first-run-google-preview img{width:18px;height:18px;padding:0;border-radius:0;background:#fff}
+.welcome-thread #google-signin-button{display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;min-height:var(--welcome-google-height);margin:0 auto;padding:0}
+.welcome-thread #google-signin-button>div{max-width:100%!important}
+.welcome-thread .signin-error{margin:0;color:#fff;font-size:12px;text-align:center}
 .welcome-thread .first-run-secondary{
-  gap:8px;min-height:44px;color:#d7b394;font-size:16px;font-weight:600
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:400px;min-height:var(--welcome-tour-height);margin:0 auto;padding:0 18px;border:2px solid #111217;border-radius:8px;
+  background:transparent;color:#fff;font-size:16px;font-weight:650
 }
-.welcome-thread .first-run-secondary .ph-svg,.welcome-thread .first-run-secondary .ph{color:#e55d5b}
-.welcome-thread .welcome-v2__footer{min-height:28px;color:#9f9ea0;font-size:12px}
-.welcome-thread .welcome-v2__footer>span{background:#7d8185}
-.welcome-thread .welcome-v2__footer a{color:inherit}
-.welcome-thread :is(button,a):focus-visible{outline:3px solid #d7b394;outline-offset:3px}
+.welcome-thread .first-run-secondary .ph-svg,.welcome-thread .first-run-secondary .ph{margin-left:auto;color:#fff}
+.welcome-thread .welcome-v2__footer{display:flex;align-items:center;justify-content:center;gap:12px;flex:0 0 auto;min-height:44px;margin:0;color:#fff;font-size:12px}
+.welcome-thread .welcome-v2__footer a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:inherit;text-decoration:none}
+.welcome-thread .welcome-v2__footer>span{width:3px;height:3px;border-radius:50%;background:#fff}
+.welcome-thread :is(button,a):focus-visible{outline:3px solid #111217;outline-offset:3px}
 
-
-/* Welcome uses one uninterrupted bright brand canvas. The journey artwork is
-   blended into that canvas so it never reads as a separate dark card. */
-html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#ff6b6b;background-image:none}
-html .first-run-screen.welcome-thread{background:#ff6b6b;color:#111217}
-html .first-run-screen.welcome-thread::before{background:#ff6b6b}
-html .first-run-screen.welcome-thread::after{display:none}
-html.first-run-open .welcome-thread .first-run-brand,html.first-run-open .welcome-thread .first-run-brand__name{color:#111217;text-shadow:none}
-html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first-run-brand__dot,.first-run-brand__to){color:#72152f}
-html .welcome-thread .first-run-hero h1{color:#111217;text-shadow:none}
-html.first-run-open .welcome-thread .first-run-title__sand{color:#111217}
-html.first-run-open .welcome-thread .first-run-title__rose{color:#72152f}
-html .welcome-thread .first-run-hero p{color:#3f2026;text-shadow:none}
-html.first-run-open .welcome-thread .first-run-hero p span{color:#3f2026}
-html .welcome-thread .first-run-preview{
-  width:100%;margin:14px 0 0;border-radius:0;overflow:hidden;
-  background:#ff6b6b;box-shadow:none
-}
-html .welcome-thread .first-run-preview img{
-  filter:invert(1) grayscale(1) contrast(2.4) brightness(1.35);
-  mix-blend-mode:multiply
-}
-html .welcome-thread .first-run-google-preview{background:#131314;color:#fff;border:0;box-shadow:0 1px 2px rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.14)}
-html .welcome-thread .first-run-google-preview img{background:#fff}
-html .welcome-thread #google-signin-button>div{box-shadow:0 0 0 1.5px rgba(203,41,87,.9),0 16px 34px -18px rgba(203,41,87,.4),0 4px 12px -8px rgba(0,0,0,.25)!important}
-html .welcome-thread .signin-error{color:#72152f}
-html .welcome-thread .first-run-secondary{color:#111217}
-html .welcome-thread .first-run-secondary .ph-svg,html .welcome-thread .first-run-secondary .ph{color:#111217}
-html .welcome-thread .welcome-v2__footer{color:#3f2026}
-html .welcome-thread .welcome-v2__footer a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
-html .welcome-thread .welcome-v2__footer>span{background:#72152f}
-html .welcome-thread :is(button,a):focus-visible{outline:3px solid #111217}
-
-@media(max-width:374px){
-  .first-run-screen.welcome-thread{padding-inline:20px}
-  .welcome-thread .first-run-main{gap:5px}
-  .welcome-thread .first-run-hero h1{font-size:32px}
-  .welcome-thread .first-run-hero p{margin-top:9px;font-size:14px}
-  .welcome-thread .first-run-preview{width:calc(100% + 40px);margin-inline:-20px}
-}
-
-@media(max-height:820px){
-  .first-run-screen.welcome-thread{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
-  .welcome-thread .first-run-brand-row{min-height:28px}
-  .welcome-thread .first-run-brand{font-size:20px}
-  .welcome-thread .first-run-main{gap:4px;padding-top:8px}
-  .welcome-thread .first-run-hero h1{font-size:32px}
-  .welcome-thread .first-run-hero p{margin-top:8px;font-size:14px}
-  .welcome-thread .first-run-preview{margin-top:8px}
-  .welcome-thread .first-run-actions{margin-top:12px}
-  .welcome-thread .first-run-google,.welcome-thread #google-signin-button{min-height:50px}
-  .welcome-thread .first-run-google-preview{min-height:50px}
-  .welcome-thread .first-run-secondary{min-height:44px}
-  .welcome-thread .welcome-v2__footer{min-height:22px}
+@media(max-height:620px){
+  .first-run-screen.welcome-thread{--welcome-title:clamp(36px,min(11.5vw,6.8svh),48px);--welcome-art-height:clamp(96px,min(44vw,20svh),150px);--welcome-top:clamp(12px,min(6vw,3svh),24px)}
+  .welcome-thread .first-run-hero p{margin-top:6px}
+  .welcome-thread .first-run-preview{margin-top:6px}
 }
 /* Notifications sheet: trip change feed (imports, stops, time markers, docs) + forwarded-booking reviews */
 .notif-list{display:flex;flex-direction:column;gap:4px;padding:0}
@@ -1810,3 +1709,64 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .trip-v2-actions .icon-button{width:44px;height:44px}
 .welcome-v2__footer a{padding-inline:4px}
 .fd-route__name{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.25}
+
+/* ==========================================================================
+   Full flat design (2026-09-01, per user: "no cards anymore, full flat").
+   Card/container surfaces blend into the page — no elevation, no boxed
+   border, no rounded card corners. Modals, bottom-sheets and form controls
+   are intentionally excluded so they stay visible/legible. Appended last so
+   it wins the cascade by source order. */
+:root{--shadow-card:none;--shadow-soft:none}
+.info-card,.booking-card,.account-card,.health-card,.recovery-card,.review-card,
+.next-action-card,.manual-route-card,.manual-route-card__field,.manual-route-card__line,
+.fd-card,.fd-card__head,.fd-list,
+.wx-hero,.wx-block,.weather-now,.weather-forecast,
+.esim-hero,.esim-features,.esim-steps,
+.help-quickstart,.help-support,.faq-list,
+.cl-list,.cl-progress,
+.health-summary,.offline-summary,.sync-summary,.essentials-summary,
+.manual-essentials,.manual-attachments,.manual-booking-form .form-more,
+.trip-map__day,.trip-map__row{
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+/* Remove ALL horizontal divider lines app-wide, incl. popups/sheets (2026-09-01,
+   per user "remove horizontal lines everywhere also in popup windows"). Zeroes
+   row separators, section underlines, list-container card outlines, and the
+   sticky header underline. Deliberately KEEPS: the bottom-nav grey border (user
+   asked for it), input/select/textarea box outlines, checkbox/toggle/chip
+   borders, trip-mark circles, avatars, the sheet drag-handle, and the dashed
+   flight route connector — none of which are divider lines. */
+/* 1) Flatten the still-boxed grouped list containers (drop card outline) */
+html .travel-list,html .document-list,html .detail-list,html .traveler-checklist,
+html .ready-list,html .fact-grid,html .account-list,html .sheet-options-group,
+html .first-run-how-list,html .v2-choice-list,html .checklist-group .mobile-list{
+  background:transparent !important;border:0 !important;border-radius:0 !important;box-shadow:none !important
+}
+/* 2) Remove sibling-row separators inside every grouped list */
+html .travel-list>*+*,html .document-list>*+*,html .detail-list>*+*,html .account-list>*+*,
+html .traveler-checklist>*+*,html .ready-list>*+*,html .list-stack>*+*,html .fd-list>*+*,
+html .faq-list>*+*,html .esim-features>*+*,html .esim-steps>*+*,html .sheet-options-group>*+*,
+html .v2-choice-list>*+*,html .mobile-list>*+*,html .first-run-how-list>*+*{
+  border-top:0 !important;border-bottom:0 !important
+}
+/* 3) Remove per-row and per-section divider borders (rows have no box outline) */
+html .simple-row,html .travel-row,html .document-row,html .trip-row,html .detail-row,
+html .checklist-row,html .traveler-checklist__row,html .v2-choice,html .sheet-option,
+html .esim-feature,html .booking-email-row,html .booking-email-list,html .manual-attachment-row,
+html .booking-document-row,html .booking-documents,html .first-run-how-list li,html .cl-row,
+html .info-card,html .account-card,html .fd-card,html .fd-row,html .timeline-context,
+html .trip-context,html .quick-trip-context,html .traveler-profile,html .document-row-wrap,
+html .import-history-item,html .weather-note,html .home-summary-module,html .health-card,
+html .recovery-card,html .review-card,html .flight-more-content dl>div,html .manual-attachments,
+html .manual-route-card,html .form-more,html .trip-group+.trip-group{
+  border-top:0 !important;border-bottom:0 !important
+}
+/* 4) Remove the sticky header underline and the timeline day-header line, plus
+      the document-viewer popup bar's bottom hairline. */
+html .app-header,html .app-bar,html .trip-v2-header,html .timeline-day__header,html .doc-viewer__bar{
+  border-bottom:0 !important
+}
