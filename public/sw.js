@@ -1,7 +1,7 @@
-const CACHE='tripto-shell-product-v2-welcome-passport-v4-compact';
+const CACHE='tripto-shell-product-v2-welcome-route-matrix-v10';
 const PLACES_CACHE='tripto-places-2026-08-26';
 const PLACES_PATHS=new Set(['/places-provider.js','/places-search-worker.js','/data/places-2026-08-26.json']);
-const ASSETS=['/','/app','/index.html','/canonical-host.js','/mobile-routes.js','/mobile-trip-rules.js','/vendor/phosphor/phosphor.css','/vendor/phosphor/Phosphor.woff2','/mobile-app.css','/google-auth-client.js','/manual-booking-attachments.js','/mobile-app.js','/manifest.webmanifest','/assets/google-g.svg','/assets/welcome-thread-line-v1.svg','/assets/trips-bg.jpg','/favicon.svg','/favicon-32.png','/favicon-16.png','/apple-touch-icon.png','/icon-192.png','/icon-512.png'];
+const ASSETS=['/','/app','/index.html','/canonical-host.js','/mobile-routes.js','/mobile-trip-rules.js','/vendor/phosphor/phosphor.css','/vendor/phosphor/Phosphor.woff2','/mobile-app.css','/google-auth-client.js','/manual-booking-attachments.js','/mobile-app.js','/manifest.webmanifest','/assets/google-g.svg','/assets/trips-bg.jpg','/favicon.svg','/favicon-32.png','/favicon-16.png','/apple-touch-icon.png','/icon-192.png','/icon-512.png'];
 
 self.addEventListener('install',event=>{
   // Do not activate a partially cached shell. A failed essential asset keeps the
