@@ -28,6 +28,16 @@
   <link rel="mask-icon" href="/favicon.svg" color="#111215">
   <link rel="stylesheet" href="/vendor/phosphor/phosphor.css?v=apple-flat-v1">
   <link rel="stylesheet" href="/mobile-app.css?v=coral-journey-v2">
+  <script>
+    if ("serviceWorker" in navigator) {
+      let refreshingForNewShell = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (refreshingForNewShell) return;
+        refreshingForNewShell = true;
+        window.location.reload();
+      });
+    }
+  </script>
 </head>
 <body>
   <div id="app"></div>
