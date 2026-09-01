@@ -133,3 +133,43 @@ The implementation preserves option 3's date capsules, circular journey nodes, e
 - P2: none
 
 Final result: passed
+
+---
+
+# Design QA — Coral Journey Ribbon visual lock
+
+## Visual source and normalized comparison
+
+- Source of truth: `/var/folders/9q/f2w2qrrd1ddg3gb4vczcfzmc0000gn/T/codex-clipboard-ec470206-6752-440a-b83c-b3f57d77f647.png`
+- Source dimensions: `862 × 1840`; normalized to `430 × 920` for direct comparison
+- Populated Timeline capture: `artifacts/coral-journey-v2/timeline-430x920.png`
+- Standard phone capture: `artifacts/coral-journey-v2/timeline-390x844.png`
+- Narrow phone capture: `artifacts/coral-journey-v2/timeline-360x800.png`
+- Welcome capture: `artifacts/coral-journey-v2/welcome-390x844.png`
+- Side-by-side source and implementation: `artifacts/coral-journey-v2/comparison-reference-vs-implementation.png`
+- State: isolated populated preview with real application rendering and deterministic synthetic travel data
+
+## Findings and corrections
+
+- **Color fidelity fixed:** replaced the muted blue-grey treatment with the reference's ink-black canvas, saturated coral emphasis, warm sand journey rail and icons, off-white primary text, and restrained grey metadata.
+- **Timeline hierarchy fixed:** the next event now carries the coral plane and `NEXT` label while ordinary events retain warm sand icons. Day labels, rail dots, chevrons, and separators match the reference hierarchy.
+- **Navigation fidelity fixed:** the floating dock is dark and outlined, inactive items use sand, the active Trip item and center Add control use coral, and Trip uses the approved suitcase icon.
+- **Welcome cohesion fixed:** Welcome uses the same ink, coral, sand, off-white, and grey family without changing authentication or tour behavior.
+- **Surface fidelity fixed:** removed the Timeline header divider so header and journey read as one continuous dark surface.
+
+## Responsive, interaction, and accessibility evidence
+
+- Verified at `360 × 800`, `390 × 844`, and `430 × 920` with no horizontal overflow.
+- Timeline content scrolls inside its page region; the fixed dock remains visible and bottom padding keeps the final event reachable.
+- Touch targets remain at least 44 px; focus-visible and reduced-motion rules remain intact.
+- Trip, Alerts, Add, To-do, and Account retain their existing routes/actions and accessible labels.
+- Browser console in the checked Timeline and Welcome states: no errors or warnings.
+- Welcome remains no-scroll and has no bottom navigation.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed

@@ -212,11 +212,11 @@
   const THEMES = [
     { id: "daylight", name: "Daylight", note: "Bright white & blue", chips: ["#ffffff", "#eef4ff", "#ffbf1a"] },
     { id: "harbor", name: "Harbor", note: "Dark navy & amber", chips: ["#012032", "#073a55", "#edae49"] },
-    { id: "slate", name: "Slate", note: "Blue-slate & rose", chips: ["#2c3a47", "#d9b99b", "#b84a62"] },
+    { id: "slate", name: "Slate", note: "Ink, coral & sand", chips: ["#121a21", "#d7b394", "#e55d5b"] },
   ];
   // Dark themes reuse Harbor's structural overrides; light non-default themes reuse Daylight's.
   const DARK_THEMES = new Set(["harbor", "slate"]);
-  const THEME_CANVAS = { daylight: "#ffffff", harbor: "#00141f", slate: "#212c36" };
+  const THEME_CANVAS = { daylight: "#ffffff", harbor: "#00141f", slate: "#121a21" };
   const THEME_IDS = new Set(THEMES.map((t) => t.id));
   function normalizeTheme(id) {
     return THEME_IDS.has(id) ? id : "daylight";
@@ -2983,7 +2983,7 @@
       ? `<span class="nav-item__badge" aria-hidden="true">${unread > 9 ? "9+" : unread}</span>`
       : "";
     const alerts = `<button class="nav-item nav-item--notify ${norm === "alerts" ? "active" : ""}" data-action="open-notifications" aria-label="${esc(alertLabel)}" aria-expanded="${state.sheet === "notifications"}"><span class="nav-item__icon">${icon("bell", 23)}${alertBadge}</span><span>Alerts</span></button>`;
-    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "clock", "Trip")}${alerts}<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
+    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "trips", "Trip")}${alerts}<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
@@ -3360,10 +3360,10 @@
     // carries its own welcome palette when selected.
     setThemeClass(active ? (state.theme === "slate" ? "slate" : "harbor") : state.theme);
     const theme = document.querySelector('meta[name="theme-color"]');
-    if (theme) theme.setAttribute("content", active ? "#212c36" : themeCanvasColor(state.theme));
+    if (theme) theme.setAttribute("content", active ? "#121a21" : themeCanvasColor(state.theme));
   }
   function firstRunProductPreview() {
-    return `<figure class="first-run-preview" aria-label="Example journey from departure to stay to what matters next"><img src="/assets/welcome-journey-flat-v1.png" alt="" width="853" height="820" decoding="async"></figure>`;
+    return `<figure class="first-run-preview" aria-label="Example journey from departure to stay to what matters next"><img src="/assets/welcome-journey-ink-v2.png" alt="" width="853" height="820" decoding="async"></figure>`;
   }
   function firstRunScreen() {
     const offline = state.offline
