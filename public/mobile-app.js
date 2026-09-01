@@ -2934,12 +2934,15 @@
   // trip's /changes feed (imports, added stops, time markers, documents…) with
   // any forwarded bookings still awaiting review. The badge counts unread
   // changes plus pending booking reviews.
-  function notifyAction() {
-    if (!state.trip) return "";
+  function totalNotificationCount() {
     const pending = (state.bookingEmails || []).filter((row) =>
       ["needs_trip", "needs_confirmation"].includes(String(row.status || "")),
     ).length;
-    const unread = unreadNotificationCount() + pending;
+    return unreadNotificationCount() + pending;
+  }
+  function notifyAction() {
+    if (!state.trip) return "";
+    const unread = totalNotificationCount();
     const label = unread
       ? `Notifications, ${unread} unread`
       : "Notifications";
@@ -2949,10 +2952,22 @@
     return `<button class="icon-button notify-button" data-action="open-notifications" aria-label="${esc(label)}">${icon("bell", 24)}${badge}</button>`;
   }
   function bottomNav(active) {
-    const norm = active === "account" ? "account" : "trips";
+    const norm = state.sheet === "notifications"
+      ? "alerts"
+      : active === "account"
+        ? "account"
+        : active === "checklist"
+          ? "checklist"
+          : "trips";
     const navBtn = (screen, ic, label) =>
-      `<button class="nav-item ${norm === screen ? "active" : ""}" data-screen="${screen}" ${norm === screen ? 'aria-current="page"' : ""}>${icon(ic, 23)}<span>${label}</span></button>`;
-    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "clock", "Trip")}<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>${navBtn("account", "user", "Account")}</nav>`;
+      `<button class="nav-item ${norm === screen ? "active" : ""}" data-screen="${screen}" ${norm === screen ? 'aria-current="page"' : ""}><span class="nav-item__icon">${icon(ic, 23)}</span><span>${label}</span></button>`;
+    const unread = totalNotificationCount();
+    const alertLabel = unread ? `Alerts, ${unread} unread` : "Alerts";
+    const alertBadge = unread
+      ? `<span class="nav-item__badge" aria-hidden="true">${unread > 9 ? "9+" : unread}</span>`
+      : "";
+    const alerts = `<button class="nav-item nav-item--notify ${norm === "alerts" ? "active" : ""}" data-action="open-notifications" aria-label="${esc(alertLabel)}" aria-expanded="${state.sheet === "notifications"}"><span class="nav-item__icon">${icon("bell", 23)}${alertBadge}</span><span>Alerts</span></button>`;
+    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "clock", "Trip")}${alerts}<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
@@ -4263,7 +4278,7 @@
     ] },
     { title: "Your trip", questions: [
       { id: "timeline", q: "What is the Timeline?", a: "The Timeline is the main view of your trip. Flights, stays, restaurants, activities and other bookings are shown in travel order so you can see what is coming next.", keywords: "timeline schedule order plans main view" },
-      { id: "checklist", q: "How does the checklist work?", a: "Use the List tab in the bottom bar for things you do not want to forget, such as your passport, wallet or charger. Add your own items and tap one when it is packed. Tap it again to undo.", keywords: "checklist packing list passport wallet charger pack", action: { label: "Open checklist", screen: "checklist" } },
+      { id: "checklist", q: "How does the checklist work?", a: "Use the To-do tab in the bottom bar for things you do not want to forget, such as your passport, wallet or charger. Add your own items and tap one when it is packed. Tap it again to undo.", keywords: "checklist packing list passport wallet charger pack", action: { label: "Open checklist", screen: "checklist" } },
       { id: "documents", q: "Where are my tickets and documents?", a: "Documents attached to a booking open from that booking. You can also open the trip menu and choose Documents to see your trip files. Some files are stored only on this device.", keywords: "tickets documents files pdf storage device" },
       { id: "trip-map", q: "When can I use Trip Map?", a: "Open the trip menu and choose Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
       { id: "offline", q: "What works offline?", a: "Your cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and map tiles need a connection.", keywords: "offline internet connection cached without wifi" },

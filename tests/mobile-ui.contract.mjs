@@ -13,9 +13,9 @@ assert(manifest.includes('"background_color": "#FFFFFF"')&&manifest.includes('"t
 assert(css.includes('overflow-x:hidden')&&css.includes('overflow-x:clip'),'horizontal overflow protection missing');
 assert(css.includes('@media(prefers-reduced-motion:reduce)')&&css.includes('min-height:44px'),'motion or touch safety missing');
 const navFn=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
-assert(navFn.includes('navBtn("trips", "clock", "Trip")')&&navFn.includes('navBtn("account", "user", "Account")')&&navFn.includes('data-action="open-add"')&&!navFn.includes('nav-item--notify')&&!navFn.includes('navBtn("checklist"'),'V2 navigation must remain Trip / Add / Account');
+assert(navFn.includes('navBtn("trips", "clock", "Trip")')&&navFn.includes('nav-item--notify')&&navFn.includes('data-action="open-notifications"')&&navFn.includes('data-action="open-add"')&&navFn.includes('navBtn("checklist", "checklist", "To-do")')&&navFn.includes('navBtn("account", "user", "Account")'),'V2 navigation must remain Trip / Alerts / Add / To-do / Account');
 const nav=navFn.slice(navFn.indexOf('return `<nav'));
-assert(nav.indexOf('navBtn("trips"')<nav.indexOf('open-add')&&nav.indexOf('open-add')<nav.indexOf('navBtn("account"'),'V2 navigation order (Trip, Add, Account) is wrong');
+assert(nav.indexOf('navBtn("trips"')<nav.indexOf('${alerts}')&&nav.indexOf('${alerts}')<nav.indexOf('open-add')&&nav.indexOf('open-add')<nav.indexOf('navBtn("checklist"')&&nav.indexOf('navBtn("checklist"')<nav.indexOf('navBtn("account"'),'V2 navigation order (Trip, Alerts, Add, To-do, Account) is wrong');
 assert(!navFn.includes('"Home"')&&!navFn.includes('"Bookings"')&&!navFn.includes('navBtn("help"'),'V1 navigation leaked');
 assert(app.includes('function selectRelevantTrip(')&&app.includes('state.account?.mode === "account"')&&app.includes('history.replaceState(null, "", routeUrl("form", "trip"))'),'authenticated relevant-trip routing missing');
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;
@@ -40,7 +40,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-qa-fixes-v1'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, or Google-auth shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-bottom-nav-v2'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, or Google-auth shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['One thread','whole trip.','Add bookings.','We keep the journey clear.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-journey-flat-v1.png')&&app.includes('Example journey from departure to stay to what matters next'),'Welcome journey preview is incomplete');
