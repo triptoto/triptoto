@@ -14,7 +14,9 @@ const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, u
 const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-auth.js');
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
 const { refreshSession }=await load('apps/worker/src/routes/session.js');
-const { previewForwardedEmail, previewUploadedDocument, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
+const { previewForwardedEmail, previewUploadedDocument, listImports, resolveImportCandidate, listInboundEmails }=await load('apps/worker/src/routes/imports.js');
+const { receiveBookingEmail }=await load('apps/worker/src/inbound-email.js');
+const { assignBookingEmail, listBookingEmails }=await load('apps/worker/src/routes/booking-emails.js');
 const { acknowledgeGoogleHandoff, createGoogleChallenge, exchangeGoogleHandoff, googleSignInRedirect, signOut }=await load('apps/worker/src/routes/google-auth.js');
 const { requireAuth }=await load('apps/worker/src/auth.js');
 const { betaStatus, recordClientBetaEvent }=await load('apps/worker/src/routes/beta.js');
@@ -26,6 +28,8 @@ const { createStay }=await load('apps/worker/src/routes/stays.js');
 const { createTransport }=await load('apps/worker/src/routes/transport.js');
 const { createActivity }=await load('apps/worker/src/routes/activities.js');
 const { createContact }=await load('apps/worker/src/routes/contacts.js');
+const { liveFlightUsageSummary, refreshLiveFlightById, runScheduledLiveFlightRefresh, scheduleLiveFlightMonitoring }=await load('apps/worker/src/live-flights.js');
+const { createTrip }=await load('apps/worker/src/routes/trips.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -150,6 +154,56 @@ const idempotencyColumns=db.prepare(`PRAGMA table_info(manual_booking_idempotenc
 assert(!idempotencyColumns.some(name=>/body|payload|response|confirmation/i.test(name)),'manual idempotency table stores no request or booking payload');
 assert(!db.prepare(`SELECT request_fingerprint FROM manual_booking_idempotency WHERE client_request_id=?`).get(stayKey).request_fingerprint.includes('PRIVATE-STAY-123'),'manual idempotency fingerprint does not expose confirmation data');
 
+// Live flights are zero-call while disabled. When explicitly enabled for a
+// beta environment, cache reuse does not consume quota or count as a second
+// cancellation observation; only a later provider response can confirm it.
+let providerCalls=0;
+const disabledSchedule=await runScheduledLiveFlightRefresh(env,{provider:{name:'test',health:async()=>'healthy',getStatus:async()=>{providerCalls+=1;throw new Error('disabled provider called');}}});
+assert(disabledSchedule.enabled===false&&providerCalls===0,'disabled live-flight cron makes zero provider calls');
+Object.assign(env,{LIVE_FLIGHTS_ENABLED:'true',LIVE_FLIGHT_PROVIDER:'aerodatabox',LIVE_FLIGHT_BETA_ONLY:'false',LIVE_FLIGHT_DAILY_REQUEST_BUDGET:'2',LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET:'2',LIVE_FLIGHT_MIN_REFRESH_MINUTES:'60',AERODATABOX_RAPIDAPI_KEY:'integration-server-only-key'});
+const monitoredFlightId=successfulTransport.item.id,scheduledDeparture=Number(successfulTransport.item.scheduled_departure_utc),firstLiveNow=scheduledDeparture-4*60*60*1000;
+await scheduleLiveFlightMonitoring(env,guest,tripId,monitoredFlightId,true,firstLiveNow);
+let providerNow=firstLiveNow;
+const cancellationProvider={name:'aerodatabox',health:async()=>'healthy',getStatus:async()=>{providerCalls+=1;return{available:true,provider:'aerodatabox',providerFlightId:'aerodatabox:LY991',matchStatus:'matched',confidence:100,operationalPhase:'scheduled',disruptionState:'cancelled',scheduledDepartureUtc:scheduledDeparture,departureTerminal:'3',departureGate:'D7',providerStatus:'Canceled',fetchedAt:providerNow};}};
+let liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+assert(liveResult.outcome==='updated'&&providerCalls===1,'first provider observation stored');
+let liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveRow.cancellation_signals===1&&liveRow.cancellation_confirmed_at==null,'first cancellation remains provisional');
+providerNow=firstLiveNow+61*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveResult.outcome==='cached'&&providerCalls===1,'shared cache avoids a provider request');
+assert(liveRow.cancellation_signals===1&&liveRow.cancellation_confirmed_at==null,'cached observation cannot confirm cancellation');
+providerNow=firstLiveNow+121*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveResult.providerCalled===true&&providerCalls===2,'expired cache calls provider once');
+assert(liveRow.cancellation_signals===2&&liveRow.cancellation_confirmed_at!=null,'independent provider observation confirms cancellation');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='flight_cancelled_reported'`).get(tripId,monitoredFlightId).c)===1,'first cancellation creates one provisional event');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='flight_cancelled_confirmed'`).get(tripId,monitoredFlightId).c)===1,'second independent signal creates one confirmation event');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM impact_assessments WHERE trip_id=? AND item_id=? AND status='active' AND explanation_code='FLIGHT_CANCELLATION_CONFIRMED'`).get(tripId,monitoredFlightId).c)===1,'confirmed cancellation creates one high-priority deterministic impact');
+providerNow=firstLiveNow+182*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+assert(liveResult.outcome==='quota_exhausted'&&providerCalls===2,'local quota blocks provider before network');
+const liveUsage=await liveFlightUsageSummary(env,providerNow);
+assert(liveUsage.usedMonth===2&&liveUsage.remainingMonth===0,'monthly usage ledger and guard are accurate');
+
+// Cron selection remains bounded and prioritizes the flight departing soonest.
+Object.assign(env,{LIVE_FLIGHT_DAILY_REQUEST_BUDGET:'20',LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET:'20',LIVE_FLIGHT_MAX_BATCH_SIZE:'2'});
+const cronFlights=[];
+for(const [suffix,offsetHours] of [['A',2/3],['B',24],['C',120]]){
+  const input={...transportInput,title:`Cron priority ${suffix}`,serviceNumber:`LY 99${suffix}`,marketingFlightNumber:`99${suffix}`,scheduledDepartureUtc:firstLiveNow+offsetHours*60*60*1000};
+  const created=await body(await createTransport(req('https://test/api/v1/trips/x/transport','POST',input,{'idempotency-key':`cron-priority-flight-${suffix}`}),env,guest,tripId));
+  cronFlights.push(created.item.id);
+  await scheduleLiveFlightMonitoring(env,guest,tripId,created.item.id,true,firstLiveNow);
+}
+let cronProviderCalls=0;
+const cronProvider={name:'aerodatabox',health:async()=>'healthy',getStatus:async lookup=>{cronProviderCalls+=1;return{available:true,provider:'aerodatabox',providerFlightId:`aerodatabox:${lookup.flightNumber}`,matchStatus:'matched',confidence:100,operationalPhase:'scheduled',disruptionState:'none',scheduledDepartureUtc:firstLiveNow+40*60*1000,providerStatus:'Expected',fetchedAt:firstLiveNow};}};
+const cronRun=await runScheduledLiveFlightRefresh(env,{provider:cronProvider,now:firstLiveNow});
+assert(cronRun.results.length===2&&cronProviderCalls<=2,'cron honors maximum batch size');
+assert(cronRun.results.some(result=>result.itemId===cronFlights[0]),'cron prioritizes the flight departing in 40 minutes');
+env.LIVE_FLIGHTS_ENABLED='false';
+
 // Verified auth bridge: disabled by default, then enabled for an internally verified identity.
 let disabled=false;
 try{await completeVerifiedIdentityLogin(env,'guest-device',{provider:'email',providerSubject:'owner@example.test',email:'owner@example.test',emailVerified:true,displayName:'Owner'});}catch(e){disabled=e.code==='ACCOUNT_AUTH_DISABLED';}
@@ -244,6 +298,119 @@ assert(db.prepare(`SELECT source_type FROM trip_items WHERE id=?`).get(resolvedI
 const importsAfter=await body(await listImports(req('https://test/api/v1/trips/x/imports'),env,owner,tripId));
 assert(importsAfter.imports.some(x=>x.id===previewImport.import.id&&x.status==='completed'),'import completes after confirmation');
 assert(!Object.keys(db.prepare(`SELECT * FROM import_messages WHERE import_id=?`).get(previewImport.import.id)).some(k=>/body|raw|content/i.test(k)),'import message schema stores no raw body');
+
+// Inbound Email Routing pipeline (end-to-end through the actual email() handler):
+// raw MIME in → safe parse → verified-sender gate → deterministic trip match →
+// review package only (never auto-create) → idempotent dedup.
+function inboundMessage(from,to,rawText){
+  const bytes=new TextEncoder().encode(rawText);
+  const raw=new ReadableStream({start(c){c.enqueue(bytes);c.close();}});
+  const state={rejected:null};
+  const message={from,to,raw,headers:new Headers(),setReject(reason){state.rejected=reason;}};
+  return {message,state};
+}
+async function inboundCount(user){return Number(db.prepare(`SELECT COUNT(*) c FROM inbound_booking_emails WHERE user_id=?`).get(user).c);}
+
+// Seed a verified sender for the owner account.
+db.prepare(`INSERT INTO verified_sender_emails(id,user_id,email,email_normalized,source,verified_at,created_at) VALUES (?,?,?,?,'google_identity',?,?)`).run('vse-owner',login.userId,'traveler@example.test','traveler@example.test',Date.now(),Date.now());
+
+// Unknown recipient is rejected before any processing.
+const wrongRecipient=inboundMessage('traveler@example.test','someone-else@tripto.to','Subject: x\r\n\r\nhi');
+await receiveBookingEmail(wrongRecipient.message,env);
+assert(wrongRecipient.state.rejected==='Unknown recipient','inbound rejects unknown recipient');
+
+// Unverified sender is bounced (recoverable), never silently dropped, and writes no row.
+const beforeUnverified=await inboundCount(login.userId);
+const stranger=inboundMessage('stranger@example.test','go@tripto.to','Subject: Hotel\r\nContent-Type: text/plain\r\n\r\nHotel: Somewhere\r\nConfirmation: ZZZ1');
+await receiveBookingEmail(stranger.message,env);
+assert(stranger.state.rejected==='Sender is not verified','inbound bounces unverified sender');
+assert(await inboundCount(login.userId)===beforeUnverified,'unverified sender writes no inbound row');
+
+// Verified sender, HIGH-confidence hotel via multipart/alternative → review only.
+const hotelMime=[
+  'Subject: Your hotel booking is confirmed',
+  'From: Traveler <traveler@example.test>',
+  'Message-ID: <hotel-1@example.test>',
+  'Content-Type: multipart/alternative; boundary="HB"',
+  '',
+  '--HB',
+  'Content-Type: text/plain; charset=utf-8',
+  '',
+  'Hotel: Grand Test Hotel',
+  'Address: Via Nazionale 22, Roma',
+  'Confirmation number: HB-778899',
+  'Check-in: 1 September 2026',
+  'Check-out: 5 September 2026',
+  '--HB',
+  'Content-Type: text/html; charset=utf-8',
+  '',
+  '<html><body><script>fetch("https://evil.test")</script><p>Grand Test Hotel</p></body></html>',
+  '--HB--',
+].join('\r\n');
+const hotel=inboundMessage('traveler@example.test','go@tripto.to',hotelMime);
+await receiveBookingEmail(hotel.message,env);
+assert(hotel.state.rejected===null,'verified hotel email accepted');
+const hotelRow=db.prepare(`SELECT * FROM inbound_booking_emails WHERE message_fingerprint IS NOT NULL AND subject LIKE 'Your hotel booking%'`).get();
+assert(hotelRow&&hotelRow.status==='needs_confirmation','HIGH-confidence hotel still needs traveler confirmation');
+assert(hotelRow.user_id===login.userId&&hotelRow.trip_id===tripId,'inbound hotel attached to the owner trip');
+const emailStay=db.prepare(`SELECT * FROM trip_items WHERE trip_id=? AND type='stay' AND title='Grand Test Hotel'`).get(tripId);
+assert(!emailStay,'forwarded hotel does not materialize before traveler confirmation');
+assert(db.prepare(`SELECT status FROM imports WHERE id=?`).get(hotelRow.import_id).status==='needs_confirmation','hotel import remains reviewable');
+
+// Forwarding the SAME hotel email again is idempotent: no new inbound row, no duplicate booking.
+const beforeDup=await inboundCount(login.userId);
+const stayCountBefore=Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND type='stay'`).get(tripId).c);
+const hotelDup=inboundMessage('traveler@example.test','go@tripto.to',hotelMime);
+await receiveBookingEmail(hotelDup.message,env);
+assert(await inboundCount(login.userId)===beforeDup,'duplicate forward creates no second inbound row');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND type='stay'`).get(tripId).c)===stayCountBefore,'duplicate forward creates no booking');
+
+// Verified flight email is never auto-scheduled (timezone unknown) → surfaced for review.
+const flightMime=[
+  'Subject: Flight confirmation LY383',
+  'From: traveler@example.test',
+  'Message-ID: <flight-1@example.test>',
+  'Content-Type: text/plain; charset=utf-8',
+  '',
+  'Booking reference: FL-123',
+  'Flight: LY 383',
+  'TLV -> FCO',
+  'Departure: 2026-09-01 10:30',
+  'Arrival: 2026-09-01 13:15',
+].join('\r\n');
+const flight=inboundMessage('traveler@example.test','go@tripto.to',flightMime);
+await receiveBookingEmail(flight.message,env);
+const flightRow=db.prepare(`SELECT * FROM inbound_booking_emails WHERE subject LIKE 'Flight confirmation%'`).get();
+assert(flightRow&&flightRow.status==='needs_confirmation','flight is surfaced for review, never silently scheduled');
+assert(db.prepare(`SELECT candidate_type FROM import_candidates WHERE import_id=?`).get(flightRow.import_id).candidate_type==='flight','flight candidate stored pending review');
+
+// User-facing inbound feed exposes the six-state vocabulary via display_status.
+const inboundFeed=await body(await listInboundEmails(req('https://test/api/v1/inbound-emails'),env,owner));
+assert(inboundFeed.emails.filter(x=>x.display_status==='needs_review').length>=2,'inbound feed reports review states');
+
+// With more than one eligible trip and no decisive booking signal, keep a fully
+// parsed, unassigned import in Email Inbox. Choosing a trip updates only the
+// review package; it still does not materialize a booking.
+const secondTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Milan work trip',lifecycleState:'upcoming',startsOn:'2026-10-02',endsOn:'2026-10-05'}),env,owner));
+const ambiguous=inboundMessage('traveler@example.test','go@tripto.to',[
+  'Subject: Hotel confirmation',
+  'Message-ID: <ambiguous-hotel@example.test>',
+  'Content-Type: text/plain; charset=utf-8',
+  '',
+  'Hotel: City Center Hotel',
+  'Confirmation number: CITY44',
+].join('\r\n'));
+await receiveBookingEmail(ambiguous.message,env);
+assert(!ambiguous.state.rejected,'verified ambiguous email accepted');
+const ambiguousRow=db.prepare(`SELECT * FROM inbound_booking_emails WHERE subject='Hotel confirmation' AND message_fingerprint IS NOT NULL ORDER BY received_at DESC LIMIT 1`).get();
+assert(ambiguousRow.status==='needs_trip'&&ambiguousRow.trip_id==null&&ambiguousRow.import_id,'ambiguous email is retained as a reviewable needs-trip item');
+assert(db.prepare(`SELECT trip_id FROM imports WHERE id=?`).get(ambiguousRow.import_id).trip_id==null,'unassigned import never guesses a trip');
+const inbox=await body(await listBookingEmails(req('https://test/api/v1/booking-emails'),env,owner));
+assert(inbox.bookingEmails.some(row=>row.id===ambiguousRow.id&&row.candidate_count===1),'Email Inbox exposes the pending candidate');
+const beforeAssignCount=Number(db.prepare(`SELECT COUNT(*) c FROM trip_items`).get().c);
+const assigned=await body(await assignBookingEmail(req('https://test/api/v1/booking-emails/x/assign','POST',{tripId:secondTrip.trip.id}),env,owner,ambiguousRow.id));
+assert(assigned.tripId===secondTrip.trip.id&&assigned.importId===ambiguousRow.import_id,'traveler can assign email to the selected trip');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items`).get().c)===beforeAssignCount,'assigning a trip does not add a booking before confirmation');
 
 // Smart upload import receives structured fields and checksum only, detects duplicates, and materializes after review.
 const checksum='a'.repeat(64),uploadBody={checksum,filename:'hotel-confirmation.pdf',documentKind:'pdf',candidate:{type:'hotel',confidence:.86,fields:{propertyName:{value:'Hotel Test',confidence:.9,source:'embedded_text'},checkInDate:{value:'2026-09-01',confidence:.8,source:'embedded_text'},checkOutDate:{value:'2026-09-03',confidence:.8,source:'embedded_text'},confirmationNumber:{value:'HOT123',confidence:.8,source:'barcode'}},warnings:[]}};

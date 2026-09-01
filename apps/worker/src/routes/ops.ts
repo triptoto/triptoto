@@ -1,6 +1,7 @@
 import type { AuthContext, Env } from '../types.ts';
 import { json } from '../http.ts';
 import { BETA_RELEASE } from '../beta-events.ts';
+import { liveFlightUsageSummary } from '../live-flights.ts';
 
 export async function opsSummary(request:Request,env:Env,_auth:AuthContext):Promise<Response>{
   if(env.OPS_ENABLED!=='true')return json({error:{code:'NOT_FOUND',message:'Endpoint not found.'}},{status:404},request,env);
@@ -18,10 +19,11 @@ export async function opsSummary(request:Request,env:Env,_auth:AuthContext):Prom
     (SELECT COUNT(*) FROM trips WHERE deleted_at IS NULL) trips,
     (SELECT COUNT(*) FROM beta_events WHERE created_at>?) events_24h
   `).bind(since).first<Record<string,unknown>>();
+  const liveFlights=await liveFlightUsageSummary(env);
   return json({ops:{
     release:env.BETA_RELEASE||BETA_RELEASE,
     totals:{users:Number(totals?.users??0),devices:Number(totals?.devices??0),trips:Number(totals?.trips??0),events24h:Number(totals?.events_24h??0)},
-    tripStates,eventCounts,importStates,activeImpacts:impacts,integrationHealth,
+    tripStates,eventCounts,importStates,activeImpacts:impacts,integrationHealth,liveFlights,
     features:{liveFlights:env.LIVE_FLIGHTS_ENABLED==='true',ai:env.AI_ENABLED==='true',gmail:env.GMAIL_SYNC_ENABLED==='true',r2:env.R2_DOCUMENTS_ENABLED==='true',auth:env.ACCOUNT_AUTH_ENABLED==='true',sharing:env.SHARING_ENABLED==='true'},
     privacy:'Aggregate counts only. No booking contents, email bodies, locations, tokens or document bytes.',
     generatedAt:Date.now(),

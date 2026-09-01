@@ -37,3 +37,66 @@ The comparison normalizes both images to the dialog region. The reference is a c
 ## Result
 
 **Passed.** The dialog actions are visually equal and the shared mobile button system is consistent without redesigning the approved interface.
+
+---
+
+# Welcome design QA
+
+**Comparison target**
+
+- Source visual truth: `/Users/arthurberlin/.codex/generated_images/01a02032-728d-7ce2-b111-775c80ec1cf0/exec-a318cd91-7aa8-41b6-9bcc-86a7c954356d.png`
+- Implementation screenshot: `/private/tmp/tripto-welcome-flat-390x844.png`
+- Combined comparison: `/private/tmp/tripto-welcome-flat-comparison.png`
+- Responsive browser checks: 360 × 800 and 430 × 932
+- Source pixels: 853 × 1844
+- Implementation pixels and CSS viewport: 390 × 844 at device scale factor 1
+- Normalization: source scaled to 390 × 844; app capture remained at native CSS size
+- State: local preview, guest account, no trips, online
+
+**Findings**
+
+- No actionable P0, P1, or P2 differences remain.
+- Fonts and typography: Apple system stack, hierarchy, two-line wrapping, weights, and colored emphasis match the approved target closely.
+- Spacing and layout rhythm: brand, headline, journey, compact Google action, tour action, and legal footer align with the source composition. The screen remains intentionally fixed and no-scroll.
+- Colors and visual tokens: implementation uses the approved Slate palette (`#212c36`, `#354655`, `#f6f1e9`, `#b7c2cb`, `#d9b99b`, `#b84a62`). The document, body, app shell, Welcome screen, preview frame, and journey artwork now share the exact flat `#212c36` canvas.
+- Image quality and asset fidelity: the journey artwork is a dedicated local PNG asset with its former backdrop variation normalized to the exact Welcome canvas color. Foreground route geometry, icons, labels, crop, and color accents remain unchanged.
+- Copy and content: visible copy matches the approved design. The example is explicitly labeled `EXAMPLE JOURNEY` and does not enter application state.
+
+**Focused region comparison**
+
+- The compact Google action was checked independently because the user rejected the earlier oversized white treatment. It is now 240 × 52 CSS px, dark Slate, bordered with the approved sand/rose accents, and retains a 52px touch target.
+- The route illustration was checked at full-view size; its icons, line, labels, and crop are clearly readable, so no additional zoomed crop was needed.
+- The source target and implementation were compared together at 390 × 844. The source's subtle dark backdrop variation was intentionally replaced with the requested single flat canvas; the foreground composition remains faithful.
+
+**Interaction and responsive evidence**
+
+- Verified at 360 × 800, 390 × 844, and 430 × 932.
+- No horizontal or vertical document overflow.
+- No bottom navigation appears on Welcome.
+- Google and Tour actions remain visible; Privacy and Terms remain visible above the safe-area padding.
+- Tour opens as an accessible modal sheet, Escape closes it, and focus returns to `Take a tour`.
+- Offline state remains labeled `Offline` and does not overflow.
+- Browser console: no errors or warnings in the verified preview state.
+
+**Comparison history**
+
+1. Initial implementation still exposed the former photographic backdrop, used brighter off-palette accents, and retained an oversized light Google action.
+2. Fixed by isolating Welcome under `.welcome-thread`, using the Slate tokens, restoring the compact dark Google treatment, and preventing the shared Account Google renderer from changing.
+3. Second comparison found scale and vertical-rhythm drift. Brand, hero type, CTA width, section spacing, and bottom safe-area spacing were adjusted.
+4. Final side-by-side comparison shows no remaining P0/P1/P2 mismatch.
+5. The uniform-background pass removed the remaining raster backdrop variation and a higher-specificity preview decoration. Post-fix evidence confirms every Welcome canvas surface resolves to `rgb(33, 44, 54)` with no seams.
+
+**Implementation Checklist**
+
+- [x] Welcome-only markup and scoped styling
+- [x] Local journey asset and service-worker cache entry
+- [x] Compact Google action without changing Account
+- [x] Tour, Privacy, Terms, offline, and auth wiring preserved
+- [x] 360/390/430 responsive verification
+- [x] Console and overflow checks
+
+**Follow-up Polish**
+
+- The production Google control is rendered by Google Identity Services, so its internal typography remains provider-owned while its Welcome-only width and placement match the approved composition.
+
+final result: passed

@@ -1,0 +1,18 @@
+[
+  {
+    "number": "AZ 8120",
+    "status": "EnRoute",
+    "codeshareStatus": "IsCodeshared",
+    "airline": { "iata": "AZ" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" }, "runwayTime": { "utc": "2026-08-20T06:36:00Z" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" } }
+  },
+  {
+    "number": "LY 383",
+    "status": "EnRoute",
+    "codeshareStatus": "IsOperator",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" }, "runwayTime": { "utc": "2026-08-20T06:36:00Z" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" } }
+  }
+]

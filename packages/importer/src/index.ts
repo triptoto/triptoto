@@ -4,8 +4,12 @@ export interface ForwardedEmailInput {
   body: string;
 }
 
+export type ImportCandidateType =
+  | 'flight' | 'stay' | 'train' | 'car' | 'transfer' | 'cruise' | 'ferry'
+  | 'restaurant' | 'activity' | 'reservation';
+
 export interface ParsedImportCandidate {
-  candidateType: 'flight' | 'stay';
+  candidateType: ImportCandidateType;
   payload: Record<string, unknown>;
   confidence: number;
   warnings: string[];
@@ -16,6 +20,13 @@ export interface ParsedForwardedEmail {
   normalizedText: string;
   unsupportedReason?: string;
 }
+
+// Materializer families (mirrors apps/worker/src/routes/imports.ts). Kept here so
+// callers can route a candidate to the right normalized booking model without
+// re-deriving the mapping. 'cruise' is filed as the closest allowed transport
+// type ('ferry') by the worker; the candidateType is preserved for provenance.
+export const TRANSPORT_CANDIDATE_TYPES: ImportCandidateType[] = ['train', 'car', 'transfer', 'cruise', 'ferry'];
+export const PLAN_CANDIDATE_TYPES: ImportCandidateType[] = ['restaurant', 'activity', 'reservation'];
 
 const MONTHS: Record<string, number> = {
   jan:1,january:1,feb:2,february:2,mar:3,march:3,apr:4,april:4,may:5,jun:6,june:6,
@@ -32,11 +43,21 @@ export function parseForwardedEmail(input: ForwardedEmailInput): ParsedForwarded
   if (flight) candidates.push(flight);
   const stay = parseStay(text, subject);
   if (stay) candidates.push(stay);
+  const transport = parseTransport(text);
+  if (transport) candidates.push(transport);
+  const plan = parsePlan(text);
+  if (plan) candidates.push(plan);
+  // Deterministic booking with a confirmation but no recognized type: surface it
+  // as a generic reservation rather than silently dropping the forward.
+  if (!candidates.length) {
+    const generic = parseGenericReservation(text);
+    if (generic) candidates.push(generic);
+  }
 
   return {
     candidates,
     normalizedText: text,
-    unsupportedReason: candidates.length ? undefined : 'No supported flight or stay booking could be identified deterministically.',
+    unsupportedReason: candidates.length ? undefined : 'No supported booking (flight, stay, transport, dining or activity) could be identified deterministically.',
   };
 }
 
@@ -106,6 +127,124 @@ function parseStay(text: string, subject: string): ParsedImportCandidate | null 
     warnings,
     payload: { propertyName, checkInDate, checkOutDate, confirmationNumber: confirmation, address },
   };
+}
+
+// --- Transport (train / car rental / transfer / cruise / ferry) --------------
+
+interface TransportKind { type: 'train' | 'car' | 'transfer' | 'cruise' | 'ferry'; test: RegExp; label: string; }
+const TRANSPORT_KINDS: TransportKind[] = [
+  { type: 'train', label: 'Train', test: /\b(train|rail(?:way|card)?|amtrak|eurostar|sncf|trenitalia|renfe|deutsche\s?bahn|thalys|via\s?rail|platform\b)\b/i },
+  { type: 'car', label: 'Car rental', test: /\b(car\s?rental|rental\s?car|pick[-\s]?up\s?location|drop[-\s]?off|hertz|avis|europcar|sixt|enterprise\s?rent|budget\s?rent(?:al|-a-car)?|alamo)\b/i },
+  { type: 'cruise', label: 'Cruise', test: /\b(cruise|cruise\s?line|stateroom|embarkation|royal\s?caribbean|carnival\s?cruise|norwegian\s?cruise|msc\s?cruises|princess\s?cruises)\b/i },
+  { type: 'ferry', label: 'Ferry', test: /\b(ferry|ferries|car\s?ferry|sailing\s?from)\b/i },
+  { type: 'transfer', label: 'Transfer', test: /\b(airport\s?transfer|private\s?transfer|transfer\s?service|shuttle|chauffeur|pick[-\s]?up\s?service|meet\s?(?:and|&)\s?greet)\b/i },
+];
+
+function parseTransport(text: string): ParsedImportCandidate | null {
+  const kind = TRANSPORT_KINDS.find((k) => k.test.test(text));
+  if (!kind) return null;
+  const confirmation = extractConfirmation(text);
+  const date = extractLabeledDate(text, ['departure date', 'travel date', 'date', 'pick-up', 'pickup', 'pick up', 'embarkation', 'sailing date']);
+  const namedRoute = extractNamedRoute(text);
+  const carrier = extractField(text, ['carrier', 'operator', 'company', 'line', 'provider', 'rental company']);
+  const service = extractField(text, ['service', 'train number', 'service number', 'voyage', 'sailing']);
+  // Require more than just a keyword: a confirmation, a date, or a route so a
+  // stray "shuttle" mention in prose never fabricates a booking.
+  if (!confirmation && !date && !namedRoute) return null;
+
+  const routeLabel = namedRoute ? `${namedRoute.from} → ${namedRoute.to}` : (carrier || kind.label);
+  const title = kind.type === 'car'
+    ? `Car rental${carrier ? ` — ${carrier}` : ''}`
+    : `${kind.label}${routeLabel && routeLabel !== kind.label ? ` ${routeLabel}` : ''}`.trim();
+
+  const warnings: string[] = [];
+  if (!date) warnings.push('Travel date needs confirmation.');
+  warnings.push('Times and timezones must be confirmed before this booking is scheduled.');
+
+  let score = 0.35;
+  if (confirmation) score += 0.2;
+  if (date) score += 0.15;
+  if (namedRoute) score += 0.15;
+  if (carrier) score += 0.05;
+
+  return {
+    candidateType: kind.type,
+    confidence: Math.min(score, 0.9),
+    warnings,
+    payload: {
+      title: title.slice(0, 160),
+      carrierName: carrier,
+      serviceNumber: service,
+      departureName: namedRoute?.from ?? null,
+      arrivalName: namedRoute?.to ?? null,
+      travelDate: date,
+      confirmationNumber: confirmation,
+      locationHint: namedRoute?.to ?? carrier ?? null,
+    },
+  };
+}
+
+// --- Plans (restaurant / activity / generic reservation) ---------------------
+
+function parsePlan(text: string): ParsedImportCandidate | null {
+  const isRestaurant = /\b(restaurant|table\s?for|dinner\s?reservation|lunch\s?reservation|dining|opentable|resy|bistro|brasserie|trattoria)\b/i.test(text);
+  const isActivity = /\b(ticket|admission|guided\s?tour|excursion|museum|attraction|activity|show\b|concert|matinee|theatre|theater|exhibition|entrance)\b/i.test(text);
+  if (!isRestaurant && !isActivity) return null;
+  const type: 'restaurant' | 'activity' = isRestaurant ? 'restaurant' : 'activity';
+  const confirmation = extractConfirmation(text);
+  const date = extractLabeledDate(text, ['date', 'reservation date', 'visit date', 'event date', 'dining date']);
+  const venue = extractField(text, ['restaurant', 'venue', 'location', 'attraction', 'event', 'place'])
+    ?? extractField(text, ['name']);
+  if (!confirmation && !date && !venue) return null;
+
+  const title = (venue || (type === 'restaurant' ? 'Restaurant reservation' : 'Activity booking')).slice(0, 160);
+  const warnings: string[] = [];
+  if (!date) warnings.push('Date needs confirmation.');
+  warnings.push('Time and timezone must be confirmed before this plan is scheduled.');
+
+  let score = 0.35;
+  if (confirmation) score += 0.2;
+  if (date) score += 0.15;
+  if (venue) score += 0.15;
+
+  return {
+    candidateType: type,
+    confidence: Math.min(score, 0.9),
+    warnings,
+    payload: { title, venue, planDate: date, confirmationNumber: confirmation, locationHint: venue ?? null },
+  };
+}
+
+// A booking-shaped email (has a confirmation and booking language) that matched
+// no specific type still deserves a recoverable, reviewable candidate.
+function parseGenericReservation(text: string): ParsedImportCandidate | null {
+  const confirmation = extractConfirmation(text);
+  const hasBookingWords = /\b(reservation|booking|confirmed|itinerary|voucher|e-?ticket)\b/i.test(text);
+  if (!confirmation || !hasBookingWords) return null;
+  const date = extractLabeledDate(text, ['date', 'reservation date', 'booking date', 'start date']);
+  const title = (extractField(text, ['name', 'title', 'provider', 'supplier']) || 'Reservation').slice(0, 160);
+  return {
+    candidateType: 'reservation',
+    confidence: date ? 0.5 : 0.35,
+    warnings: ['Booking type could not be determined automatically — review before adding.', 'Date, time and timezone must be confirmed.'],
+    payload: { title, planDate: date, confirmationNumber: confirmation, locationHint: null },
+  };
+}
+
+// Named (non-IATA) route such as "Paris -> Lyon" or "Geneva to Zurich".
+function extractNamedRoute(text: string): { from: string; to: string } | null {
+  const patterns = [
+    /\b([A-Z][A-Za-z.\-' ]{1,28}?)\s*(?:→|->|–|—)\s*([A-Z][A-Za-z.\-' ]{1,28})\b/,
+    /\bfrom\s+([A-Z][A-Za-z.\-' ]{1,28}?)\s+to\s+([A-Z][A-Za-z.\-' ]{1,28})\b/i,
+  ];
+  for (const p of patterns) {
+    const m = text.match(p);
+    if (m) {
+      const from = m[1].trim(), to = m[2].trim();
+      if (from.length >= 2 && to.length >= 2 && from.toLowerCase() !== to.toLowerCase()) return { from, to };
+    }
+  }
+  return null;
 }
 
 function normalize(value: string): string {

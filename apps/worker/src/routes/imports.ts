@@ -7,7 +7,7 @@ import { recordBetaEvent, recordBookingMilestones } from '../beta-events.ts';
 import { PRODUCT_LIMITS } from '../config.ts';
 
 interface PreviewBody { sender?:unknown; subject?:unknown; body?:unknown; sourceTimestamp?:unknown; }
-interface UploadPreviewBody { checksum?:unknown; filename?:unknown; documentKind?:unknown; candidate?:unknown; duplicateDisposition?:unknown; }
+interface UploadPreviewBody { checksum?:unknown; filename?:unknown; documentKind?:unknown; candidate?:unknown; candidates?:unknown; duplicateDisposition?:unknown; }
 interface ResolveBody { candidateId?:unknown; action?:unknown; payload?:unknown; }
 const actions=['confirm','reject'] as const;
 const uploadTypes=['flight','hotel','train','car','transfer','ferry','activity','restaurant','reservation','generic_ticket'] as const;
@@ -18,9 +18,16 @@ export async function previewUploadedDocument(request:Request,env:Env,auth:AuthC
   const checksum=requireString(body.checksum,'checksum',64).toLowerCase();
   if(!/^[a-f0-9]{64}$/.test(checksum))throw new HttpError(400,'VALIDATION_ERROR','checksum must be a SHA-256 hex digest.');
   const filename=optionalString(body.filename,'filename',240),documentKind=optionalString(body.documentKind,'documentKind',20);
-  const raw=body.candidate;
-  if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new HttpError(400,'VALIDATION_ERROR','A structured recognition candidate is required.');
-  const candidate=normalizeUploadCandidate(raw as Record<string,unknown>);
+  // A single document can hold several bookings (a round-trip e-ticket has two
+  // flight legs). Accept a `candidates` array; fall back to the legacy single
+  // `candidate` field so older clients keep working.
+  const rawList=Array.isArray(body.candidates)?body.candidates:(body.candidate!=null?[body.candidate]:[]);
+  if(!rawList.length)throw new HttpError(400,'VALIDATION_ERROR','A structured recognition candidate is required.');
+  if(rawList.length>12)throw new HttpError(400,'VALIDATION_ERROR','Too many recognized bookings in one document.');
+  const candidates=rawList.map((raw)=>{
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new HttpError(400,'VALIDATION_ERROR','A structured recognition candidate is required.');
+    return normalizeUploadCandidate(raw as Record<string,unknown>);
+  });
   // Namespace the dedup fingerprint by trip so an identical file uploaded to
   // another account/trip can neither be READ back here nor collide on the
   // global UNIQUE(source_type, source_fingerprint). Mirrors the forwarded-email
@@ -29,17 +36,18 @@ export async function previewUploadedDocument(request:Request,env:Env,auth:AuthC
   const duplicate=await env.DB.prepare(`SELECT * FROM imports WHERE source_type='upload' AND trip_id=? AND (source_fingerprint=? OR source_fingerprint LIKE ?) ORDER BY created_at LIMIT 1`).bind(tripId,scopedChecksum,`${scopedChecksum}:%`).first<Record<string,unknown>>();
   const addAnyway=body.duplicateDisposition==='add_anyway';
   if(duplicate&&!addAnyway){
-    const candidates=(await env.DB.prepare(`SELECT id,candidate_type,payload_json,confidence,validation_status,created_at FROM import_candidates WHERE import_id=? ORDER BY created_at`).bind(duplicate.id).all<Record<string,unknown>>()).results??[];
-    return json({duplicate:true,import:duplicate,candidates:candidates.map(shapeCandidate),actions:['review_existing','update_existing','add_anyway']},{},request,env);
+    const existingCandidates=(await env.DB.prepare(`SELECT id,candidate_type,payload_json,confidence,validation_status,created_at FROM import_candidates WHERE import_id=? ORDER BY created_at`).bind(duplicate.id).all<Record<string,unknown>>()).results??[];
+    return json({duplicate:true,import:duplicate,candidates:existingCandidates.map(shapeCandidate),actions:['review_existing','update_existing','add_anyway']},{},request,env);
   }
-  const now=nowMs(),importId=uuid(),candidateId=uuid(),fingerprint=addAnyway?`${scopedChecksum}:${uuid()}`:scopedChecksum;
+  const now=nowMs(),importId=uuid(),fingerprint=addAnyway?`${scopedChecksum}:${uuid()}`:scopedChecksum;
+  const inserted=candidates.map((candidate)=>({id:uuid(),candidate}));
   await env.DB.batch([
     env.DB.prepare(`INSERT INTO imports(id,trip_id,user_id,source_type,status,source_fingerprint,recovery_action,created_at) VALUES (?,?,?,'upload','needs_confirmation',?,'Review every recognized field before confirming.',?)`).bind(importId,tripId,auth.userId??null,fingerprint,now),
     env.DB.prepare(`INSERT INTO import_messages(id,import_id,sequence_no,subject,normalized_hash,created_at) VALUES (?,?,1,?,?,?)`).bind(uuid(),importId,filename,checksum,now),
-    env.DB.prepare(`INSERT INTO import_candidates(id,import_id,candidate_type,payload_json,confidence,validation_status,created_at) VALUES (?,?,?,?,?,'pending',?)`).bind(candidateId,importId,candidate.type,JSON.stringify({...candidate.payload,documentKind,filename,checksum,warnings:candidate.warnings}),candidate.confidence,now),
+    ...inserted.map(({id,candidate})=>env.DB.prepare(`INSERT INTO import_candidates(id,import_id,candidate_type,payload_json,confidence,validation_status,created_at) VALUES (?,?,?,?,?,'pending',?)`).bind(id,importId,candidate.type,JSON.stringify({...candidate.payload,documentKind,filename,checksum,warnings:candidate.warnings}),candidate.confidence,now)),
   ]);
   await recordBetaEvent(env,auth,'import_previewed',tripId,'always');
-  return json({duplicate:false,import:{id:importId,source_type:'upload',status:'needs_confirmation'},candidates:[shapeCandidate({id:candidateId,candidate_type:candidate.type,payload_json:JSON.stringify({...candidate.payload,warnings:candidate.warnings}),confidence:candidate.confidence,validation_status:'pending',created_at:now})],privacy:{rawBytesReceived:false,extractedTextReceived:false,rawDocumentStored:false}},{status:201},request,env);
+  return json({duplicate:false,import:{id:importId,source_type:'upload',status:'needs_confirmation'},candidates:inserted.map(({id,candidate})=>shapeCandidate({id,candidate_type:candidate.type,payload_json:JSON.stringify({...candidate.payload,warnings:candidate.warnings}),confidence:candidate.confidence,validation_status:'pending',created_at:now})),privacy:{rawBytesReceived:false,extractedTextReceived:false,rawDocumentStored:false}},{status:201},request,env);
 }
 
 export async function previewForwardedEmail(request:Request,env:Env,auth:AuthContext,tripId:string):Promise<Response>{
@@ -78,8 +86,40 @@ export async function previewForwardedEmail(request:Request,env:Env,auth:AuthCon
 
 export async function listImports(request:Request,env:Env,auth:AuthContext,tripId:string):Promise<Response>{
   await requireTripAccess(env,auth,tripId);
-  const rows=(await env.DB.prepare(`SELECT i.id,i.source_type,i.status,i.recovery_action,i.created_at,i.completed_at,m.sender,m.subject,(SELECT COUNT(*) FROM import_candidates c WHERE c.import_id=i.id) candidate_count FROM imports i LEFT JOIN import_messages m ON m.import_id=i.id AND m.sequence_no=1 WHERE i.trip_id=? ORDER BY i.created_at DESC LIMIT 100`).bind(tripId).all()).results??[];
-  return json({imports:rows},{},request,env);
+  const rows=(await env.DB.prepare(`SELECT i.id,i.source_type,i.status,i.recovery_action,i.created_at,i.completed_at,m.sender,m.subject,(SELECT c.candidate_type FROM import_candidates c WHERE c.import_id=i.id ORDER BY c.created_at LIMIT 1) candidate_type,(SELECT COUNT(*) FROM import_candidates c WHERE c.import_id=i.id) candidate_count FROM imports i LEFT JOIN import_messages m ON m.import_id=i.id AND m.sequence_no=1 WHERE i.trip_id=? ORDER BY i.created_at DESC LIMIT 100`).bind(tripId).all()).results??[];
+  return json({imports:rows.map(row=>({...row,display_status:displayImportStatus(String((row as Record<string,unknown>).status))}))},{},request,env);
+}
+
+// User-scoped feed of forwarded booking emails, including those not yet tied to a
+// trip (needs_trip) or that could not be read. This is the only surface that can
+// show "Needs trip"/"Couldn't read" states, since those inbound rows have no
+// trip and never appear in the per-trip import list.
+export async function listInboundEmails(request:Request,env:Env,auth:AuthContext):Promise<Response>{
+  if(!auth.userId)return json({emails:[]},{},request,env);
+  const rows=(await env.DB.prepare(`SELECT id,trip_id,import_id,sender_normalized,subject,status,rejection_code,received_at FROM inbound_booking_emails WHERE user_id=? ORDER BY received_at DESC LIMIT 100`).bind(auth.userId).all<Record<string,unknown>>()).results??[];
+  return json({emails:rows.map(row=>({...row,display_status:displayInboundStatus(String(row.status))}))},{},request,env);
+}
+
+// Map internal statuses to the fixed user-facing vocabulary (Received, Processing,
+// Added, Needs review, Needs trip, Couldn't read) so the client never has to know
+// the internal state machine.
+function displayInboundStatus(status:string):string{
+  switch(status){
+    case 'added':return 'added';
+    case 'needs_confirmation':case 'needs_review':return 'needs_review';
+    case 'needs_trip':return 'needs_trip';
+    case 'received':return 'received';
+    case 'processing':return 'processing';
+    default:return 'couldnt_read'; // unsupported, unknown_sender, duplicate, rejected, couldnt_read
+  }
+}
+function displayImportStatus(status:string):string{
+  switch(status){
+    case 'completed':case 'partial':return 'added';
+    case 'needs_confirmation':return 'needs_review';
+    case 'unsupported':return 'couldnt_read';
+    default:return 'needs_review';
+  }
 }
 
 export async function getImport(request:Request,env:Env,auth:AuthContext,tripId:string,importId:string):Promise<Response>{
@@ -88,6 +128,26 @@ export async function getImport(request:Request,env:Env,auth:AuthContext,tripId:
   if(!imported)throw new HttpError(404,'IMPORT_NOT_FOUND','Import was not found.');
   const candidates=(await env.DB.prepare(`SELECT id,candidate_type,payload_json,confidence,validation_status,created_at FROM import_candidates WHERE import_id=? ORDER BY created_at`).bind(importId).all<Record<string,unknown>>()).results??[];
   return json({import:imported,candidates:candidates.map(shapeCandidate)},{},request,env);
+}
+
+// Delete a forwarded/uploaded booking everywhere it surfaces. Removes the import
+// row plus its candidates/messages, and hard-deletes the matching inbound
+// booking-email feed rows, so the entry disappears from the per-trip Import
+// History, the header notification, and the user's inbound feed at once. D1 does
+// not enforce FK cascades, so children are removed explicitly. Any booking that
+// was already materialized onto the timeline is a separate confirmed entity and
+// is intentionally left in place.
+export async function deleteImport(request:Request,env:Env,auth:AuthContext,tripId:string,importId:string):Promise<Response>{
+  await requireTripAccess(env,auth,tripId,true);
+  const imported=await env.DB.prepare(`SELECT id FROM imports WHERE id=? AND trip_id=?`).bind(importId,tripId).first();
+  if(!imported)throw new HttpError(404,'IMPORT_NOT_FOUND','Import was not found.');
+  await env.DB.batch([
+    env.DB.prepare(`DELETE FROM inbound_booking_emails WHERE import_id=?`).bind(importId),
+    env.DB.prepare(`DELETE FROM import_candidates WHERE import_id=?`).bind(importId),
+    env.DB.prepare(`DELETE FROM import_messages WHERE import_id=?`).bind(importId),
+    env.DB.prepare(`DELETE FROM imports WHERE id=? AND trip_id=?`).bind(importId,tripId),
+  ]);
+  return json({deleted:true},{},request,env);
 }
 
 export async function resolveImportCandidate(request:Request,env:Env,auth:AuthContext,tripId:string,importId:string):Promise<Response>{
@@ -117,11 +177,7 @@ export async function resolveImportCandidate(request:Request,env:Env,auth:AuthCo
   if(Number(claim.meta?.changes??0)!==1)throw new HttpError(409,'IMPORT_ALREADY_RESOLVED','This import candidate has already been resolved.');
   let entityId:string;
   try{
-    if(resolvedType==='flight')entityId=await materializeFlight(env,tripId,importId,payload,entitySource);
-    else if(resolvedType==='stay'||resolvedType==='hotel')entityId=await materializeStay(env,tripId,importId,payload,entitySource);
-    else if(['train','car','transfer','ferry'].includes(resolvedType))entityId=await materializeTransport(env,tripId,importId,resolvedType,payload);
-    else if(['activity','restaurant','reservation','generic_ticket'].includes(resolvedType))entityId=await materializePlan(env,tripId,importId,resolvedType,payload);
-    else throw new HttpError(400,'UNSUPPORTED_IMPORT_CANDIDATE','This candidate type cannot be confirmed.');
+    entityId=await materializeCandidate(env,tripId,importId,resolvedType,payload,entitySource);
   }catch(error){
     // Materialize failed after the claim: release the candidate back to pending
     // so the user can retry rather than being stuck at a confirmed-but-empty row.
@@ -132,6 +188,20 @@ export async function resolveImportCandidate(request:Request,env:Env,auth:AuthCo
   await recordBetaEvent(env,auth,'import_confirmed',tripId);
   await recordBookingMilestones(env,auth,tripId);
   return json({resolved:'confirmed',entityId,candidateType:resolvedType},{},request,env);
+}
+
+// Route a resolved candidate to the correct normalized booking model. Shared by
+// the interactive resolve endpoint and the inbound-email auto-create path so the
+// two never diverge. 'cruise' has no dedicated transport enum value, so it is
+// filed as the closest allowed type ('ferry'); 'generic_ticket'/'reservation'
+// both land as reservations. Throws for genuinely unsupported types or when a
+// materializer's required fields are missing (caller decides how to recover).
+export async function materializeCandidate(env:Env,tripId:string,importId:string,candidateType:string,payload:Record<string,unknown>,source:'email'|'upload'='email'):Promise<string>{
+  if(candidateType==='flight')return materializeFlight(env,tripId,importId,payload,source);
+  if(candidateType==='stay'||candidateType==='hotel')return materializeStay(env,tripId,importId,payload,source);
+  if(['train','car','transfer','ferry','cruise'].includes(candidateType))return materializeTransport(env,tripId,importId,candidateType==='cruise'?'ferry':candidateType,payload,source);
+  if(['activity','restaurant','reservation','generic_ticket'].includes(candidateType))return materializePlan(env,tripId,importId,candidateType==='generic_ticket'?'reservation':candidateType,payload,source);
+  throw new HttpError(400,'UNSUPPORTED_IMPORT_CANDIDATE','This candidate type cannot be confirmed.');
 }
 
 async function materializeFlight(env:Env,tripId:string,importId:string,p:Record<string,unknown>,source:'email'|'upload'='email'):Promise<string>{
@@ -182,7 +252,7 @@ async function ensureNamedLocation(env:Env,tripId:string,type:string,name:string
     env.DB.prepare(`INSERT INTO trip_locations(trip_id,location_id,created_at) VALUES (?,?,?)`).bind(tripId,id,now),
   ]);return id;
 }
-async function updateImportStatus(env:Env,importId:string):Promise<void>{
+export async function updateImportStatus(env:Env,importId:string):Promise<void>{
   const counts=(await env.DB.prepare(`SELECT validation_status,COUNT(*) count FROM import_candidates WHERE import_id=? GROUP BY validation_status`).bind(importId).all<{validation_status:string;count:number}>()).results??[];
   const map=Object.fromEntries(counts.map(x=>[x.validation_status,Number(x.count)]));
   const pending=map.pending??0,confirmed=map.confirmed??0,rejected=map.rejected??0,invalid=map.invalid??0;
@@ -219,25 +289,25 @@ function normalizeUploadCandidate(raw:Record<string,unknown>){
   return {type,confidence,payload,warnings};
 }
 
-async function materializeTransport(env:Env,tripId:string,importId:string,type:string,p:Record<string,unknown>):Promise<string>{
+async function materializeTransport(env:Env,tripId:string,importId:string,type:string,p:Record<string,unknown>,source:'email'|'upload'='upload'):Promise<string>{
   const title=requiredText(p.title,'title',160),dep=nullableInt(p.scheduledDepartureUtc),arr=nullableInt(p.scheduledArrivalUtc);
   if(dep!=null&&arr!=null&&arr<dep)throw new HttpError(400,'VALIDATION_ERROR','Arrival cannot be before departure.');
   const from=await optionalImportLocation(env,tripId,optionalText(p.departureName,160),optionalText(p.departureTimezone,80));
   const to=await optionalImportLocation(env,tripId,optionalText(p.arrivalName,160),optionalText(p.arrivalTimezone,80));
   const id=uuid(),now=nowMs();
   await env.DB.batch([
-    env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,start_location_id,end_location_id,starts_at_utc,ends_at_utc,start_timezone,end_timezone,source_type,confidence,created_at,updated_at,version) VALUES (?,?,'transport','confirmed',?,?,?,?,?,?,?,'upload','confirmed',?,?,1)`).bind(id,tripId,title,from,to,dep,arr,optionalText(p.departureTimezone,80),optionalText(p.arrivalTimezone,80),now,now),
+    env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,start_location_id,end_location_id,starts_at_utc,ends_at_utc,start_timezone,end_timezone,source_type,confidence,created_at,updated_at,version) VALUES (?,?,'transport','confirmed',?,?,?,?,?,?,?,?,'confirmed',?,?,1)`).bind(id,tripId,title,from,to,dep,arr,optionalText(p.departureTimezone,80),optionalText(p.arrivalTimezone,80),source,now,now),
     env.DB.prepare(`INSERT INTO transport_segments(trip_item_id,transport_type,carrier_name,service_number,departure_location_id,arrival_location_id,scheduled_departure_utc,scheduled_arrival_utc,departure_timezone,arrival_timezone,booking_reference,booking_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,'confirmed')`).bind(id,type,optionalText(p.carrierName,120),optionalText(p.serviceNumber,40),from,to,dep,arr,optionalText(p.departureTimezone,80),optionalText(p.arrivalTimezone,80),optionalText(p.confirmationNumber,80)),
   ]);
-  await recordChangeEvent(env,tripId,'trip_item',id,'import_confirmed',null,{importId,candidateType:type,title},'upload',importId);return id;
+  await recordChangeEvent(env,tripId,'trip_item',id,'import_confirmed',null,{importId,candidateType:type,title},source,importId);return id;
 }
-async function materializePlan(env:Env,tripId:string,importId:string,type:string,p:Record<string,unknown>):Promise<string>{
+async function materializePlan(env:Env,tripId:string,importId:string,type:string,p:Record<string,unknown>,source:'email'|'upload'='upload'):Promise<string>{
   const title=requiredText(p.title,'title',160),start=nullableInt(p.startsAtUtc),end=nullableInt(p.endsAtUtc);if(start!=null&&end!=null&&end<start)throw new HttpError(400,'VALIDATION_ERROR','End cannot be before start.');
   const itemType=type==='activity'?'activity':'reservation',id=uuid(),now=nowMs(),timezone=optionalText(p.timezone,80),reference=optionalText(p.confirmationNumber,100);
-  const statements=[env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,starts_at_utc,ends_at_utc,start_timezone,end_timezone,source_type,confidence,created_at,updated_at,version) VALUES (?,?,?,?,?,?,?,?,?,'upload','confirmed',?,?,1)`).bind(id,tripId,itemType,'confirmed',title,start,end,timezone,timezone,now,now)];
+  const statements=[env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,starts_at_utc,ends_at_utc,start_timezone,end_timezone,source_type,confidence,created_at,updated_at,version) VALUES (?,?,?,?,?,?,?,?,?,?,'confirmed',?,?,1)`).bind(id,tripId,itemType,'confirmed',title,start,end,timezone,timezone,source,now,now)];
   if(itemType==='activity')statements.push(env.DB.prepare(`INSERT INTO activities(trip_item_id,activity_type,reservation_reference,notes) VALUES (?,?,?,?)`).bind(id,type,reference,optionalText(p.notes,1000)));
   else statements.push(env.DB.prepare(`INSERT INTO reservations(trip_item_id,reservation_type,confirmation_number,window_start_utc,window_end_utc,notes) VALUES (?,?,?,?,?,?)`).bind(id,type,reference,start,end,optionalText(p.notes,1000)));
-  await env.DB.batch(statements);await recordChangeEvent(env,tripId,'trip_item',id,'import_confirmed',null,{importId,candidateType:type,title},'upload',importId);return id;
+  await env.DB.batch(statements);await recordChangeEvent(env,tripId,'trip_item',id,'import_confirmed',null,{importId,candidateType:type,title},source,importId);return id;
 }
 async function optionalImportLocation(env:Env,tripId:string,name:string|null,tz:string|null):Promise<string|null>{if(!name)return null;const existing=await env.DB.prepare(`SELECT l.id FROM locations l JOIN trip_locations tl ON tl.location_id=l.id WHERE tl.trip_id=? AND lower(l.display_name)=lower(?) LIMIT 1`).bind(tripId,name).first<{id:string}>();if(existing)return existing.id;const id=uuid(),now=nowMs();await env.DB.batch([env.DB.prepare(`INSERT INTO locations(id,type,display_name,timezone,created_at,updated_at,version) VALUES (?,'other',?,?,?,?,1)`).bind(id,name,tz,now,now),env.DB.prepare(`INSERT INTO trip_locations(trip_id,location_id,created_at) VALUES (?,?,?)`).bind(tripId,id,now)]);return id;}
 function nullableInt(v:unknown):number|null{if(v==null||v==='')return null;if(typeof v!=='number'||!Number.isSafeInteger(v))throw new HttpError(400,'VALIDATION_ERROR','Time must be an integer timestamp.');return v;}

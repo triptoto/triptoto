@@ -10,6 +10,35 @@ export interface ConnectionAssessment {
   requiredMinutes?: number;
 }
 
+export interface LiveFlightImpactInput {
+  itemId: string;
+  disruptionState: 'none' | 'delayed' | 'cancelled' | 'diverted' | 'unknown';
+  delayMinutes?: number;
+  cancellationConfirmed?: boolean;
+}
+
+export interface LiveFlightImpactAssessment {
+  impactType: 'time' | 'status';
+  severity: Severity;
+  explanationCode: string;
+}
+
+export function assessLiveFlightImpact(input: LiveFlightImpactInput): LiveFlightImpactAssessment | undefined {
+  if (input.disruptionState === 'cancelled') {
+    return input.cancellationConfirmed
+      ? { impactType: 'status', severity: 'high', explanationCode: 'FLIGHT_CANCELLATION_CONFIRMED' }
+      : { impactType: 'status', severity: 'medium', explanationCode: 'FLIGHT_CANCELLATION_REPORTED' };
+  }
+  if (input.disruptionState === 'diverted') return { impactType: 'status', severity: 'high', explanationCode: 'FLIGHT_DIVERTED' };
+  if (input.disruptionState === 'delayed' || (input.delayMinutes ?? 0) > 0) {
+    const minutes = input.delayMinutes ?? 0;
+    if (minutes >= 120) return { impactType: 'time', severity: 'high', explanationCode: 'FLIGHT_DELAY_120_PLUS' };
+    if (minutes >= 45) return { impactType: 'time', severity: 'medium', explanationCode: 'FLIGHT_DELAY_45_PLUS' };
+    return { impactType: 'time', severity: 'low', explanationCode: 'FLIGHT_DELAY_REPORTED' };
+  }
+  return undefined;
+}
+
 export const CONNECTION_REQUIREMENT_MINUTES = {
   terminalChange: 15,
   immigration: 45,

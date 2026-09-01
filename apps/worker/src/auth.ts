@@ -53,7 +53,12 @@ export async function requireAuth(request: Request, env: Env): Promise<AuthConte
   if (!body || !signature) throw new HttpError(401, 'INVALID_SESSION', 'Session token is invalid.');
 
   const expected = await hmac(secret(env), body);
-  const supplied = base64UrlDecode(signature);
+  let supplied: Uint8Array;
+  try {
+    supplied = base64UrlDecode(signature);
+  } catch {
+    throw new HttpError(401, 'INVALID_SESSION', 'Session token is invalid.');
+  }
   if (supplied.length !== expected.length) throw new HttpError(401, 'INVALID_SESSION', 'Session token is invalid.');
   let diff = 0;
   for (let i = 0; i < expected.length; i++) diff |= expected[i] ^ supplied[i];

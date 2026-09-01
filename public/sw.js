@@ -1,14 +1,12 @@
-const CACHE='tripto-shell-product-v2-manual-booking-v2';
+const CACHE='tripto-shell-product-v2-qa-fixes-v1';
 const PLACES_CACHE='tripto-places-2026-08-26';
 const PLACES_PATHS=new Set(['/places-provider.js','/places-search-worker.js','/data/places-2026-08-26.json']);
-const ASSETS=['/','/app','/index.html','/mobile-routes.js','/mobile-trip-rules.js','/vendor/phosphor/phosphor.css','/vendor/phosphor/Phosphor.woff2','/mobile-app.css','/google-auth-client.js','/manual-booking-attachments.js','/mobile-app.js','/manifest.webmanifest','/assets/google-g.svg','/assets/welcome-bg-3.jpg','/assets/trips-bg.jpg','/favicon.svg','/favicon-32.png','/favicon-16.png','/apple-touch-icon.png','/icon-192.png','/icon-512.png'];
+const ASSETS=['/','/app','/index.html','/canonical-host.js','/mobile-routes.js','/mobile-trip-rules.js','/vendor/phosphor/phosphor.css','/vendor/phosphor/Phosphor.woff2','/mobile-app.css','/google-auth-client.js','/manual-booking-attachments.js','/mobile-app.js','/manifest.webmanifest','/assets/google-g.svg','/assets/welcome-journey-flat-v1.png','/assets/trips-bg.jpg','/favicon.svg','/favicon-32.png','/favicon-16.png','/apple-touch-icon.png','/icon-192.png','/icon-512.png'];
 
 self.addEventListener('install',event=>{
-  // Best-effort precache: one renamed/404 asset during a deploy must not reject
-  // the whole install and leave users with no offline shell. Each asset is
-  // cached independently; the fetch handler still runtime-caches on first load.
-  event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(ASSETS.map(asset=>cache.add(asset)))));
-  self.skipWaiting();
+  // Do not activate a partially cached shell. A failed essential asset keeps the
+  // previous, complete service worker in control until the next successful update.
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
 
 self.addEventListener('activate',event=>{
@@ -55,7 +53,7 @@ self.addEventListener('fetch',event=>{
   }
 
   event.respondWith((async()=>{
-    const cached=await caches.match(request);
+    const cached=await caches.match(request,{ignoreSearch:true});
     if(cached)return cached;
     const response=await fetch(request);
     if(response.ok&&url.origin===self.location.origin){

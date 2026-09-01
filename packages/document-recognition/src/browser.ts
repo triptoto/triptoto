@@ -35,15 +35,25 @@ async function recognizeFile(file:File):Promise<RecognitionResult>{
 async function pdfText(bytes:Uint8Array):Promise<TextExtraction[]>{
   const modulePath='/vendor/pdf/pdf.min.mjs',pdfjs=await import(modulePath);
   pdfjs.GlobalWorkerOptions.workerSrc='/vendor/pdf/pdf.worker.min.mjs';
-  const task=pdfjs.getDocument({data:bytes,wasmUrl:'/vendor/pdf/wasm/',standardFontDataUrl:'/vendor/pdf/standard_fonts/'}),pdf=await task.promise;
+  // pdf.js runs in a Web Worker and TRANSFERS (detaches) the data buffer we pass.
+  // extractText and extractBarcodes share the same `bytes` and run concurrently, so
+  // hand pdf.js a throwaway copy — otherwise the sibling renderPdf()/sha256 hit a
+  // detached ArrayBuffer ("Underlying ArrayBuffer has been detached").
+  const task=pdfjs.getDocument({data:bytes.slice(),wasmUrl:'/vendor/pdf/wasm/',standardFontDataUrl:'/vendor/pdf/standard_fonts/'}),pdf=await task.promise;
   const parts:string[]=[];
   for(let i=1;i<=Math.min(pdf.numPages,12);i++){const page=await pdf.getPage(i),content=await page.getTextContent();parts.push(content.items.map((item:any)=>typeof item.str==='string'?item.str:'').join(' '));}
   const text=parts.join('\n').trim();
   if(text.length>=40)return [{text,source:'embedded_text'}];
-  const canvases=await renderPdf(bytes,Math.min(pdf.numPages,3)),rows:TextExtraction[]=[];
-  for(const canvas of canvases)rows.push(...await ocrCanvas(canvas));
-  if(!rows.length)rows.push({text,source:'embedded_text',warnings:['This PDF has little readable text and local OCR was unavailable.']});
-  return rows;
+  // Text-poor PDF (scanned, or fonts without a ToUnicode map): fall back to OCR
+  // of the rendered pages. Rendering to a canvas and running Tesseract are both
+  // fragile on mobile — if either throws we still return whatever text we have
+  // with a clear warning, rather than rejecting the whole recognition.
+  try{
+    const canvases=await renderPdf(bytes,Math.min(pdf.numPages,3)),rows:TextExtraction[]=[];
+    for(const canvas of canvases)rows.push(...await ocrCanvas(canvas));
+    if(rows.some((row)=>row.text.trim().length))return rows;
+  }catch{/* fall through to the little-readable-text warning below */}
+  return [{text,source:'embedded_text',warnings:['This PDF has little readable text and local OCR was unavailable. Add the booking details manually.']}];
 }
 
 async function renderPdf(bytes:Uint8Array,maxPages:number):Promise<HTMLCanvasElement[]>{

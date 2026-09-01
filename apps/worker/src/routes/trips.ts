@@ -28,16 +28,39 @@ export async function createTrip(request: Request, env: Env, auth: AuthContext):
   const endsOn = optionalDate(body.endsOn, 'endsOn');
   if (startsOn && endsOn && endsOn < startsOn) throw new HttpError(400, 'VALIDATION_ERROR', 'endsOn cannot be before startsOn.');
 
+  const clientRequestId = readIdempotencyKey(request);
+  const requestFingerprint = clientRequestId
+    ? await digestJson({ title, lifecycleState, startsOn, endsOn })
+    : null;
+  if (clientRequestId && requestFingerprint) {
+    const existing = await env.DB.prepare(`SELECT request_fingerprint,trip_id FROM trip_create_idempotency WHERE device_id=? AND client_request_id=?`)
+      .bind(auth.deviceId, clientRequestId).first<{request_fingerprint:string;trip_id:string}>();
+    if (existing) {
+      if (existing.request_fingerprint !== requestFingerprint) throw new HttpError(409, 'IDEMPOTENCY_BODY_MISMATCH', 'This request ID was already used for different trip details.');
+      const trip = await env.DB.prepare('SELECT * FROM trips WHERE id=? AND deleted_at IS NULL').bind(existing.trip_id).first();
+      if (!trip) throw new HttpError(409, 'IDEMPOTENCY_RESOURCE_UNAVAILABLE', 'The original trip is no longer available. Start a new trip request.');
+      return json({ trip, replayed: true }, {}, request, env);
+    }
+  }
+
   const activeCount = await env.DB.prepare(`SELECT COUNT(*) AS count FROM trips WHERE deleted_at IS NULL AND lifecycle_state IN ('draft','upcoming','active') AND ${auth.userId ? 'owner_user_id=?' : 'created_by_device_id=? AND owner_user_id IS NULL'}`)
     .bind(auth.userId ?? auth.deviceId).first<{ count: number }>();
   if (Number(activeCount?.count ?? 0) >= 10) throw new HttpError(409, 'TRIP_LIMIT_REACHED', 'Beta limit of 10 active trips reached.');
 
   const id = uuid();
   const now = nowMs();
-  await env.DB.prepare(`INSERT INTO trips (id, owner_user_id, created_by_device_id, title, lifecycle_state, starts_on, ends_on, created_at, updated_at, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`)
-    .bind(id, auth.userId ?? null, auth.deviceId, title, lifecycleState, startsOn, endsOn, now, now).run();
-  if (auth.userId) {
-    await env.DB.prepare(`INSERT OR IGNORE INTO trip_members (trip_id,user_id,role,status,joined_at) VALUES (?,?,'owner','active',?)`).bind(id, auth.userId, now).run();
+  const statements = [env.DB.prepare(`INSERT INTO trips (id, owner_user_id, created_by_device_id, title, lifecycle_state, starts_on, ends_on, created_at, updated_at, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`)
+    .bind(id, auth.userId ?? null, auth.deviceId, title, lifecycleState, startsOn, endsOn, now, now)];
+  if (auth.userId) statements.push(env.DB.prepare(`INSERT OR IGNORE INTO trip_members (trip_id,user_id,role,status,joined_at) VALUES (?,?,'owner','active',?)`).bind(id, auth.userId, now));
+  if (clientRequestId && requestFingerprint) statements.push(env.DB.prepare(`INSERT INTO trip_create_idempotency(device_id,client_request_id,request_fingerprint,trip_id,created_at) VALUES (?,?,?,?,?)`).bind(auth.deviceId,clientRequestId,requestFingerprint,id,now));
+  try { await env.DB.batch(statements); }
+  catch (error) {
+    if (!clientRequestId || !requestFingerprint) throw error;
+    const existing = await env.DB.prepare(`SELECT request_fingerprint,trip_id FROM trip_create_idempotency WHERE device_id=? AND client_request_id=?`).bind(auth.deviceId,clientRequestId).first<{request_fingerprint:string;trip_id:string}>();
+    if (!existing || existing.request_fingerprint !== requestFingerprint) throw error;
+    const trip = await env.DB.prepare('SELECT * FROM trips WHERE id=? AND deleted_at IS NULL').bind(existing.trip_id).first();
+    if (!trip) throw error;
+    return json({ trip, replayed: true }, {}, request, env);
   }
   const trip = await env.DB.prepare('SELECT * FROM trips WHERE id=?').bind(id).first();
   await recordBetaEvent(env,auth,'trip_created',id);
@@ -46,6 +69,22 @@ export async function createTrip(request: Request, env: Env, auth: AuthContext):
     : await env.DB.prepare(`SELECT COUNT(*) count FROM trips WHERE created_by_device_id=? AND owner_user_id IS NULL AND deleted_at IS NULL`).bind(auth.deviceId).first<{count:number}>();
   if(Number(totalTrips?.count??0)>=2)await recordBetaEvent(env,auth,'second_trip_created',null);
   return json({ trip }, { status: 201 }, request, env);
+}
+
+function readIdempotencyKey(request: Request): string | null {
+  const standard = request.headers.get('idempotency-key')?.trim() || '';
+  const tripto = request.headers.get('x-tripto-client-request-id')?.trim() || '';
+  if (standard && tripto && standard !== tripto) throw new HttpError(400, 'IDEMPOTENCY_KEY_CONFLICT', 'Idempotency headers must contain the same request ID.');
+  const value = standard || tripto;
+  if (!value) return null;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._~:-]{15,119}$/.test(value)) throw new HttpError(400, 'INVALID_IDEMPOTENCY_KEY', 'The client request ID must be an opaque 16-120 character identifier.');
+  return value;
+}
+
+async function digestJson(value: unknown): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
 export async function getTrip(request: Request, env: Env, auth: AuthContext, tripId: string): Promise<Response> {

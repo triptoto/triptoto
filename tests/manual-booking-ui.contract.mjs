@@ -182,7 +182,6 @@ const formBranches = {
 assertFormFields(formBranches.flight, {
   carrierName: { required: true },
   flightNumber: { required: true },
-  departureDate: { required: true },
   departureLocalTime: { required: true },
   arrivalDate: {},
   arrivalLocalTime: {},
@@ -199,6 +198,14 @@ assertFormFields(formBranches.flight, {
   notes: {},
 }, "flight form");
 assert(formBranches.flight.includes("manualRouteCard(kind"), "flight must require a from/to route");
+assert(
+  formBranches.flight.includes('dateRangeField("departureDate", "returnDepartureDate"'),
+  "flight must choose departure and optional return dates from one calendar",
+);
+assert(
+  formBranches.flight.includes("{allowSingle:true}"),
+  "the shared flight calendar must support one-way travel without requiring a return date",
+);
 
 assertFormFields(formBranches.hotel, {
   propertyName: { required: true },
@@ -641,17 +648,21 @@ assert(
 );
 assert.equal(
   (saveForm.match(/headers\s*:\s*manualCreateHeaders/g) || []).length,
-  3,
-  "stay, transport, and activity/reservation create POSTs must all reuse the stable idempotency headers",
+  2,
+  "stay and activity/reservation create POSTs must reuse the stable idempotency headers; transport uses its key-aware helper",
 );
 assert.equal(
   (saveForm.match(/manualTransportCreateOptions\(/g) || []).length,
-  2,
-  "both specialized transport and flight/train creates must use the idempotent transport-create helper",
+  3,
+  "specialized transport, outbound flight/train, and return-flight creates must use the idempotent transport-create helper",
 );
 assert(
-  /manualTransportCreateOptions\s*=\s*\([^)]*\)\s*=>\s*\(\{[^}]*headers\s*:\s*manualCreateHeaders/.test(saveForm),
-  "the shared transport-create helper must carry the stable idempotency headers",
+  /manualTransportCreateOptions\s*=\s*\(body,key=clientRequestId\)\s*=>\s*\(\{[^}]*["']Idempotency-Key["']\s*:\s*key/.test(saveForm),
+  "the transport-create helper must default to the stable request id while allowing a distinct child key",
+);
+assert(
+  saveForm.includes('`${clientRequestId}:return`'),
+  "a round-trip return leg must use a distinct stable idempotency key",
 );
 
 // Every More Details fact must either reach a first-class API field or the

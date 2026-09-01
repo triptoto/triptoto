@@ -1,0 +1,11 @@
+[
+  {
+    "number": "LY 383",
+    "status": "Canceled",
+    "codeshareStatus": "IsOperator",
+    "lastUpdatedUtc": "2026-08-20T05:50:00Z",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" } },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" } }
+  }
+]

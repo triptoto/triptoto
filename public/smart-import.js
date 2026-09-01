@@ -10533,8 +10533,11 @@
       validateDocumentInput(input);
       const kind = detectDocumentKind(input);
       const [textRows, barcodes] = await Promise.all([
-        this.adapter.extractText(input, kind),
-        this.adapter.extractBarcodes(input, kind)
+        guardExtraction(
+          () => this.adapter.extractText(input, kind),
+          [{ text: "", source: "embedded_text", warnings: ["We could not read this document on your phone. Add the booking details manually."] }]
+        ),
+        guardExtraction(() => this.adapter.extractBarcodes(input, kind), [])
       ]);
       const checksum = await sha256Hex(input.bytes);
       const warnings = textRows.flatMap((row) => row.warnings ?? []);
@@ -10548,6 +10551,21 @@
     if (input.size !== input.bytes.byteLength) throw new Error("Document size does not match its bytes.");
     if (input.size <= 0) throw new Error("The selected document is empty.");
     if (input.size > SMART_IMPORT_MAX_BYTES) throw new Error("Document exceeds the 10 MiB limit.");
+  }
+  async function guardExtraction(run, fallback, timeoutMs = 45e3) {
+    let timer;
+    try {
+      return await Promise.race([
+        Promise.resolve().then(run),
+        new Promise((resolve) => {
+          timer = setTimeout(() => resolve(fallback), timeoutMs);
+        })
+      ]);
+    } catch {
+      return fallback;
+    } finally {
+      if (timer !== void 0) clearTimeout(timer);
+    }
   }
   function detectDocumentKind(input) {
     const ext = input.name.toLowerCase().split(".").pop() ?? "";
@@ -10583,9 +10601,41 @@
     const type = ranked[0][0];
     const source = cleanRows[0]?.source ?? (barcodes.length ? "barcode" : "embedded_text");
     const fields = {};
+    add(fields, "confirmationNumber", match(text, /(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+(?:code|reference|ref|number|no\.?)|reservation(?:\s+(?:number|code|no\.?))?|record\s+locator|pnr|reference)\s*[:#-]?\s*([A-Z0-9]{5,12})\b/i), 0.82, source);
+    add(fields, "address", match(text, /(?:address|location)\s*:\s*([^\n]{6,180})/i), 0.68, source);
+    add(fields, "seat", match(text, /\bseat\s*[:#-]?\s*([0-9]{1,3}[A-Z])\b/i), 0.88, source);
+    add(fields, "gate", match(text, /\bgate\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z]?\d{1,3}[A-Z]?)\b/i), 0.82, source);
+    add(fields, "terminal", match(text, /\bterminal\s*[:#-]?\s*(\d{1,2}[A-Z]?)\b|\b(\d{1,2}[A-Z]?)\s+terminal\b/i), 0.82, source);
+    if (barcodes.length) add(fields, "barcodeValue", barcodes[0].value, 0.94, "barcode");
+    const flightSegments = type === "flight" ? extractFlightSegments(text) : [];
+    if (type === "flight" && flightSegments.length) {
+      const routing = extractFlightRouting(text);
+      const routeMatch = text.match(/\b([A-Z]{3})\s+[A-Z]{2}\d?\s+([A-Z]{3})\b/);
+      const outDep = match(text, /(?:from|departure|departing)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i) || (routeMatch?.[1] ?? null);
+      const outArr = match(text, /(?:to|arrival|arriving)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i) || (routeMatch?.[2] ?? null);
+      const evidence = cleanRows.slice(0, 3).map((r) => ({ source: r.source, text: r.text.slice(0, 240) }));
+      return flightSegments.map((seg, i) => {
+        const segFields = {};
+        if (i === 0) Object.assign(segFields, fields);
+        else if (fields.confirmationNumber) segFields.confirmationNumber = fields.confirmationNumber;
+        add(segFields, "airlineCode", seg.airline, 0.82, source);
+        add(segFields, "flightNumber", seg.number, 0.82, source);
+        add(segFields, "serviceNumber", `${seg.airline} ${seg.number}`, 0.8, source);
+        const dep = routing[i] ?? (i === 0 ? outDep : null);
+        const arr = routing[i + 1] ?? (i === 0 ? outArr : null);
+        add(segFields, "departureIata", dep, 0.7, source);
+        add(segFields, "arrivalIata", arr, 0.7, source);
+        add(segFields, "departureLocalDatetime", `${seg.depDate}T${seg.depTime}`, 0.8, source);
+        add(segFields, "arrivalLocalDatetime", `${seg.arrDate}T${seg.arrTime}`, 0.8, source);
+        segFields.title = { value: `${seg.airline} ${seg.number}`, confidence: round(0.7), source };
+        const segWarnings = [];
+        if (!dep || !arr) segWarnings.push("Confirm this leg\u2019s airports before adding.");
+        const confidence = round(Math.min(0.92, 0.62 + Object.keys(segFields).length * 0.03));
+        return { type, confidence, fields: segFields, warnings: segWarnings, evidence };
+      });
+    }
     add(fields, "title", titleFor(text, type), 0.55, source);
-    add(fields, "confirmationNumber", match(text, /(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+reference|reservation(?:\s+(?:number|code|no\.?))?|pnr|reference)\s*[:#-]?\s*([A-Z0-9]{5,12})\b/i), 0.82, source);
-    const serviceNumber = match(text, /\b(?:marketing\s+)?(?:flight|train|service)\s*(?:no\.?|number|#)?\s*[:#-]?\s*([A-Z]{1,3}\s?\d{1,5}[A-Z]?)\b/i);
+    let serviceNumber = match(text, /\b(?:marketing\s+)?(?:flight|train|service)\s*(?:no\.?|number|#)?\s*[:#-]?\s*([A-Z]{1,3}\s?\d{1,5}[A-Z]?)\b/i);
     add(fields, "serviceNumber", serviceNumber, 0.78, source);
     if (type === "flight" && serviceNumber) {
       const flight = serviceNumber.replace(/\s+/g, "").match(/^([A-Z]{2,3})(\d{1,5}[A-Z]?)$/i);
@@ -10596,22 +10646,28 @@
     }
     add(fields, "departureIata", match(text, /(?:from|departure|departing)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i), 0.72, source);
     add(fields, "arrivalIata", match(text, /(?:to|arrival|arriving)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i), 0.72, source);
-    add(fields, "propertyName", type === "hotel" ? firstMeaningfulLine(text) : null, 0.58, source);
-    add(fields, "address", match(text, /(?:address|location)\s*:\s*([^\n]{6,180})/i), 0.68, source);
-    add(fields, "seat", match(text, /\bseat\s*[:#-]?\s*([0-9]{1,3}[A-Z])\b/i), 0.88, source);
-    add(fields, "gate", match(text, /\bgate\s*[:#-]?\s*([A-Z0-9]{1,6})\b/i), 0.82, source);
-    add(fields, "terminal", match(text, /\bterminal\s*[:#-]?\s*([A-Z0-9]{1,8})\b/i), 0.82, source);
-    const dates = extractUnambiguousDates(text, source);
-    Object.assign(fields, dates.fields);
-    if (type === "hotel") {
-      if (fields.startDate) fields.checkInDate = fields.startDate;
-      if (fields.endDate) fields.checkOutDate = fields.endDate;
-      delete fields.startDate;
-      delete fields.endDate;
+    if (type === "flight" && (!fields.departureIata || !fields.arrivalIata)) {
+      const route = text.match(/\b([A-Z]{3})\s+[A-Z]{2}\d?\s+([A-Z]{3})\b/);
+      if (route) {
+        if (!fields.departureIata) add(fields, "departureIata", route[1], 0.6, source);
+        if (!fields.arrivalIata) add(fields, "arrivalIata", route[2], 0.6, source);
+      }
     }
-    if (barcodes.length) add(fields, "barcodeValue", barcodes[0].value, 0.94, "barcode");
+    add(fields, "propertyName", type === "hotel" ? firstMeaningfulLine(text) : null, 0.58, source);
+    let dateWarnings = [];
+    {
+      const dates = extractUnambiguousDates(text, source);
+      Object.assign(fields, dates.fields);
+      dateWarnings = dates.warnings;
+      if (type === "hotel") {
+        if (fields.startDate) fields.checkInDate = fields.startDate;
+        if (fields.endDate) fields.checkOutDate = fields.endDate;
+        delete fields.startDate;
+        delete fields.endDate;
+      }
+    }
     const base = Math.min(0.94, 0.38 + ranked[0][1] * 0.07 + Object.keys(fields).length * 0.035);
-    const warnings = [...dates.warnings];
+    const warnings = [...dateWarnings];
     if (base < 0.7) warnings.push("Low-confidence recognition requires careful review.");
     if (type === "flight" && (!fields.departureIata || !fields.arrivalIata)) warnings.push("Flight route is incomplete.");
     return [{ type, confidence: round(base), fields, warnings, evidence: cleanRows.slice(0, 3).map((r) => ({ source: r.source, text: r.text.slice(0, 240) })) }];
@@ -10620,7 +10676,8 @@
     const fields = {}, warnings = [];
     const iso = [...text.matchAll(/\b(20\d{2})[-/.](0[1-9]|1[0-2])[-/.](0[1-9]|[12]\d|3[01])\b/g)].map((m) => `${m[1]}-${m[2]}-${m[3]}`);
     const named = [...text.matchAll(/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)?\w*,?\s*(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2}),?\s+(20\d{2})\b/gi)];
-    const normalized = [...iso, ...named.map((m) => `${m[3]}-${String(month(m[1])).padStart(2, "0")}-${String(Number(m[2])).padStart(2, "0")}`)];
+    const dmon = [...text.matchAll(/\b(\d{1,2})\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s?,?\s?(20\d{2})\b/gi)].map((m) => `${m[3]}-${String(month(m[2])).padStart(2, "0")}-${String(Number(m[1])).padStart(2, "0")}`);
+    const normalized = [...iso, ...named.map((m) => `${m[3]}-${String(month(m[1])).padStart(2, "0")}-${String(Number(m[2])).padStart(2, "0")}`), ...dmon];
     if (normalized[0]) add(fields, "startDate", normalized[0], 0.84, source);
     if (normalized[1]) add(fields, "endDate", normalized[1], 0.8, source);
     if (/\b\d{1,2}[/.]\d{1,2}(?:[/.]\d{2,4})?\b/.test(text) && !normalized.length) warnings.push("Numeric date is ambiguous and was not guessed.");
@@ -10647,6 +10704,28 @@
   }
   function month(name) {
     return ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(name.slice(0, 3).toLowerCase()) + 1;
+  }
+  function extractFlightSegments(text) {
+    const re = /\b([A-Z]{2})\s?(\d{2,4})[A-Z]?\s+(\d{1,2}:\d{2})\s+(\d{1,2})\s?([A-Za-z]{3})[a-z]*\.?\s?(20\d{2})\s+(\d{1,2}:\d{2})\s+(\d{1,2})\s?([A-Za-z]{3})[a-z]*\.?\s?(20\d{2})/g;
+    const segments = [];
+    for (const m of text.matchAll(re)) {
+      const depMonth = month(m[5]), arrMonth = month(m[9]);
+      if (depMonth < 1 || arrMonth < 1) continue;
+      segments.push({
+        airline: m[1].toUpperCase(),
+        number: m[2],
+        depTime: m[3].padStart(5, "0"),
+        depDate: `${m[6]}-${String(depMonth).padStart(2, "0")}-${m[4].padStart(2, "0")}`,
+        arrTime: m[7].padStart(5, "0"),
+        arrDate: `${m[10]}-${String(arrMonth).padStart(2, "0")}-${m[8].padStart(2, "0")}`
+      });
+    }
+    return segments;
+  }
+  function extractFlightRouting(text) {
+    const region = (text.match(/fare\s*calc[^]{0,220}/i)?.[0] || "").split(/NUC|\bEND\b|\bROE\b|Form of payment|Total|Taxes/i)[0];
+    const deny = /* @__PURE__ */ new Set(["USD", "EUR", "GBP", "ILS", "CHF", "NUC", "END", "ROE", "EXT", "NVB", "NVA", "ADT", "CHD", "INF"]);
+    return [...region.matchAll(/\b([A-Z]{3})\b/g)].map((m) => m[1].toUpperCase()).filter((code) => !deny.has(code));
   }
   function starts(bytes, prefix) {
     return prefix.every((v, i) => bytes[i] === v);
@@ -10690,7 +10769,7 @@
   async function pdfText(bytes) {
     const modulePath = "/vendor/pdf/pdf.min.mjs", pdfjs = await import(modulePath);
     pdfjs.GlobalWorkerOptions.workerSrc = "/vendor/pdf/pdf.worker.min.mjs";
-    const task = pdfjs.getDocument({ data: bytes, wasmUrl: "/vendor/pdf/wasm/", standardFontDataUrl: "/vendor/pdf/standard_fonts/" }), pdf = await task.promise;
+    const task = pdfjs.getDocument({ data: bytes.slice(), wasmUrl: "/vendor/pdf/wasm/", standardFontDataUrl: "/vendor/pdf/standard_fonts/" }), pdf = await task.promise;
     const parts = [];
     for (let i = 1; i <= Math.min(pdf.numPages, 12); i++) {
       const page = await pdf.getPage(i), content = await page.getTextContent();
@@ -10698,10 +10777,13 @@
     }
     const text = parts.join("\n").trim();
     if (text.length >= 40) return [{ text, source: "embedded_text" }];
-    const canvases = await renderPdf(bytes, Math.min(pdf.numPages, 3)), rows = [];
-    for (const canvas of canvases) rows.push(...await ocrCanvas(canvas));
-    if (!rows.length) rows.push({ text, source: "embedded_text", warnings: ["This PDF has little readable text and local OCR was unavailable."] });
-    return rows;
+    try {
+      const canvases = await renderPdf(bytes, Math.min(pdf.numPages, 3)), rows = [];
+      for (const canvas of canvases) rows.push(...await ocrCanvas(canvas));
+      if (rows.some((row) => row.text.trim().length)) return rows;
+    } catch {
+    }
+    return [{ text, source: "embedded_text", warnings: ["This PDF has little readable text and local OCR was unavailable. Add the booking details manually."] }];
   }
   async function renderPdf(bytes, maxPages) {
     const modulePath = "/vendor/pdf/pdf.min.mjs", pdfjs = await import(modulePath);

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts",
+    "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/inbound-email.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts",
     "smoke:api": "bash scripts/smoke-api.sh",
     "build:smart-import": "esbuild packages/document-recognition/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --external:/vendor/* --outfile=public/smart-import.js",
     "update:airport-timezones": "node scripts/update-airport-timezones.mjs",
@@ -24,6 +24,7 @@
     "validate:candidate": "bash scripts/validate-candidate.sh",
     "validate:smart-import-auth": "bash scripts/validate-smart-import-auth.sh",
     "validate:manual-booking": "node tests/manual-booking-attachments.contract.mjs && node tests/manual-booking-ui.contract.mjs",
+    "validate:live-flights": "node --import tsx/esm tests/scenarios/live-flights.scenarios.ts && node tests/live-flights.contract.mjs",
     "validate:v2": "bash scripts/validate-v2.sh"
   },
   "devDependencies": {
