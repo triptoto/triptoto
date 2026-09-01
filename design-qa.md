@@ -100,3 +100,36 @@ The comparison normalizes both images to the dialog region. The reference is a c
 - The production Google control is rendered by Google Identity Services, so its internal typography remains provider-owned while its Welcome-only width and placement match the approved composition.
 
 final result: passed
+
+---
+
+# Design QA — V3 Journey Ribbon with V1 colors
+
+- Structure source: `/Users/arthurberlin/.codex/generated_images/01a02032-728d-7ce2-b111-775c80ec1cf0/exec-993696c8-6e69-4756-8c4d-c8dce2680aee.png`
+- Palette source: `/Users/arthurberlin/.codex/generated_images/01a02032-728d-7ce2-b111-775c80ec1cf0/exec-84d3aea8-22b3-44cd-924a-75a51e2ee436.png`
+- Implementation screenshot: `artifacts/ui-v3-colors-v1/timeline-390x844.png`
+- Welcome screenshot: `artifacts/ui-v3-colors-v1/welcome-390x844.png`
+- Small-phone screenshot: `artifacts/ui-v3-colors-v1/timeline-360x800.png`
+- Direct comparison: `artifacts/ui-v3-colors-v1/comparison-option3-vs-implementation.png`
+- Primary comparison viewport: `390 × 844`
+
+## Visible comparison
+
+The implementation preserves option 3's date capsules, circular journey nodes, emphasized current event, compact next summary, and light floating five-item dock. Option 1's slate, warm sand, off-white, cool-grey and restrained coral tokens intentionally replace option 3's original colors. Real application typography, data truth, clean routes and existing icon library remain intact.
+
+## Responsive and interaction checks
+
+- `360 × 800`: no horizontal overflow; dock visible above the safe area.
+- `390 × 844`: no horizontal overflow; Timeline and Welcome fit their intended mobile states.
+- `430 × 932`: app remains centered at the 430px maximum; dock remains visible.
+- Welcome: one background color, no bottom navigation, no vertical or horizontal scrolling.
+- Alerts opens and closes; Add opens the existing Add Booking flow; To-do routes to `/before-you-go`.
+- Browser console: no errors in the tested flows.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+Final result: passed

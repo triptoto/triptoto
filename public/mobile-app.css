@@ -1287,7 +1287,7 @@ html.theme-slate{
   color-scheme:dark;
   --paper:#2c3a47;--card:#354655;--surface:#4a6572;
   --ink:#f6f1e9;--ink-strong:#ffffff;--muted:#b7c2cb;--muted-soft:#8497a3;
-  --line:rgba(255,255,255,.11);--line-strong:rgba(255,255,255,.20);
+  --line:rgba(217,185,155,.14);--line-strong:rgba(217,185,155,.28);
   --icon:#d9b99b;
   --accent:#b84a62;--accent-ink:#f6f1e9;
   --chrome:#232f3a;--chrome-line:rgba(255,255,255,.08);
@@ -1866,6 +1866,142 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .live-flight-controls button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:86px;min-height:44px;padding:0 13px;border:1px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:12px;font-weight:750}
 .live-flight-controls button:disabled{opacity:.5}.live-flight-controls button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 @media(max-width:374px){.live-flight-strip{align-items:flex-start;flex-direction:column;gap:2px}.live-flight-strip span{text-align:left}.live-flight-controls{gap:8px}.live-flight-controls button{min-width:78px;padding-inline:9px}}
+
+/* Selected V3 system: Journey Ribbon timeline + light floating dock.
+   The layout follows option 3; all color comes from option 1's locked Slate
+   palette. Routing, data truth and interaction targets remain unchanged. */
+html.theme-slate .bottom-nav,
+html.theme-slate .trips-bg-screen .bottom-nav{
+  width:min(calc(100% - 20px),calc(var(--app-width) - 20px));height:72px;
+  bottom:calc(10px + env(safe-area-inset-bottom));padding:0 8px;
+  border:1px solid rgba(217,185,155,.32);border-radius:28px;
+  background:#f6f1e9;color:#212c36;
+  box-shadow:0 18px 42px -20px rgba(0,0,0,.75),0 4px 12px -8px rgba(0,0,0,.45);
+  -webkit-backdrop-filter:none;backdrop-filter:none
+}
+html.theme-slate .bottom-nav .nav-item{
+  position:relative;height:58px;gap:4px;border-radius:16px;
+  color:#68717a;font-size:10px;font-weight:500
+}
+html.theme-slate .bottom-nav .nav-item.active{color:#111215;font-weight:650}
+html.theme-slate .bottom-nav .nav-item:not(.nav-add).active::before{
+  content:"";position:absolute;top:-7px;left:50%;width:28px;height:3px;
+  border-radius:0 0 4px 4px;background:#b84a62;transform:translateX(-50%)
+}
+html.theme-slate .bottom-nav .nav-item__icon{color:currentColor}
+html.theme-slate .bottom-nav .nav-add{overflow:visible}
+html.theme-slate .bottom-nav .nav-add>span{
+  width:54px;height:54px;border:0;background:#111215;color:#f6f1e9;
+  box-shadow:0 12px 24px -14px rgba(17,18,21,.92)
+}
+html.theme-slate .bottom-nav .nav-add:active>span{opacity:1;transform:scale(.94)}
+html.theme-slate .bottom-nav .nav-item__badge{
+  top:-5px;right:-8px;background:#b84a62;color:#f6f1e9;
+  box-shadow:0 0 0 2px #f6f1e9
+}
+
+.timeline-screen--ribbon .timeline-page--journey{padding-top:10px}
+.timeline-screen--ribbon .timeline-context--next{
+  display:grid;grid-template-columns:46px minmax(0,1fr) auto;
+  grid-template-rows:auto auto;align-items:center;column-gap:10px;
+  margin:0 0 16px;padding:0 0 14px;border-bottom:1px solid var(--line)
+}
+.timeline-screen--ribbon .timeline-context--next>span{
+  grid-column:1;grid-row:1/3;align-self:center;color:var(--accent);
+  font-size:11px;letter-spacing:.14em
+}
+.timeline-screen--ribbon .timeline-context--next h2{
+  grid-column:2;grid-row:1;margin:0;color:var(--ink);font-size:16px;
+  font-weight:650;line-height:1.2;letter-spacing:-.02em
+}
+.timeline-screen--ribbon .timeline-context--next p{
+  grid-column:2;grid-row:2;margin:3px 0 0;color:var(--muted);font-size:12px;
+  line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.timeline-screen--ribbon .timeline-context--next button{
+  grid-column:3;grid-row:1/3;min-height:44px;margin:0;padding:0 2px 0 10px;
+  color:var(--icon);font-size:13px;font-weight:600
+}
+.timeline-ribbon{position:relative;isolation:isolate}
+.timeline-ribbon::before{
+  content:"";position:absolute;z-index:0;top:18px;bottom:22px;left:97px;width:2px;
+  border-radius:999px;background:linear-gradient(180deg,rgba(217,185,155,.72),rgba(217,185,155,.18))
+}
+.timeline-screen--ribbon .timeline-day{position:relative;z-index:1}
+.timeline-screen--ribbon .timeline-day+.timeline-day{margin-top:8px}
+.timeline-screen--ribbon .timeline-day__header{
+  grid-template-columns:56px 82px minmax(0,1fr);min-height:44px;padding:5px 0;
+  background:linear-gradient(90deg,var(--paper) 0,var(--paper) 148px,rgba(44,58,71,.96) 72%,rgba(44,58,71,0) 100%)
+}
+.timeline-screen--ribbon .timeline-day__header time{
+  grid-column:2;display:flex;align-items:center;justify-content:center;gap:5px;
+  width:78px;min-height:32px;padding:0 8px;border:1px solid var(--line-strong);
+  border-radius:999px;background:var(--card);color:var(--muted);
+  box-shadow:0 8px 20px -18px rgba(0,0,0,.8);font-size:10px;text-align:center
+}
+.timeline-screen--ribbon .timeline-day__header time span{
+  color:var(--icon);font-size:10px;font-weight:700;letter-spacing:.08em
+}
+.timeline-screen--ribbon .timeline-day__header time strong{
+  color:var(--ink);font-size:10px;font-weight:650;letter-spacing:.01em
+}
+.timeline-screen--ribbon .timeline-day__rail{display:none}
+.timeline-screen--ribbon .timeline-journey::before{display:none}
+.timeline-screen--ribbon .journey-event{
+  grid-template-columns:56px 82px minmax(0,1fr);min-height:86px;
+  border-radius:20px;color:var(--ink);transition:background .16s var(--ease),border-color .16s var(--ease)
+}
+.timeline-screen--ribbon .journey-event--next,
+.timeline-screen--ribbon .journey-event--active{
+  margin:3px 0;padding:3px 8px 3px 0;border:1px solid rgba(184,74,98,.38);
+  background:rgba(184,74,98,.12)
+}
+.timeline-screen--ribbon .journey-time{
+  color:var(--icon);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums
+}
+.timeline-screen--ribbon .journey-marker{
+  width:56px;height:56px;border:2px solid rgba(217,185,155,.78) !important;
+  border-radius:50% !important;background:var(--paper) !important;color:var(--icon);
+  box-shadow:0 0 0 6px var(--paper) !important
+}
+html.theme-slate .timeline-screen--ribbon .journey-event--next .journey-marker,
+html.theme-slate .timeline-screen--ribbon .journey-event--active .journey-marker{
+  border-color:var(--accent) !important;background:var(--paper) !important;color:var(--accent);
+  box-shadow:0 0 0 6px var(--paper),0 0 0 8px rgba(184,74,98,.22) !important
+}
+html.theme-slate .timeline-screen--ribbon .journey-event--staying .journey-marker{
+  border-color:var(--icon) !important;background:var(--paper) !important;color:var(--icon)
+}
+.timeline-screen--ribbon .journey-content{
+  grid-template-columns:minmax(0,1fr);gap:0;padding:12px 4px 12px 12px
+}
+.timeline-screen--ribbon .journey-copy{gap:4px}
+.timeline-screen--ribbon .journey-copy strong{
+  color:var(--ink);font-size:18px;font-weight:650;line-height:1.14;
+  white-space:normal;overflow:visible;text-overflow:clip
+}
+.timeline-screen--ribbon .journey-copy small{
+  color:var(--muted);font-size:13px;line-height:1.28;white-space:normal;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden
+}
+.timeline-screen--ribbon .timeline-flags{gap:6px;margin-bottom:1px}
+.timeline-screen--ribbon .timeline-flag{font-size:10px;letter-spacing:.09em}
+.timeline-screen--ribbon .timeline-flag--next,
+.timeline-screen--ribbon .timeline-flag--now{color:var(--accent)}
+.timeline-screen--ribbon .journey-chevron{display:none}
+.timeline-screen--ribbon .journey-event--past .journey-marker,
+.timeline-screen--ribbon .journey-event--past .journey-copy{opacity:.58}
+
+@media(max-width:374px){
+  html.theme-slate .bottom-nav,html.theme-slate .trips-bg-screen .bottom-nav{width:calc(100% - 16px);padding-inline:5px}
+  html.theme-slate .bottom-nav .nav-item{font-size:9px;padding-inline:0}
+  .timeline-ribbon::before{left:91px}
+  .timeline-screen--ribbon .timeline-day__header,
+  .timeline-screen--ribbon .journey-event{grid-template-columns:52px 78px minmax(0,1fr)}
+  .timeline-screen--ribbon .timeline-day__header time{width:74px}
+  .timeline-screen--ribbon .journey-marker{width:52px;height:52px}
+  .timeline-screen--ribbon .journey-copy strong{font-size:17px}
+}
 
 /* Final accessibility overrides must remain last in the cascade. */
 .welcome-v2__footer a,.first-run-secondary,.esim-code,.trip-v2-selector,.quick-trip-context>button,.wx-place-chip,.account-brand{min-height:44px}
