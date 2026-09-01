@@ -20,7 +20,7 @@ The app is mobile-first from 360px through 430px and remains centered at a maxim
 - Verified success text: `#1B704B`
 - Notification badge: `#B72B35` with white text
 
-The Welcome screen uses the same `#EEEEEE` canvas as the authenticated app, with a dark journey illustration and restrained sand/rose details inside it. This is part of the same production design, not a selectable theme.
+The Welcome screen is the single intentional exception to the authenticated canvas: it uses one uninterrupted bright coral `#FF6B6B` background from edge to edge. The journey artwork is blended into that canvas and must not appear as a separate dark card or second background. This is part of the same production design, not a selectable theme.
 
 ## Typography and controls
 

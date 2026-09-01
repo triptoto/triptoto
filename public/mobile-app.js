@@ -3435,7 +3435,7 @@
       active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
     );
     const theme = document.querySelector('meta[name="theme-color"]');
-    if (theme) theme.setAttribute("content", "#eeeeee");
+    if (theme) theme.setAttribute("content", active ? "#ff6b6b" : "#eeeeee");
   }
   function firstRunProductPreview() {
     return `<figure class="first-run-preview" aria-label="Example journey from departure to stay to what matters next"><img src="/assets/welcome-journey-ink-v2.png" alt="" width="853" height="820" decoding="async"></figure>`;

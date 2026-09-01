@@ -1478,8 +1478,8 @@ input,select,textarea,button,option:checked{accent-color:var(--accent)}
 
 
 html .trips-bg-screen .trip-group .mobile-list{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-card);overflow:hidden;padding:2px 18px;gap:0;margin-top:2px
+  background:transparent;border:0;border-radius:0;
+  box-shadow:none;overflow:visible;padding:0;gap:0;margin-top:2px
 }
 html .trips-bg-screen .trip-group .trip-row{
   padding:12px 0;border-radius:0;background:transparent;border-bottom:0
@@ -1619,30 +1619,37 @@ html.first-run-open .welcome-thread .first-run-preview::before{display:none;cont
 .welcome-thread :is(button,a):focus-visible{outline:3px solid #d7b394;outline-offset:3px}
 
 
-html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#eeeeee;background-image:none}
-html .first-run-screen.welcome-thread{background:#eeeeee;color:#111217}
-html .first-run-screen.welcome-thread::before{background:#eeeeee}
+/* Welcome uses one uninterrupted bright brand canvas. The journey artwork is
+   blended into that canvas so it never reads as a separate dark card. */
+html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#ff6b6b;background-image:none}
+html .first-run-screen.welcome-thread{background:#ff6b6b;color:#111217}
+html .first-run-screen.welcome-thread::before{background:#ff6b6b}
 html .first-run-screen.welcome-thread::after{display:none}
 html.first-run-open .welcome-thread .first-run-brand,html.first-run-open .welcome-thread .first-run-brand__name{color:#111217;text-shadow:none}
-html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first-run-brand__dot,.first-run-brand__to){color:#cb2957}
+html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first-run-brand__dot,.first-run-brand__to){color:#72152f}
 html .welcome-thread .first-run-hero h1{color:#111217;text-shadow:none}
 html.first-run-open .welcome-thread .first-run-title__sand{color:#111217}
-html.first-run-open .welcome-thread .first-run-title__rose{color:#cb2957}
-html .welcome-thread .first-run-hero p{color:#5a5a5a;text-shadow:none}
-html.first-run-open .welcome-thread .first-run-hero p span{color:#cb2957}
+html.first-run-open .welcome-thread .first-run-title__rose{color:#72152f}
+html .welcome-thread .first-run-hero p{color:#3f2026;text-shadow:none}
+html.first-run-open .welcome-thread .first-run-hero p span{color:#3f2026}
 html .welcome-thread .first-run-preview{
-  width:100%;margin:14px 0 0;border-radius:24px;overflow:hidden;
-  box-shadow:0 22px 44px -30px rgba(0,0,0,.5),0 3px 10px -7px rgba(0,0,0,.25)
+  width:100%;margin:14px 0 0;border-radius:0;overflow:hidden;
+  background:#ff6b6b;box-shadow:none
+}
+html .welcome-thread .first-run-preview img{
+  filter:invert(1) grayscale(1) contrast(2.4) brightness(1.35);
+  mix-blend-mode:multiply
 }
 html .welcome-thread .first-run-google-preview{background:#131314;color:#fff;border:0;box-shadow:0 1px 2px rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.14)}
 html .welcome-thread .first-run-google-preview img{background:#fff}
 html .welcome-thread #google-signin-button>div{box-shadow:0 0 0 1.5px rgba(203,41,87,.9),0 16px 34px -18px rgba(203,41,87,.4),0 4px 12px -8px rgba(0,0,0,.25)!important}
-html .welcome-thread .signin-error{color:#cb2957}
-html .welcome-thread .first-run-secondary{color:#cb2957}
-html .welcome-thread .first-run-secondary .ph-svg,html .welcome-thread .first-run-secondary .ph{color:#cb2957}
-html .welcome-thread .welcome-v2__footer{color:#5a5a5a}
-html .welcome-thread .welcome-v2__footer>span{background:#cfcfcf}
-html .welcome-thread :is(button,a):focus-visible{outline:3px solid #cb2957}
+html .welcome-thread .signin-error{color:#72152f}
+html .welcome-thread .first-run-secondary{color:#111217}
+html .welcome-thread .first-run-secondary .ph-svg,html .welcome-thread .first-run-secondary .ph{color:#111217}
+html .welcome-thread .welcome-v2__footer{color:#3f2026}
+html .welcome-thread .welcome-v2__footer a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
+html .welcome-thread .welcome-v2__footer>span{background:#72152f}
+html .welcome-thread :is(button,a):focus-visible{outline:3px solid #111217}
 
 @media(max-width:374px){
   .first-run-screen.welcome-thread{padding-inline:20px}
@@ -1663,7 +1670,7 @@ html .welcome-thread :is(button,a):focus-visible{outline:3px solid #cb2957}
   .welcome-thread .first-run-actions{margin-top:12px}
   .welcome-thread .first-run-google,.welcome-thread #google-signin-button{min-height:50px}
   .welcome-thread .first-run-google-preview{min-height:50px}
-  .welcome-thread .first-run-secondary{min-height:40px}
+  .welcome-thread .first-run-secondary{min-height:44px}
   .welcome-thread .welcome-v2__footer{min-height:22px}
 }
 /* Notifications sheet: trip change feed (imports, stops, time markers, docs) + forwarded-booking reviews */
