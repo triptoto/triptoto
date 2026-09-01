@@ -7,11 +7,11 @@ assert(!index.includes('/airport-timezones.js')&&!index.includes('/places-provid
 assert(!index.includes('/app.js')&&!app.includes('/legacy.html')&&!sw.includes('/legacy.html'),'legacy presentation leaked into Product V2');
 assert(css.includes('--app-width:430px')&&css.includes('env(safe-area-inset-bottom)')&&css.includes('env(safe-area-inset-top)'),'mobile sizing or safe areas missing');
 assert(css.includes('-apple-system')&&css.includes('BlinkMacSystemFont')&&css.includes('SF Pro')&&!css.includes('Nunito')&&!css.includes('"Inter"'),'approved typography (SF system font) changed');
-for(const color of ['--paper:#f8f9fb','--surface:#f2f4f6','--icon:#6b7176','--muted:#6b7176','--ink:#313133'])assert(css.includes(color),`approved grayscale palette missing: ${color}`);
-for(const color of ['--paper:#121a21','--card:#181d21','--surface:#1f252b','--ink:#f5f5f5','--icon:#d7b394','--accent:#e55d5b'])assert(css.includes(color),`selected Slate palette missing: ${color}`);
-assert(index.includes('class="theme-harbor theme-slate"')&&index.includes('<meta name="theme-color" content="#121a21">'),'Slate must be active before application JavaScript runs');
+for(const color of ['--paper:#eeeeee','--card:#ffffff','--surface:#e4e4e4','--ink:#111217','--icon:#111217','--accent:#cb2957','--green:#1b704b'])assert(css.includes(color),`single production palette missing: ${color}`);
+assert(index.includes('<html lang="en">')&&index.includes('<meta name="theme-color" content="#eeeeee">')&&index.includes('<meta name="color-scheme" content="light">'),'single production shell must load without a theme class and use its real light canvas');
+assert(!/(?:theme-(?:harbor|slate|daylight|amethyst|crimson)|set-theme|theme-picker|theme-swatch)/.test(index+css+app),'obsolete multi-theme implementation remains');
 for(const oldColor of ['#141948','#2f3bab','#febf02','#f2f4f7','#f7f8fa'])assert(!css.toLowerCase().includes(oldColor)&&!manifest.toLowerCase().includes(oldColor),`old palette remains: ${oldColor}`);
-assert(manifest.includes('"background_color": "#121A21"')&&manifest.includes('"theme_color": "#121A21"'),'PWA palette is stale');
+assert(manifest.includes('"background_color": "#EEEEEE"')&&manifest.includes('"theme_color": "#EEEEEE"'),'PWA palette is stale');
 assert(css.includes('overflow-x:hidden')&&css.includes('overflow-x:clip'),'horizontal overflow protection missing');
 assert(css.includes('@media(prefers-reduced-motion:reduce)')&&css.includes('min-height:44px'),'motion or touch safety missing');
 const navFn=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
@@ -42,7 +42,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-coral-journey-v2'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, or Google-auth shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v2-production-single-v52'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, or Google-auth shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['One thread','whole trip.','Add bookings.','We keep the journey clear.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-journey-ink-v2.png')&&app.includes('Example journey from departure to stay to what matters next'),'Welcome journey preview is incomplete');
@@ -69,7 +69,7 @@ assert(css.includes('.timeline-page--empty')&&css.includes('min-height:calc(100d
 assert(app.includes('timeline-empty__add')&&app.includes('emptySetup ? "plus" : "calendar"'),'Product V2 empty-trip structure missing');
 for(const concept of ['need attention','Now','Next','Before you go'])assert(app.includes(concept),`Timeline state missing: ${concept}`);
 assert(app.includes('timeline-day__header')&&app.includes('journey-event journey-event--${phase}')&&app.includes('timelineDay(starts, zone)'),'Timeline structure/local grouping missing');
-assert(app.includes('timeline-screen--ribbon')&&app.includes('timeline-ribbon')&&css.includes('.timeline-screen--ribbon .timeline-day')&&css.includes('html.theme-slate .bottom-nav'),'selected V3 timeline and navigation system missing');
+assert(app.includes('timeline-screen--ribbon')&&app.includes('timeline-ribbon')&&css.includes('.timeline-screen--ribbon .timeline-day')&&css.includes('html .bottom-nav'),'selected production timeline and navigation system missing');
 assert(app.includes('data-action="switch-trip"')&&app.includes('data-action="open-trip-menu"'),'trip selector / more-options menu missing');
 assert(app.includes('function tripMenuSheet(')&&app.includes('state.sheet === "trip-menu"')&&app.includes('data-screen="documents"'),'trip options menu (weather/map/documents/edit/delete) missing');
 assert(app.includes('tripto-local-docs-v1')&&app.includes('crypto.subtle.digest("SHA-256"')&&app.includes('integrity === "verified"'),'document integrity missing');
@@ -93,7 +93,7 @@ assert(!index.includes('/airport-timezones.js')&&app.includes('ensureAirportTime
 assert(!index.match(/https?:\/\/(?!fonts\.googleapis\.com|fonts\.gstatic\.com)[^"']+\.(?:css|woff2?)/i),'unexpected external font/style introduced');
 assert(index.includes('/vendor/phosphor/phosphor.css')&&sw.includes('/vendor/phosphor/Phosphor.woff2'),'local icon library missing');
 assert(!app.includes('const ICONS')&&app.includes('const INLINE_SVG = Object.freeze({')&&app.includes("edit: '<path")&&app.includes("trash: '<path")&&(app.match(/<svg/g)||[]).length===1,'local icon system changed or expanded beyond the approved edit/trash fallbacks');
-assert(css.includes('html.theme-harbor')&&css.includes('linear-gradient('),'approved Harbor visual system missing');
+assert(css.includes('.first-run-screen.welcome-thread')&&css.includes('html.first-run-open .welcome-thread .first-run-title__rose')&&css.includes('linear-gradient('),'approved production Welcome visual system missing');
 const sandbox={};runInNewContext(rules,sandbox);const validate=sandbox.TriptoTripRules?.validateManualTrip;
 assert(typeof validate==='function','trip validation unavailable');
 assert(validate({title:'Rome',startsOn:'2026-09-03',endsOn:'2026-09-02'}).valid===false,'end before start accepted');

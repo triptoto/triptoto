@@ -51,13 +51,13 @@ font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
 
 ## Color
 
-Use one restrained monochrome system:
+Use the single production palette documented in `PRODUCTION_DESIGN.md`:
 
-- pure white `#FFFFFF` for the base application background;
-- cool concrete `#F1F3F5` for cards and grouped controls;
-- silver slate `#CED4DA` for borders;
-- asphalt grey `#495057` for icons and secondary text;
-- jet black `#111215` for primary text and actions.
+- warm light canvas `#EEEEEE`;
+- white surfaces `#FFFFFF`;
+- quiet controls `#E4E4E4` and dividers `#DDDDDD`;
+- primary text/icons `#111217` and secondary text `#5A5A5A`;
+- restrained coral accent `#CB2957` and accessible success `#1B704B`.
 
 Scheduled data receives neutral provenance and never uses color to imply live status.
 
@@ -90,10 +90,12 @@ Avoid cards inside cards, a card for every Timeline row, heavy borders, and mult
 Authenticated bottom navigation contains exactly:
 
 - Trip
+- Alerts
 - central +
+- To-do
 - Account
 
-The central + is prominent but does not visually overwhelm the current Timeline. It opens a two-choice sheet before any booking category is shown. Welcome, Tour, Create Trip, and focused auth states omit bottom navigation.
+The central + is prominent but does not visually overwhelm the current Timeline. It opens a two-choice sheet before any booking category is shown. Alerts opens traveler-facing notifications; To-do opens the current trip checklist. Welcome, Tour, Create Trip, and focused auth states omit bottom navigation.
 
 Desktop presents the same mobile product centered at a maximum width around 430px; it does not become a desktop dashboard.
 
@@ -245,7 +247,7 @@ Shared V2 primitives:
 - Google identity button
 - Tour pager
 - App bar / trip selector
-- Three-item bottom navigation
+- Five-item bottom navigation
 - Primary and secondary actions
 - Timeline day separator
 - Timeline booking row
@@ -266,4 +268,4 @@ The approved direction is applied to the complete core and document-state invent
 
 ## Contextual Trip Map
 
-The Trip Map reuses the approved Harbor visual system: themeable accent for the active day chip, selected marker, NEXT badge, and route polyline; grayscale content tokens everywhere else. Markers are teardrop pins carrying the existing type glyphs (flight/hotel/train/ferry/car/restaurant/activity/event) — no new icon family. The marker preview and "Also on this trip" rows use the same card, spacing, and secondary-action button language as the detail screens. Touch targets stay >=44px. The map is entered contextually and returns to the Timeline; it introduces no new navigation model. Components render only real data and explicit availability — an unresolvable place is listed by address rather than plotted with a fabricated point, and provider failure states are honest ("Map unavailable right now"). See TRIP_MAP_V2.md.
+The Trip Map reuses the single production visual system: coral accent for the active day chip, selected marker, NEXT badge, and route polyline; neutral content tokens everywhere else. Markers are teardrop pins carrying the existing type glyphs (flight/hotel/train/ferry/car/restaurant/activity/event) — no new icon family. The marker preview and "Also on this trip" rows use the same card, spacing, and secondary-action button language as the detail screens. Touch targets stay >=44px. The map is entered contextually and returns to the Timeline; it introduces no new navigation model. Components render only real data and explicit availability — an unresolvable place is listed by address rather than plotted with a fabricated point, and provider failure states are honest ("Map unavailable right now"). See TRIP_MAP_V2.md.

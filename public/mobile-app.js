@@ -172,7 +172,10 @@
     trips: [],
     trip: null,
     timeline: [],
+    timelineDayKey: null,
     checklist: [],
+    editingChecklistId: null,
+    focusChecklistEdit: false,
     brain: null,
     impacts: [],
     transport: [],
@@ -204,62 +207,11 @@
     editingEntity: null,
     formDraft: null,
     dateRange: null,
+    moveBooking: null,
     tripsLoaded: false,
     googleAuthHandoffStatus: null,
     googleAuthHandoffMessage: "",
-    theme: "slate",
   };
-  const THEMES = [
-    { id: "daylight", name: "Daylight", note: "Bright white & blue", chips: ["#ffffff", "#eef4ff", "#ffbf1a"] },
-    { id: "harbor", name: "Harbor", note: "Dark navy & amber", chips: ["#012032", "#073a55", "#edae49"] },
-    { id: "slate", name: "Slate", note: "Ink, coral & sand", chips: ["#121a21", "#d7b394", "#e55d5b"] },
-  ];
-  // Dark themes reuse Harbor's structural overrides; light non-default themes reuse Daylight's.
-  const DARK_THEMES = new Set(["harbor", "slate"]);
-  const THEME_CANVAS = { daylight: "#ffffff", harbor: "#00141f", slate: "#121a21" };
-  const THEME_IDS = new Set(THEMES.map((t) => t.id));
-  function normalizeTheme(id) {
-    return THEME_IDS.has(id) ? id : "daylight";
-  }
-  function loadStoredTheme() {
-    // Appearance picker hidden (2026-08-30) — app is locked to Slate. To restore
-    // user theme choice, revert this to the stored-value lookup below and un-hide
-    // the themePicker in the account screen.
-    return "slate";
-    /* try {
-      return normalizeTheme(localStorage.getItem("tripto_theme_v2"));
-    } catch (_error) {
-      return "daylight";
-    } */
-  }
-  function themeCanvasColor(themeId = state.theme) {
-    return THEME_CANVAS[normalizeTheme(themeId)] || "#ffffff";
-  }
-  function setThemeClass(themeId) {
-    const cls = document.documentElement.classList,
-      resolved = normalizeTheme(themeId),
-      dark = DARK_THEMES.has(resolved);
-    // Dark themes carry the Harbor class (its dark structural overrides); the
-    // light non-default themes carry the Daylight class. Each theme's own token
-    // block is defined after the base's in CSS, so its colors win.
-    cls.toggle("theme-harbor", dark);
-    cls.toggle("theme-daylight", !dark);
-    cls.toggle("theme-slate", resolved === "slate");
-    cls.remove("theme-classic");
-  }
-  function applyTheme(themeId) {
-    const next = normalizeTheme(themeId || state.theme);
-    state.theme = next;
-    try { localStorage.setItem("tripto_theme_v2", next); } catch (_error) {}
-    // Welcome / pre-auth keeps a premium dark identity; Harbor for most themes,
-    // but Slate carries its own welcome design when selected.
-    const welcome = document.documentElement.classList.contains("first-run-open");
-    setThemeClass(welcome ? (next === "slate" ? "slate" : "harbor") : next);
-    if (!welcome) {
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", themeCanvasColor(next));
-    }
-  }
   let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
   let toastTimer = null,
@@ -957,7 +909,126 @@
   function manageBookingSheet() {
     const menu = state.manageBooking;
     if (!menu) return "";
-    return bottomSheet("manage-booking", "Manage booking", `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="edit-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("edit", 22)}</span><span><strong>Edit</strong><small>Update the details of this booking</small></span>${icon("chevron", 22)}</button><button class="sheet-option sheet-option--danger" data-action="delete-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("trash", 22)}</span><span><strong>Delete</strong><small>Remove this booking from the trip</small></span>${icon("chevron", 22)}</button></div>`);
+    return bottomSheet("manage-booking", "Manage booking", `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="edit-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("edit", 22)}</span><span><strong>Edit</strong><small>Update the details of this booking</small></span>${icon("chevron", 22)}</button><button class="sheet-option" data-action="move-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("calendar", 22)}</span><span><strong>Move to another day</strong><small>Keep the times, change the day</small></span>${icon("chevron", 22)}</button><button class="sheet-option sheet-option--danger" data-action="delete-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("trash", 22)}</span><span><strong>Delete</strong><small>Remove this booking from the trip</small></span>${icon("chevron", 22)}</button></div>`);
+  }
+  function bookingAnchorDate(record) {
+    const e = record.entity;
+    if (record.path === "stays") return String(val(e, "check_in_date") || "");
+    if (record.path === "transport") {
+      const ms = Number(val(e, "scheduled_departure_utc", "starts_at_utc")) || null;
+      return ms ? zonedDateTimeParts(ms, val(e, "departure_timezone", "start_timezone")).date : "";
+    }
+    const ms = Number(val(e, "starts_at_utc", "startsAtUtc")) || null;
+    return ms ? zonedDateTimeParts(ms, val(e, "timezone", "start_timezone")).date : "";
+  }
+  function tripDayOptions() {
+    const start = String(val(state.trip, "starts_on", "startsOn") || ""),
+      end = String(val(state.trip, "ends_on", "endsOn") || "");
+    const keys = [];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(start) && /^\d{4}-\d{2}-\d{2}$/.test(end)) {
+      let cursor = start;
+      for (let guard = 0; cursor <= end && guard < 400; guard++) {
+        keys.push(cursor);
+        cursor = addCalendarDays(cursor, 1);
+      }
+    }
+    // Fall back to (or extend with) the days that already hold items so a booking
+    // sitting outside the trip range is still selectable.
+    for (const item of state.timeline) {
+      const ms = Number(val(item, "starts_at_utc", "startsAtUtc")) || null,
+        key = ms ? zonedDateTimeParts(ms, val(item, "start_timezone", "startTimezone")).date : "";
+      if (key && !keys.includes(key)) keys.push(key);
+    }
+    return keys.sort();
+  }
+  function addCalendarDays(dateStr, delta) {
+    const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return dateStr;
+    const base = Date.UTC(+match[1], +match[2] - 1, +match[3]) + delta * 86400000,
+      d = new Date(base);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  }
+  function moveDayLabel(dateStr) {
+    const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return { weekday: "", date: dateStr };
+    return timelineDay(Date.UTC(+match[1], +match[2] - 1, +match[3], 12), "UTC");
+  }
+  function moveBookingSheet() {
+    const menu = state.moveBooking;
+    if (!menu) return "";
+    const record = findBookingRecord(menu.kind, menu.id);
+    if (!record) return bottomSheet("move-booking", "Move to another day", `<p class="sheet-note">This booking is no longer available.</p>`);
+    const current = bookingAnchorDate(record),
+      days = tripDayOptions();
+    const options = days.length
+      ? days.map((key, index) => {
+          const label = moveDayLabel(key),
+            isCurrent = key === current;
+          return `<button type="button" class="sheet-option move-day-option${isCurrent ? " move-day-option--current" : ""}" data-action="apply-move" data-key="${esc(key)}"${isCurrent ? " disabled aria-current=\"true\"" : ""}><span class="move-day-option__index">${index + 1}</span><span class="move-day-option__body"><strong>Day ${index + 1}</strong><small>${esc(label.weekday)} · ${esc(label.date)}</small></span>${isCurrent ? `<span class="move-day-option__here">Current</span>` : icon("chevron", 22)}</button>`;
+        }).join("")
+      : `<p class="sheet-note">Add trip dates first to move this booking between days.</p>`;
+    return bottomSheet("move-booking", "Move to another day", `<div class="sheet-options-group sheet-options-group--v2 move-day-list">${options}</div>`);
+  }
+  function shiftMsToDay(ms, timeZone, dayDelta) {
+    const value = Number(ms) || null;
+    if (!value) return null;
+    const parts = zonedDateTimeParts(value, timeZone);
+    if (!parts.date || !parts.time) return value + dayDelta * 86400000;
+    try {
+      return resolveEventLocalDateTime(`${addCalendarDays(parts.date, dayDelta)}T${parts.time}`, timeZone || "UTC");
+    } catch (_) {
+      // DST-ambiguous wall time on the target day: fall back to a raw shift.
+      return value + dayDelta * 86400000;
+    }
+  }
+  async function moveBookingToDay(kind, id, targetDate) {
+    const record = findBookingRecord(kind, id);
+    if (!record) { showToast("This booking is no longer available.", "alert"); return; }
+    const current = bookingAnchorDate(record);
+    if (!current || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate) || targetDate === current) { closeSheet(); return; }
+    const dayDelta = Math.round((Date.UTC(+targetDate.slice(0, 4), +targetDate.slice(5, 7) - 1, +targetDate.slice(8, 10)) - Date.UTC(+current.slice(0, 4), +current.slice(5, 7) - 1, +current.slice(8, 10))) / 86400000);
+    if (!dayDelta) { closeSheet(); return; }
+    const e = record.entity, tripId = encodeURIComponent(state.trip?.id || ""), version = Number(val(e, "version")) || 1;
+    try {
+      if (record.path === "stays") {
+        const ci = String(val(e, "check_in_date") || ""), co = String(val(e, "check_out_date") || "");
+        const body = { version };
+        if (ci) body.checkInDate = addCalendarDays(ci, dayDelta);
+        if (co) body.checkOutDate = addCalendarDays(co, dayDelta);
+        await api(`/api/v1/trips/${tripId}/stays/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+      } else if (record.path === "transport") {
+        const depTz = val(e, "departure_timezone", "start_timezone"), arrTz = val(e, "arrival_timezone", "end_timezone") || depTz,
+          dep = Number(val(e, "scheduled_departure_utc", "starts_at_utc")) || null,
+          arr = Number(val(e, "scheduled_arrival_utc", "ends_at_utc")) || null,
+          boarding = Number(val(e, "boarding_time_utc")) || null,
+          gateClose = Number(val(e, "gate_close_time_utc")) || null;
+        const body = { version };
+        if (dep) body.scheduledDepartureUtc = shiftMsToDay(dep, depTz, dayDelta);
+        if (arr) body.scheduledArrivalUtc = shiftMsToDay(arr, arrTz, dayDelta);
+        if (boarding) body.boardingTimeUtc = shiftMsToDay(boarding, depTz, dayDelta);
+        if (gateClose) body.gateCloseTimeUtc = shiftMsToDay(gateClose, depTz, dayDelta);
+        await api(`/api/v1/trips/${tripId}/transport/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+      } else {
+        const tz = val(e, "timezone", "start_timezone"),
+          start = Number(val(e, "starts_at_utc", "startsAtUtc")) || null,
+          end = Number(val(e, "ends_at_utc", "endsAtUtc")) || null;
+        const body = { version };
+        if (start) body.startsAtUtc = shiftMsToDay(start, tz, dayDelta);
+        if (end) body.endsAtUtc = shiftMsToDay(end, tz, dayDelta);
+        await api(`/api/v1/trips/${tripId}/activities/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+      }
+      await loadTripDetails();
+      state.timelineDayKey = moveDayLabel(targetDate).key;
+      state.moveBooking = null;
+      closeSheet();
+      route("timeline", null, true);
+      showToast("Booking moved.");
+    } catch (error) {
+      const message = error?.status === 409
+        ? "A newer saved version exists. Reopen the booking before moving it."
+        : error?.message || "The booking could not be moved.";
+      showToast(message, "alert");
+    }
   }
   function requestDiscardChanges(continuation) {
     if (!formHasMeaningfulChanges) return false;
@@ -1015,6 +1086,7 @@
       history.pushState(null, "", nextUrl);
     state.screen = screen;
     state.selectedId = id || null;
+    if (screen !== "checklist") state.editingChecklistId = null;
     if (screen !== "trips") state.tripFilter = null;
     state.sheet = null;
     if (
@@ -2093,13 +2165,18 @@
       );
     if (!response.ok) {
       let message = `Request failed (${response.status}).`;
+      let code, details;
       try {
         const payload = await response.json();
         message = payload.error?.message || message;
+        code = payload.error?.code;
+        details = payload.error?.details;
       } catch (_) {}
       throw Object.assign(new Error(message), {
         requestId,
         status: response.status,
+        code,
+        details,
       });
     }
     if (response.status === 204) return null;
@@ -2559,6 +2636,7 @@
         ? (results[index].value?.[key] ?? fallback)
         : fallback;
     state.timeline = take(0, "items", []);
+    state.timelineDayKey = null;
     state.checklist = normalizeChecklist(take(1, "items", []));
     state.brain = take(2, "brain", null);
     state.impacts = take(3, "impacts", []);
@@ -3356,11 +3434,8 @@
       "first-run-reduced-motion",
       active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
     );
-    // Welcome / pre-auth wears the dark Harbor identity for most themes; Slate
-    // carries its own welcome palette when selected.
-    setThemeClass(active ? (state.theme === "slate" ? "slate" : "harbor") : state.theme);
     const theme = document.querySelector('meta[name="theme-color"]');
-    if (theme) theme.setAttribute("content", active ? "#121a21" : themeCanvasColor(state.theme));
+    if (theme) theme.setAttribute("content", "#eeeeee");
   }
   function firstRunProductPreview() {
     return `<figure class="first-run-preview" aria-label="Example journey from departure to stay to what matters next"><img src="/assets/welcome-journey-ink-v2.png" alt="" width="853" height="820" decoding="async"></figure>`;
@@ -3528,8 +3603,31 @@
       }
       group.items.push(item);
     }
+    let activeDayIdx = 0;
+    if (groups.length > 1) {
+      const savedIdx = state.timelineDayKey
+        ? groups.findIndex((g) => g.key === state.timelineDayKey)
+        : -1;
+      if (savedIdx >= 0) activeDayIdx = savedIdx;
+      else if (highlightedNextId) {
+        const nextIdx = groups.findIndex((g) =>
+          g.items.some((it) => itemId(it) === highlightedNextId),
+        );
+        if (nextIdx >= 0) activeDayIdx = nextIdx;
+      }
+    }
+    const dayTabs =
+      groups.length > 1
+        ? `<nav class="timeline-days" aria-label="Trip days">${groups
+            .map(
+              (group, index) =>
+                `<button type="button" class="timeline-day-tab${index === activeDayIdx ? " timeline-day-tab--active" : ""}" data-action="select-timeline-day" data-key="${esc(group.key)}"${index === activeDayIdx ? ' aria-current="true"' : ""}><span class="timeline-day-tab__label">Day ${index + 1}</span><span class="timeline-day-tab__date">${esc(group.day.date)}</span></button>`,
+            )
+            .join("")}${icon("chevron", 18, "timeline-days__more")}</nav>`
+        : "";
+    const pagedGroups = groups.length > 1 ? [groups[activeDayIdx]] : groups;
     const content = groups.length
-      ? `<div class="timeline-ribbon">${groups
+      ? `${dayTabs}<div class="timeline-ribbon${groups.length > 1 ? " timeline-ribbon--paged" : ""}">${pagedGroups
           .map(
             (group) =>
               `<section class="timeline-day" aria-labelledby="timeline-day-${esc(group.key)}"><header class="timeline-day__header"><time id="timeline-day-${esc(group.key)}"><span>${esc(group.day.weekday)}</span><strong>${esc(group.day.date)}</strong></time><span class="timeline-day__rail" aria-hidden="true"></span><span class="timeline-day__separator" aria-hidden="true"></span></header><div class="timeline-journey">${group.items
@@ -3586,6 +3684,52 @@
     const headerAction = `<div class="trip-v2-actions"><button class="icon-button icon-button--badged" data-action="open-trip-menu" aria-label="More options${pendingImports ? `, ${pendingImports} booking${pendingImports === 1 ? "" : "s"} to review` : ""}">${icon("more",20)}${pendingImports ? `<span class="unread-badge" aria-hidden="true">${pendingImports > 9 ? "9+" : pendingImports}</span>` : ""}</button></div>`;
     const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
     return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${emptySetup ? "" : timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
+  }
+
+  // Fast path for Day-tab taps: regenerate the timeline screen markup and swap
+  // ONLY the day tabs + event ribbon, instead of tearing down and reparsing the
+  // whole app DOM (header, context card, bottom-nav SVGs) and rebinding. Reuses
+  // timelineScreen() so output can't diverge from a full render. Returns false
+  // (→ caller falls back to render()) when the DOM isn't the expected shape.
+  function patchTimelineDayDOM() {
+    const screen = app.querySelector(".timeline-screen--ribbon");
+    if (!screen) return false;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = timelineScreen();
+    const freshRibbon = tmp.querySelector(".timeline-ribbon"),
+      freshTabs = tmp.querySelector(".timeline-days"),
+      curRibbon = screen.querySelector(".timeline-ribbon"),
+      curTabs = screen.querySelector(".timeline-days");
+    if (!freshRibbon || !curRibbon) return false;
+    if (freshTabs && curTabs) curTabs.replaceWith(freshTabs);
+    curRibbon.replaceWith(freshRibbon);
+    return true;
+  }
+
+  // Fast-path for checklist mutations (toggle/edit/cancel/delete): replace only
+  // the .cl-screen subtree instead of rebuilding the whole app DOM, so tapping
+  // items on a long list doesn't jank. bindDynamic() re-runs the same focus and
+  // form binding a full render would, so behaviour is unchanged.
+  function patchChecklistDOM() {
+    if (state.screen !== "checklist" || state.sheet) return false;
+    const cur = app.querySelector(".cl-screen");
+    if (!cur) return false;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = checklistScreen();
+    const fresh = tmp.querySelector(".cl-screen");
+    if (!fresh) return false;
+    cur.replaceWith(fresh);
+    bindDynamic();
+    return true;
+  }
+  function renderChecklist() {
+    let patched = false;
+    try {
+      patched = patchChecklistDOM();
+    } catch (_e) {
+      patched = false;
+    }
+    if (!patched) render();
   }
 
   function timelineContextCard() {
@@ -3911,7 +4055,7 @@
   // at a glance: a navigation arrow for the trip you're on now, a calendar for
   // what's coming, a clock for what's done.
   function bucketMarkIcon(label) {
-    return ({ Current: "navigation", Upcoming: "calendar", Past: "clock", Cancelled: "close" })[label] || "trips";
+    return ({ Current: "navigation", Upcoming: "plane", Past: "pin", Cancelled: "close" })[label] || "trips";
   }
   function tripBucket(trip) {
     const now = new Date().toISOString().slice(0, 10);
@@ -3945,7 +4089,7 @@
           return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
         });
       if (!trips.length) return "";
-      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); return `<button class="trip-row ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small></span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
+      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); return `<button class="trip-row trip-row--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small></span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
     }).join("");
     const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "past" ? "past" : "upcoming"} trips</h1><p>${filter === "past" ? "Completed trips will appear here." : "Trips you have coming up will appear here."}</p></section>`;
     return page(pageTitle, body);
@@ -4054,6 +4198,18 @@
       null
     );
   }
+  function bookingUsesTicket(item) {
+    // A "Ticket" row only makes sense where you actually carry a ticket: any
+    // transport segment (train/ferry/bus), or a ticketed-admission activity.
+    // Dining reservations, classes and generic plans use a Confirmation instead.
+    if (String(val(item, "transport_type") || "")) return true;
+    const kind = String(val(item, "activity_type", "reservation_type", "type") || "").toLowerCase();
+    return [
+      "event", "show", "concert", "performance", "theater", "theatre",
+      "tour", "attraction", "museum", "sightseeing", "sports", "match",
+      "game", "experience", "excursion", "cruise", "transport",
+    ].includes(kind);
+  }
   function planScreen() {
     const item = selectedPlan();
     if (!item)
@@ -4095,7 +4251,7 @@
       endLocationName ? fdStaticRow("navigation", endLocationName, "To") : "",
       confirmation ? fdButtonRow("copy", confirmation, "copy", `data-value="${esc(confirmation)}"`, "Confirmation · tap to copy", "copy") : "",
       val(contact, "phone") ? fdButtonRow("phone", val(contact, "display_name") || contact.phone, "call", `data-value="${esc(contact.phone)}"`, "Call contact") : "",
-      fdStaticRow(doc ? "ticket" : "warning", "Ticket", doc ? "Stored and verified on this phone" : "No verified ticket on this phone yet", !doc),
+      (bookingUsesTicket(item) || doc) ? fdStaticRow(doc ? "ticket" : "warning", "Ticket", doc ? "Stored and verified on this phone" : "No verified ticket on this phone yet", !doc) : "",
       fdDocRows(item),
       fdAddRow(),
       notes ? `<div class="fd-row fd-row--note">${fdRowIcon("info")}<span class="fd-row__text"><strong>Notes</strong><small class="fd-note">${esc(notes)}</small></span></div>` : "",
@@ -4264,7 +4420,9 @@
         ? `<section class="cl-progress cl-progress--done"><strong>All done ${icon("check", 20)}</strong><small>${total} item${total === 1 ? "" : "s"} ready</small></section>`
         : `<section class="cl-progress"><strong>${done} of ${total} ready</strong><small>${total - done} still to pack</small><span class="cl-bar" role="progressbar" aria-valuenow="${done}" aria-valuemin="0" aria-valuemax="${total}"><span class="cl-bar__fill" style="width:${pct}%"></span></span></section>`;
     const addForm = `<form class="cl-add" id="checklist-add-form" novalidate><input type="text" name="title" class="cl-add__input" placeholder="Add an item, e.g. Passport" maxlength="160" autocomplete="off" enterkeyhint="done" aria-label="Add a checklist item"><button type="submit" class="cl-add__btn" aria-label="Add item">${icon("plus", 22)}</button></form>`;
-    const rowHtml = (item) => `<li class="cl-row ${item.completed ? "is-complete" : ""}"><button type="button" class="cl-row__toggle" data-action="toggle-checklist" data-id="${esc(item.id)}" aria-pressed="${item.completed}"><span class="cl-check" aria-hidden="true">${item.completed ? icon("check", 16) : ""}</span><span class="cl-row__title">${esc(item.title)}</span></button><button type="button" class="cl-row__act" data-action="edit-checklist" data-id="${esc(item.id)}" aria-label="Rename ${esc(item.title)}">${icon("edit", 18)}</button><button type="button" class="cl-row__act cl-row__del" data-action="delete-checklist" data-id="${esc(item.id)}" aria-label="Delete ${esc(item.title)}">${icon("trash", 18)}</button></li>`;
+    const rowHtml = (item) => state.editingChecklistId === item.id
+      ? `<li class="cl-row cl-row--editing"><form class="cl-edit" data-checklist-edit data-id="${esc(item.id)}" novalidate><input type="text" name="title" class="cl-edit__input" value="${esc(item.title)}" maxlength="160" autocomplete="off" enterkeyhint="done" aria-label="Rename item"><button type="submit" class="cl-edit__act cl-edit__save" aria-label="Save name">${icon("check", 18)}</button><button type="button" class="cl-edit__act cl-edit__cancel" data-action="cancel-edit-checklist" aria-label="Cancel">${icon("close", 18)}</button></form></li>`
+      : `<li class="cl-row ${item.completed ? "is-complete" : ""}"><button type="button" class="cl-row__toggle" data-action="toggle-checklist" data-id="${esc(item.id)}" aria-pressed="${item.completed}"><span class="cl-check" aria-hidden="true">${item.completed ? icon("check", 16) : ""}</span><span class="cl-row__title">${esc(item.title)}</span></button><button type="button" class="cl-row__act" data-action="edit-checklist" data-id="${esc(item.id)}" aria-label="Rename ${esc(item.title)}">${icon("edit", 18)}</button><button type="button" class="cl-row__act cl-row__del" data-action="delete-checklist" data-id="${esc(item.id)}" aria-label="Delete ${esc(item.title)}">${icon("trash", 18)}</button></li>`;
     let body = `<div class="cl-screen">${summary}${addForm}`;
     if (total === 0) {
       body += `<section class="cl-suggest"><p class="cl-suggest__label">Suggestions</p><div class="cl-chips">${CHECKLIST_SUGGESTIONS.map((s) => `<button type="button" class="cl-chip" data-action="add-checklist-suggested" data-title="${esc(s)}">${icon("plus", 14)} ${esc(s)}</button>`).join("")}</div></section>`;
@@ -4453,10 +4611,8 @@
     const upcoming = state.trips.filter((trip)=>!["completed","archived","cancelled"].includes(String(val(trip,"lifecycle_state","lifecycleState")||"upcoming"))).length,
       past = state.trips.length - upcoming,
       identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
-    const themePicker = ""; /* Appearance option hidden (2026-08-30) — locked to Slate. Restore:
-    `<div class="section-label">Appearance</div><div class="theme-picker" role="group" aria-label="App theme">${THEMES.map((t) => `<button type="button" class="theme-swatch${state.theme === t.id ? " is-active" : ""}" data-action="set-theme" data-theme="${esc(t.id)}" aria-pressed="${state.theme === t.id}"><span class="theme-swatch__chips" aria-hidden="true">${t.chips.map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</span><span class="theme-swatch__copy"><strong>${esc(t.name)}</strong><small>${esc(t.note)}</small></span></button>`).join("")}</div>` */;
     const pendingEmails=(state.bookingEmails||[]).filter((item)=>["needs_trip","needs_confirmation"].includes(String(item.status))).length;
-    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div><div class="account-list">${row("plus","Create trip","Start planning a new trip","","create-trip")}${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}</div>${themePicker}<div class="section-label">Booking email</div><div class="account-list">${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}</div><div class="section-label">Preferences</div><div class="account-list">${pending?row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync"):""}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")}</div><div class="section-label">Privacy & data</div><div class="account-list">${row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data")}${mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account"):""}</div><div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
+    return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div><div class="account-list">${row("plus","Create trip","Start planning a new trip","","create-trip")}${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}</div><div class="section-label">Booking email</div><div class="account-list">${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}</div><div class="section-label">Preferences</div><div class="account-list">${pending?row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync"):""}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")}</div><div class="section-label">Privacy & data</div><div class="account-list">${row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data")}${mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account"):""}</div><div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
   }
 
   let googleScriptPromise=null,googleRedirectExchangePromise=null,googleSignInChallenge=null,googleInitializedChallengeId="";
@@ -4890,6 +5046,11 @@
     return `<datalist id="${id}">${values.map((v) => `<option value="${esc(v)}"></option>`).join("")}</datalist>`;
   }
   function quickTravelerField() {
+    // Single-traveler product for now: hide the Travelers picker entirely
+    // (2026-09-01, per user). Re-enable by restoring the block below when
+    // multi-traveler bookings ship.
+    return "";
+    // eslint-disable-next-line no-unreachable
     if (!state.travelers.length) return "";
     const one = state.travelers.length === 1, selected = formPrefill?.travelerIds || null;
     return `<fieldset class="quick-travelers form-field--wide"><legend>Travelers</legend><p>${one ? "Preselected for this booking. You can change it." : "Choose only the travelers on this booking."}</p><div class="traveler-pills">${state.travelers.map((traveler) => `<label class="traveler-pill"><input type="checkbox" name="travelerIds" value="${esc(traveler.id)}" ${(selected ? selected.includes(String(traveler.id)) : one) ? "checked" : ""}><span>${esc(traveler.display_name || "Traveler")}</span></label>`).join("")}</div></fieldset>`;
@@ -5634,6 +5795,7 @@
     if (state.sheet === "notifications") html += notificationsSheet();
     if (state.sheet === "manual-booking") html += manualBookingSheet();
     if (state.sheet === "manage-booking") html += manageBookingSheet();
+    if (state.sheet === "move-booking") html += moveBookingSheet();
     if (state.sheet === "date-range") html += dateRangeSheet();
     if (state.sheet === "booking-email-trip") html += bookingEmailTripSheet();
     app.innerHTML = html + toast();
@@ -5679,6 +5841,7 @@
       finish = () => {
         state.sheet = null;
         state.dateRange = null;
+        state.moveBooking = null;
         render();
         restoreSheetFocus();
       };
@@ -6432,6 +6595,25 @@
       const input = document.querySelector("#checklist-add-form .cl-add__input");
       if (input) input.focus();
     }
+    const checklistEditForm = document.querySelector("form[data-checklist-edit]");
+    if (checklistEditForm && !checklistEditForm.dataset.bound) {
+      checklistEditForm.dataset.bound = "1";
+      checklistEditForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        renameChecklistItem(checklistEditForm.dataset.id, checklistEditForm.elements.title?.value).catch((error) =>
+          showToast(error instanceof Error ? error.message : String(error), "alert"),
+        );
+      });
+    }
+    if (state.focusChecklistEdit) {
+      state.focusChecklistEdit = false;
+      const input = document.querySelector("form[data-checklist-edit] .cl-edit__input");
+      if (input) {
+        input.focus();
+        const end = input.value.length;
+        try { input.setSelectionRange(end, end); } catch (_) {}
+      }
+    }
     setupSheet();
   }
   function resolveEventLocalDateTime(localValue, timeZone) {
@@ -6884,6 +7066,21 @@
     if (!row) return;
     Object.assign(local, normalizeChecklist([row])[0], { __local: false });
   }
+  // A newer version exists on the server (409). Recover the current version so
+  // the caller can retry once, instead of reverting or leaving stale state.
+  async function currentChecklistVersion(item, conflictDetails) {
+    const fromError = Number(
+      conflictDetails && typeof conflictDetails === "object" ? conflictDetails.currentVersion : NaN,
+    );
+    if (Number.isSafeInteger(fromError)) return fromError;
+    try {
+      const res = await api(checklistPath());
+      const fresh = normalizeChecklist(res?.items || []).find((row) => String(row.id) === String(item.id));
+      return fresh ? Number(fresh.version) : null;
+    } catch (_) {
+      return null;
+    }
+  }
   async function toggleChecklistItem(id) {
     const item = state.checklist.find((row) => String(row.id) === String(id));
     if (!item || item.__saving) return;
@@ -6891,12 +7088,25 @@
     const next = !item.completed;
     item.completed = next;
     item.completion_source = next ? "user" : "none";
-    render();
+    renderChecklist();
     if (PREVIEW_MODE) return;
     if (item.__local) { persistChecklistCache(); return; }
     item.__saving = true;
     try {
-      const res = await api(checklistItemPath(item.id), { method: "PATCH", body: JSON.stringify({ version: Number(item.version), completed: next }) });
+      let res;
+      try {
+        res = await api(checklistItemPath(item.id), { method: "PATCH", body: JSON.stringify({ version: Number(item.version), completed: next }) });
+      } catch (error) {
+        // Self-heal a version conflict (e.g. a background refresh landed between
+        // taps): re-sync the version and retry once so the tap still sticks.
+        if (error?.status === 409) {
+          const fresh = await currentChecklistVersion(item, error.details);
+          if (fresh != null) {
+            item.version = fresh;
+            res = await api(checklistItemPath(item.id), { method: "PATCH", body: JSON.stringify({ version: fresh, completed: next }) });
+          } else throw error;
+        } else throw error;
+      }
       applyChecklistServerRow(item, res?.item);
       persistChecklistCache();
     } catch (error) {
@@ -6940,19 +7150,43 @@
       }
     }
   }
-  async function editChecklistItem(id) {
+  // Open the inline editor. window.prompt() is unreliable in installed PWAs
+  // (iOS standalone silently suppresses it), so rename happens inside the row.
+  function startEditChecklistItem(id) {
     const item = state.checklist.find((row) => String(row.id) === String(id));
     if (!item) return;
-    const nextRaw = window.prompt("Rename item", item.title);
-    if (nextRaw == null) return;
-    const title = String(nextRaw).trim();
-    if (!title || title === item.title) return;
+    state.editingChecklistId = item.id;
+    state.focusChecklistEdit = true;
+    renderChecklist();
+  }
+  function cancelEditChecklistItem() {
+    if (state.editingChecklistId == null) return;
+    state.editingChecklistId = null;
+    renderChecklist();
+  }
+  async function renameChecklistItem(id, rawTitle) {
+    const item = state.checklist.find((row) => String(row.id) === String(id));
+    if (!item) return;
+    const title = String(rawTitle || "").trim();
+    state.editingChecklistId = null;
+    if (!title || title === item.title) { renderChecklist(); return; }
     const previous = item.title;
     item.title = title;
-    render();
+    renderChecklist();
     if (PREVIEW_MODE || item.__local) { persistChecklistCache(); return; }
     try {
-      const res = await api(checklistItemPath(item.id), { method: "PATCH", body: JSON.stringify({ version: Number(item.version), title }) });
+      let res;
+      try {
+        res = await api(checklistItemPath(item.id), { method: "PATCH", body: JSON.stringify({ version: Number(item.version), title }) });
+      } catch (error) {
+        if (error?.status === 409) {
+          const fresh = await currentChecklistVersion(item, error.details);
+          if (fresh != null) {
+            item.version = fresh;
+            res = await api(checklistItemPath(item.id), { method: "PATCH", body: JSON.stringify({ version: fresh, title }) });
+          } else throw error;
+        } else throw error;
+      }
       applyChecklistServerRow(item, res?.item);
       persistChecklistCache();
     } catch (error) {
@@ -6992,7 +7226,18 @@
   async function commitChecklistDelete(removed) {
     if (!removed || PREVIEW_MODE || removed.__local) return;
     try {
-      await api(checklistItemPath(removed.id), { method: "DELETE", body: JSON.stringify({ version: Number(removed.version) }) });
+      try {
+        await api(checklistItemPath(removed.id), { method: "DELETE", body: JSON.stringify({ version: Number(removed.version) }) });
+      } catch (error) {
+        // Version drifted (e.g. the item was toggled just before delete): re-sync
+        // and retry once so the delete actually lands instead of the row silently
+        // reappearing on the next trip load.
+        if (error?.status === 409) {
+          const fresh = await currentChecklistVersion(removed, error.details);
+          if (fresh != null) await api(checklistItemPath(removed.id), { method: "DELETE", body: JSON.stringify({ version: fresh }) });
+          else throw error;
+        } else throw error;
+      }
       persistChecklistCache();
     } catch (error) {
       if (!navigator.onLine) {
@@ -7120,7 +7365,10 @@
         await toggleChecklistItem(target.dataset.id);
         break;
       case "edit-checklist":
-        await editChecklistItem(target.dataset.id);
+        startEditChecklistItem(target.dataset.id);
+        break;
+      case "cancel-edit-checklist":
+        cancelEditChecklistItem();
         break;
       case "delete-checklist":
         deleteChecklistItem(target.dataset.id);
@@ -7316,6 +7564,16 @@
         state.manageBooking = { kind: target.dataset.kind, id: target.dataset.id };
         openSheet("manage-booking", target);
         break;
+      case "move-booking":
+        state.moveBooking = { kind: target.dataset.kind, id: target.dataset.id };
+        state.manageBooking = null;
+        openSheet("move-booking", target);
+        break;
+      case "apply-move": {
+        const menu = state.moveBooking;
+        if (menu) moveBookingToDay(menu.kind, menu.id, String(target.dataset.key || ""));
+        break;
+      }
       case "edit-booking": {
         const record = findBookingRecord(target.dataset.kind, target.dataset.id);
         if (!record) break;
@@ -7488,6 +7746,19 @@
       case "remove-document":
         confirmDeleteDocument(target.dataset.id);
         break;
+      case "select-timeline-day": {
+        const dayKey = target.dataset.key || null;
+        if (dayKey === state.timelineDayKey) break;
+        state.timelineDayKey = dayKey;
+        let patched = false;
+        try {
+          patched = patchTimelineDayDOM();
+        } catch (_e) {
+          patched = false;
+        }
+        if (!patched) render();
+        break;
+      }
       case "timeline-detail": {
         const id = target.dataset.id,
           transport = transportForItem(id),
@@ -7572,10 +7843,6 @@
         if(PREVIEW_MODE){showToast("Support bundle is available outside preview mode.");break;}
         if(!state.trip){showToast("Select a trip first to build a support bundle.");break;}
         try{showToast("Preparing support bundle…");await apiDownload(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/support`,`tripto-support-${String(state.trip.id).slice(0,8)}.json`);}catch(error){showToast(error.message,"alert");}
-        break;
-      case "set-theme":
-        applyTheme(target.dataset.theme);
-        render();
         break;
       case "open-help":
         openSheet("help", target);
@@ -8049,7 +8316,6 @@
     }
   });
   syncVisualViewport();
-  applyTheme(loadStoredTheme());
   if ("serviceWorker" in navigator && !PREVIEW_MODE)
     window.addEventListener("load", () =>
       navigator.serviceWorker.register("/sw.js").catch((error) => console.error("Service worker registration failed", error)),

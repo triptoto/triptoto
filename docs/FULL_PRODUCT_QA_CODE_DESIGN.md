@@ -1,4 +1,6 @@
-# tripto.to — Full Product QA: Code, Functional, Security & Design
+# tripto.to — Historical full product QA record
+
+This file records the QA state before the single production design was consolidated. It is retained as an engineering audit, not as a visual or navigation specification. The current source of truth is `PRODUCTION_DESIGN.md`, including the `Trip | Alerts | + | To-do | Account` menu.
 
 Status: complete. Branch `qa-full-product-code-design`. All validation suites green
 (`validate:beta`, `validate:v2`, `validate:major`, `validate:manual-booking`, `validate:places`).
@@ -7,8 +9,8 @@ Status: complete. Branch `qa-full-product-code-design`. All validation suites gr
 
 Deep review of the shipped Product V2 surface with a fix pass, not a redesign. Preserved
 the product architecture (Welcome, Sign In, Create Trip, Add Booking, Timeline-first,
-Trip/+/Account nav, Manual Add, Tickets & Documents, contextual Trip Map, Weather, multiple
-trips, monochrome authenticated theme). Improvements are limited to defects QA found:
+Trip Timeline, Manual Add, Tickets & Documents, contextual Trip Map, Weather, and multiple
+trips). Improvements were limited to defects QA found:
 correctness, data integrity, offline resilience, and accessibility.
 
 Areas covered: worker routes and data integrity (D1, batching, dedup, idempotency), inbound
@@ -35,9 +37,8 @@ live render to judge safely are documented rather than changed blind.
   atomic per batch. `result.meta.changes` is used for claim-gate concurrency patterns.
 - **Imports**: `imports` has a global `UNIQUE(source_type, source_fingerprint)`. Forwarded
   email fingerprints are trip-scoped by construction; upload fingerprints now are too (QA-002).
-- **Design language**: deliberate 2026 monochrome grayscale — all hue tokens collapse to gray;
-  state is signalled by icon, weight, and position, not color (documented in `mobile-app.css`
-  `:root`). Earlier "blue/yellow theme" review notes were stale and do not apply.
+- **Design language at audit time**: a monochrome grayscale predecessor. It has since been
+  replaced by the single coral production palette documented in `PRODUCTION_DESIGN.md`.
 
 ## 3. Findings
 

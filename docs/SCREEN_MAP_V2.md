@@ -8,9 +8,11 @@ The V2 primary screen count is intentionally small. “Screen” means a navigab
 | --- | --- | --- |
 | Welcome | Explain tripto.to and establish verified identity | Continue with Google |
 | Trip Timeline | Current trip, chronological bookings, and what matters next | Contextual action or + |
+| Alerts | Traveler-facing notifications and important changes | Open relevant trip item |
+| To-do | Current trip checklist and preparation tasks | Add or complete task |
 | Account | Identity, trips, forwarding email, help, and account controls | Contextual row |
 
-Primary navigation after authentication is **Trip / + / Account**. Welcome, Tour, and creation tasks do not show that navigation when it would distract from completion.
+Primary navigation after authentication is **Trip / Alerts / + / To-do / Account**. Welcome, Tour, and creation tasks do not show that navigation when it would distract from completion.
 
 ## Secondary full-screen tasks
 

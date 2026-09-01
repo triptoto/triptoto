@@ -1,34 +1,29 @@
 :root{
-  /* Soft grayscale design language (2026 redesign). Palette anchored on
-     #313133 (ink), #353636 (ink-strong), #f2f3f4 (page), #eceef0 (soft
-     surface), #ffffff (raised card). Hue tokens stay collapsed to gray:
-     state is signalled by icon, weight and position, not color. */
-  --navy:#313133;
-  --indigo:#313133;
-  --yellow:#313133;
-  --paper:#f8f9fb;
+  /* Single production design: warm light canvas, obsidian text and restrained
+     crimson emphasis. This is the only traveler-facing palette. */
+  --navy:#111217;
+  --indigo:#5a5a5a;
+  --yellow:#cb2957;
+  --paper:#eeeeee;
   --card:#ffffff;
-  --surface:#f2f4f6;
-  --ink:#313133;
-  --ink-strong:#353636;
-  --muted:#6b7176;
-  --muted-soft:#9aa1a8;
-  --line:#e2e5ea;
-  --line-strong:#d5d9de;
-  --blue-soft:#eceef0;
-  --icon:#6b7176;
-  --green:#313133;
-  --green-soft:#eceef0;
-  --amber:#6b7176;
-  --amber-soft:#eceef0;
-  --red:#313133;
-  --red-soft:#eceef0;
-  /* Themeable chrome + accent. Classic keeps the monochrome look; alternate
-     themes (see html.theme-*) repoint these without touching the grayscale
-     content tokens above. */
-  --chrome:#313133;
-  --chrome-line:rgba(255,255,255,.08);
-  --accent:#313133;
+  --surface:#e4e4e4;
+  --ink:#111217;
+  --ink-strong:#111217;
+  --muted:#5a5a5a;
+  --muted-soft:#8a8a8a;
+  --line:#dddddd;
+  --line-strong:#cfcfcf;
+  --blue-soft:#fbe7ec;
+  --icon:#111217;
+  --green:#1b704b;
+  --green-soft:#e7f6ee;
+  --amber:#b06f12;
+  --amber-soft:#fdeccf;
+  --red:#cb2957;
+  --red-soft:#fbe7ec;
+  --chrome:#ffffff;
+  --chrome-line:#dddddd;
+  --accent:#cb2957;
   --accent-ink:#ffffff;
   --app-width:430px;
   --header-h:68px;
@@ -41,21 +36,21 @@
   --button-primary-height:52px;
   --button-row-height:64px;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Arial,sans-serif;
-  --shadow-card:0 14px 34px -20px rgba(30,30,32,.32),0 2px 6px -4px rgba(30,30,32,.12);
-  --shadow-soft:0 10px 24px -18px rgba(30,30,32,.26);
+  --shadow-card:0 14px 34px -22px rgba(0,0,0,.20),0 2px 6px -4px rgba(0,0,0,.10);
+  --shadow-soft:0 10px 24px -20px rgba(0,0,0,.16);
   --keyboard-offset:0px;
   --ease:cubic-bezier(.2,.8,.2,1);
 }
 
 /* Offline city and airport search. The dataset loads only after this control is used. */
-.form-field:has(> [role="combobox"]) {
+.form-field:has(> [role="combobox"]){
   position: relative;
   z-index: 6;
 }
-.form-field:has(> [role="combobox"]):focus-within {
+.form-field:has(> [role="combobox"]):focus-within{
   z-index: 40;
 }
-.place-suggestions {
+.place-suggestions{
   position: absolute;
   z-index: 80;
   top: calc(100% + 6px);
@@ -72,8 +67,8 @@
   box-shadow: var(--shadow-card);
   padding: 6px;
 }
-.place-suggestions[hidden] { display: none !important; }
-.place-option {
+.place-suggestions[hidden]{ display: none !important; }
+.place-option{
   appearance: none;
   width: 100%;
   min-height: 56px;
@@ -91,8 +86,8 @@
   cursor: pointer;
   transition: background .12s var(--ease);
 }
-.place-option + .place-option { position: relative; }
-.place-option + .place-option::before {
+.place-option + .place-option{ position: relative; }
+.place-option + .place-option::before{
   content: "";
   position: absolute;
   top: 0;
@@ -100,16 +95,13 @@
   right: 11px;
   border-top: 1px solid var(--line);
 }
-.place-option:hover,
-.place-option.is-active,
-.place-option:focus-visible {
+.place-option:hover,.place-option.is-active,.place-option:focus-visible{
   background: var(--blue-soft);
   outline: none;
 }
-.place-option.is-active::before,
-.place-option:hover::before { border-color: transparent; }
-.place-option:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
-.place-option__kind {
+.place-option.is-active::before,.place-option:hover::before{ border-color: transparent; }
+.place-option:focus-visible{ box-shadow: inset 0 0 0 2px var(--accent); }
+.place-option__kind{
   width: 38px;
   height: 38px;
   display: grid;
@@ -118,10 +110,10 @@
   background: var(--blue-soft);
   color: var(--accent);
 }
-.place-option__copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.place-option--plain { grid-template-columns: minmax(0,1fr); min-height: 48px; }
-.place-option--plain .place-option__copy strong { font-weight: 650; }
-.place-option__copy strong {
+.place-option__copy{ min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.place-option--plain{ grid-template-columns: minmax(0,1fr); min-height: 48px; }
+.place-option--plain .place-option__copy strong{ font-weight: 650; }
+.place-option__copy strong{
   min-width: 0;
   font-size: 16px;
   line-height: 1.25;
@@ -130,7 +122,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.place-option__copy small {
+.place-option__copy small{
   min-width: 0;
   color: var(--muted);
   font-size: 12px;
@@ -139,8 +131,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.place-option__code,
-.place-option__type {
+.place-option__code,.place-option__type{
   flex: none;
   display: inline-grid;
   place-items: center;
@@ -154,8 +145,8 @@
   font-weight: 800;
   letter-spacing: .04em;
 }
-.place-option__type { background: var(--surface); color: var(--muted); font-weight: 700; letter-spacing: 0; }
-.place-loading {
+.place-option__type{ background: var(--surface); color: var(--muted); font-weight: 700; letter-spacing: 0; }
+.place-loading{
   min-height: 56px;
   display: flex;
   align-items: center;
@@ -164,16 +155,16 @@
   color: var(--muted);
   font-size: 14px;
 }
-.place-empty {
+.place-empty{
   display: grid;
   gap: 6px;
   padding: 14px 12px 10px;
   color: var(--muted);
 }
-.place-empty strong { color: var(--ink-strong); font-size: 16px; }
-.place-empty span { font-size: 14px; line-height: 1.35; }
-.place-empty > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.place-empty button {
+.place-empty strong{ color: var(--ink-strong); font-size: 16px; }
+.place-empty span{ font-size: 14px; line-height: 1.35; }
+.place-empty > div{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.place-empty button{
   min-height: 44px;
   border: 1px solid var(--line-strong);
   border-radius: 12px;
@@ -184,24 +175,24 @@
   font-size: 14px;
   font-weight: 750;
 }
-.place-empty button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-.place-timezone-fallback[hidden] { display: none !important; }
+.place-empty button:focus-visible{ outline: 3px solid var(--accent); outline-offset: 2px; }
+.place-timezone-fallback[hidden]{ display: none !important; }
 
-@media (max-width: 374px) {
-  .place-suggestions { border-radius: 16px; max-height: min(280px, 39dvh); }
-  .place-option { grid-template-columns: 34px minmax(0,1fr) auto; gap: 9px; padding-inline: 9px; }
-  .place-option + .place-option::before { left: 52px; right: 9px; }
-  .place-option__kind { width: 34px; height: 34px; }
+@media (max-width: 374px){
+  .place-suggestions{ border-radius: 16px; max-height: min(280px, 39dvh); }
+  .place-option{ grid-template-columns: 34px minmax(0,1fr) auto; gap: 9px; padding-inline: 9px; }
+  .place-option + .place-option::before{ left: 52px; right: 9px; }
+  .place-option__kind{ width: 34px; height: 34px; }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce){
   /* consolidated into the global reduced-motion block below */
 }
 
 *{box-sizing:border-box}
-html{background:#eef0f3;color-scheme:light}
+html{background:#eeeeee;color-scheme:light}
 html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-x:clip;font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-body{background:#eef0f3;overscroll-behavior-y:none}
+body{background:#eeeeee;overscroll-behavior-y:none}
 body,button,input,select,textarea{font-family:var(--font)}
 button,input,select,textarea{font-size:16px}
 button{cursor:pointer}
@@ -250,22 +241,24 @@ button:active{transform:scale(.985)}
   position:sticky;top:0;z-index:20;
   min-height:var(--header-h);
   padding-top:env(safe-area-inset-top);
-  background:var(--chrome);
-  color:#fff;
-  border-bottom:1px solid var(--chrome-line);
+  background:var(--paper);
+  color:var(--ink-strong);
+  border-bottom:1px solid var(--line);
 }
 .app-header{display:flex;align-items:center;justify-content:space-between;padding-inline:20px}
-.brand,.first-run-brand{font-weight:700;letter-spacing:-.055em;color:#fff}
-.brand{border:0;background:transparent;padding:0;font-size:28px;min-height:44px}
-.brand-dot,.first-run-brand span{color:#fff}
+.brand,.first-run-brand{font-weight:700;letter-spacing:-.055em}
+.first-run-brand{color:#fff}
+.brand{border:0;background:transparent;padding:0;font-size:28px;min-height:44px;color:inherit}
+.brand-dot{color:var(--accent)}
+.first-run-brand span{color:#fff}
 .connection-state{display:flex;align-items:center;gap:8px}
 .offline-state,.first-run-offline{display:inline-flex;align-items:center;gap:6px;color:var(--amber);font-size:14px;font-weight:600}
 .header-icon,.icon-button{
-  display:grid;place-items:center;width:var(--button-compact-height);height:var(--button-compact-height);padding:0;border:0;border-radius:50%;background:transparent;color:#fff
+  display:grid;place-items:center;width:var(--button-compact-height);height:var(--button-compact-height);padding:0;border:0;border-radius:50%;background:transparent;color:inherit
 }
-.header-icon:hover,.icon-button:hover{background:rgba(255,255,255,.12)}
+.header-icon:hover,.icon-button:hover{background:var(--surface)}
 .icon-button--badged{position:relative}
-.unread-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#dc4a44;color:#fff;font-size:10px;font-weight:600;line-height:16px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
+.unread-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#b72b35;color:#fff;font-size:10px;font-weight:600;line-height:16px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
 .unread-badge--inline{position:static;box-shadow:none;display:inline-grid;place-items:center;flex:0 0 auto}
 .app-bar{display:grid;grid-template-columns:48px 1fr auto;align-items:center;padding-inline:8px}
 .app-bar-actions{display:flex;align-items:center;justify-content:flex-end;gap:2px}
@@ -301,7 +294,7 @@ button:active{transform:scale(.985)}
 .nav-add>span{flex:0 0 auto;display:grid;place-items:center;width:48px;height:48px;aspect-ratio:1;border-radius:50%;background:transparent;color:var(--accent);border:2px solid var(--accent);box-shadow:none}
 .nav-add:active>span{opacity:.6}
 .nav-item__icon{position:relative;display:grid;place-items:center;line-height:0}
-.nav-item__badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:9px;background:#dc4a44;color:#fff;font-size:9px;font-weight:700;line-height:15px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
+.nav-item__badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:9px;background:#b72b35;color:#fff;font-size:9px;font-weight:700;line-height:15px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
 
 @media(max-width:374px){
   .bottom-nav{width:calc(100% - 20px);padding-inline:6px}
@@ -378,31 +371,6 @@ html.first-run-open .phone-app{background:#0a1020}
 .first-run-screen .first-run-preview__copy strong{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.6)}
 .first-run-screen .first-run-preview__copy span{color:rgba(255,255,255,.78);text-shadow:0 1px 8px rgba(0,0,0,.55)}
 
-/* Welcome page — Slate theme: on-palette only. Warm slate gradient (::before, in
-   the dot-pattern block below) with a rose + sand glow; cream text, sand accents,
-   cohesive rose timeline markers. Happy + modern, no off-theme hues. */
-html.theme-slate.first-run-open,html.theme-slate.first-run-open body,html.theme-slate.first-run-open .phone-app{background:#121a21}
-html.theme-slate .first-run-screen{background:#121a21;color:#f5f5f5}
-html.theme-slate .first-run-screen::after{background:linear-gradient(180deg,rgba(10,16,26,.82) 0%,rgba(10,16,26,.48) 20%,rgba(10,16,26,.14) 40%,rgba(10,16,26,.22) 60%,rgba(10,16,26,.62) 80%,rgba(10,16,26,.94) 100%)}
-html.theme-slate .first-run-screen .first-run-brand,html.theme-slate .first-run-screen .first-run-brand span{color:#f7f5f1;text-shadow:0 1px 14px rgba(0,0,0,.4)}
-html.theme-slate .first-run-screen .first-run-kicker{color:#ddb89b;text-shadow:0 1px 10px rgba(0,0,0,.3)}
-html.theme-slate .first-run-screen .first-run-kicker span{color:#f7f5f1}
-html.theme-slate .first-run-screen .first-run-kicker::before{background:#eb5f5e;box-shadow:0 0 12px rgba(235,95,94,.55)}
-html.theme-slate .first-run-screen .first-run-hero h1{color:#f7f5f1;text-shadow:0 2px 20px rgba(0,0,0,.35)}
-html.theme-slate .first-run-screen .first-run-title__muted{color:#eb5f5e}
-html.theme-slate .first-run-screen .first-run-hero p{color:rgba(247,245,241,.82);text-shadow:0 1px 12px rgba(0,0,0,.3)}
-html.theme-slate .first-run-screen .first-run-secondary{color:#eb5f5e}
-html.theme-slate .first-run-screen .welcome-v2__footer{color:rgba(247,245,241,.62)}
-html.theme-slate .first-run-screen .welcome-v2__footer>span{background:rgba(247,245,241,.3)}
-html.theme-slate .first-run-screen .first-run-preview::before{background:linear-gradient(180deg,#ddb89b,rgba(221,184,155,.16));box-shadow:none}
-html.theme-slate .first-run-screen .first-run-preview__marker{background:#121b22;color:#ddb89b;border:2px solid #ddb89b;box-shadow:0 12px 26px -14px rgba(0,0,0,.6)}
-html.theme-slate .first-run-screen .first-run-preview__event--fade .first-run-preview__marker{background:rgba(235,95,94,.1);color:#eb5f5e;border-color:#eb5f5e;box-shadow:none}
-html.theme-slate .first-run-screen .first-run-preview__copy small{color:rgba(247,245,241,.72)}
-html.theme-slate .first-run-screen .first-run-preview__copy strong{color:#f7f5f1}
-html.theme-slate .first-run-screen .first-run-preview__copy span{color:rgba(247,245,241,.72)}
-html.theme-slate .first-run-screen .first-run-google-preview{background:#f7f5f1;color:#11191f;box-shadow:0 14px 30px -16px rgba(0,0,0,.6)}
-html.theme-slate .first-run-screen .first-run-google-preview img{background:transparent;padding:0}
-
 /* Timeline */
 .trip-v2-header{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;min-height:var(--header-h);padding:0 16px 0 20px}
 .trip-v2-actions{display:flex;align-items:center;justify-content:flex-end;gap:2px;flex:0 0 auto;margin-top:0}
@@ -415,6 +383,8 @@ html.theme-slate .first-run-screen .first-run-google-preview img{background:tran
 .timeline-screen{display:flex;flex-direction:column;height:100dvh;min-height:0;padding-bottom:0}
 .timeline-screen .trip-v2-header,.timeline-screen .mobile-alert{flex:0 0 auto}
 .timeline-screen .timeline-page{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav-height) + 24px + env(safe-area-inset-bottom))}
+.timeline-screen .timeline-ribbon{margin-inline:22px}
+.timeline-screen .timeline-context,.timeline-screen .timeline-empty{max-width:400px;margin-inline:auto}
 .timeline-screen .timeline-day__header{top:0}
 .timeline-page--empty{display:grid;align-items:center;min-height:calc(100dvh - var(--header-h) - var(--nav-height));padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom))}
 .timeline-context{margin:2px 0 22px;padding:0 0 20px 0;border:0;border-bottom:1px solid var(--line-strong);background:transparent}
@@ -439,6 +409,15 @@ html.theme-slate .first-run-screen .first-run-google-preview img{background:tran
 .timeline-context__wx-day>span{color:var(--muted);font-size:12px;font-weight:400;letter-spacing:.05em;text-transform:uppercase}
 .timeline-context__wx-day .ph-svg,.timeline-context__wx-day .ph{color:var(--ink)}
 .timeline-context__wx-day strong{font-size:12px;font-weight:400}
+.timeline-days{position:sticky;top:0;z-index:6;display:flex;align-items:flex-start;gap:40px;margin:0 0 6px;padding:14px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:var(--paper)}
+.timeline-days::-webkit-scrollbar{display:none}
+.timeline-day-tab{flex:0 0 auto;display:grid;gap:4px;justify-items:start;padding:0 0 9px;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--muted);text-align:left;white-space:nowrap;cursor:pointer;transition:border-color .18s var(--ease)}
+.timeline-day-tab__label{font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.timeline-day-tab__date{font-size:13px;font-weight:500;letter-spacing:.01em;color:var(--muted)}
+.timeline-day-tab--active{border-bottom-color:var(--accent)}
+.timeline-days__more{flex:0 0 auto;align-self:center;color:var(--muted);opacity:.7}
+.timeline-ribbon--paged .timeline-day__header{display:none}
+.timeline-ribbon--paged .timeline-day+.timeline-day{margin-top:0}
 .timeline-day{position:relative}
 .timeline-day+.timeline-day{margin-top:18px}
 .timeline-day__header{position:sticky;top:calc(var(--header-h) + env(safe-area-inset-top));z-index:5;display:grid;grid-template-columns:56px 52px 1fr;align-items:center;min-height:38px;padding:5px 0;background:var(--paper)}
@@ -629,8 +608,7 @@ html.theme-slate .first-run-screen .first-run-google-preview img{background:tran
 .row-icon,.travel-row__icon,.document-row__icon,.trip-row__mark,.info-icon,.detail-row>span:first-child,.hotel-info-row__icon,.hotel-address-row__icon{
   display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--blue-soft);color:var(--icon)
 }
-.row-copy,.travel-row__body,.document-row__copy,.trip-row__copy,.info-copy,
-.simple-row>span:nth-of-type(2),.travel-row>span:nth-of-type(2),.document-row>span:nth-of-type(2),.trip-row>span:nth-of-type(2),.detail-row>span:nth-of-type(2),.booking-card>span:nth-of-type(2),.hotel-info-row>span:nth-of-type(2),.hotel-address-row>span:nth-of-type(2),.sheet-option>span:nth-of-type(2),.quick-trip-context>span:nth-of-type(2){display:grid;gap:3px;min-width:0}
+.row-copy,.travel-row__body,.document-row__copy,.trip-row__copy,.info-copy,.simple-row>span:nth-of-type(2),.travel-row>span:nth-of-type(2),.document-row>span:nth-of-type(2),.trip-row>span:nth-of-type(2),.detail-row>span:nth-of-type(2),.booking-card>span:nth-of-type(2),.hotel-info-row>span:nth-of-type(2),.hotel-address-row>span:nth-of-type(2),.sheet-option>span:nth-of-type(2),.quick-trip-context>span:nth-of-type(2){display:grid;gap:3px;min-width:0}
 .row-copy strong,.travel-row__body strong,.document-row__copy strong,.trip-row__copy strong,.detail-row strong,.booking-card strong{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row-copy span,.travel-row__body small,.document-row__copy small,.trip-row__copy small,.detail-row small,.booking-card span{color:var(--muted);font-size:12px;line-height:1.35}
 .row-date{color:var(--muted);font-size:12px;text-align:right}
@@ -654,8 +632,6 @@ html.theme-slate .first-run-screen .first-run-google-preview img{background:tran
 .trips-bg-screen .trip-row__copy strong{color:var(--ink)}
 .trips-bg-screen .trip-row__copy small{color:var(--muted)}
 .trips-bg-screen .trip-group .trip-row__mark{background:var(--blue-soft);color:var(--icon)}
-/* Compact /trips list. */
-html.theme-harbor .trips-bg-screen .trip-group .trip-row{padding:8px 4px}
 .trips-bg-screen .trip-group .trip-row__mark{width:36px;height:36px}
 .trips-bg-screen .trip-group .trip-row__copy strong{font-size:20px}
 .trips-bg-screen .trip-group .trip-row__copy small{font-size:14px}
@@ -674,7 +650,7 @@ html.theme-harbor .trips-bg-screen .trip-group .trip-row{padding:8px 4px}
 .trip-context-copy strong{font-size:20px;letter-spacing:-.035em}
 .trip-context-copy span{color:var(--muted);font-size:12px}
 .context-chip,.ticket-chip,.flight-pass__pill{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 10px;border-radius:999px;background:var(--blue-soft);color:var(--indigo);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-.next-action-card{padding:20px;border:0;border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--shadow-card)}
+.next-action-card{padding:20px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--card);box-shadow:none}
 .next-action-card h2{margin:13px 0 4px;font-size:28px;letter-spacing:-.05em}
 .next-action-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
 .next-action-time{margin:18px 0 3px;font-size:40px;font-weight:600;letter-spacing:-.05em}
@@ -687,7 +663,7 @@ html.theme-harbor .trips-bg-screen .trip-group .trip-row{padding:8px 4px}
 
 /* Flat flight pass */
 .dark-detail,.flight-detail-screen{background:var(--paper)}
-.detail-content{padding:14px 16px calc(110px + env(safe-area-inset-bottom))}
+.detail-content{padding:14px 30px calc(110px + env(safe-area-inset-bottom));max-width:400px;margin:0 auto}
 .flight-pass{position:relative;color:var(--navy)}
 .flight-pass__inner{padding:2px 0 4px;border:0;border-radius:0;background:transparent}
 .flight-pass__notch{display:none}
@@ -740,7 +716,7 @@ html.theme-harbor .trips-bg-screen .trip-group .trip-row{padding:8px 4px}
 .missing-document-state,.inline-recovery{display:flex;align-items:flex-start;gap:9px;margin-top:12px;padding:12px;border-radius:var(--radius-sm);background:var(--amber-soft);color:var(--amber);font-size:12px;line-height:1.4}
 
 /* Flight detail — one cohesive card system (hero card + grouped list card) */
-.fd-card,.fd-list{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-card)}
+.fd-card,.fd-list{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:none}
 .fd-card{color:var(--navy);padding:12px 15px}
 .fd-card__head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .fd-flight{display:inline-flex;align-items:center;gap:8px;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
@@ -890,8 +866,6 @@ html.theme-harbor .trips-bg-screen .trip-group .trip-row{padding:8px 4px}
 .account-v2 .simple-row .chevron{width:18px;height:18px}
 .account-v2 .simple-row .row-copy strong{font-size:16px;font-weight:500}
 .account-v2 .simple-row .row-copy span{font-size:12px}
-.account-v2 .theme-picker{margin:2px 0 6px}
-.account-v2 .theme-swatch{padding:10px}
 .account-v2 .account-footer-brand{padding-top:18px}
 .account-v2 .account-brand{font-size:34px}
 .account-v2 .app-version{margin-top:16px}
@@ -919,6 +893,7 @@ html.keyboard-open .form-save-bar{display:none}
 .sheet-open body{overflow:hidden}.sheet-backdrop{position:fixed;inset:0;z-index:70;background:rgba(6,10,16,.55);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .bottom-sheet{position:fixed;left:50%;bottom:0;z-index:71;width:min(100%,var(--app-width));max-height:min(82dvh,760px);padding:8px 20px calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);border-radius:26px 26px 0 0;background:var(--surface);box-shadow:0 -14px 36px rgba(17,18,21,.14);overflow:hidden}
 .sheet-handle{width:38px;height:4px;margin:0 auto 6px;border-radius:999px;background:var(--line)}.sheet-title-row{display:flex;align-items:center;justify-content:space-between;min-height:var(--button-primary-height)}.sheet-title-row h2{margin:0;font-size:20px;letter-spacing:-.035em}.sheet-scroll{max-height:calc(min(82dvh,760px) - 76px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}.sheet-options-group{display:grid}.sheet-option{grid-template-columns:44px minmax(0,1fr) 24px}.sheet-option>span:nth-child(2){display:grid;gap:3px}.sheet-option small{color:var(--muted);font-size:12px}.sheet-option>span:nth-child(2) strong,.sheet-option>span:nth-child(2) small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.manual-v2-options{grid-template-columns:1fr 1fr;gap:0 16px}.first-run-how-list{display:grid;gap:0;margin:0;padding:0;list-style:none}.first-run-how-list li{display:grid;grid-template-columns:28px 40px 1fr;align-items:center;gap:10px;min-height:var(--button-row-height);border-bottom:1px solid var(--line)}.first-run-how-list__number{color:var(--muted);font-size:12px}.first-run-how-list__icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--blue-soft);color:var(--icon)}.first-run-how-done{margin-top:16px}
+.move-day-list{gap:2px}.sheet-option.move-day-option{grid-template-columns:34px minmax(0,1fr) auto;align-items:center}.move-day-option__index{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--surface);color:var(--muted);font-size:13px;font-weight:700}.move-day-option--current .move-day-option__index{background:var(--accent);color:var(--accent-ink)}.move-day-option__body{display:grid;gap:2px;min-width:0}.move-day-option__body strong{font-size:15px}.move-day-option__body small{color:var(--muted);font-size:12px}.move-day-option__here{color:var(--muted);font-size:12px;font-weight:600}.move-day-option[disabled]{cursor:default}
 .bottom-sheet--date-range{max-height:min(88dvh,760px)}.range-picker{padding:2px 0}.range-picker__summary{display:grid;gap:4px;min-height:52px;padding:10px 12px;border-radius:12px;background:var(--blue-soft)}.range-picker__summary small{color:var(--indigo);font-size:12px;font-weight:600;text-transform:uppercase}.range-picker__summary strong{font-size:16px}.range-month{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:10px 0 4px;text-align:center}.range-month strong{font-size:16px}.range-weekdays,.range-days{display:grid;grid-template-columns:repeat(7,1fr)}.range-weekdays span{display:grid;place-items:center;height:28px;color:var(--muted);font-size:12px;font-weight:600}.range-day{position:relative;display:grid;place-items:center;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:var(--navy);font-size:14px}.range-day span{position:relative;z-index:2;display:grid;place-items:center;width:36px;height:36px;border-radius:50%}.range-day.is-outside{color:var(--muted-soft)}.range-day.is-between{background:var(--blue-soft)}.range-day.is-start,.range-day.is-end{color:#fff}.range-day.is-start span,.range-day.is-end span{background:var(--indigo)}.range-picker__apply{margin-top:12px}
 
 /* Error, loading and system states */
@@ -1062,11 +1037,7 @@ html.keyboard-open .form-save-bar{display:none}
 
 /* FIX: phosphor icons forced grey (var(--icon)) even on dark fills —
    made the "+" / doc glyphs on black buttons nearly invisible. */
-.primary-cta .ph,.mobile-primary-action .ph,.first-run-how-done .ph,
-.hotel-action--primary .ph,.first-run-google-preview .ph,.nav-add>span .ph,
-.avatar .ph,.traveler-avatar .ph,.status-dot-check .ph,
-.journey-event--next .journey-marker .ph,.journey-event--active .journey-marker .ph,
-.timeline-day__rail .ph,.discard-dialog-actions .mobile-primary-action .ph{color:currentColor}
+.primary-cta .ph,.mobile-primary-action .ph,.first-run-how-done .ph,.hotel-action--primary .ph,.first-run-google-preview .ph,.nav-add>span .ph,.avatar .ph,.traveler-avatar .ph,.status-dot-check .ph,.journey-event--next .journey-marker .ph,.journey-event--active .journey-marker .ph,.timeline-day__rail .ph,.discard-dialog-actions .mobile-primary-action .ph{color:currentColor}
 
 /* Primary buttons: subtle lift + tighter optical spacing */
 .primary-cta,.mobile-primary-action,.first-run-how-done{
@@ -1084,17 +1055,14 @@ html.keyboard-open .form-save-bar{display:none}
 .secondary-cta:hover,.mobile-secondary-action:hover,.hotel-action:hover{border-color:var(--muted-soft)}
 
 /* Elevated surfaces: whisper shadow so cards float off the page */
-.offline-summary,.health-summary,.essentials-summary,.sync-summary,.review-summary,
-.quick-travelers,.time-mode,.account-signin{
+.offline-summary,.health-summary,.essentials-summary,.sync-summary,.review-summary,.quick-travelers,.time-mode,.account-signin{
   box-shadow:var(--shadow-card)
 }
 .segmented-control button.is-active{box-shadow:0 1px 2px rgba(17,18,21,.14),0 2px 6px -2px rgba(17,18,21,.12)}
 .bottom-sheet{box-shadow:0 -1px 0 var(--line),0 -20px 50px rgba(17,18,21,.18)}
 
 /* Tactile feedback on tappable list rows */
-.simple-row:active,.travel-row:active,.document-row:active,.trip-row:active,
-.journey-event:active,.v2-choice:active,.sheet-option:active,
-.hotel-map-panel:active,.date-range-trigger:active{background:var(--surface)}
+.simple-row:active,.travel-row:active,.document-row:active,.trip-row:active,.journey-event:active,.v2-choice:active,.sheet-option:active,.hotel-map-panel:active,.date-range-trigger:active{background:var(--surface)}
 
 /* Empty states: balance the void by centering the block vertically in the
    available space, with a slight upward bias, and a refined icon ring. */
@@ -1128,7 +1096,7 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 
 /* Forward / Upload import screens — these classes shipped unstyled,
    so the address block + textarea label collapsed into one run-on. */
-.forward-booking-address{display:flex;align-items:flex-start;gap:13px;margin:2px 0 22px;padding:15px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface);box-shadow:0 1px 2px rgba(17,18,21,.04),0 22px 44px -30px rgba(17,18,21,.3)}
+.forward-booking-address{display:flex;align-items:flex-start;gap:13px;margin:2px 0 22px;padding:15px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface);box-shadow:none}
 .forward-booking-address>span{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--blue-soft);color:var(--indigo)}
 .forward-booking-address>div{display:grid;gap:4px;min-width:0}
 .forward-booking-address strong{font-size:16px;font-weight:600}
@@ -1152,163 +1120,6 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-create-fields .form-field>span{font-size:12px}
 .trip-create-fields .form-field--destination input{min-height:54px;font-size:20px;font-weight:500}
 
-/* Alternate theme: Harbor — a true dark theme. Deep-navy canvas, elevated navy
-   cards, warm amber accent. Designed for depth: page < card < elevated, with a
-   single amber accent doing all the pointing so the UI stays calm. The grayscale
-   content tokens are fully remapped; navy/indigo (dual-purpose in Classic) split
-   into light ink (text) + amber (fills), with per-element overrides where a token
-   was used as a solid background. */
-html.theme-harbor{
-  color-scheme:dark;
-  /* canvas + elevation (yale/baltic blue) */
-  --paper:#012032;
-  --card:#073a55;
-  --surface:#0e4a66;
-  /* text */
-  --ink:#eaf3fb;
-  --ink-strong:#ffffff;
-  --muted:#93b4ca;
-  --muted-soft:#5e839c;
-  /* structure */
-  --line:rgba(255,255,255,.10);
-  --line-strong:rgba(255,255,255,.18);
-  --icon:#6cc4d6;
-  /* accent (honey-bronze) */
-  --accent:#edae49;
-  --accent-ink:#012738;
-  --chrome:#01141f;
-  --chrome-line:rgba(255,255,255,.07);
-  /* hue tokens: navy=text(light), indigo=accent(honey-bronze) */
-  --navy:#eaf3fb;
-  --indigo:#edae49;
-  --yellow:#edae49;
-  --blue-soft:rgba(120,200,220,.14);
-  /* status */
-  --green:#4fc9a6;
-  --green-soft:rgba(79,201,166,.16);
-  --amber:#edae49;
-  --amber-soft:rgba(237,174,73,.16);
-  --red:#e4677a;
-  --red-soft:rgba(209,73,91,.22);
-  /* depth: shadows go darker + deeper on a dark canvas */
-  --shadow-card:0 18px 40px -20px rgba(0,0,0,.7),0 3px 10px -6px rgba(0,0,0,.5);
-  --shadow-soft:0 14px 30px -20px rgba(0,0,0,.6);
-}
-html.theme-harbor,html.theme-harbor body{background:#00141f}
-/* Welcome/first-run stays on the original harbor palette (never restyle it) */
-html.theme-harbor .first-run-screen{
-  --paper:#0d1626;--surface:#202d46;--ink:#eef3fb;--navy:#eef3fb;
-  --muted:#9db0cc;--line:rgba(255,255,255,.09);--line-strong:rgba(255,255,255,.16);
-  --indigo:#f5ae41;--amber:#f5ae41
-}
-/* Fills that used navy/indigo as a solid background need an accent (or elevated)
-   surface with dark text so they stay legible on the dark canvas. */
-html.theme-harbor .avatar,html.theme-harbor .traveler-avatar{background:var(--accent);color:var(--accent-ink)}
-html.theme-harbor .journey-event--next .journey-marker,html.theme-harbor .journey-event--active .journey-marker{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-html.theme-harbor .journey-event--staying .journey-marker{border-color:var(--accent);color:var(--accent)}
-html.theme-harbor .hotel-action--primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-html.theme-harbor .range-day.is-start span,html.theme-harbor .range-day.is-end span{background:var(--accent)}
-html.theme-harbor .range-day.is-start,html.theme-harbor .range-day.is-end{color:var(--accent-ink)}
-html.theme-harbor .checklist-row input:checked+.checklist-box{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-html.theme-harbor .toast-mobile{background:var(--card);color:var(--ink);border:1px solid var(--line)}
-html.theme-harbor .driver-screen{background:var(--chrome)}
-html.theme-harbor .driver-cta .primary-cta{background:var(--accent);color:var(--accent-ink)}
-/* Secondary/dark buttons used --ink as a fill (dark in Classic); on dark that
-   collides with the page, so give them an elevated surface + border. */
-html.theme-harbor .secondary-cta,html.theme-harbor .mobile-secondary-action,html.theme-harbor .hotel-action,html.theme-harbor .flight-pass__secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);box-shadow:none}
-html.theme-harbor .mobile-danger-action{background:var(--surface);color:var(--ink);border-color:var(--line-strong)}
-html.theme-harbor .discard-dialog-actions .mobile-danger-action{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-/* Cards, sheets, dialogs, chrome hovers */
-html.theme-harbor .discard-dialog{background:var(--card);color:var(--ink)}
-html.theme-harbor .account-signin--active{background:var(--surface);border-color:var(--line)}
-html.theme-harbor .account-signin__label .ph{color:var(--accent)}
-html.theme-harbor .account-signin--active .mobile-secondary-action{background:var(--accent);color:var(--accent-ink);border:0}
-html.theme-harbor .segmented-control button.is-active{background:var(--accent);color:var(--accent-ink)}
-html.theme-harbor .traveler-pill span{background:var(--surface);border-color:var(--line-strong)}
-html.theme-harbor .nav-add>span{background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 22px -10px rgba(0,0,0,.8)}
-html.theme-slate .nav-add>span{background:transparent;color:var(--accent);border:2px solid var(--accent);box-shadow:none}
-html.theme-harbor .header-icon:hover,html.theme-harbor .icon-button:hover{background:rgba(255,255,255,.10)}
-/* Save bar: amber CTA on the dark bar */
-html.theme-harbor .form-save-bar .mobile-primary-action{background:var(--accent) !important;color:var(--accent-ink) !important}
-html.theme-harbor .primary-cta:active,html.theme-harbor .mobile-primary-action:active,html.theme-harbor .first-run-how-done:active{filter:brightness(.95)}
-
-/* Harbor welcome page: richly colored dark hero. Layered radial glows (amber +
-   teal) over the deep-navy canvas, amber accents, glassy preview cards. */
-html.theme-harbor.first-run-open,html.theme-harbor.first-run-open body{background:#080e1a}
-html.theme-harbor .first-run-screen{
-  background:
-    radial-gradient(120% 80% at 88% -8%,rgba(245,174,65,.30),transparent 55%),
-    radial-gradient(110% 70% at 2% 12%,rgba(64,150,180,.24),transparent 52%),
-    radial-gradient(140% 90% at 50% 118%,rgba(245,174,65,.14),transparent 60%),
-    linear-gradient(180deg,#0e1a2e 0%,#0a1120 60%,#080d18 100%);
-}
-html.theme-harbor .first-run-kicker{color:var(--accent)}
-html.theme-harbor .first-run-kicker::before{background:var(--accent);box-shadow:0 0 12px rgba(245,174,65,.7)}
-html.theme-harbor .first-run-title__muted{color:var(--accent);opacity:.92}
-html.theme-harbor .first-run-secondary{color:var(--accent)}
-html.theme-harbor .first-run-actions__fade{background:linear-gradient(to top,#0a1120,transparent)}
-/* Elegant timeline preview: no boxes — a soft glowing connector thread with
-   gradient amber markers floating on the colored canvas. */
-html.theme-harbor .first-run-preview__event{padding:0;border:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
-html.theme-harbor .first-run-preview__event+.first-run-preview__event{margin-top:0}
-html.theme-harbor .first-run-preview::before{display:block;top:46px;bottom:46px;left:22px;width:2px;background:linear-gradient(180deg,var(--accent),rgba(245,174,65,.15));border-radius:2px;box-shadow:0 0 14px rgba(245,174,65,.35)}
-html.theme-harbor .first-run-preview__marker{background:linear-gradient(145deg,var(--accent),#e0912a);color:var(--accent-ink);box-shadow:0 8px 20px -8px rgba(245,174,65,.6),0 0 0 5px rgba(245,174,65,.12)}
-html.theme-harbor .first-run-preview__event--fade .first-run-preview__marker{background:rgba(255,255,255,.12);color:#fff;box-shadow:none}
-/* Google button: warm amber CTA to match the theme */
-html.theme-harbor .first-run-google-preview{background:linear-gradient(145deg,var(--accent),#eb9d2c);color:var(--accent-ink);box-shadow:0 14px 30px -12px rgba(245,174,65,.55)}
-html.theme-harbor .first-run-google-preview img{background:#fff;padding:3px}
-
-/* Harbor trip timeline: same elegant treatment as the welcome preview — a soft
-   glowing amber connector thread and gradient markers with a warm halo. */
-html.theme-harbor .timeline-journey::before{width:2px;left:81.5px;background:linear-gradient(180deg,rgba(245,174,65,.5),rgba(245,174,65,.12));border-radius:2px;box-shadow:0 0 12px rgba(245,174,65,.28)}
-html.theme-harbor .timeline-day__rail{border-color:var(--accent);background:var(--paper);box-shadow:0 0 10px rgba(245,174,65,.5)}
-html.theme-harbor .timeline-day__header time strong,html.theme-harbor .timeline-day__header time span{color:var(--accent)}
-html.theme-harbor .journey-marker{border-color:var(--line-strong);background:var(--card);color:var(--icon)}
-html.theme-harbor .journey-event--next .journey-marker,html.theme-harbor .journey-event--active .journey-marker{background:linear-gradient(145deg,var(--accent),#e0912a);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 8px 20px -8px rgba(245,174,65,.6),0 0 0 5px rgba(245,174,65,.12)}
-html.theme-harbor .journey-event--staying .journey-marker{border-color:var(--accent);color:var(--accent)}
-
-/* Harbor Trips list: flat, editorial rows — no boxed cards. Hairline dividers,
-   a glowing amber mark, and an amber accent marks the current trip. */
-html.theme-harbor .trip-group{border-top:0}
-html.theme-harbor .trip-group+.trip-group{border-top:0;margin-top:22px}
-html.theme-harbor .trip-group>h2{color:var(--accent);letter-spacing:.14em;opacity:.92}
-html.theme-harbor .trip-group .mobile-list{background:transparent}
-html.theme-harbor .trip-group .trip-row{padding:15px 2px;border-radius:0;background:transparent;border:0;box-shadow:none}
-html.theme-harbor .trip-group .trip-row+.trip-row{border-top:0}
-html.theme-harbor .trip-group .trip-row__mark{background:var(--surface);color:var(--accent);box-shadow:inset 0 0 0 1px var(--line)}
-html.theme-harbor .trip-group .trip-row .chevron{color:var(--muted-soft)}
-html.theme-harbor .trip-group .trip-row:active{opacity:.6}
-html.theme-harbor .trip-group .trip-row.is-current .trip-row__copy strong{color:var(--accent)}
-html.theme-harbor .trip-group .trip-row.is-current .trip-row__mark{background:linear-gradient(145deg,var(--accent),#e0912a);color:var(--accent-ink);box-shadow:0 10px 22px -8px rgba(245,174,65,.6),0 0 0 5px rgba(245,174,65,.12)}
-
-/* Alternate theme: Slate — a dark theme (blue-slate canvas, cream text, warm
-   sand icons, a rose accent). Inherits the Harbor dark structural overrides. */
-html.theme-slate{
-  color-scheme:dark;
-  --paper:#121a21;--card:#181d21;--surface:#1f252b;
-  --ink:#f5f5f5;--ink-strong:#ffffff;--muted:#9f9ea0;--muted-soft:#7d8185;
-  --line:#252a2f;--line-strong:#3c4248;
-  --icon:#d7b394;
-  --accent:#e55d5b;--accent-ink:#121a21;
-  --chrome:#181d21;--chrome-line:rgba(215,179,148,.22);
-  --navy:#f5f5f5;--indigo:#e55d5b;--yellow:#d7b394;
-  --blue-soft:rgba(215,179,148,.12);
-  --green:#6bbf9a;--green-soft:rgba(107,191,154,.18);
-  --amber:#d7b394;--amber-soft:rgba(215,179,148,.18);
-  --red:#e55d5b;--red-soft:rgba(229,93,91,.16);
-  --shadow-card:0 18px 40px -20px rgba(0,0,0,.7),0 3px 10px -6px rgba(0,0,0,.5);
-  --shadow-soft:0 14px 30px -20px rgba(0,0,0,.6);
-}
-html.theme-slate,html.theme-slate body{background:#121a21}
-html.theme-slate .journey-event--next .journey-marker,html.theme-slate .journey-event--active .journey-marker{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 8px 20px -8px rgba(0,0,0,.55),0 0 0 5px var(--blue-soft)}
-html.theme-slate .trip-group .trip-row.is-current .trip-row__mark{background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 22px -8px rgba(0,0,0,.55),0 0 0 5px var(--blue-soft)}
-/* Slate theme — sand dot-grid texture across the WHOLE app. Painted on the
-   universal .phone-app wrapper so every screen inherits it; screens go
-   transparent so the texture shows through. Sits behind the opaque cards.
-   Immersive dark-detail screens keep their own dark treatment. */
-html.theme-slate body{background-color:#121a21}
-html.theme-slate .phone-app{background-color:var(--paper)}
-
 /* Production QA: preserve 44px touch targets and never hide travel facts. */
 .welcome-v2__footer a,.first-run-secondary,.esim-code,.trip-v2-selector,.quick-trip-context>button,.wx-place-chip,.account-brand{min-height:44px}
 .trip-v2-actions .icon-button{width:44px;height:44px}
@@ -1317,175 +1128,182 @@ html.theme-slate .phone-app{background-color:var(--paper)}
 .sync-conflict-list{display:grid;gap:10px;margin-top:14px}
 .sync-conflict-detail{display:grid;gap:4px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface)}
 .sync-conflict-detail span,.sync-conflict-detail small{color:var(--muted);font-size:12px;line-height:1.4}
-html.theme-slate .screen,
-html.theme-slate .trips-bg-screen,
-html.theme-slate .dark-detail,html.theme-slate .flight-detail-screen{background:transparent}
-html.theme-slate .first-run-screen::before{background:#121a21}
+html,html body{background:#ffffff}
 
-/* Slate — warmer, more colored typography across every card / detail window.
-   Eyebrows & labels take the sand accent; captions warm from gray-blue to
-   sand-muted; headings get a soft warm-cream. (2026-08-30) */
-html.theme-slate .fd-flight,
-html.theme-slate .fd-label,
-html.theme-slate .section-label,
-html.theme-slate .journey-times span,html.theme-slate .journey-facts dt,html.theme-slate .fact-grid span,
-html.theme-slate .wx-block__title,html.theme-slate .plan-hero p{color:var(--icon)}
-html.theme-slate .fd-title,
-html.theme-slate .trip-context-copy strong{color:#f3e7d5}
-html.theme-slate .fd-when,
-html.theme-slate .fd-status small,html.theme-slate .fd-status-wrap small,
-html.theme-slate .fd-row__text small,html.theme-slate .fd-sub,
-html.theme-slate .travel-row small,html.theme-slate .document-row small,html.theme-slate .detail-row small,
-html.theme-slate .simple-row small,html.theme-slate .sheet-option small,html.theme-slate .trip-row small{color:#c6b59e}
-
-/* Alternate theme: Daylight — the bright light theme for the authenticated app.
-   White canvas, deep tripto-navy text, a vivid blue interactive accent and the
-   warm tripto-yellow reserved for primary CTAs. The grayscale content tokens of
-   the Classic base are repointed to navy/blue-gray; the collapsed hue tokens
-   (navy/indigo/yellow) split back into real colors; chrome flips to white. Only
-   places that hardcoded #fff text on the (now-white) chrome need per-element
-   overrides. Welcome/first-run is deliberately kept on Harbor (never gets this
-   class), so its dark hero is untouched. Flat by design: soft, low shadows. */
-html.theme-daylight{
-  color-scheme:light;
-  /* canvas + elevation */
-  --paper:#ffffff;
-  --card:#ffffff;
-  --surface:#eef5fa;
-  /* text (yale blue) */
-  --ink:#003d5b;
-  --ink-strong:#002e46;
-  --muted:#5e7d97;
-  --muted-soft:#95afc6;
-  /* structure */
-  --line:#dde7f0;
-  --line-strong:#cbdae7;
-  --icon:#00798c;
-  /* accent (honey-bronze, reserved for primary CTAs) */
-  --accent:#edae49;
-  --accent-ink:#003d5b;
-  --chrome:#ffffff;
-  --chrome-line:#dde7f0;
-  /* hue tokens: navy=deep yale text, indigo=baltic blue, yellow=honey CTA */
-  --navy:#003d5b;
-  --indigo:#30638e;
-  --yellow:#edae49;
-  --blue-soft:#e4f1f3;
-  /* status: restrained semantics on a light canvas */
-  --green:#1f9d6b;
-  --green-soft:#e7f6ee;
-  --amber:#b8791a;
-  --amber-soft:#fdf0d4;
-  --red:#d1495b;
-  --red-soft:#fbe9ec;
-  /* flat: low, cool shadows instead of the dark drop shadows */
-  --shadow-card:0 14px 34px -22px rgba(0,61,91,.20),0 2px 6px -4px rgba(0,61,91,.08);
-  --shadow-soft:0 10px 24px -20px rgba(0,61,91,.16);
-}
-html.theme-daylight,html.theme-daylight body{background:#ffffff}
-/* Chrome flips to white: the header, app-bars and bottom nav hardcoded #fff text
-   for the dark chrome, so recolor their text to ink under Daylight. */
-html.theme-daylight .app-header,html.theme-daylight .app-bar,html.theme-daylight .trip-v2-header,html.theme-daylight .app-bar--dark{color:var(--ink)}
-html.theme-daylight .brand{color:var(--ink)}
-html.theme-daylight .brand-dot{color:var(--accent)}
-html.theme-daylight .header-icon,html.theme-daylight .icon-button,html.theme-daylight .app-bar--dark .icon-button{color:var(--ink)}
-html.theme-daylight .header-icon:hover,html.theme-daylight .icon-button:hover{background:var(--blue-soft)}
-html.theme-daylight .app-bar-title span{color:var(--muted)}
+html .app-header,html .app-bar,html .trip-v2-header,html .app-bar--dark{color:var(--ink)}
+/* Detail screens pass dark=true → .app-bar--dark uses --chrome (white), leaving a
+   white header band above the --paper page canvas. Under the light themes, blend
+   the header into the page background so every app header matches the content. */
+html .app-bar--dark{background:var(--paper)}
+html .brand{color:var(--ink)}
+html .brand-dot{color:var(--accent)}
+html .header-icon,html .icon-button,html .app-bar--dark .icon-button{color:var(--ink)}
+html .header-icon:hover,html .icon-button:hover{background:var(--blue-soft)}
+html .app-bar-title span{color:var(--muted)}
 /* Bottom nav on white: muted inactive, blue active, yellow FAB. */
-html.theme-daylight .nav-item{color:var(--muted)}
-html.theme-daylight .nav-item.active{color:var(--indigo)}
-html.theme-daylight .nav-add>span{background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 22px -10px rgba(10,44,102,.35)}
+html .nav-item{color:var(--muted)}
+html .nav-item.active{color:var(--indigo)}
+html .nav-add>span{background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 22px -10px rgba(10,44,102,.35)}
 /* Save bar: yellow CTA on the (now white) bar; delete-trip text goes red. */
-html.theme-daylight .form-save-bar .mobile-primary-action{background:var(--accent) !important;color:var(--accent-ink) !important}
-html.theme-daylight .form-save-bar .trip-delete-text{color:var(--red)}
+html .form-save-bar .mobile-primary-action{background:var(--accent) !important;color:var(--accent-ink) !important}
+html .form-save-bar .trip-delete-text{color:var(--red)}
 /* Destructive confirmation reads as a red fill. */
-html.theme-daylight .discard-dialog-actions .mobile-danger-action{background:var(--red);border-color:var(--red);color:#fff}
+html .discard-dialog-actions .mobile-danger-action{background:var(--red);border-color:var(--red);color:#fff}
 /* Account "signed in" row hardcoded a dark #313133 fill — flatten to a surface
    card with ink text and a yellow sign-out pill. */
-html.theme-daylight .account-signin--active{background:var(--surface);border-color:var(--line);color:var(--ink)}
-html.theme-daylight .account-signin--active .account-signin__label strong{color:var(--ink)}
-html.theme-daylight .account-signin--active .account-signin__out{background:var(--accent);color:var(--accent-ink)}
-html.theme-slate .account-signin--active{background:var(--card);border-color:var(--line);color:var(--ink)}
-html.theme-slate .account-signin--active .account-signin__label strong{color:var(--ink)}
-html.theme-slate .account-signin--active .account-signin__out{background:var(--accent);color:var(--accent-ink)}
-html.theme-daylight .account-signin__label .ph{color:var(--accent)}
+html .account-signin--active{background:var(--surface);border-color:var(--line);color:var(--ink)}
+html .account-signin--active .account-signin__label strong{color:var(--ink)}
+html .account-signin--active .account-signin__out{background:var(--accent);color:var(--accent-ink)}
+html .account-signin__label .ph{color:var(--accent)}
 /* Blue focus rings (not yellow), per the light theme direction. */
-html.theme-daylight .form-field input:focus,html.theme-daylight .form-field select:focus,html.theme-daylight .form-field textarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--blue-soft)}
+html .form-field input:focus,html .form-field select:focus,html .form-field textarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--blue-soft)}
 /* Protect content that is meant to stay dark. The document viewer keeps a dark
    chrome bar over its dark media stage. */
-html.theme-daylight .doc-viewer__bar{background:#1b1c1f;border-bottom-color:rgba(255,255,255,.12)}
+html .doc-viewer__bar{background:#1b1c1f;border-bottom-color:rgba(255,255,255,.12)}
 /* The "dark-detail" booking/pass screens are now light (paper is white); the
    linked-document rows had hardcoded #fff text for the old dark hero. */
-html.theme-daylight .dark-detail .booking-documents,html.theme-daylight .dark-detail .booking-documents>h2,html.theme-daylight .dark-detail .booking-document-row__open{color:var(--ink)}
-html.theme-daylight .dark-detail .booking-document-row{border-color:var(--line)}
-html.theme-daylight .dark-detail .booking-document-row__open small{color:var(--muted)}
-/* Timeline header: the trip selector (destination title + dates) hardcoded #fff,
-   so it went white-on-white under Daylight. Recolor to ink / muted. */
-html.theme-daylight .trip-v2-selector{color:var(--ink)}
-html.theme-daylight .trip-v2-selector small{color:var(--muted)}
+html .dark-detail .booking-documents,html .dark-detail .booking-documents>h2,html .dark-detail .booking-document-row__open{color:var(--ink)}
+html .dark-detail .booking-document-row{border-color:var(--line)}
+html .dark-detail .booking-document-row__open small{color:var(--muted)}
+
+html .trip-v2-selector{color:var(--ink)}
+html .trip-v2-selector small{color:var(--muted)}
 /* Trips list: drop the night-lounge photo background so the authenticated Trips
    screen matches the bright theme. Restore token-driven surfaces + text. */
-html.theme-daylight .trips-bg-screen{background:var(--paper);color:var(--ink)}
-html.theme-daylight .trips-bg-screen::before,html.theme-daylight .trips-bg-screen::after{display:none}
-html.theme-daylight .trips-bg-screen .bottom-nav{background:var(--chrome);border-color:var(--chrome-line);-webkit-backdrop-filter:none;backdrop-filter:none}
-html.theme-daylight .trips-bg-screen .app-bar-title strong{text-shadow:none}
-html.theme-daylight .trips-bg-screen .mobile-group>h2{color:var(--muted);text-shadow:none}
-html.theme-daylight .trips-bg-screen .trip-group+.trip-group{border-top-color:var(--line)}
-html.theme-daylight .trips-bg-screen .trip-row__copy strong{color:var(--ink);text-shadow:none}
-html.theme-daylight .trips-bg-screen .trip-row__copy small{color:var(--muted)}
-html.theme-daylight .trips-bg-screen .trip-group .trip-row__mark{background:var(--blue-soft);color:var(--indigo)}
-html.theme-daylight .trips-bg-screen .trip-group .trip-row.is-current .trip-row__mark{background:var(--accent);color:var(--accent-ink)}
-html.theme-daylight .trips-bg-screen .chevron{color:var(--muted-soft)}
-html.theme-daylight .trips-bg-screen .mobile-empty h1{color:var(--ink)}
-html.theme-daylight .trips-bg-screen .mobile-empty p{color:var(--muted)}
-html.theme-daylight .trips-bg-screen .mobile-empty__icon{background:var(--blue-soft);color:var(--indigo)}
+html .trips-bg-screen{background:var(--paper);color:var(--ink)}
+html .trips-bg-screen::before,html .trips-bg-screen::after{display:none}
+html .trips-bg-screen .bottom-nav{background:var(--chrome);border-color:var(--chrome-line);-webkit-backdrop-filter:none;backdrop-filter:none}
+html .trips-bg-screen .app-bar-title strong{text-shadow:none}
+html .trips-bg-screen .mobile-group>h2{color:var(--muted);text-shadow:none}
+html .trips-bg-screen .trip-group+.trip-group{border-top-color:var(--line)}
+html .trips-bg-screen .trip-row__copy strong{color:var(--ink);text-shadow:none}
+html .trips-bg-screen .trip-row__copy small{color:var(--muted)}
+html .trips-bg-screen .trip-group .trip-row__mark{background:var(--blue-soft);color:var(--indigo)}
+html .trips-bg-screen .trip-group .trip-row.is-current .trip-row__mark{background:var(--accent);color:var(--accent-ink)}
+html .trips-bg-screen .chevron{color:var(--muted-soft)}
+html .trips-bg-screen .mobile-empty h1{color:var(--ink)}
+html .trips-bg-screen .mobile-empty p{color:var(--muted)}
+html .trips-bg-screen .mobile-empty__icon{background:var(--blue-soft);color:var(--indigo)}
+html,html body{background:#eeeeee}
 
-/* Theme picker on the Account screen */
-.theme-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 8px}
-.theme-swatch{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card);text-align:left;cursor:pointer}
-.theme-swatch.is-active{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
-.theme-swatch__chips{display:flex;flex:0 0 auto}
-.theme-swatch__chips i{display:block;width:16px;height:22px;border-radius:5px;border:1.5px solid var(--card);margin-left:-6px}
-.theme-swatch__chips i:first-child{margin-left:0}
-.theme-swatch strong{font-size:14px;font-weight:600}
-.theme-swatch small{display:block;margin-top:2px;color:var(--muted);font-size:12px}
+/* The production design uses flat, card-less sections. Every boxed card is stripped back to the
+   bare page and sections are separated by hairline dividers (the same rule the
+   headers use), mirroring the Account screen's existing divider style app-wide.
+   Placed with theme-scoped selectors so it always out-specifies the base cards. */
+html .travel-list,html .document-list,html .detail-list,html .traveler-checklist,html .ready-list,html .fact-grid,html .account-list,html .sheet-options-group,html .v2-choice-list,html .cl-list,html .health-card,html .recovery-card,html .review-card,html .info-card,html .cl-progress,html .help-quickstart,html .home-summary-module,html .trips-bg-screen .trip-group .mobile-list{
+  background:transparent;border:0;border-radius:0;box-shadow:none
+}
+/* Restore separators between rows inside the (now flat) grouped lists */
+html .travel-list > * + *,html .document-list > * + *,html .detail-list > * + *,html .account-list > * + *,html .traveler-checklist > * + *,html .ready-list > * + *,html .list-stack > * + *{
+  border-top:1px solid var(--line)
+}
+/* No row dividers inside any popup / bottom sheet (2026-09-01). Targets row and
+   list items only, so form-input borders and cards inside sheets are unaffected. */
+html .bottom-sheet .sheet-option,html .bottom-sheet .v2-choice,html .bottom-sheet .first-run-how-list li,html .bottom-sheet .checklist-row,html .bottom-sheet .simple-row,html .bottom-sheet .travel-row,html .bottom-sheet .detail-row,html .bottom-sheet .sheet-options-group > * + *,html .bottom-sheet .v2-choice-list > * + *,html .bottom-sheet .mobile-list > * + *,html .bottom-sheet .list-stack > * + *{
+  border-top:0 !important;border-bottom:0 !important
+}
+/* No dividers between checklist rows (2026-09-01). Row border only — the
+   .checklist-box checkbox border is untouched. */
+html .checklist-row,html .traveler-checklist__row,html .traveler-checklist > * + *,html .account-list > * + *{
+  border-top:0 !important;border-bottom:0 !important
+}
+/* Compact popups / bottom sheets: tighten padding, row heights, icon chips and title spacing. */
+html .bottom-sheet{padding-top:6px}
+html .bottom-sheet .sheet-handle{margin-bottom:4px}
+html .bottom-sheet .sheet-title-row{min-height:38px}
+html .bottom-sheet .sheet-title-row h2{font-size:18px}
+html .bottom-sheet .sheet-option,html .bottom-sheet .v2-choice,html .bottom-sheet .simple-row,html .bottom-sheet .travel-row,html .bottom-sheet .document-row,html .bottom-sheet .detail-row,html .bottom-sheet .checklist-row,html .bottom-sheet .first-run-how-list li{
+  min-height:0 !important;padding-top:7px !important;padding-bottom:7px !important;gap:10px
+}
+html .bottom-sheet .row-icon,html .bottom-sheet .travel-row__icon,html .bottom-sheet .document-row__icon,html .bottom-sheet .info-icon,html .bottom-sheet .v2-choice>span:first-child,html .bottom-sheet .first-run-how-list__icon,html .bottom-sheet .detail-row>span:first-child{
+  width:34px;height:34px
+}
+/* Simple flat bottom nav: a full app-width bar with Trip | Alerts | + | To-do | Account.
+   The center + is the only filled circular action. */
+html .bottom-nav,html .trips-bg-screen .bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:min(100%,var(--app-width));
+  height:auto;min-height:66px;
+  padding:9px 8px calc(10px + env(safe-area-inset-bottom));
+  border:0;border-top:1px solid var(--line);border-radius:0;
+  background:var(--paper);
+  box-shadow:none;
+  transform:translateX(-50%) translateZ(0);
+  will-change:transform;
+  backface-visibility:hidden;
+}
+html .bottom-nav .nav-item{color:var(--muted);font-size:12px;font-weight:600;min-height:var(--button-compact-height);height:auto;border-radius:0}
+html .bottom-nav .nav-item.active{color:var(--accent);font-weight:600}
+html .bottom-nav .nav-item__icon{color:currentColor;font-size:26px;--icon-size:26px}
+html .bottom-nav .nav-add>span{
+  width:48px;height:48px;border:0;border-radius:50%;background:var(--accent);color:#fff;box-shadow:none;font-size:32px;--icon-size:32px
+}
+html .bottom-nav .nav-add:active>span{opacity:1;transform:scale(.94)}
+html .bottom-nav .nav-item__badge{box-shadow:0 0 0 2px var(--paper)}
+/* Standalone blocks read as sections via a trailing divider */
+html .cl-progress,html .help-quickstart{
+  border-bottom:1px solid var(--line);border-radius:0
+}
+
+
+html .trips-bg-screen .trip-group>h2{color:var(--accent);opacity:1}
+html .trips-bg-screen .trip-group .trip-row__mark{color:var(--accent);box-shadow:none}
+/* Trips marks as bordered circles like the timeline: red for upcoming/current,
+   black border + black icon for past. */
+html .trips-bg-screen .trip-group .trip-row:not(.is-current) .trip-row__mark{
+  border:2px solid var(--accent) !important;border-radius:50% !important;background:var(--paper) !important;color:var(--accent);box-shadow:none !important
+}
+html .trips-bg-screen .trip-group .trip-row--past:not(.is-current) .trip-row__mark{
+  border-color:var(--ink) !important;color:var(--icon) !important
+}
+/* Match the timeline marker design exactly: 44px circle + 23px glyph. */
+html .trips-bg-screen .trip-group .trip-row__mark{width:44px !important;height:44px !important}
+html .trips-bg-screen .trip-group .trip-row__mark .ph{font-size:23px !important;font-weight:500}
+/* Trip names match the timeline booking title ("Flight to Rome"): 19px semibold. */
+html .trips-bg-screen .trip-group .trip-row__copy strong{
+  font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.14
+}
+
+
+html .fd-card,html .fd-list,html .trip-map__row,html .weather-now,html .weather-forecast,html .esim-hero,html .esim-features,html .esim-steps,html .next-action-card,html .offline-summary,html .health-summary,html .essentials-summary,html .sync-summary,html .wx-hero,html .wx-block,html .manual-essentials,html .manual-attachments,html .manual-booking-form .form-more,html .faq-list,html .help-support{
+  background:transparent;border:0;border-radius:0;box-shadow:none
+}
+/* Booking-detail page: align content to the page column (drop the card's inner
+   inset), separate the hero from the row list, and hairline-divide the rows. */
+html .fd-card{padding:0 0 14px;border-bottom:1px solid var(--line)}
+html .fd-list{margin-top:0;padding:0;overflow:visible}
+html .fd-hero-image{border-radius:0}
+html .fd-row,html .fd-row__main{padding-left:0;padding-right:0}
+html .fd-list>*+*{border-top:1px solid var(--line)}
+/* Grouped lists inside the flattened cards keep row separators. */
+html .faq-list>*+*,html .esim-features>*+*,html .esim-steps>*+*{border-top:1px solid var(--line)}
+/* Standalone hero / summary blocks read as sections via a trailing divider. */
+html .weather-now,html .weather-forecast,html .esim-hero,html .next-action-card,html .offline-summary,html .health-summary,html .essentials-summary,html .sync-summary,html .wx-hero,html .wx-block,html .manual-essentials,html .manual-attachments,html .manual-booking-form .form-more{border-bottom:1px solid var(--line)}
+/* Timeline: hairline divider under the sticky day header. */
+html .timeline-day__header{border-bottom:1px solid var(--line)}
+/* Booking-detail glyphs and the stay pill use the production accent. */
+html .fd-row__icon{color:var(--accent)}
+html .fd-flight .ph,html .fd-flight .ph-svg{color:var(--accent)}
+
+html .fd-title{margin-top:14px;color:var(--accent)}
+/* Hotel detail puts the property name in .fd-card__head .fd-flight (no separate
+   kicker), so color that name too — scoped to the hotel screen so other screens'
+   category kickers stay neutral. */
+html .hotel-detail-screen .fd-card__head .fd-flight{color:var(--accent)}
+html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 
 /* Icons without circular containers — just the glyphs. Strips background,
    border, radius and halo from icon badges app-wide. Deliberately excludes the
    welcome/first-run icons (.first-run-*), initials avatars, the map pin, the
    nav FAB and status dots — those stay as designed. */
-.row-icon,.travel-row__icon,.document-row__icon,.trip-row__mark,.info-icon,
-.detail-row>span:first-child,.hotel-info-row__icon,.hotel-address-row__icon,
-.journey-marker,
-.timeline-empty__icon,.empty-mobile-icon,.mobile-empty__icon,
-.plan-hero__icon,.screen-intro__icon,
-.offline-summary-icon,.health-shield,.essentials-summary>span,.sync-summary>span,
-.v2-choice>span:first-child,
-.date-range-trigger__icon,.quick-trip-context__icon,
-.review-summary>span,
-.forward-booking-address>span,.smart-import-intro>span,
-.health-good,.health-warning,.health-info,
-.info-icon.green,.info-icon.purple{
+.row-icon,.travel-row__icon,.document-row__icon,.trip-row__mark,.info-icon,.detail-row>span:first-child,.hotel-info-row__icon,.hotel-address-row__icon,.journey-marker,.timeline-empty__icon,.empty-mobile-icon,.mobile-empty__icon,.plan-hero__icon,.screen-intro__icon,.offline-summary-icon,.health-shield,.essentials-summary>span,.sync-summary>span,.v2-choice>span:first-child,.date-range-trigger__icon,.quick-trip-context__icon,.review-summary>span,.forward-booking-address>span,.smart-import-intro>span,.health-good,.health-warning,.health-info,.info-icon.green,.info-icon.purple{
   background:transparent !important;border:0 !important;border-radius:0 !important;box-shadow:none !important
 }
 /* Restore a visible glyph colour where the icon previously relied on sitting
    on a filled circle (dark ink/white glyphs would vanish once the fill is gone). */
-.trip-group .trip-row.is-current .trip-row__mark,
-html.theme-harbor .trip-group .trip-row.is-current .trip-row__mark,
-.journey-event--next .journey-marker,.journey-event--active .journey-marker,
-html.theme-harbor .journey-event--next .journey-marker,
-html.theme-harbor .journey-event--active .journey-marker{color:var(--accent) !important}
+.trip-group .trip-row.is-current .trip-row__mark,.journey-event--next .journey-marker,.journey-event--active .journey-marker{color:var(--accent) !important}
 .sheet-option--danger .info-icon{color:var(--red) !important}
-
-/* ---- Bottom sheets — flat & compact (no cards) -----------------------
-   Matches the app's flat editorial style: bare glyphs, hairline dividers,
-   tightened rows. */
-html.theme-harbor .bottom-sheet{background:var(--paper)}
-html.theme-harbor .bottom-sheet .sheet-title-row h2{font-weight:700;letter-spacing:-.035em}
-html.theme-harbor .bottom-sheet .sheet-option{min-height:0;padding:9px 0;gap:12px}
-html.theme-harbor .bottom-sheet .sheet-option strong{font-weight:600}
-html.theme-harbor .bottom-sheet .sheet-option>*:last-child{color:var(--muted-soft)}
-html.theme-harbor .sheet-note{text-align:center;color:var(--muted-soft);font-size:12px;margin-top:12px;letter-spacing:.02em}
 
 /* Larger icons everywhere — scale the glyph/svg up via a global multiplier.
    phosphor.css sizes both .ph and .ph-svg from --icon-size (set inline per
@@ -1567,7 +1385,6 @@ html.theme-harbor .sheet-note{text-align:center;color:var(--muted-soft);font-siz
 .dark-detail .booking-documents{color:#fff}.dark-detail .booking-documents>h2{color:#fff}.dark-detail .booking-document-row{border-color:rgba(255,255,255,.14)}.dark-detail .booking-document-row__open{color:#fff}.dark-detail .booking-document-row__open small{color:rgba(255,255,255,.68)}
 
 .booking-email-address{display:grid;gap:5px;margin:0 0 16px;padding:18px;border-radius:16px;background:var(--ink-strong);color:#fff}
-html.theme-harbor .booking-email-address,html.theme-slate .booking-email-address{background:var(--chrome)}
 .booking-email-address small{color:rgba(255,255,255,.66);font-size:12px;font-weight:650}
 .booking-email-address strong{font-size:24px;letter-spacing:-.035em}
 .booking-email-address p{margin:3px 0 0;color:rgba(255,255,255,.75);font-size:13px;line-height:1.42}
@@ -1609,20 +1426,14 @@ html.doc-viewer-open,html.doc-viewer-open body{overflow:hidden}
 
 /* Remove hairline divider lines app-wide (keep card outlines, chrome separators, route line, drag handle) */
 .place-option + .place-option::before{display:none}
-.timeline-context,.esim-feature,.document-row-wrap,.import-history-item,
-.simple-row,.travel-row,.document-row,.trip-row,.detail-row,.booking-card,.hotel-info-row,.hotel-address-row,.sheet-option,
-.trip-context,.flight-more-content dl>div,.info-card,.account-card,.traveler-profile,.v2-choice,.quick-trip-context,
-.first-run-how-list li,.checklist-row,.traveler-checklist__row,.manual-attachment-row,.booking-document-row,
-.weather-note,.wx-block,.trip-group+.trip-group,.home-summary-module,.health-card,.recovery-card,.review-card,
-.manual-route-card,.manual-attachments,.booking-documents,.form-more{border-top:0;border-bottom:0}
+.timeline-context,.esim-feature,.document-row-wrap,.import-history-item,.simple-row,.travel-row,.document-row,.trip-row,.detail-row,.booking-card,.hotel-info-row,.hotel-address-row,.sheet-option,.trip-context,.flight-more-content dl>div,.info-card,.account-card,.traveler-profile,.v2-choice,.quick-trip-context,.first-run-how-list li,.checklist-row,.traveler-checklist__row,.manual-attachment-row,.booking-document-row,.weather-note,.wx-block,.trip-group+.trip-group,.home-summary-module,.health-card,.recovery-card,.review-card,.manual-route-card,.manual-attachments,.booking-documents,.form-more{border-top:0;border-bottom:0}
 
 /* Card-style grouped lists + popups across app screens (match booking pages).
    Trips list, welcome and timeline are intentionally left untouched. */
 /* Brand-tint native form controls (checkboxes, radios, select highlight where honored) */
 html{accent-color:var(--accent)}
 input,select,textarea,button,option:checked{accent-color:var(--accent)}
-.travel-list,.document-list,.detail-list,.traveler-checklist,.ready-list,.fact-grid,
-.checklist-group .mobile-list,.account-list,.sheet-options-group,.first-run-how-list,.v2-choice-list{
+.travel-list,.document-list,.detail-list,.traveler-checklist,.ready-list,.fact-grid,.checklist-group .mobile-list,.account-list,.sheet-options-group,.first-run-how-list,.v2-choice-list{
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
   box-shadow:var(--shadow-card);overflow:hidden;padding:2px 18px;margin:0
 }
@@ -1636,16 +1447,13 @@ input,select,textarea,button,option:checked{accent-color:var(--accent)}
 .review-card{padding:16px 18px}
 
 /* Empty states must not inherit the grouped-card background (no giant empty box) */
-.travel-list:has(> .mobile-empty),.document-list:has(> .mobile-empty),
-.detail-list:has(> .mobile-empty),.ready-list:has(> .mobile-empty),
-.account-list:has(> .mobile-empty),.traveler-checklist:has(> .mobile-empty),
-.sheet-options-group:has(> .mobile-empty){
+.travel-list:has(> .mobile-empty),.document-list:has(> .mobile-empty),.detail-list:has(> .mobile-empty),.ready-list:has(> .mobile-empty),.account-list:has(> .mobile-empty),.traveler-checklist:has(> .mobile-empty),.sheet-options-group:has(> .mobile-empty){
   background:transparent;border:0;box-shadow:none;padding:0;overflow:visible
 }
-/* Documents empty state: compact full-width card (no hollow space) */
+/* Documents empty state: flat, no card (matches the rest of the app) */
 .document-list>.mobile-empty{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-card);min-height:auto;padding:24px 20px;margin:0;justify-self:stretch
+  background:transparent;border:0;border-radius:0;
+  box-shadow:none;min-height:auto;padding:24px 20px;margin:0;justify-self:stretch
 }
 .document-list>.mobile-empty .mobile-empty__icon{width:46px;height:46px}
 .document-list>.mobile-empty h1{margin:12px 0 5px;font-size:20px;letter-spacing:-.02em}
@@ -1657,17 +1465,18 @@ input,select,textarea,button,option:checked{accent-color:var(--accent)}
 .wx-block__title{padding:0 8px}
 
 /* Manual booking form — group Essentials and More Details into cards */
-.manual-essentials{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:16px;gap:14px}
+.manual-essentials{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:none;padding:16px;gap:14px}
 .manual-essentials>h2{margin:0 0 2px}
-.manual-attachments{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:16px;margin-top:14px;gap:12px}
-.manual-booking-form .form-more{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:0 16px}
+.manual-attachments{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:none;padding:16px;margin-top:14px;gap:12px}
+.manual-booking-form .form-more{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:none;padding:0 16px}
 .manual-booking-form .form-more-toggle{min-height:56px}
+
+/* Flat bookings — booking cards use hairline borders only, no elevation.
+   Scoped to booking contexts so shared document/account lists keep their card. */
+.booking-trip-group .travel-list,.v2-choice-list,.sheet-options-group.manual-v2-options{box-shadow:none}
 .manual-booking-form .form-more-panel{padding:0 0 16px}
 
-/* Trips list: grouped-card style so it matches every other list in the app
-   (bookings, documents, account). Each trip-group becomes a card of rows with
-   dividers; groups separate by margin. Theme-agnostic (token-driven) and placed
-   last so it wins over the older flat/transparent Harbor + trips-bg overrides. */
+
 html .trips-bg-screen .trip-group .mobile-list{
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
   box-shadow:var(--shadow-card);overflow:hidden;padding:2px 18px;gap:0;margin-top:2px
@@ -1704,6 +1513,14 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 .cl-row__act{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--muted);cursor:pointer}
 .cl-row__act:active{transform:scale(.92)}
 .cl-row__del:active{color:var(--accent)}
+/* Inline rename (replaces window.prompt, which installed PWAs suppress) */
+.cl-row--editing{padding:6px 6px 6px 8px}
+.cl-edit{flex:1 1 auto;display:flex;align-items:center;gap:6px;min-width:0}
+.cl-edit__input{flex:1 1 auto;min-width:0;height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--accent);background:var(--card);color:var(--ink);font-size:16px}
+.cl-edit__act{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:12px;cursor:pointer}
+.cl-edit__act:active{transform:scale(.92)}
+.cl-edit__save{background:var(--accent);color:var(--accent-ink)}
+.cl-edit__cancel{background:transparent;color:var(--muted)}
 .cl-suggest{display:flex;flex-direction:column;gap:10px}
 .cl-suggest__label{margin:0 2px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .cl-chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -1747,29 +1564,19 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 /* Approved Welcome — One thread through your whole trip.
    Strictly scoped so the authenticated application remains unchanged. */
 html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#121a21}
-html.first-run-open.theme-harbor,
-html.first-run-open.theme-slate,
-html.first-run-open.theme-harbor body,
-html.first-run-open.theme-slate body,
-html.first-run-open.theme-harbor .phone-app,
-html.first-run-open.theme-slate .phone-app{
-  background-color:#121a21;background-image:none
-}
-.first-run-screen.welcome-thread,html.theme-slate .first-run-screen.welcome-thread{
+.first-run-screen.welcome-thread{
   height:100svh;overflow:hidden;
   padding:calc(20px + env(safe-area-inset-top)) 24px calc(20px + env(safe-area-inset-bottom));
-  background:#121a21;color:#f5f5f5;
+  background:#0f1821;color:#f5f5f5;
 }
-.first-run-screen.welcome-thread::before,html.theme-slate .first-run-screen.welcome-thread::before{background:#121a21}
-.first-run-screen.welcome-thread::after,html.theme-slate .first-run-screen.welcome-thread::after{display:none}
+.first-run-screen.welcome-thread::before{background:#0f1821}
+.first-run-screen.welcome-thread::after{display:none}
 .welcome-thread .first-run-brand-row{justify-content:center;min-height:42px}
 .welcome-thread .first-run-brand{
   color:#f5f5f5;font-size:21px;font-weight:500;letter-spacing:-.03em;
   line-height:1;text-shadow:0 8px 24px rgba(0,0,0,.22)
 }
 html.first-run-open .welcome-thread .first-run-brand__name{color:#f5f5f5}
-html.theme-slate.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first-run-brand__dot,.first-run-brand__to),
-html.theme-harbor.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first-run-brand__dot,.first-run-brand__to){color:#e55d5b}
 .welcome-thread .first-run-offline{position:absolute;right:0;top:0}
 .welcome-thread .first-run-main{gap:8px;padding-top:10px;min-height:0;flex:1}
 .welcome-thread .first-run-hero{text-align:center}
@@ -1786,14 +1593,13 @@ html.first-run-open .welcome-thread .first-run-title__rose{color:#e55d5b}
 html.first-run-open .welcome-thread .first-run-hero p span{color:#d7b394}
 .welcome-thread .first-run-preview{
   width:calc(100% + 48px);max-width:none;margin:12px -24px 0;padding:0;
-  background:#121a21;line-height:0;flex:1 1 auto;min-height:0;display:grid;place-items:center
+  background:#0f1821;line-height:0;flex:1 1 auto;min-height:0;display:grid;place-items:center
 }
 html.first-run-open .welcome-thread .first-run-preview::before{display:none;content:none}
 .welcome-thread .first-run-preview img{display:block;max-height:100%;max-width:100%;width:auto;height:auto;margin:0 auto;pointer-events:none;user-select:none}
 .welcome-thread .first-run-actions{gap:6px;margin-top:12px;padding:0}
 .welcome-thread .welcome-v2__footer{margin-top:12px}
 .welcome-thread .first-run-google{width:100%;min-height:52px}
-html.theme-slate .welcome-thread .first-run-google-preview,
 .welcome-thread .first-run-google-preview{
   width:min(240px,100%);min-height:44px;gap:10px;border:0;border-radius:24px;
   background:#131314;color:#fff;font-size:15px;font-weight:500;letter-spacing:0;
@@ -1812,6 +1618,32 @@ html.theme-slate .welcome-thread .first-run-google-preview,
 .welcome-thread .welcome-v2__footer a{color:inherit}
 .welcome-thread :is(button,a):focus-visible{outline:3px solid #d7b394;outline-offset:3px}
 
+
+html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#eeeeee;background-image:none}
+html .first-run-screen.welcome-thread{background:#eeeeee;color:#111217}
+html .first-run-screen.welcome-thread::before{background:#eeeeee}
+html .first-run-screen.welcome-thread::after{display:none}
+html.first-run-open .welcome-thread .first-run-brand,html.first-run-open .welcome-thread .first-run-brand__name{color:#111217;text-shadow:none}
+html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first-run-brand__dot,.first-run-brand__to){color:#cb2957}
+html .welcome-thread .first-run-hero h1{color:#111217;text-shadow:none}
+html.first-run-open .welcome-thread .first-run-title__sand{color:#111217}
+html.first-run-open .welcome-thread .first-run-title__rose{color:#cb2957}
+html .welcome-thread .first-run-hero p{color:#5a5a5a;text-shadow:none}
+html.first-run-open .welcome-thread .first-run-hero p span{color:#cb2957}
+html .welcome-thread .first-run-preview{
+  width:100%;margin:14px 0 0;border-radius:24px;overflow:hidden;
+  box-shadow:0 22px 44px -30px rgba(0,0,0,.5),0 3px 10px -7px rgba(0,0,0,.25)
+}
+html .welcome-thread .first-run-google-preview{background:#131314;color:#fff;border:0;box-shadow:0 1px 2px rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.14)}
+html .welcome-thread .first-run-google-preview img{background:#fff}
+html .welcome-thread #google-signin-button>div{box-shadow:0 0 0 1.5px rgba(203,41,87,.9),0 16px 34px -18px rgba(203,41,87,.4),0 4px 12px -8px rgba(0,0,0,.25)!important}
+html .welcome-thread .signin-error{color:#cb2957}
+html .welcome-thread .first-run-secondary{color:#cb2957}
+html .welcome-thread .first-run-secondary .ph-svg,html .welcome-thread .first-run-secondary .ph{color:#cb2957}
+html .welcome-thread .welcome-v2__footer{color:#5a5a5a}
+html .welcome-thread .welcome-v2__footer>span{background:#cfcfcf}
+html .welcome-thread :is(button,a):focus-visible{outline:3px solid #cb2957}
+
 @media(max-width:374px){
   .first-run-screen.welcome-thread{padding-inline:20px}
   .welcome-thread .first-run-main{gap:5px}
@@ -1821,7 +1653,7 @@ html.theme-slate .welcome-thread .first-run-google-preview,
 }
 
 @media(max-height:820px){
-  .first-run-screen.welcome-thread,html.theme-slate .first-run-screen.welcome-thread{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+  .first-run-screen.welcome-thread{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
   .welcome-thread .first-run-brand-row{min-height:28px}
   .welcome-thread .first-run-brand{font-size:20px}
   .welcome-thread .first-run-main{gap:4px;padding-top:8px}
@@ -1867,42 +1699,9 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .live-flight-controls button:disabled{opacity:.5}.live-flight-controls button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 @media(max-width:374px){.live-flight-strip{align-items:flex-start;flex-direction:column;gap:2px}.live-flight-strip span{text-align:left}.live-flight-controls{gap:8px}.live-flight-controls button{min-width:78px;padding-inline:9px}}
 
-/* Selected V3 system: dark Journey Ribbon + floating dock.
-   The timeline and navigation follow the approved coral / sand reference while
-   routing, data truth and interaction targets remain unchanged. */
-html.theme-slate .bottom-nav,
-html.theme-slate .trips-bg-screen .bottom-nav{
-  width:min(calc(100% - 18px),calc(var(--app-width) - 18px));height:74px;
-  bottom:calc(10px + env(safe-area-inset-bottom));padding:0 8px;
-  border:1px solid rgba(221,184,155,.36);border-radius:34px;
-  background:rgba(16,25,31,.94);color:var(--icon);
-  box-shadow:0 18px 42px -20px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,255,255,.025);
-  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)
-}
-html.theme-slate .bottom-nav .nav-item{
-  position:relative;height:60px;gap:4px;border-radius:18px;
-  color:rgba(221,184,155,.82);font-size:10px;font-weight:500
-}
-html.theme-slate .bottom-nav .nav-item.active{color:var(--accent);font-weight:650}
-html.theme-slate .bottom-nav .nav-item:not(.nav-add).active::before{
-  content:"";position:absolute;bottom:-6px;left:50%;width:25px;height:3px;
-  border-radius:4px 4px 0 0;background:var(--accent);transform:translateX(-50%)
-}
-html.theme-slate .bottom-nav .nav-item__icon{color:currentColor}
-html.theme-slate .bottom-nav .nav-add{overflow:visible}
-html.theme-slate .bottom-nav .nav-add>span{
-  width:56px;height:56px;border:2px solid var(--accent);background:#121b22;color:var(--accent);
-  box-shadow:0 0 0 5px rgba(235,95,94,.07),0 12px 24px -14px rgba(0,0,0,.92)
-}
-html.theme-slate .bottom-nav .nav-add:active>span{opacity:1;transform:scale(.94)}
-html.theme-slate .bottom-nav .nav-item__badge{
-  top:-5px;right:-8px;background:var(--accent);color:#11191f;
-  box-shadow:0 0 0 2px #10191f
-}
-
-.timeline-screen--ribbon .trip-v2-header{min-height:92px;padding:14px 20px 4px;border-bottom:0}
+.timeline-screen--ribbon .trip-v2-header{min-height:auto;padding:18px 20px 13px;border-bottom:1px solid var(--line);background:var(--paper);color:var(--ink-strong)}
 .timeline-screen--ribbon .trip-v2-selector{align-self:stretch}
-.timeline-screen--ribbon .trip-v2-selector strong{font-size:27px;font-weight:700;letter-spacing:-.04em}
+.timeline-screen--ribbon .trip-v2-selector strong{font-size:23px;font-weight:700;letter-spacing:-.04em}
 .timeline-screen--ribbon .trip-v2-selector small{font-size:15px;font-weight:450;color:var(--muted)}
 .timeline-screen--ribbon .trip-v2-actions{align-self:flex-start;margin-top:1px}
 .timeline-screen--ribbon .timeline-page--journey{padding:0 20px calc(var(--nav-height) + 30px + env(safe-area-inset-bottom));scrollbar-width:none}
@@ -1931,10 +1730,10 @@ html.theme-slate .bottom-nav .nav-item__badge{
 .timeline-ribbon{position:relative;isolation:isolate}
 .timeline-ribbon::before{
   content:"";position:absolute;z-index:0;top:24px;bottom:24px;left:95px;width:2px;
-  border-radius:999px;background:linear-gradient(180deg,rgba(221,184,155,.96),rgba(221,184,155,.42))
+  border-radius:999px;background:var(--muted)
 }
 .timeline-screen--ribbon .timeline-day{position:relative;z-index:1}
-.timeline-screen--ribbon .timeline-day+.timeline-day{margin-top:0;border-top:1px solid var(--line)}
+.timeline-screen--ribbon .timeline-day+.timeline-day{margin-top:0}
 .timeline-screen--ribbon .timeline-day__header{
   grid-template-columns:62px 66px minmax(0,1fr);min-height:54px;padding:12px 0 2px;
   background:linear-gradient(90deg,var(--paper) 0,var(--paper) 142px,rgba(18,27,34,.96) 72%,rgba(18,27,34,0) 100%)
@@ -1959,32 +1758,24 @@ html.theme-slate .bottom-nav .nav-item__badge{
   grid-template-columns:62px 66px minmax(0,1fr);min-height:86px;
   border-radius:0;color:var(--ink);transition:opacity .16s var(--ease)
 }
-.timeline-screen--ribbon .journey-event--next,
-.timeline-screen--ribbon .journey-event--active{
+.timeline-screen--ribbon .journey-event--next,.timeline-screen--ribbon .journey-event--active{
   margin:0;padding:0;border:0;background:transparent
 }
 .timeline-screen--ribbon .journey-time{
   color:var(--ink);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums
 }
 .timeline-screen--ribbon .journey-marker{
-  width:54px;height:54px;border:0 !important;border-radius:0 !important;
-  background:var(--paper) !important;color:var(--icon);box-shadow:none !important
+  width:48px;height:48px;border:2px solid var(--ink) !important;border-radius:50% !important;
+  background:var(--paper) !important;color:var(--icon);box-shadow:0 0 0 5px var(--paper) !important
 }
-.timeline-screen--ribbon .journey-marker .ph{font-size:29px !important;font-weight:500}
-html.theme-slate .timeline-screen--ribbon .journey-event--next .journey-marker,
-html.theme-slate .timeline-screen--ribbon .journey-event--active .journey-marker{
-  border:0 !important;background:var(--paper) !important;color:var(--accent);box-shadow:none !important
-}
-html.theme-slate .timeline-screen--ribbon .journey-event--staying .journey-marker{
-  border:0 !important;background:var(--paper) !important;color:var(--icon)
-}
+.timeline-screen--ribbon .journey-marker .ph{font-size:23px !important;font-weight:500}
+.timeline-screen--ribbon .journey-event--next .journey-marker,.timeline-screen--ribbon .journey-event--active .journey-marker{border-color:var(--accent) !important}
 .timeline-screen--ribbon .journey-content{
-  grid-template-columns:minmax(0,1fr) 24px;gap:8px;padding:16px 0 16px 12px;
-  border-bottom:1px solid var(--line)
+  grid-template-columns:minmax(0,1fr) 24px;gap:8px;padding:16px 0 16px 12px
 }
 .timeline-screen--ribbon .journey-copy{gap:4px}
 .timeline-screen--ribbon .journey-copy strong{
-  color:var(--ink);font-size:19px;font-weight:520;line-height:1.14;
+  color:var(--ink);font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.14;
   white-space:normal;overflow:visible;text-overflow:clip
 }
 .timeline-screen--ribbon .journey-copy small{
@@ -1993,19 +1784,16 @@ html.theme-slate .timeline-screen--ribbon .journey-event--staying .journey-marke
 }
 .timeline-screen--ribbon .timeline-flags{gap:6px;margin-bottom:1px}
 .timeline-screen--ribbon .timeline-flag{font-size:11px;letter-spacing:.1em}
-.timeline-screen--ribbon .timeline-flag--next,
-.timeline-screen--ribbon .timeline-flag--now{color:var(--accent)}
+.timeline-screen--ribbon .timeline-flag--next,.timeline-screen--ribbon .timeline-flag--now{color:var(--accent)}
 .timeline-screen--ribbon .journey-chevron{display:inline-flex;color:var(--muted)}
-.timeline-screen--ribbon .journey-event--past .journey-marker,
-.timeline-screen--ribbon .journey-event--past .journey-copy{opacity:.66}
+/* Paged days render one day at a time, so past/future look identical: keep the
+   marker disc fully opaque (it masks the spine) and drop the past dimming. */
+.timeline-screen--ribbon .journey-event--past .journey-marker,.timeline-screen--ribbon .journey-event--past .journey-copy{opacity:1}
 
 @media(max-width:374px){
-  html.theme-slate .bottom-nav,html.theme-slate .trips-bg-screen .bottom-nav{width:calc(100% - 16px);padding-inline:5px}
-  html.theme-slate .bottom-nav .nav-item{font-size:9px;padding-inline:0}
   .timeline-ribbon::before{left:94px}
-  .timeline-screen--ribbon .timeline-day__header,
-  .timeline-screen--ribbon .journey-event{grid-template-columns:62px 64px minmax(0,1fr)}
-  .timeline-screen--ribbon .journey-marker{width:50px;height:50px}
+  .timeline-screen--ribbon .timeline-day__header,.timeline-screen--ribbon .journey-event{grid-template-columns:62px 64px minmax(0,1fr)}
+  .timeline-screen--ribbon .journey-marker{width:44px;height:44px}
   .timeline-screen--ribbon .journey-copy strong{font-size:17px}
   .timeline-screen--ribbon .journey-content{padding-left:9px}
 }

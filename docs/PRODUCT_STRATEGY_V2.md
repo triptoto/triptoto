@@ -18,7 +18,7 @@ The first successful journey is:
 
 The repeat-use loop is:
 
-`Trip Timeline ↔ + ↔ Account`
+`Trip Timeline ↔ Alerts ↔ + ↔ To-do ↔ Account`
 
 ## Primary traveler
 
@@ -208,13 +208,15 @@ Automatic initial selection uses active, nearest upcoming, then relevant recent 
 
 ## Primary navigation
 
-Only three concepts are primary:
+Five controls are primary:
 
 - **Trip** — current trip Timeline;
+- **Alerts** — traveler-facing notifications and important changes;
 - **+** — Add Booking or Create New Trip;
+- **To-do** — current trip checklist;
 - **Account** — identity, trips, forwarding email, help, privacy, and sign out.
 
-The existing Home / Trip / Add / Bookings / Account bar is not the V2 mental model.
+This exact order is the V2 navigation model: `Trip | Alerts | + | To-do | Account`.
 
 ## Account
 
@@ -331,7 +333,7 @@ Unify entry around Upload, Forward Email, and Add Manually. Preserve determinist
 
 ### Phase E — Timeline as primary experience
 
-Introduce the V2 Timeline shell, compact booking rows, booking details, contextual documents, trip selector, and Trip / + / Account navigation. Keep the old UI as a fallback during parity validation.
+Introduce the V2 Timeline shell, compact booking rows, booking details, contextual documents, trip selector, and `Trip | Alerts | + | To-do | Account` navigation. Rollback uses immutable Git/Worker history rather than a second runtime theme.
 
 ### Phase F — contextual guidance
 

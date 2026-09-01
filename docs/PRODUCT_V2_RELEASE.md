@@ -6,7 +6,7 @@ Product V2 replaces the five-tab V1 dashboard with a focused journey:
 
 `Welcome → Google sign-in → Create Trip → Add Booking → Timeline`
 
-Returning travelers land on the active trip, nearest upcoming trip, or most relevant recent trip. Primary navigation is `Trip | + | Account`. The plus menu contains only Add Booking and Create New Trip.
+Returning travelers land on the active trip, nearest upcoming trip, or most relevant recent trip. Primary navigation is `Trip | Alerts | + | To-do | Account`. The plus menu contains only Add Booking and Create New Trip.
 
 ## Safety boundaries
 

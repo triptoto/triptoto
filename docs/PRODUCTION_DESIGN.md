@@ -1,0 +1,54 @@
+# tripto.to production design
+
+This document is the visual and navigation source of truth for the traveler-facing Product V2 application.
+
+## One presentation layer
+
+The application has one production design. There is no theme selector, stored theme preference, alternate theme class, or legacy traveler-facing stylesheet. Historical designs remain recoverable only through Git and immutable Worker versions; they are not shipped as parallel runtime themes.
+
+The app is mobile-first from 360px through 430px and remains centered at a maximum width of 430px on wider browsers.
+
+## Production palette
+
+- Application canvas: `#EEEEEE`
+- Raised surface/card: `#FFFFFF`
+- Quiet control surface: `#E4E4E4`
+- Divider: `#DDDDDD`
+- Primary text and icons: `#111217`
+- Secondary text: `#5A5A5A`
+- Primary accent: `#CB2957`
+- Verified success text: `#1B704B`
+- Notification badge: `#B72B35` with white text
+
+The Welcome screen uses the same `#EEEEEE` canvas as the authenticated app, with a dark journey illustration and restrained sand/rose details inside it. This is part of the same production design, not a selectable theme.
+
+## Typography and controls
+
+Use the native Apple/system stack from `--font` in `public/mobile-app.css`. Controls have a minimum 44×44px touch target. Primary, secondary, compact, and row actions use the shared height tokens. Focus remains visible for keyboard users, and reduced-motion preferences are respected.
+
+## Authenticated navigation
+
+The bottom navigation is always ordered and labeled exactly:
+
+`Trip | Alerts | + | To-do | Account`
+
+- **Trip** opens the selected trip Timeline.
+- **Alerts** opens traveler-facing notifications and exceptions.
+- **+** opens Add Booking / Create New Trip actions.
+- **To-do** opens the trip checklist.
+- **Account** opens identity, trip history, booking email, help, privacy, and account controls.
+
+Welcome and focused creation/authentication tasks may omit bottom navigation. The center `+` is the only filled circular navigation action.
+
+## Component language
+
+- Timeline is the main authenticated surface.
+- Use strong hierarchy, compact rows, restrained cards, and honest unavailable states.
+- Keep scheduled booking data distinct from live status.
+- Never invent gate, terminal, seat, time, document, or location data.
+- Use local Phosphor/SVG icons; do not add external icon or font requests.
+- Fixed navigation and actions must respect device safe areas and never cover content.
+
+## Release and preview rule
+
+Every UI release bumps both the asset query version in `public/index.html` and the shell cache name in `public/sw.js`. Review builds use a Cloudflare Worker preview alias derived from the exact Git commit SHA. Production is changed only by a separate production deployment.
