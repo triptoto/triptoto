@@ -103,6 +103,47 @@ final result: passed
 
 ---
 
+# Design QA — Welcome responsive scale correction
+
+## Comparison evidence
+
+- Reported production defect: `/Users/arthurberlin/Downloads/tripto.to 164.png`
+- Corrected `390 × 650` browser-height capture: `artifacts/welcome-passport-v4/welcome-390x650.png`
+- Corrected `390 × 844` full-viewport capture: `artifacts/welcome-passport-v4/welcome-390x844.png`
+- Normalized before/after comparison: `artifacts/welcome-passport-v4/comparison-reference-vs-compact.png`
+
+The reported screenshot was treated as defect evidence, not as a new visual target. The selected Passport Cover structure, color, route artwork, Google action, Tour action and legal footer remain unchanged.
+
+## Corrections
+
+- **P1 fixed:** removed the forced four-line hero treatment. The headline now uses two deliberate, readable lines at every supported phone width.
+- **P1 fixed:** replaced width-dominated scaling with width-and-height-aware type, artwork, marker and action tokens.
+- **P2 fixed:** reduced route marker optical size while preserving the supplied icon system and editable SVG route.
+- **P2 fixed:** normalized both Welcome actions to a guaranteed `48–52px` touch height.
+- **P2 fixed:** advanced the stylesheet, script and service-worker cache identifiers so Safari does not retain the oversized version.
+
+## Responsive evidence
+
+| Viewport | Overflow | Headline | Artwork | Google | Tour |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `360 × 540` | none | 58px / 2 lines | 94px | 48px | 48px |
+| `390 × 600` | none | 62px / 2 lines | 102px | 48px | 48px |
+| `430 × 700` | none | 73px / 2 lines | 147px | 48px | 48px |
+| `360 × 800` | none | 65px / 2 lines | 162px | 48px | 48px |
+| `375 × 812` | none | 68px / 2 lines | 169px | 48px | 48px |
+| `390 × 844` | none | 70px / 2 lines | 176px | 48px | 48px |
+| `393 × 852` | none | 71px / 2 lines | 177px | 48px | 48px |
+| `430 × 932` | none | 78px / 2 lines | 190px | 52px | 52px |
+
+- The first-run screen remains fixed and no-scroll.
+- No bottom navigation appears on Welcome.
+- Tour opens, closes, and restores focus to `Take a tour`.
+- Google Identity Services remains provider-rendered in production; its container is not cropped or restyled internally.
+
+final result: passed
+
+---
+
 # Design QA — V3 Journey Ribbon with V1 colors
 
 - Structure source: `/Users/arthurberlin/.codex/generated_images/01a02032-728d-7ce2-b111-775c80ec1cf0/exec-993696c8-6e69-4756-8c4d-c8dce2680aee.png`

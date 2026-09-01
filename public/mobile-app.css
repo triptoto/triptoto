@@ -1503,14 +1503,14 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
    icons and the route path remain independently editable HTML/CSS/SVG layers. */
 html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:#cb2957;background-image:none}
 .first-run-screen.welcome-thread{
-  --welcome-x:clamp(22px,7vw,32px);
-  --welcome-top:clamp(18px,min(8vw,5.4svh),42px);
-  --welcome-brand:clamp(18px,4.9vw,21px);
-  --welcome-title:clamp(40px,min(13vw,7.4svh),56px);
-  --welcome-subtitle:clamp(13px,min(3.7vw,2.3svh),16px);
-  --welcome-art-height:clamp(118px,min(50vw,23svh),214px);
-  --welcome-google-height:clamp(48px,min(13vw,6.8svh),54px);
-  --welcome-tour-height:clamp(48px,min(13vw,6.8svh),54px);
+  --welcome-x:clamp(22px,6.2vw,28px);
+  --welcome-top:clamp(16px,min(6vw,3.8svh),30px);
+  --welcome-brand:clamp(17px,4.6vw,20px);
+  --welcome-title:clamp(32px,min(9.4vw,5.4svh),42px);
+  --welcome-subtitle:clamp(13px,min(3.5vw,1.9svh),15px);
+  --welcome-art-height:clamp(118px,min(45vw,21svh),190px);
+  --welcome-google-height:clamp(48px,min(12vw,6svh),52px);
+  --welcome-tour-height:clamp(48px,min(12vw,6svh),52px);
   position:relative;display:flex;flex-direction:column;height:100svh;min-height:0;overflow:hidden;
   padding:max(var(--welcome-top),env(safe-area-inset-top)) var(--welcome-x) max(8px,env(safe-area-inset-bottom));
   background:#cb2957;color:#fff;
@@ -1528,7 +1528,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first
 .welcome-thread .first-run-hero{flex:0 0 auto;text-align:left}
 .welcome-thread .first-run-hero h1{
   max-width:none;margin:0;color:#fff;font-size:var(--welcome-title);font-weight:700;
-  line-height:.92;letter-spacing:-.065em;text-shadow:none
+  line-height:.96;letter-spacing:-.05em;text-shadow:none
 }
 .welcome-thread .first-run-title__line{display:block;white-space:nowrap}
 .welcome-thread .first-run-hero p{
@@ -1540,7 +1540,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first
 }
 .welcome-thread .welcome-thread-path{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}
 .welcome-thread-stop{
-  position:absolute;display:grid;place-items:center;width:clamp(52px,min(16vw,8.8svh),68px);height:clamp(52px,min(16vw,8.8svh),68px);
+  position:absolute;display:grid;place-items:center;width:clamp(46px,min(13.5vw,6.6svh),58px);height:clamp(46px,min(13.5vw,6.6svh),58px);
   border:3px solid #111217;border-radius:50%;background:#cb2957;color:#111217;line-height:1;transform:translate(-50%,-50%)
 }
 .welcome-thread-stop .ph,.welcome-thread-stop .ph-svg{color:#111217}
@@ -1548,17 +1548,17 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first
 .welcome-thread-stop--stay{left:57%;top:55%}
 .welcome-thread-stop--next{left:84%;top:82%}
 .welcome-thread .first-run-actions{display:grid;gap:clamp(8px,min(2.8vw,1.8svh),12px);margin:auto 0 0;padding:0;flex:0 0 auto}
-.welcome-thread .first-run-google{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--welcome-google-height);padding:0;background:transparent}
+.welcome-thread .first-run-google{display:flex;align-items:center;justify-content:center;width:100%;height:var(--welcome-google-height);min-height:48px;padding:0;background:transparent}
 .welcome-thread .first-run-google-preview{
-  display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;min-height:var(--welcome-google-height);gap:10px;padding:0 16px;border:1px solid #747775;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;height:100%;min-height:48px;gap:10px;padding:0 16px;border:1px solid #747775;border-radius:8px;
   background:#fff;color:#1f1f1f;font-family:Arial,sans-serif;font-size:14px;font-weight:600;letter-spacing:0;box-shadow:none
 }
 .welcome-thread .first-run-google-preview img{width:18px;height:18px;padding:0;border-radius:0;background:#fff}
-.welcome-thread #google-signin-button{display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;min-height:var(--welcome-google-height);margin:0 auto;padding:0}
+.welcome-thread #google-signin-button{display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;height:100%;min-height:48px;margin:0 auto;padding:0}
 .welcome-thread #google-signin-button>div{max-width:100%!important}
 .welcome-thread .signin-error{margin:0;color:#fff;font-size:12px;text-align:center}
 .welcome-thread .first-run-secondary{
-  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:400px;min-height:var(--welcome-tour-height);margin:0 auto;padding:0 18px;border:2px solid #111217;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:400px;height:var(--welcome-tour-height);min-height:48px;margin:0 auto;padding:0 18px;border:2px solid #111217;border-radius:8px;
   background:transparent;color:#fff;font-size:16px;font-weight:650
 }
 .welcome-thread .first-run-secondary .ph-svg,.welcome-thread .first-run-secondary .ph{margin-left:auto;color:#fff}
@@ -1568,7 +1568,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand :is(.first
 .welcome-thread :is(button,a):focus-visible{outline:3px solid #111217;outline-offset:3px}
 
 @media(max-height:620px){
-  .first-run-screen.welcome-thread{--welcome-title:clamp(36px,min(11.5vw,6.8svh),48px);--welcome-art-height:clamp(96px,min(44vw,20svh),150px);--welcome-top:clamp(12px,min(6vw,3svh),24px)}
+  .first-run-screen.welcome-thread{--welcome-title:clamp(30px,min(8.8vw,5.4svh),36px);--welcome-art-height:clamp(94px,min(34vw,17svh),118px);--welcome-top:clamp(10px,min(5vw,2.5svh),18px)}
   .welcome-thread .first-run-hero p{margin-top:6px}
   .welcome-thread .first-run-preview{margin-top:6px}
 }
