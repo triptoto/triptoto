@@ -15,8 +15,8 @@ interface TripBody {
 
 export async function listTrips(request: Request, env: Env, auth: AuthContext): Promise<Response> {
   const result = auth.userId
-    ? await env.DB.prepare(`SELECT DISTINCT t.* FROM trips t LEFT JOIN trip_members tm ON tm.trip_id=t.id AND tm.user_id=? AND tm.status='active' WHERE t.deleted_at IS NULL AND (t.owner_user_id=? OR tm.user_id=?) ORDER BY COALESCE(t.starts_on,'9999-12-31'), t.created_at DESC LIMIT 100`).bind(auth.userId, auth.userId, auth.userId).all()
-    : await env.DB.prepare(`SELECT * FROM trips WHERE created_by_device_id=? AND owner_user_id IS NULL AND deleted_at IS NULL ORDER BY COALESCE(starts_on,'9999-12-31'), created_at DESC LIMIT 100`).bind(auth.deviceId).all();
+    ? await env.DB.prepare(`SELECT DISTINCT t.*, COALESCE(tm.role, CASE WHEN t.owner_user_id=? THEN 'owner' END) AS role, CASE WHEN t.owner_user_id IS NOT NULL AND t.owner_user_id<>? THEN 1 ELSE 0 END AS is_shared FROM trips t LEFT JOIN trip_members tm ON tm.trip_id=t.id AND tm.user_id=? AND tm.status='active' WHERE t.deleted_at IS NULL AND (t.owner_user_id=? OR tm.user_id=?) ORDER BY COALESCE(t.starts_on,'9999-12-31'), t.created_at DESC LIMIT 100`).bind(auth.userId, auth.userId, auth.userId, auth.userId, auth.userId).all()
+    : await env.DB.prepare(`SELECT *, 'owner' AS role, 0 AS is_shared FROM trips WHERE created_by_device_id=? AND owner_user_id IS NULL AND deleted_at IS NULL ORDER BY COALESCE(starts_on,'9999-12-31'), created_at DESC LIMIT 100`).bind(auth.deviceId).all();
   return json({ trips: result.results ?? [] }, {}, request, env);
 }
 

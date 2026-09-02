@@ -6,6 +6,14 @@
   font-display: block;
 }
 
+@font-face {
+  font-family: "Phosphor Fill";
+  src: url("./Phosphor-Fill.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
 .ph {
   display: inline-block;
   flex: 0 0 auto;
@@ -24,6 +32,15 @@
   speak: never;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.ph-fill,
+.nav-item.active .ph,
+.is-active > .ph,
+[aria-current] .ph,
+[aria-selected="true"] .ph,
+[aria-pressed="true"] .ph {
+  font-family: "Phosphor Fill" !important;
 }
 
 .ph-user::before{content:"\e4c2"}.ph-house::before{content:"\e2c2"}
@@ -46,4 +63,10 @@
 .ph-copy::before{content:"\e1ca"}.ph-identification-card::before{content:"\e2c8"}
 .ph-map-trifold::before{content:"\e31a"}.ph-x::before{content:"\e4f6"}
 .ph-shield-check::before{content:"\e40c"}.ph-arrows-clockwise::before{content:"\e094"}
+.ph-pencil-simple::before{content:"\e3b4"}.ph-trash::before{content:"\e4a6"}
+.ph-dots-three-vertical::before{content:"\e208"}.ph-cloud-sun::before{content:"\e540"}
+.ph-question::before{content:"\e3e8"}.ph-check-square-offset::before{content:"\e188"}
+.ph-bell::before{content:"\e0ce"}.ph-sim-card::before{content:"\e664"}
+.ph-arrow-square-out::before{content:"\e5de"}.ph-lightning::before{content:"\e2de"}
+.ph-globe::before{content:"\e288"}
 .ph-circle::before{content:"\e18a"}

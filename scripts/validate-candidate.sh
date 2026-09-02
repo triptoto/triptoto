@@ -32,7 +32,7 @@ test ! -f public/app.js
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/8 PWA and disabled integrations'
-grep -q "tripto-shell-product-v2-welcome-route-matrix-v10" public/sw.js
+grep -q "tripto-shell-product-v2-phosphor-v39" public/sw.js
 grep -q "/canonical-host.js" public/sw.js
 grep -q "/google-auth-client.js" public/sw.js
 grep -q "tripto-places-2026-08-26" public/sw.js
@@ -40,6 +40,7 @@ grep -q "/places-search-worker.js" public/sw.js
 grep -q "/data/places-2026-08-26.json" public/sw.js
 grep -q 'ensureAirportTimezones' public/mobile-app.js
 grep -q "/vendor/phosphor/Phosphor.woff2" public/sw.js
+grep -q "/vendor/phosphor/Phosphor-Fill.woff2" public/sw.js
 grep -q "/assets/google-g.svg" public/sw.js
 ! grep -q "/legacy.html" public/sw.js
 grep -q "key.startsWith('tripto-shell-')" public/sw.js

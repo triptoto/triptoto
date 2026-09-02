@@ -71,86 +71,87 @@
     shield: "shield-check", refresh: "arrows-clockwise",
     edit: "pencil-simple", trash: "trash",
     more: "dots-three-vertical", weather: "cloud-sun",
-    help: "question", checklist: "check-square-offset",
+    help: "question", checklist: "check-square-offset", bell: "bell",
+    sim: "sim-card", external: "arrow-square-out", bolt: "lightning",
+    globe: "globe",
   });
-  // Shared stroke wrapper for the elegant line-icon set. sw = stroke width.
-  const LINE = (body, sw = 1.8) =>
-    `<g fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${body}</g>`;
+  // Custom tripto.to icon set — every UI + travel-category glyph is a bespoke
+  // inline SVG (24 grid, 1.8 stroke, round caps/joins). icon() resolves these
+  // before ICON_NAMES, so the app no longer renders Phosphor font glyphs.
+  const _S = '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
   const INLINE_SVG = Object.freeze({
-    // === Elegant line icon set (2026-08-30 restyle v2). Modern thin-stroke
-    // (Lucide-style) glyphs, airy and consistent. icon() checks INLINE_SVG
-    // before the Phosphor font, so these win app-wide. To REVERT to the original
-    // Phosphor set: delete this block (keys fall back via ICON_NAMES). The
-    // original set is saved in memory note tripto-icon-set-original. All vb 0 0 24 24.
-    user: { vb: "0 0 24 24", path: LINE('<path d="M20 21v-1.5a4.5 4.5 0 0 0-4.5-4.5h-7A4.5 4.5 0 0 0 4 19.5V21"/><circle cx="12" cy="7.5" r="4"/>') },
-    home: { vb: "0 0 24 24", path: LINE('<path d="m3 10.2 9-7 9 7V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20z"/><path d="M9.5 21.5v-6h5v6"/>') },
-    trips: { vb: "0 0 24 24", path: LINE('<rect x="3.5" y="7" width="17" height="14" rx="3"/><path d="M8.5 7V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2"/><path d="M8.5 7v14M15.5 7v14"/>') },
-    plus: { vb: "0 0 24 24", path: LINE('<path d="M12 5v14M5 12h14"/>', 2) },
-    ticket: { vb: "0 0 24 24", path: LINE('<path d="M4 6.5a2 2 0 0 0-2 2v1.3a2 2 0 0 1 0 4.4v1.3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-1.3a2 2 0 0 1 0-4.4V8.5a2 2 0 0 0-2-2z"/><path d="M13.5 6.5v2M13.5 11v2M13.5 15.5v2"/>') },
-    plane: { vb: "0 0 24 24", path: LINE('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>') },
-    chevron: { vb: "0 0 24 24", path: LINE('<path d="m9 5.5 6.5 6.5L9 18.5"/>', 2) },
-    chevronDown: { vb: "0 0 24 24", path: LINE('<path d="m5.5 9 6.5 6.5L18.5 9"/>', 2) },
-    chevronUp: { vb: "0 0 24 24", path: LINE('<path d="m5.5 15 6.5-6.5L18.5 15"/>', 2) },
-    back: { vb: "0 0 24 24", path: LINE('<path d="m15 5.5-6.5 6.5L15 18.5"/>', 2) },
-    check: { vb: "0 0 24 24", path: LINE('<path d="M20 6.5 9.5 17 4 11.5"/>', 2) },
-    qr: { vb: "0 0 24 24", path: LINE('<rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/><path d="M14 14h2.8v2.8M20.5 14v2.8M14 17v3.5h2.8M18 20.5h2.5V18"/>') },
-    hotel: { vb: "0 0 24 24", path: LINE('<path d="M2.5 20v-7.5a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2V20"/><path d="M4.5 10.5V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3.5"/><path d="M2.5 17.5h19M12 5v5.5"/>') },
-    train: { vb: "0 0 24 24", path: LINE('<rect x="4.5" y="3" width="15" height="15.5" rx="3"/><path d="M4.5 11h15M12 3v8"/><path d="m8 18.5-2 2.8M18 21.3l-2-2.8"/><path d="M8.5 14.7h.01M15.5 14.7h.01"/>') },
-    star: { vb: "0 0 24 24", path: LINE('<path d="M12 3.2 14.6 8.5l5.8.85-4.2 4.1 1 5.8L12 16.5l-5.2 2.75 1-5.8-4.2-4.1 5.8-.85z"/>') },
-    restaurant: { vb: "0 0 24 24", path: LINE('<path d="M6 3v6.5a2 2 0 0 0 2 2 2 2 0 0 0 2-2V3M8 3v18"/><path d="M18 3c-1.7 0-3 2.2-3 5.5 0 2.4.9 3.9 2 4.3V21h2z"/>') },
-    document: { vb: "0 0 24 24", path: LINE('<path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5M8.5 13h7M8.5 16.5h4.5"/>') },
-    pin: { vb: "0 0 24 24", path: LINE('<path d="M19.5 10.2c0 5.3-7.5 11.3-7.5 11.3s-7.5-6-7.5-11.3a7.5 7.5 0 0 1 15 0z"/><circle cx="12" cy="10" r="2.7"/>') },
-    calendar: { vb: "0 0 24 24", path: LINE('<rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>') },
-    clock: { vb: "0 0 24 24", path: LINE('<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3.3 1.9"/>') },
-    night: { vb: "0 0 24 24", path: LINE('<path d="M20.5 13.4A8.5 8.5 0 1 1 10.6 3.5a6.6 6.6 0 0 0 9.9 9.9z"/>') },
-    day: { vb: "0 0 24 24", path: LINE('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>') },
-    terminal: { vb: "0 0 24 24", path: LINE('<path d="M12 2v3M9 5h6M9.7 5 8.5 10.5M14.3 5l1.2 5.5M8.2 10.5h7.6L17 21H7z"/><path d="M8 15.5h8"/>') },
-    gate: { vb: "0 0 24 24", path: LINE('<path d="M6 21V4.5a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 18 4.5V21"/><path d="M4 21h16M14.5 12h.01"/>') },
-    seat: { vb: "0 0 24 24", path: LINE('<path d="M19 9.5V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3.5"/><path d="M4 15a2 2 0 0 1 2 2v1h12v-1a2 2 0 0 1 4 0v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M6.5 18v-3a2 2 0 0 0-2-2M17.5 18v-3a2 2 0 0 1 2-2"/>') },
-    share: { vb: "0 0 24 24", path: LINE('<circle cx="18" cy="5.5" r="2.8"/><circle cx="6" cy="12" r="2.8"/><circle cx="18" cy="18.5" r="2.8"/><path d="m8.5 13.4 7 3.7M15.5 6.9l-7 3.7"/>') },
-    luggage: { vb: "0 0 24 24", path: LINE('<rect x="4.5" y="6.5" width="15" height="13.5" rx="3"/><path d="M9 6.5v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M9 20v1M15 20v1M12 6.5V20"/>') },
-    navigation: { vb: "0 0 24 24", path: LINE('<path d="M3.2 10.9 21 3l-7.9 17.8-2-8z"/>') },
-    info: { vb: "0 0 24 24", path: LINE('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6h.01"/>') },
-    warning: { vb: "0 0 24 24", path: LINE('<path d="M10.3 4 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4M12 17.3h.01"/>') },
-    download: { vb: "0 0 24 24", path: LINE('<path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20.5h14"/>') },
-    car: { vb: "0 0 24 24", path: LINE('<path d="M5 13.5 6.7 8.4A2.5 2.5 0 0 1 9.1 6.7h5.8a2.5 2.5 0 0 1 2.4 1.7L19 13.5"/><path d="M4 13.5h16a2 2 0 0 1 2 2v3a1 1 0 0 1-1 1h-1.5M4 13.5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h1.5M6.5 19.5h11"/><circle cx="7" cy="16.5" r="1.3"/><circle cx="17" cy="16.5" r="1.3"/>') },
-    phone: { vb: "0 0 24 24", path: LINE('<path d="M15.6 21a2 2 0 0 0 2-1.7l.4-2.6a2 2 0 0 0-1.2-2.1l-2.2-.9a2 2 0 0 0-2.3.6l-.5.6a12.5 12.5 0 0 1-4.4-4.4l.6-.5a2 2 0 0 0 .6-2.3l-.9-2.2a2 2 0 0 0-2.1-1.2l-2.6.4A2 2 0 0 0 3 4.4 18 18 0 0 0 15.6 21z"/>') },
-    mail: { vb: "0 0 24 24", path: LINE('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7.5 8 5.5 8-5.5"/>') },
-    copy: { vb: "0 0 24 24", path: LINE('<rect x="9" y="9" width="11.5" height="11.5" rx="2.5"/><path d="M6 15H5.5A2 2 0 0 1 3.5 13V5.5A2 2 0 0 1 5.5 3.5H13a2 2 0 0 1 2 2V6"/>') },
-    passport: { vb: "0 0 24 24", path: LINE('<rect x="3.5" y="4" width="17" height="16" rx="3"/><circle cx="9.5" cy="10" r="2.5"/><path d="M6.5 16.3a3 3 0 0 1 6 0"/><path d="M15 9.3h3M15 13.3h3"/>') },
-    map: { vb: "0 0 24 24", path: LINE('<path d="m9 4-6 2.2v14.3l6-2.2 6 2.2 6-2.2V3.7l-6 2.2z"/><path d="M9 4v14.3M15 6.1v14.3"/>') },
-    close: { vb: "0 0 24 24", path: LINE('<path d="M18 6 6 18M6 6l12 12"/>', 2) },
-    shield: { vb: "0 0 24 24", path: LINE('<path d="M12 3 4.5 6v5.3c0 4.6 3.2 7.9 7.5 9.4 4.3-1.5 7.5-4.8 7.5-9.4V6z"/><path d="m9 12 2.2 2.2L15.2 10"/>') },
-    refresh: { vb: "0 0 24 24", path: LINE('<path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 3.5v5h-5"/>') },
-    help: { vb: "0 0 24 24", path: LINE('<circle cx="12" cy="12" r="9"/><path d="M9.4 9.4a2.6 2.6 0 0 1 5 .8c0 1.7-2.4 2.1-2.4 3.8"/><path d="M12 17.4h.01"/>') },
-    checklist: { vb: "0 0 24 24", path: LINE('<path d="m3.2 6 1.6 1.6L8.1 4.3"/><path d="m3.2 19.5 1.6 1.6 3.3-3.3"/><path d="M11.5 6h9.3M11.5 12.7h9.3M11.5 19.4h9.3"/><path d="m3.2 12.7 1.6 1.6 3.3-3.3"/>') },
-    edit: '<path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152a15.86,15.86,0,0,0-4.69,11.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160,144,67.31,160.68,84,68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188,172,95.31,188.68,112Z"/>',
-    trash: '<path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/>',
-    bell: { vb: "0 0 24 24", path: LINE('<path d="M18 8.5a6 6 0 1 0-12 0c0 6.5-2.5 8-2.5 8h17S18 15 18 8.5z"/><path d="M10.2 20.5a2 2 0 0 0 3.6 0"/>') },
-    "plane-solid": { vb: "0 0 24 24", path: '<path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>' },
-    "car-solid": { vb: "0 0 24 24", path: '<path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>' },
-    "hotel-solid": { vb: "0 0 24 24", path: '<path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>' },
-    "restaurant-solid": { vb: "0 0 24 24", path: '<path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>' },
-    "wx-sun": { vb: "0 0 24 24", path: '<circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2.5" x2="12" y2="4.6"/><line x1="12" y1="19.4" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="4.6" y2="12"/><line x1="19.4" y1="12" x2="21.5" y2="12"/><line x1="5.2" y1="5.2" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="18.8" y2="18.8"/><line x1="5.2" y1="18.8" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="18.8" y2="5.2"/></g>' },
-    more: { vb: "0 0 24 24", path: '<g fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></g>' },
-    sim: { vb: "0 0 24 24", path: '<path d="M7.5 3h6.2L18 7.3V19a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><rect x="8.4" y="11.2" width="7.2" height="6.6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="12" y1="11.2" x2="12" y2="17.8" stroke="currentColor" stroke-width="1.4"/><line x1="8.4" y1="14.5" x2="15.6" y2="14.5" stroke="currentColor" stroke-width="1.4"/>' },
-    external: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10.5 13.5"/><path d="M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/></g>' },
-    bolt: { vb: "0 0 24 24", path: '<path d="M13 2 4.5 13.2A.7.7 0 0 0 5 14.3h5.2l-1.4 7.4a.4.4 0 0 0 .73.3L19.5 10.8A.7.7 0 0 0 19 9.7h-5.2l1.2-7.3a.4.4 0 0 0-.73-.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' },
-    globe: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.8"/><ellipse cx="12" cy="12" rx="4" ry="8.8"/><line x1="3.4" y1="9" x2="20.6" y2="9"/><line x1="3.4" y1="15" x2="20.6" y2="15"/></g>' },
+    user: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="3"/> <path d="M3 20c0-4 2.5-7 6-7s6 3 6 7"/> <rect x="15" y="10" width="6" height="9" rx="1.5"/> <path d="M17 10V8h2v2M17 13h2"/></g>' },
+    home: { vb: "0 0 24 24", path: `${_S}<path d="M4 10.8 12 4.5l8 6.3"/><path d="M6 9.7V19.4h12V9.7"/><path d="M10 19.4v-4.7h4v4.7"/></g>` },
+    trips: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="7" width="14" height="13" rx="2"/> <path d="M9 7V5c0-1 .8-2 2-2h2c1.2 0 2 1 2 2v2M9 11v5M15 11v5"/> <circle cx="8" cy="21" r="1"/><circle cx="16" cy="21" r="1"/></g>' },
+    luggage: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="7" width="14" height="13" rx="2"/> <path d="M9 7V5c0-1 .8-2 2-2h2c1.2 0 2 1 2 2v2M9 11v5M15 11v5"/> <circle cx="8" cy="21" r="1"/><circle cx="16" cy="21" r="1"/></g>' },
+    plus: { vb: "0 0 24 24", path: `${_S}<path d="M12 5.5v13M5.5 12h13"/></g>` },
+    ticket: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v5a2 2 0 0 0 0 4v5H4v-5a2 2 0 0 0 0-4V5Z"/> <path d="M13 5v14" stroke-dasharray="1.7 2.2"/> <circle cx="7" cy="12" r="1.2" fill="currentColor" stroke="none"/> <circle cx="10" cy="12" r="1.2" fill="currentColor" stroke="none"/> <path d="m15.5 13.3 4-2.6M16.5 10.5l1 1.4"/></g>' },
+    plane: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14.2 20.5 7.8c.8-.3 1.4.7.8 1.3l-6.2 4.7-1.4 5-1.5.5-1-3.9-4.6 1.5L3 14.2Z"/> <path d="m10.8 11.4-3.3-6.2 1.4-.5 5.2 4.8M16.6 12.7l3.2 1.9"/></g>' },
+    chevron: { vb: "0 0 24 24", path: `${_S}<path d="M9.5 5.5 16 12l-6.5 6.5"/></g>` },
+    chevronDown: { vb: "0 0 24 24", path: `${_S}<path d="M6 9.5 12 15.5l6-6"/></g>` },
+    chevronUp: { vb: "0 0 24 24", path: `${_S}<path d="M6 14.5 12 8.5l6 6"/></g>` },
+    back: { vb: "0 0 24 24", path: `${_S}<path d="M14.5 5.5 8 12l6.5 6.5"/></g>` },
+    check: { vb: "0 0 24 24", path: `${_S}<path d="M5 12.5 10 17.5 19 7"/></g>` },
+    qr: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/> <path d="M14 14h3v3h-3zM18 14h3M21 14v3M14 19h2v2M18 18h3v3M6 6h1M17 6h1M6 17h1"/></g>' },
+    hotel: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V7h10v14M14 11h6v10M2 21h20"/> <path d="M7 10h2M7 14h2M7 18h2M17 14h1M17 18h1"/></g>' },
+    train: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="15" rx="4"/> <path d="M8 7h8M8 11h8M8 18l-2 3M16 18l2 3M8 21h8"/> <circle cx="9" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1" fill="currentColor" stroke="none"/></g>' },
+    star: { vb: "0 0 24 24", path: `${_S}<path d="M12 4.4l2.35 4.76 5.25.77-3.8 3.7.9 5.24L12 16.7l-4.7 2.47.9-5.24-3.8-3.7 5.25-.77z"/></g>` },
+    restaurant: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7M3 3v4a3 3 0 0 0 6 0V3M6 10v11"/> <path d="M16 3c-2 3-2 7 0 9h3V3h-3ZM18 12v9"/></g>' },
+    document: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h9l5 5v13H5V3Z"/> <path d="M14 3v5h5M8 12h8M8 16h6"/></g>' },
+    pin: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/> <circle cx="12" cy="10" r="2"/> <path d="M17 5h4l-1.5 2L21 9h-4"/></g>' },
+    calendar: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/> <path d="M7 3v4M17 3v4M3 9h18"/> <circle cx="8" cy="13" r=".8" fill="currentColor" stroke="none"/><circle cx="12" cy="13" r=".8" fill="currentColor" stroke="none"/><circle cx="16" cy="13" r=".8" fill="currentColor" stroke="none"/><circle cx="8" cy="17" r=".8" fill="currentColor" stroke="none"/><circle cx="12" cy="17" r=".8" fill="currentColor" stroke="none"/></g>' },
+    clock: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/> <path d="M12 7v5l3.5 2"/></g>' },
+    night: { vb: "0 0 24 24", path: `${_S}<path d="M19.2 14.4A7.4 7.4 0 0 1 9.6 4.8 7.4 7.4 0 1 0 19.2 14.4z"/><path d="M17.5 4.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z"/></g>` },
+    day: { vb: "0 0 24 24", path: `${_S}<path d="M3 18.2h18"/><path d="M6.7 18.2a5.3 5.3 0 0 1 10.6 0"/><path d="M12 5.4V7M5 8.4l1.1 1.1M19 8.4l-1.1 1.1M2.6 14.2h1.6M19.8 14.2h1.6"/></g>` },
+    terminal: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V8.5L12 4l9 4.5V20"/> <path d="M7 20v-5h10v5M6.5 10.5h2M11 10.5h2M15.5 10.5h2"/> <path d="M2 20h20"/></g>' },
+    gate: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V6h10v14M5 9h10"/> <path d="M15 12h4l2 2-2 2h-4"/> <path d="M8 13.5h4M8 16.5h3"/></g>' },
+    seat: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v8c0 2.2 1.8 4 4 4h5"/> <path d="M8 9h5c1.7 0 3 1.3 3 3v4M6 20h12M10 16v4M17 16v4"/> <circle cx="8" cy="4" r="1.5"/></g>' },
+    share: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/> <path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></g>' },
+    navigation: { vb: "0 0 24 24", path: `${_S}<path d="M20 4 4 10.8l6.9 2.4L13.3 20z"/></g>` },
+    info: { vb: "0 0 24 24", path: `${_S}<circle cx="12" cy="12" r="8"/><path d="M12 11.2V16"/><path d="M12 8.1h.01"/></g>` },
+    warning: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 22 20H2L12 3Z"/> <path d="M12 9v5M12 17h.1"/></g>' },
+    download: { vb: "0 0 24 24", path: `${_S}<path d="M12 4v10.5"/><path d="M8 11 12 15l4-4"/><path d="M5 18.8h14"/></g>` },
+    car: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10 7 6h10l2 4 2 2v6H3v-6l2-2Z"/> <path d="M5 10h14M7 18v2M17 18v2"/> <circle cx="7" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="17" cy="14" r="1" fill="currentColor" stroke="none"/></g>' },
+    phone: { vb: "0 0 24 24", path: `${_S}<path d="M7.2 4.6 9.6 5.2 11 8.6 9 10.6a11 11 0 0 0 4.4 4.4l2-2 3.4 1.4.6 2.5a2 2 0 0 1-2.2 2.2A14 14 0 0 1 4.8 6.8 2 2 0 0 1 7.2 4.6z"/></g>` },
+    mail: { vb: "0 0 24 24", path: `${_S}<rect x="3.5" y="5.5" width="17" height="13" rx="2.4"/><path d="M4.5 7.2 12 12.5 19.5 7.2"/></g>` },
+    copy: { vb: "0 0 24 24", path: `${_S}<rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.6A2 2 0 0 0 13.5 4.6h-7A2 2 0 0 0 4.5 6.6v7A2 2 0 0 0 6.5 15.5h2"/></g>` },
+    passport: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/> <path d="M8 3v18"/> <circle cx="13.5" cy="10" r="3"/> <path d="M10.5 10h6M13.5 7c-1 1.7-1 4.3 0 6M13.5 7c1 1.7 1 4.3 0 6M11 16h5"/></g>' },
+    map: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/> <path d="M9 3v15M15 6v15"/></g>' },
+    close: { vb: "0 0 24 24", path: `${_S}<path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"/></g>` },
+    shield: { vb: "0 0 24 24", path: `${_S}<path d="M12 3.5 19 6v5c0 4.5-3 7.9-7 9.5-4-1.6-7-5-7-9.5V6z"/><path d="M9 12l2 2 4-4.2"/></g>` },
+    refresh: { vb: "0 0 24 24", path: `${_S}<path d="M18.6 8.4A7.5 7.5 0 0 0 6 6.1"/><path d="M5 4.5V8h3.5"/><path d="M5.4 15.6A7.5 7.5 0 0 0 18 17.9"/><path d="M19 19.5V16h-3.5"/></g>` },
+    edit: { vb: "0 0 24 24", path: `${_S}<path d="M16 4.5 19.5 8 8.6 18.9 4.5 20l1.1-4.1z"/><path d="M13.5 7 17 10.5"/></g>` },
+    trash: { vb: "0 0 24 24", path: `${_S}<path d="M5.5 7h13"/><path d="M9 7V5.6A1.5 1.5 0 0 1 10.5 4.1h3A1.5 1.5 0 0 1 15 5.6V7"/><path d="M7 7l1 12.4A1.5 1.5 0 0 0 9.5 20.8h5a1.5 1.5 0 0 0 1.5-1.4L17 7"/><path d="M10.5 11v6M13.5 11v6"/></g>` },
+    more: { vb: "0 0 24 24", path: `<g fill="currentColor" stroke="none"><circle cx="12" cy="5.5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="18.5" r="1.75"/></g>` },
+    help: { vb: "0 0 24 24", path: `${_S}<circle cx="12" cy="12" r="8"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.1-2.4 3.4"/><path d="M12 16.6h.01"/></g>` },
+    checklist: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/> <path d="m7 8 1.5 1.5L11 7M13 8h4M7 13h4M13 13h4M7 17h4M13 17h4"/></g>' },
+    bell: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17h12l-1.5-2.5V10a4.5 4.5 0 0 0-9 0v4.5L6 17Z"/> <path d="M10 20h4M9 5a3 3 0 0 1 6 0"/> <circle cx="18.5" cy="5.5" r="2.5"/></g>' },
+    sim: { vb: "0 0 24 24", path: `${_S}<path d="M6 4.5h7.6L18 8.9V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19z"/><rect x="8.8" y="11" width="6.4" height="6.4" rx="1.4"/><path d="M12 11v6.4M8.8 14.2h6.4"/></g>` },
+    external: { vb: "0 0 24 24", path: `${_S}<path d="M13 4.5h6.5V11"/><path d="M19.5 4.5 10.8 13.2"/><path d="M16.5 13.6V18A1.5 1.5 0 0 1 15 19.5H6.5A1.5 1.5 0 0 1 5 18V9.5A1.5 1.5 0 0 1 6.5 8H11"/></g>` },
+    bolt: { vb: "0 0 24 24", path: `${_S}<path d="M13 3 5 13.6h5l-1 7.4 8-10.6h-5z"/></g>` },
+    globe: { vb: "0 0 24 24", path: `${_S}<circle cx="12" cy="12" r="8"/><path d="M4 12h16"/><path d="M12 4a12 12 0 0 1 0 16 12 12 0 0 1 0-16z"/></g>` },
+
+    "wx-sun": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/> <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g>' },
     "wx-moon": { vb: "0 0 24 24", path: '<path d="M20 14.6A8 8 0 0 1 9.4 4 6.6 6.6 0 1 0 20 14.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
-    "wx-cloud": { vb: "0 0 24 24", path: '<path d="M17 18.5H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 18.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
-    "wx-cloud-sun": { vb: "0 0 24 24", path: '<g stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"><circle cx="8" cy="7.5" r="2.9"/><line x1="8" y1="1.6" x2="8" y2="3"/><line x1="2.1" y1="7.5" x2="3.5" y2="7.5"/><line x1="3.8" y1="3.3" x2="4.8" y2="4.3"/><line x1="12.2" y1="3.3" x2="11.2" y2="4.3"/></g><path d="M18 20H10a3.6 3.6 0 0 1-.45-7.16 5 5 0 0 1 9.6-.55A3.35 3.35 0 0 1 18 20Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
-    weather: { vb: "0 0 24 24", path: '<g stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"><circle cx="8" cy="7.5" r="2.9"/><line x1="8" y1="1.6" x2="8" y2="3"/><line x1="2.1" y1="7.5" x2="3.5" y2="7.5"/><line x1="3.8" y1="3.3" x2="4.8" y2="4.3"/><line x1="12.2" y1="3.3" x2="11.2" y2="4.3"/></g><path d="M18 20H10a3.6 3.6 0 0 1-.45-7.16 5 5 0 0 1 9.6-.55A3.35 3.35 0 0 1 18 20Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' },
-    "wx-cloud-rain": { vb: "0 0 24 24", path: '<path d="M17 15H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 15Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="18" x2="8" y2="21"/><line x1="13" y1="18" x2="12" y2="21"/><line x1="17" y1="18" x2="16" y2="21"/></g>' },
-    "wx-cloud-snow": { vb: "0 0 24 24", path: '<path d="M17 15H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 15Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g fill="currentColor"><circle cx="9" cy="19.3" r="1.05"/><circle cx="13" cy="19.3" r="1.05"/><circle cx="17" cy="19.3" r="1.05"/></g>' },
-    "wx-fog": { vb: "0 0 24 24", path: '<path d="M17 13H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 13Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="17" x2="16" y2="17"/><line x1="8" y1="20.5" x2="18" y2="20.5"/></g>' },
-    "wx-storm": { vb: "0 0 24 24", path: '<path d="M17 14H7a4 4 0 0 1-.5-7.97 5.6 5.6 0 0 1 10.75-.6A3.75 3.75 0 0 1 17 14Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12.5 16l-3 3.6h2.4L11 23" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' },
+    "wx-cloud": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 19H7a4 4 0 0 1-.5-8 5.7 5.7 0 0 1 11-.5A4.3 4.3 0 0 1 17 19Z"/></g>' },
+    "wx-cloud-sun": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8a4 4 0 0 1 7.6-1.7M6 4.5 7.2 5.7M11 2.5v1.7M3.5 9H5"/> <path d="M17 20H7a4 4 0 0 1-.4-8 5.5 5.5 0 0 1 10.6-.5A4.3 4.3 0 0 1 17 20Z"/></g>' },
+    weather: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8a4 4 0 0 1 7.6-1.7M6 4.5 7.2 5.7M11 2.5v1.7M3.5 9H5"/> <path d="M17 20H7a4 4 0 0 1-.4-8 5.5 5.5 0 0 1 10.6-.5A4.3 4.3 0 0 1 17 20Z"/></g>' },
+    "wx-cloud-rain": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 15H7a4 4 0 0 1-.5-8 5.7 5.7 0 0 1 11-.5A4.3 4.3 0 0 1 17 15Z"/> <path d="m8 18-1 3M13 18l-1 3M18 18l-1 3"/></g>' },
+    "wx-cloud-snow": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14H7a4 4 0 0 1-.5-8 5.7 5.7 0 0 1 11-.5A4.3 4.3 0 0 1 17 14Z"/> <path d="M8 18v4M6.3 19l3.4 2M9.7 19l-3.4 2M16 18v4M14.3 19l3.4 2M17.7 19l-3.4 2"/></g>' },
+    "wx-fog": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 12H7a4 4 0 0 1-.5-8 5.7 5.7 0 0 1 11-.5A4.3 4.3 0 0 1 17 12Z"/> <path d="M5 16h14M7 20h10"/></g>' },
+    "wx-storm": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14H7a4 4 0 0 1-.5-8 5.7 5.7 0 0 1 11-.5A4.3 4.3 0 0 1 17 14Z"/> <path d="m12 16-2 3h2l-1 3 4-5h-2l1-1"/></g>' },
     "wx-drop": { vb: "0 0 24 24", path: '<path d="M12 3.2S6 9.4 6 14a6 6 0 0 0 12 0c0-4.6-6-10.8-6-10.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>' },
-    "wx-wind": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5"/><path d="M3 12h13a2.5 2.5 0 1 1-2.5 2.5"/><path d="M3 16h7"/></g>' },
+    "wx-wind": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11c3 0 3-4 0-4-1 0-2 .5-2.5 1.5M3 12h15c3 0 3 4 0 4-1 0-2-.5-2.5-1.5M3 16h8"/></g>' },
     // Destination-flavored marks for the Trips list (solid, read well at 27px).
-    "dest-mountain": { vb: "0 0 24 24", path: '<path d="M14 4l9 16H5L14 4z"/><path d="M7 12l6 8H1L7 12z"/>' },
-    "dest-beach": { vb: "0 0 24 24", path: '<circle cx="12" cy="7.6" r="3.4"/><path d="M2.5 15c1.6 0 1.6 1.7 3.2 1.7S7.3 15 8.9 15s1.6 1.7 3.2 1.7S13.7 15 15.3 15s1.6 1.7 3.2 1.7 1.6-1.7 3.2-1.7v2.4c-1.6 0-1.6 1.7-3.2 1.7s-1.6-1.7-3.2-1.7-1.6 1.7-3.2 1.7S8.5 17.4 6.9 17.4 5.3 19.1 3.7 19.1 2.5 17.4 2.5 17.4z"/>' },
-    "dest-monument": { vb: "0 0 24 24", path: '<path d="M12 3L2.5 7.5h19L12 3z"/><path d="M3.6 9h16.8v1.7H3.6z"/><path d="M5 11.4h2.1v7.1H5zM10.9 11.4H13v7.1h-2.1zM16.9 11.4H19v7.1h-2.1z"/><path d="M3.2 19.2h17.6V21H3.2z"/>' },
+    "dest-mountain": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20 9 7l4 7 2-3 7 9H2Z"/> <path d="m7.5 10 1.5 2 1.5-2 1.5 2M14 12l1 1 1-1"/></g>' },
+    "dest-beach": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0H4ZM12 12v8"/> <path d="m12 12 5 5M2 21c2-1.3 4-1.3 6 0 2-1.3 4-1.3 6 0 2-1.3 4-1.3 6 0 1-.7 2-1 2-1"/> <path d="M4 12c2-2 4-2 6 0M14 12c2-2 4-2 6 0"/></g>' },
+    "dest-monument": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M6 21V10a6 6 0 0 1 12 0v11"/> <path d="M9 21v-6h6v6M8 10h8M10 6h4"/> <circle cx="12" cy="3" r="1"/></g>' },
+    users: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/> <path d="M2 21c0-5 2.5-8 6-8s6 3 6 8M13 21c0-3.7 1.5-6 4-6s4 2.3 4 6"/></g>' },
+    invite: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/> <path d="M2 21c0-5 2.5-8 6-8 2.2 0 4 1.1 5 3"/> <path d="M18 12v8M14 16h8"/></g>' },
+    owner: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3"/> <path d="M5 21c0-5 3-8 7-8s7 3 7 8"/> <path d="m8 4 2-2 2 2 2-2 2 2-1 3H9L8 4Z"/></g>' },
+    editor: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/> <path d="M2 20c0-4.5 2.5-7 6-7 1.8 0 3.3.6 4.4 1.8"/> <path d="m14 19 5.5-5.5 2 2L16 21h-3v-3l1-1Z"/></g>' },
+    viewer: { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/> <path d="M2 20c0-4.5 2.5-7 6-7 2.5 0 4.5 1.3 5.5 3.5"/> <path d="M13 18s2-3 4.5-3S22 18 22 18s-2 3-4.5 3S13 18 13 18Z"/> <circle cx="17.5" cy="18" r="1"/></g>' },
+    "check-circle": { vb: "0 0 24 24", path: '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/> <path d="m8 12 2.5 2.5L16.5 8"/></g>' },
   });
   const state = {
     token: localStorage.getItem("tripto_token") || "",
@@ -205,12 +206,25 @@
     importMode: "upload",
     manualLabel: null,
     editingEntity: null,
+    editingNote: null,
     formDraft: null,
     dateRange: null,
     moveBooking: null,
     tripsLoaded: false,
     googleAuthHandoffStatus: null,
     googleAuthHandoffMessage: "",
+    sharing: null,
+    members: [],
+    invites: [],
+    collabLoading: false,
+    collabError: null,
+    shareRole: "editor",
+    shareInvite: null,
+    shareBusy: false,
+    joinToken: null,
+    joinPreview: null,
+    joinLoading: false,
+    joinError: null,
   };
   let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
@@ -2041,6 +2055,83 @@
     const body = rows.filter(Boolean).join("");
     return body ? `<section class="fd-list" aria-label="${esc(label)}">${body}</section>` : "";
   }
+  // Editable notes, shared by every booking detail screen. Notes are stored
+  // either on a scoped contact (flight/hotel/train/car/transfer) or inline on
+  // the activity/reservation entity; noteStorage() resolves which, so the same
+  // inline editor and preservation of structured detail entries works anywhere.
+  function noteStorage(item, kind) {
+    const base = bookingBaseKind(kind),
+      tt = String(val(item, "transport_type") || "").toLowerCase(),
+      k = String(kind || "").toLowerCase();
+    if (base === "flight" || tt === "flight") return { mode: "contact", type: "airline", structured: [], keep: [] };
+    if (base === "hotel") return { mode: "contact", type: "hotel", structured: [], keep: ["phone", "email"] };
+    if (k === "ferry" || tt === "ferry") return { mode: "contact", type: "other", structured: [["Platform", "platform"], ["Coach", "coach"], ["Vehicle", "vehicle"]], keep: [] };
+    if (base === "train" || tt === "train") return { mode: "contact", type: "other", structured: [["Platform", "platform"], ["Coach", "coach"]], keep: [] };
+    if (k === "car-rental" || tt === "car") return { mode: "contact", type: "rental_car", structured: [["Driver", "driver"]], keep: ["phone"] };
+    if (k === "transfer" || tt === "transfer") return { mode: "contact", type: "driver", structured: [["Driver", "driver"], ["Vehicle", "vehicle"]], keep: ["phone"] };
+    return { mode: "entity" };
+  }
+  function bookingNoteText(item, kind) {
+    const store = noteStorage(item, kind),
+      raw = store.mode === "contact"
+        ? val(directItemContact(item, store.type), "notes")
+        : val(item, "activity_notes", "reservation_notes", "notes");
+    return parseManualDetailNotes(raw).notes;
+  }
+  async function saveBookingNote(item, kind, text) {
+    const tripId = encodeURIComponent(state.trip?.id || ""), id = itemId(item),
+      clean = String(text || "").trim(), store = noteStorage(item, kind);
+    if (store.mode === "contact") {
+      const existing = directItemContact(item, store.type) || {},
+        parsed = parseManualDetailNotes(val(existing, "notes")),
+        notes = store.structured.length
+          ? buildManualDetailNotes(store.structured.map(([label, key]) => [label, parsed[key]]), clean)
+          : (clean || null),
+        details = { notes };
+      (store.keep || []).forEach((key) => { details[key] = val(existing, key); });
+      await saveManualContact(tripId, id, store.type, String(val(existing, "display_name") || statusText(store.type)), details, item);
+    } else {
+      const parsed = parseManualDetailNotes(val(item, "activity_notes", "reservation_notes", "notes")),
+        notes = buildManualDetailNotes([
+          ["Date", parsed.date], ["To", parsed.endLocation], ["Return / end date", parsed.endDate],
+          ["Guests", parsed.guests], ["Vehicle", parsed.vehicle], ["Driver", parsed.driver],
+          ["Ship", parsed.ship], ["Cabin", parsed.cabin], ["Deck", parsed.deck],
+          ["Embarkation", parsed.embarkation], ["Seat / section", parsed.seatSection],
+          ["Address", parsed.streetAddress], ["Contact", parsed.contact],
+          ["Reservation window", parsed.reservationWindow],
+        ], clean),
+        entityKind = String(val(item, "kind") || "").toLowerCase(),
+        isActivity = entityKind === "activity" || (!!val(item, "activity_type") && !val(item, "reservation_type")),
+        body = {
+          kind: isActivity ? "activity" : "reservation",
+          status: val(item, "status") || "confirmed",
+          title: val(item, "title") || statusText(kind),
+          startsAtUtc: Number(val(item, "starts_at_utc")) || null,
+          endsAtUtc: Number(val(item, "ends_at_utc")) || null,
+          timezone: val(item, "timezone", "start_timezone") || null,
+          locationId: val(item, "start_location_id", "venue_location_id") || null,
+          reference: val(item, "reference", "confirmation_number", "reservation_reference") || null,
+          notes,
+          confidence: val(item, "confidence") || "confirmed",
+          version: Number(val(item, "version")) || 1,
+        };
+      if (isActivity) body.activityType = val(item, "activity_type") || null;
+      else body.reservationType = val(item, "reservation_type") || "reservation";
+      await api(`/api/v1/trips/${tripId}/activities/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+    }
+    await loadTripDetails();
+  }
+  function fdNoteRow(item, kind) {
+    const id = itemId(item), note = bookingNoteText(item, kind),
+      editing = String(state.editingNote || "") === String(id);
+    if (editing) {
+      return `<form class="fd-note-edit" data-note-form data-id="${esc(id)}" data-kind="${esc(kind)}"><div class="fd-note-edit__head">${fdRowIcon("info")}<span class="fd-note-edit__title">Notes</span></div><textarea name="note" class="fd-note-edit__field" rows="3" maxlength="2000" placeholder="Add a note for this booking" aria-label="Booking note">${esc(note)}</textarea><div class="fd-note-edit__actions"><button type="button" class="fd-note-btn fd-note-btn--ghost" data-action="cancel-note">Cancel</button><button type="button" class="fd-note-btn fd-note-btn--save" data-action="save-note" data-id="${esc(id)}" data-kind="${esc(kind)}">Save note</button></div></form>`;
+    }
+    if (note) {
+      return `<button type="button" class="fd-row fd-row--note fd-row--note-btn" data-action="edit-note" data-id="${esc(id)}" data-kind="${esc(kind)}"><span class="fd-row__icon">${icon("info", 20)}</span><span class="fd-row__text"><strong>Notes</strong><small class="fd-note">${esc(note)}</small></span><span class="fd-row__chev">${icon("edit", 18)}</span></button>`;
+    }
+    return `<button type="button" class="fd-row fd-row--button fd-row--note-add" data-action="edit-note" data-id="${esc(id)}" data-kind="${esc(kind)}"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add note</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`;
+  }
 
   function sessionExpiry(token) {
     try {
@@ -2571,7 +2662,9 @@
       await loadTripDetails();
       state.tripsLoaded = true;
       if (state.account?.mode === "account") {
-        if (!state.trip) {
+        // Don't hijack a deep link (e.g. an invitation link) into the
+        // create-trip form just because the account has no trips yet.
+        if (!state.trip && !["join", "collaboration"].includes(state.screen)) {
           state.screen = "form";
           state.selectedId = "trip";
           history.replaceState(null, "", routeUrl("form", "trip"));
@@ -2593,6 +2686,7 @@
     } finally {
       state.loading = false;
       render();
+      maybeLoadScreenData();
     }
   }
   function selectRelevantTrip(trips) {
@@ -2721,6 +2815,9 @@
     state.localDocs = await listLocalDocs(tripId);
     if (state.trip?.id !== tripId) return;
     void ensureWeather();
+    // Soft, non-fatal: lets the trip menu reveal "Plan together" only when the
+    // server kill-switch (SHARING_ENABLED) is on. Never blocks trip loading.
+    void loadSharingStatus(tripId);
   }
   async function refreshBookingEmailInbox() {
     if (PREVIEW_MODE || state.account?.mode !== "account") return;
@@ -3061,7 +3158,10 @@
       ? `<span class="nav-item__badge" aria-hidden="true">${unread > 9 ? "9+" : unread}</span>`
       : "";
     const alerts = `<button class="nav-item nav-item--notify ${norm === "alerts" ? "active" : ""}" data-action="open-notifications" aria-label="${esc(alertLabel)}" aria-expanded="${state.sheet === "notifications"}"><span class="nav-item__icon">${icon("bell", 23)}${alertBadge}</span><span>Alerts</span></button>`;
-    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "trips", "Trip")}${alerts}<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
+    const addBtn = canEditCurrentTrip()
+      ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>`
+      : `<button class="nav-item nav-add nav-add--view-only" data-action="view-only-hint" aria-label="View only — you can't add to this trip"><span>${icon("viewer", 26)}</span></button>`;
+    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "plane", "Trip")}${alerts}${addBtn}${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
@@ -3314,8 +3414,8 @@
       document = boardingDocumentFor(flight),
       duration =
         departure && arrival ? durationLabel(arrival - departure) : "",
-      action = document ? "boarding-pass" : "add-boarding-pass",
-      actionLabel = document ? "Open Boarding Pass" : "Add Boarding Pass",
+      action = document ? "boarding-pass" : "add-document",
+      actionLabel = document ? "Open Boarding Pass" : "Add document",
       actionId = document?.id || itemId(flight),
       departureDay = formatDay(departure, departureZone),
       arrivalDay = formatDay(arrival, arrivalZone),
@@ -3343,7 +3443,7 @@
     const primaryAction = primaryCta(
       actionLabel,
       action,
-      "qr",
+      document ? "qr" : "plus",
       `data-id="${esc(actionId)}"`,
     );
 
@@ -3692,7 +3792,7 @@
           .join("")}</div>`
       : `<div class="timeline-empty">${emptySetup ? '<span class="timeline-empty__eyebrow">Start building</span>' : ""}<span class="timeline-empty__icon">${icon(emptySetup ? "plus" : "calendar", 30)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${emptySetup ? `<div class="timeline-empty__actions"><button class="primary-cta timeline-empty__add" data-action="open-add-booking"><span>Add booking</span>${icon("plus",18)}</button><button class="text-action timeline-empty__skip" data-screen="trips">Skip for now</button></div>` : primaryCta("Add booking", "open-add", "plus")}</div>`;
     const pendingImports = pendingImportCount();
-    const headerAction = `<div class="trip-v2-actions"><button class="icon-button icon-button--badged" data-action="open-trip-menu" aria-label="More options${pendingImports ? `, ${pendingImports} booking${pendingImports === 1 ? "" : "s"} to review` : ""}">${icon("more",20)}${pendingImports ? `<span class="unread-badge" aria-hidden="true">${pendingImports > 9 ? "9+" : pendingImports}</span>` : ""}</button></div>`;
+    const headerAction = `<div class="trip-v2-actions"><button class="icon-button icon-button--badged" data-action="open-trip-menu" aria-label="More options${pendingImports ? `, ${pendingImports} booking${pendingImports === 1 ? "" : "s"} to review` : ""}">${icon("more",28)}${pendingImports ? `<span class="unread-badge" aria-hidden="true">${pendingImports > 9 ? "9+" : pendingImports}</span>` : ""}</button></div>`;
     const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
     return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${emptySetup ? "" : timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
   }
@@ -3921,14 +4021,13 @@
         })
         .join(""),
       boardingRow = `<div class="fd-row fd-row--static"><span class="fd-row__icon${bpStored ? "" : " fd-row__icon--warn"}">${icon(bpStored ? "qr" : "warning", 20)}</span><span class="fd-row__text"><strong>Boarding pass</strong><small>${bpStored ? "Stored and verified on this phone" : "No verified boarding pass on this phone yet"}</small></span></div>`,
-      boardingActionRow = fdButtonRow(bpStored ? "qr" : "plus", bpStored ? "Open boarding pass" : "Add boarding pass", bpStored ? "boarding-pass" : "add-boarding-pass", `data-id="${esc(doc?.id || itemId(flight))}"`),
       directionsRow = fdButtonRow("navigation", "Directions", "directions-flight", `data-id="${esc(itemId(flight))}"`),
       addRow = `<button type="button" class="fd-row fd-row--button" data-action="add-document"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add document</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`,
       liveEnabled = Number(val(flight, "live_data_enabled")) === 1,
       liveControls = state.liveFlights?.available
         ? `<section class="live-flight-controls" aria-label="Live flight updates"><button type="button" class="fd-row fd-row--button" data-action="toggle-live-flight" data-id="${esc(itemId(flight))}" aria-pressed="${liveEnabled}"><span class="fd-row__icon">${icon("plane", 20)}</span><span class="fd-row__text"><strong>Live flight status</strong><small>${liveEnabled ? "On · beta" : "Off"}</small></span><span class="fd-row__chev">${icon(liveEnabled ? "chevronUp" : "chevron", 18)}</span></button>${liveEnabled ? fdButtonRow("refresh", "Refresh now", "refresh-live-flight", `data-id="${esc(itemId(flight))}"`) : ""}</section>`
         : "",
-      fdList = `<section class="fd-list" aria-label="Documents and flight details">${boardingActionRow}${directionsRow}${liveControls}${boardingRow}${disclosure}${docRows}${addRow}</section>`;
+      fdList = `<section class="fd-list" aria-label="Documents and flight details">${directionsRow}${liveControls}${boardingRow}${disclosure}${docRows}${addRow}${fdNoteRow(flight, "flight")}</section>`;
     return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${fdList}</div></main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {
@@ -3983,6 +4082,7 @@
       confirmation ? fdButtonRow("copy", confirmation, "copy", `data-value="${esc(confirmation)}"`, "Confirmation · tap to copy", "copy") : "",
       fdDocRows(stay),
       fdAddRow(),
+      fdNoteRow(stay, "hotel"),
     ], "Hotel details and documents")}</main>${bottomNav("bookings")}</section></div>`;
   }
   function bookingsScreen() {
@@ -4100,7 +4200,7 @@
           return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
         });
       if (!trips.length) return "";
-      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); return `<button class="trip-row trip-row--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small></span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
+      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); return `<button class="trip-row trip-row--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small>${tripSharedBadge(trip)}</span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
     }).join("");
     const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "past" ? "past" : "upcoming"} trips</h1><p>${filter === "past" ? "Completed trips will appear here." : "Trips you have coming up will appear here."}</p></section>`;
     return page(pageTitle, body);
@@ -4195,10 +4295,10 @@
     return `<div class="phone-app"><section class="screen dark-detail train-detail-screen">${appBar(ferry ? "Ferry Detail" : "Train Detail", "", true, bookingHeaderActions(kind, itemId(train)))}<main class="detail-content">${hero}${fdList([
       fdButtonRow("navigation", `Directions to ${ferry ? "port" : "station"}`, "directions-item", `data-id="${esc(itemId(train))}"`),
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
-      fdStaticRow(doc ? "ticket" : "warning", "Ticket", doc ? "Stored and verified on this phone" : "No verified ticket on this phone yet", !doc),
       bookingRef ? fdButtonRow("copy", bookingRef, "copy", `data-value="${esc(bookingRef)}"`, "Booking reference · tap to copy", "copy") : "",
       fdDocRows(train),
       fdAddRow(),
+      fdNoteRow(train, kind),
     ], "Journey details and documents")}</main>${bottomNav("bookings")}</section></div>`;
   }
   function selectedPlan() {
@@ -4258,14 +4358,13 @@
       hero = `<section class="fd-card" aria-label="Scheduled plan details"><div class="fd-card__head"><span class="fd-flight">${icon(timelineIcon(timelineType(item)), 17)} ${esc(statusText(kind))}</span><span class="fd-status-wrap" role="status" aria-label="Scheduled booking data is never presented as live."><span class="fd-status"><small>Scheduled data</small></span></span></div><h1 class="fd-title">${esc(title)}</h1><p class="fd-when">${icon("calendar", 16)} ${esc(whenLabel)}</p></section>`;
     return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen">${appBar(`${statusText(kind)} Detail`, "", true, bookingHeaderActions(transportKind || String(val(item, "type") || "plan"), itemId(item)))}<main class="detail-content">${hero}${fdList([
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
-      locationName ? fdButtonRow("pin", locationName, "directions-item", `data-id="${esc(itemId(item))}"`, endLocationName ? "From" : "Location") : "",
+      locationName ? fdButtonRow("pin", locationName, "directions-item", `data-id="${esc(itemId(item))}"`, endLocationName ? "From" : "Location", "map") : "",
       endLocationName ? fdStaticRow("navigation", endLocationName, "To") : "",
       confirmation ? fdButtonRow("copy", confirmation, "copy", `data-value="${esc(confirmation)}"`, "Confirmation · tap to copy", "copy") : "",
       val(contact, "phone") ? fdButtonRow("phone", val(contact, "display_name") || contact.phone, "call", `data-value="${esc(contact.phone)}"`, "Call contact") : "",
-      (bookingUsesTicket(item) || doc) ? fdStaticRow(doc ? "ticket" : "warning", "Ticket", doc ? "Stored and verified on this phone" : "No verified ticket on this phone yet", !doc) : "",
       fdDocRows(item),
       fdAddRow(),
-      notes ? `<div class="fd-row fd-row--note">${fdRowIcon("info")}<span class="fd-row__text"><strong>Notes</strong><small class="fd-note">${esc(notes)}</small></span></div>` : "",
+      fdNoteRow(item, kind),
     ], "Plan details and documents")}</main>${bottomNav("bookings")}</section></div>`;
   }
 
@@ -4688,7 +4787,20 @@
         return result;
       }
       await loadApp();
-      if(result?.ok)showToast("Signed in with Google.");
+      if(result?.ok){
+        // If sign-in began from an invitation link, a redirect flow can land us
+        // back on the app root — restore the pending /join screen so the user can
+        // finish accepting. The token was stashed before the redirect.
+        let pendingJoin=null;
+        try{pendingJoin=sessionStorage.getItem("tripto_join_token");}catch(_){}
+        if(pendingJoin&&state.account?.mode==="account"&&state.screen!=="join"){
+          state.joinToken=pendingJoin;
+          state.joinPreview=null;
+          route("join",pendingJoin,true);
+          void loadJoinPreview(pendingJoin);
+        }
+        showToast("Signed in with Google.");
+      }
       else if(result?.error)showToast(result.error,"alert");
       return result;
     })();
@@ -5531,11 +5643,426 @@
       : "Forwarded and uploaded bookings";
     const menuRow = (iconName, title, sub, attr, trail = `<span class="fd-row__chev">${icon("chevron", 18)}</span>`) =>
       `<button type="button" class="fd-row fd-row--button" ${attr}>${fdRowIcon(iconName)}${fdRowText(title, sub)}${trail}</button>`;
+    const collabRow = state.sharing?.enabled
+      ? menuRow("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
+      : "";
     return bottomSheet(
       "trip-menu",
       "Trip options",
-      `<section class="fd-list" aria-label="Trip options">${menuRow("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${menuRow("map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${menuRow("sim", "Travel eSIM", "Data abroad, no roaming — 15% off", `data-action="open-esim"`)}${menuRow("mail", "Booking imports", importsHint, `data-screen="import-history"`, pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : `<span class="fd-row__chev">${icon("chevron", 18)}</span>`)}${menuRow("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${menuRow("edit", "Edit trip", "Name, dates and details", `data-action="edit-trip"`)}${menuRow("info", "Help & FAQ", "Guides and answers", `data-screen="help"`)}</section>`,
+      `<section class="fd-list" aria-label="Trip options">${collabRow}${menuRow("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${menuRow("map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${menuRow("sim", "Travel eSIM", "Data abroad, no roaming — 15% off", `data-action="open-esim"`)}${menuRow("mail", "Booking imports", importsHint, `data-screen="import-history"`, pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : `<span class="fd-row__chev">${icon("chevron", 18)}</span>`)}${menuRow("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${menuRow("edit", "Edit trip", "Name, dates and details", `data-action="edit-trip"`)}${menuRow("info", "Help & FAQ", "Guides and answers", `data-screen="help"`)}</section>`,
     );
+  }
+  // ===== Free trip collaboration (owner / editor / viewer) =====
+  // Collaboration is free for every signed-in account — there is no paid gate.
+  // The frontend never trusts or sends 'owner' as an assignable role and never
+  // logs / sends an invite token to analytics. Every "manage" affordance gates
+  // on the server-provided role + canManage; the worker re-checks each mutation.
+  const COLLAB_ROLES = Object.freeze({
+    owner: { label: "Owner", icon: "owner" },
+    editor: { label: "Can edit", icon: "editor" },
+    viewer: { label: "View only", icon: "viewer" },
+  });
+  function roleMeta(role) {
+    return COLLAB_ROLES[String(role || "").toLowerCase()] || COLLAB_ROLES.viewer;
+  }
+  function isSignedIn() {
+    return state.account?.mode === "account";
+  }
+  function currentUserId() {
+    return state.account?.user?.id || null;
+  }
+  function canManageSharing() {
+    return Boolean(state.sharing?.canManage) && state.sharing?.role === "owner";
+  }
+  function currentTripRole() {
+    const id = state.trip?.id;
+    if (!id) return null;
+    const listed = state.trips.find((trip) => String(trip.id) === String(id));
+    const role = listed?.role || state.trip?.role || state.sharing?.role;
+    return role ? String(role).toLowerCase() : null;
+  }
+  function canEditCurrentTrip() {
+    // Viewers see everything but change nothing. Owner/editor (and guest device
+    // trips with no role) can edit. Server still enforces on every write.
+    return currentTripRole() !== "viewer";
+  }
+  function viewOnlyBlocked() {
+    if (canEditCurrentTrip()) return false;
+    showToast("You have view-only access to this trip.", "status");
+    return true;
+  }
+  function tripSharedBadge(trip) {
+    // Only shared trips (owner is someone else) carry a badge. Naturally inert
+    // while sharing is off — no shared trips exist, so nothing renders.
+    if (!trip || !(trip.is_shared === 1 || trip.is_shared === true)) return "";
+    const meta = roleMeta(trip.role === "viewer" ? "viewer" : "editor");
+    return `<span class="trip-shared-badge">${icon(meta.icon, 13)} Shared · ${esc(meta.label)}</span>`;
+  }
+  function collabMenuHint() {
+    const count = Number(state.sharing?.activeMembers || state.members.length || 0);
+    return count > 1 ? `${count} people on this trip` : "Invite people to plan with you";
+  }
+  function collabScaffold(sub, body) {
+    return `<div class="phone-app"><section class="screen collaboration-screen">${appBar("Plan together", sub, true)}<main class="collab-page">${body}</main></section></div>`;
+  }
+  function collaborationScreen() {
+    if (!state.trip)
+      return missingDetailScreen("Plan together", "Select a trip to invite people.");
+    const sub = state.trip.title || "Trip";
+    if (!isSignedIn())
+      return collabScaffold(
+        sub,
+        `<section class="collab-empty"><span class="collab-empty__icon">${icon("users", 32)}</span><h1>Sign in to plan together</h1><p>Create a free tripto.to account to invite people to this trip. Everyone keeps their own sign-in — no shared passwords, and it never costs anything.</p><button type="button" class="mobile-primary-action" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button></section>`,
+      );
+    if (state.collabLoading && !state.sharing)
+      return collabScaffold(sub, `<section class="collab-loading" role="status"><span class="collab-empty__icon">${icon("users", 32)}</span><p>Loading who’s on this trip…</p></section>`);
+    if (state.collabError && !state.sharing)
+      return collabScaffold(
+        sub,
+        `<section class="collab-empty"><span class="collab-empty__icon">${icon("warning", 32)}</span><h1>Couldn’t load collaboration</h1><p>${esc(state.collabError)}</p><button type="button" class="mobile-secondary-action" data-action="reload-collaboration">${icon("refresh", 18)} Try again</button></section>`,
+      );
+    if (state.sharing && state.sharing.enabled === false)
+      return collabScaffold(
+        sub,
+        `<section class="collab-empty"><span class="collab-empty__icon">${icon("users", 32)}</span><h1>Sharing is off right now</h1><p>Trip collaboration isn’t available at the moment. Your trip stays private and safe on this device.</p></section>`,
+      );
+    const manage = canManageSharing();
+    const myId = currentUserId();
+    const memberRows = state.members
+      .map((member) => {
+        const meta = roleMeta(member.role);
+        const isYou = myId && String(member.user_id) === String(myId);
+        const isOwner = String(member.role).toLowerCase() === "owner";
+        const controls =
+          manage && !isOwner
+            ? `<div class="collab-member__actions">${
+                member.role === "editor"
+                  ? `<button type="button" class="collab-chip" data-action="member-role" data-id="${esc(member.user_id)}" data-role="viewer">Make view only</button>`
+                  : `<button type="button" class="collab-chip" data-action="member-role" data-id="${esc(member.user_id)}" data-role="editor">Make editor</button>`
+              }<button type="button" class="collab-chip" data-action="member-transfer" data-id="${esc(member.user_id)}" data-name="${esc(member.display_name || "this person")}">${icon("owner", 15)} Make owner</button><button type="button" class="icon-button collab-member__remove" data-action="member-remove" data-id="${esc(member.user_id)}" data-name="${esc(member.display_name || "this person")}" aria-label="Remove ${esc(member.display_name || "member")}">${icon("trash", 18)}</button></div>`
+            : "";
+        return `<div class="collab-member"><span class="collab-member__icon">${icon(meta.icon, 22)}</span><span class="collab-member__text"><strong>${esc(member.display_name || "Traveler")}${isYou ? " (You)" : ""}</strong><small>${esc(meta.label)}</small></span>${controls}</div>`;
+      })
+      .join("");
+    const pending = state.invites.filter((invite) => String(invite.status).toLowerCase() === "invited");
+    const inviteRows = pending
+      .map((invite) => {
+        const meta = roleMeta(invite.role);
+        const who = invite.invited_email || "Anyone with the link";
+        const expires = invite.expires_at ? `expires ${esc(formatDateOnly(invite.expires_at))}` : "no expiry";
+        return `<div class="collab-invite"><span class="collab-invite__icon">${icon("invite", 20)}</span><span class="collab-invite__text"><strong>${esc(who)}</strong><small>${esc(meta.label)} · pending · ${expires}</small></span><button type="button" class="icon-button" data-action="invite-revoke" data-id="${esc(invite.id)}" aria-label="Revoke invitation">${icon("close", 18)}</button></div>`;
+      })
+      .join("");
+    const inviteBtn = state.sharing?.enabled && manage
+      ? `<button type="button" class="mobile-primary-action collab-invite-cta" data-action="open-share">${icon("invite", 18)} Invite people</button>`
+      : "";
+    const invitesSection = manage
+      ? `<section class="collab-section"><h2 class="collab-section__title">Pending invitations</h2>${inviteRows || `<p class="collab-note">No pending invitations.</p>`}</section>`
+      : "";
+    const leaveBtn = state.sharing?.role && state.sharing.role !== "owner"
+      ? `<button type="button" class="mobile-secondary-action collab-leave" data-action="leave-trip">Leave this trip</button>`
+      : "";
+    const intro = manage
+      ? `Invite people to view or edit <strong>${esc(sub)}</strong>. You stay the owner and can change roles or remove people at any time.`
+      : state.sharing?.role === "editor"
+        ? `You can edit this shared trip. The owner manages who has access.`
+        : `You can view this shared trip. The owner manages who has access.`;
+    const cap = state.sharing?.maxMembers ? `<p class="collab-note">Up to ${esc(state.sharing.maxMembers)} people per trip.</p>` : "";
+    return collabScaffold(
+      sub,
+      `<header class="collab-intro"><span class="collab-intro__icon">${icon("users", 26)}</span><p>${intro}</p></header>${inviteBtn}<section class="collab-section"><h2 class="collab-section__title">People</h2><div class="collab-members">${memberRows || `<p class="collab-note">Just you so far.</p>`}</div>${cap}</section>${invitesSection}${leaveBtn}`,
+    );
+  }
+  function shareSheet() {
+    if (!state.trip) return "";
+    const role = state.shareRole === "viewer" ? "viewer" : "editor";
+    const seg = (value, label, sub) =>
+      `<button type="button" class="share-role${role === value ? " is-active" : ""}" data-action="share-role" data-role="${value}" aria-pressed="${role === value}">${icon(roleMeta(value).icon, 20)}<span><strong>${esc(label)}</strong><small>${esc(sub)}</small></span></button>`;
+    const invite = state.shareInvite;
+    const linkBlock = invite?.inviteUrl
+      ? `<div class="share-link" role="group" aria-label="Invitation link"><p class="share-link__label">${esc(roleMeta(invite.role).label)} link ready${invite.expiresAt ? ` · expires ${esc(formatDateOnly(invite.expiresAt))}` : ""}</p><div class="share-link__url">${esc(invite.inviteUrl)}</div><div class="share-link__actions"><button type="button" class="mobile-primary-action" data-action="share-invite-link">${icon("share", 18)} Share link</button><button type="button" class="mobile-secondary-action" data-action="copy-invite-link">${icon("copy", 18)} Copy link</button></div></div>`
+      : "";
+    const createLabel = invite?.inviteUrl ? "Create another link" : "Create invitation link";
+    return bottomSheet(
+      "share",
+      "Invite to this trip",
+      `<p class="sheet-note">Anyone you invite signs in with their own free account to join. The link works once and you can revoke it anytime.</p><div class="share-roles">${seg("editor", "Can edit", "Add and change bookings")}${seg("viewer", "View only", "See the trip, can’t change it")}</div>${linkBlock}<button type="button" class="mobile-${invite?.inviteUrl ? "secondary" : "primary"}-action share-create" data-action="create-invite"${state.shareBusy ? " disabled" : ""}>${icon("invite", 18)} ${state.shareBusy ? "Creating…" : esc(createLabel)}</button>`,
+    );
+  }
+  function joinScreen() {
+    const token = state.selectedId || state.joinToken || "";
+    if (!token)
+      return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("invite", 32)}</span><h1>Invitation link incomplete</h1><p>Open the full invitation link you were sent to join a trip.</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
+    if (state.joinLoading && !state.joinPreview)
+      return focusedTaskPage("Join trip", `<section class="collab-loading" role="status"><span class="collab-empty__icon">${icon("invite", 32)}</span><p>Checking your invitation…</p></section>`, "join-screen");
+    if (state.joinError && !state.joinPreview)
+      return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("warning", 32)}</span><h1>Invitation unavailable</h1><p>${esc(state.joinError)}</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
+    const preview = state.joinPreview || {};
+    const roleLabel = roleMeta(preview.role).label;
+    const title = preview.tripTitle || "a trip";
+    if (preview.sharingEnabled === false)
+      return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("invite", 32)}</span><h1>Invitations are paused</h1><p>Trip sharing isn’t available right now. Please ask the trip owner to send a new link later.</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
+    const hero = `<section class="join-hero"><span class="collab-empty__icon">${icon("invite", 34)}</span><h1>You’re invited to<br><strong>${esc(title)}</strong></h1><p>Join as <strong>${esc(roleLabel.toLowerCase())}</strong>. Collaboration is free.</p></section>`;
+    if (!isSignedIn())
+      return focusedTaskPage(
+        "Join trip",
+        `${hero}<section class="join-signin"><p>Sign in with your free account to accept this invitation.</p><div id="google-signin-button" class="google-signin-button"></div><p class="signin-error" role="alert" hidden></p><p class="collab-note">We only use your Google account to sign you in. Your invitation is kept until you finish.</p></section>`,
+        "join-screen",
+      );
+    return focusedTaskPage(
+      "Join trip",
+      `${hero}<section class="join-accept"><button type="button" class="mobile-primary-action" data-action="join-accept"${state.joinLoading ? " disabled" : ""}>${state.joinLoading ? "Joining…" : "Accept invitation"}</button><button type="button" class="mobile-secondary-action" data-action="join-home">Not now</button></section>`,
+      "join-screen",
+    );
+  }
+  // Loaders --------------------------------------------------------------
+  async function loadSharingStatus(tripId) {
+    if (PREVIEW_MODE || !tripId) return;
+    try {
+      const data = await apiGet(`/api/v1/trips/${encodeURIComponent(tripId)}/sharing`);
+      if (state.trip?.id !== tripId) return;
+      state.sharing = data?.sharing || null;
+    } catch (_) {
+      /* non-fatal: leave any prior sharing status untouched */
+    }
+  }
+  async function loadCollaboration() {
+    if (PREVIEW_MODE || !state.trip || !isSignedIn()) return;
+    const tripId = state.trip.id;
+    state.collabLoading = true;
+    state.collabError = null;
+    try {
+      const [statusRes, membersRes] = await Promise.all([
+        api(`/api/v1/trips/${encodeURIComponent(tripId)}/sharing`),
+        api(`/api/v1/trips/${encodeURIComponent(tripId)}/members`),
+      ]);
+      if (state.trip?.id !== tripId) return;
+      state.sharing = statusRes?.sharing || null;
+      state.members = membersRes?.members || [];
+      if (canManageSharing()) {
+        try {
+          const invRes = await api(`/api/v1/trips/${encodeURIComponent(tripId)}/invites`);
+          if (state.trip?.id !== tripId) return;
+          state.invites = invRes?.invites || [];
+        } catch (_) {
+          state.invites = [];
+        }
+      } else {
+        state.invites = [];
+      }
+    } catch (error) {
+      state.collabError = error?.message || "Collaboration could not be loaded.";
+    } finally {
+      state.collabLoading = false;
+      render();
+    }
+  }
+  async function loadJoinPreview(token) {
+    if (PREVIEW_MODE || !token) return;
+    state.joinLoading = true;
+    state.joinError = null;
+    try {
+      const data = await api("/api/v1/invites/preview", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      });
+      state.joinPreview = data?.invite || null;
+      if (!state.joinPreview) state.joinError = "This invitation could not be found.";
+    } catch (error) {
+      state.joinPreview = null;
+      state.joinError =
+        error?.code === "INVITE_NOT_FOUND"
+          ? "This invitation link is not valid. Ask the trip owner for a new one."
+          : error?.message || "This invitation could not be checked.";
+    } finally {
+      state.joinLoading = false;
+      render();
+    }
+  }
+  function maybeLoadScreenData() {
+    if (PREVIEW_MODE) return;
+    if (state.screen === "join") {
+      const token = state.selectedId || "";
+      if (token && state.joinToken !== token) {
+        state.joinToken = token;
+        state.joinPreview = null;
+        // Preserve the token across a Google redirect sign-in (Slice 2 resume).
+        try { sessionStorage.setItem("tripto_join_token", token); } catch (_) {}
+        void loadJoinPreview(token);
+      }
+      return;
+    }
+    if (state.screen === "collaboration" && state.trip && isSignedIn()) void loadCollaboration();
+  }
+  function collabErrorText(error) {
+    const map = {
+      SHARING_DISABLED: "Sharing is currently turned off.",
+      OWNER_REQUIRED: "Only the trip owner can do that.",
+      ACCOUNT_REQUIRED: "Sign in to manage sharing.",
+      VALIDATION_ERROR: "That didn’t look right — please try again.",
+      INVITE_LIMIT_REACHED: "This trip already has the maximum pending invitations.",
+      MEMBER_LIMIT_REACHED: "This trip is already at the maximum number of people.",
+      INVITE_ALREADY_PENDING: "There’s already a pending invitation for that email.",
+      INVITE_EXPIRED: "This invitation has expired. Ask for a new link.",
+      INVITE_UNAVAILABLE: "This invitation is no longer available.",
+      INVITE_NOT_FOUND: "This invitation link is not valid.",
+      INVITE_EMAIL_MISMATCH: "This invitation was sent to a different email address.",
+      OWNER_CANNOT_LEAVE: "Transfer ownership before leaving this trip.",
+      OWNER_CANNOT_BE_REMOVED: "The owner can’t be removed.",
+      OWNER_ROLE_FIXED: "The owner’s role can’t be changed here.",
+    };
+    return map[error?.code] || error?.message || "Something went wrong. Please try again.";
+  }
+  async function createInvite() {
+    if (!state.trip || state.shareBusy) return;
+    const tripId = state.trip.id;
+    const role = state.shareRole === "viewer" ? "viewer" : "editor"; // never 'owner'
+    state.shareBusy = true;
+    render();
+    try {
+      const res = await api(`/api/v1/trips/${encodeURIComponent(tripId)}/invites`, {
+        method: "POST",
+        body: JSON.stringify({ role }),
+      });
+      state.shareInvite = res?.invite || null;
+      showToast("Invitation link ready.");
+      void loadCollaboration();
+    } catch (error) {
+      showToast(collabErrorText(error), "alert");
+    } finally {
+      state.shareBusy = false;
+      render();
+    }
+  }
+  async function copyInviteLink() {
+    const url = state.shareInvite?.inviteUrl;
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("Invitation link copied.");
+    } catch (_) {
+      showToast("Copy failed — long-press the link to copy it.", "alert");
+    }
+  }
+  async function shareInviteLink() {
+    const invite = state.shareInvite;
+    if (!invite?.inviteUrl) return;
+    const title = state.trip?.title || "my trip";
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${title} on tripto.to`,
+          text: `You’re invited to help plan ${title}.`,
+          url: invite.inviteUrl,
+        });
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+      }
+    }
+    await copyInviteLink();
+  }
+  async function revokeInvite(inviteId) {
+    if (!state.trip || !inviteId) return;
+    const tripId = state.trip.id;
+    try {
+      await api(`/api/v1/trips/${encodeURIComponent(tripId)}/invites/${encodeURIComponent(inviteId)}`, { method: "DELETE" });
+      if (state.shareInvite?.id === inviteId) state.shareInvite = null;
+      showToast("Invitation revoked.");
+      await loadCollaboration();
+    } catch (error) {
+      showToast(collabErrorText(error), "alert");
+    }
+  }
+  async function updateMemberRole(userId, role) {
+    if (!state.trip || !userId) return;
+    const next = role === "viewer" ? "viewer" : "editor"; // never 'owner'
+    const tripId = state.trip.id;
+    try {
+      await api(`/api/v1/trips/${encodeURIComponent(tripId)}/members/${encodeURIComponent(userId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ role: next }),
+      });
+      await loadCollaboration();
+    } catch (error) {
+      showToast(collabErrorText(error), "alert");
+    }
+  }
+  async function removeMember(userId, name) {
+    if (!state.trip || !userId) return;
+    if (!window.confirm(`Remove ${name || "this person"} from ${state.trip.title || "this trip"}?`)) return;
+    const tripId = state.trip.id;
+    try {
+      await api(`/api/v1/trips/${encodeURIComponent(tripId)}/members/${encodeURIComponent(userId)}`, { method: "DELETE" });
+      showToast("Person removed.");
+      await loadCollaboration();
+    } catch (error) {
+      showToast(collabErrorText(error), "alert");
+    }
+  }
+  async function transferOwnership(userId, name) {
+    if (!state.trip || !userId) return;
+    if (!window.confirm(`Make ${name || "this person"} the owner? You’ll become an editor and can no longer manage sharing.`)) return;
+    const tripId = state.trip.id;
+    try {
+      await api(`/api/v1/trips/${encodeURIComponent(tripId)}/transfer-ownership`, {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+      });
+      showToast("Ownership transferred.");
+      await loadCollaboration();
+    } catch (error) {
+      showToast(collabErrorText(error), "alert");
+    }
+  }
+  async function leaveTrip() {
+    if (!state.trip) return;
+    if (!window.confirm(`Leave ${state.trip.title || "this trip"}? You’ll lose access until someone invites you again.`)) return;
+    const tripId = state.trip.id;
+    try {
+      await api(`/api/v1/trips/${encodeURIComponent(tripId)}/leave`, { method: "POST" });
+      showToast("You left the trip.");
+      state.trip = null;
+      state.sharing = null;
+      state.members = [];
+      state.invites = [];
+      if (localStorage.getItem("tripto_selected_trip") === String(tripId))
+        localStorage.removeItem("tripto_selected_trip");
+      await loadApp();
+      route("trips");
+    } catch (error) {
+      showToast(collabErrorText(error), "alert");
+    }
+  }
+  async function acceptInvite() {
+    const token = state.joinToken || state.selectedId;
+    if (!token || !isSignedIn()) return;
+    state.joinLoading = true;
+    render();
+    try {
+      const res = await api("/api/v1/invites/accept", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      });
+      try { sessionStorage.removeItem("tripto_join_token"); } catch (_) {}
+      state.joinToken = null;
+      state.joinPreview = null;
+      showToast("You joined the trip.");
+      await loadApp();
+      const joined = state.trips.find((trip) => String(trip.id) === String(res?.tripId));
+      if (joined) {
+        state.trip = joined;
+        localStorage.setItem("tripto_selected_trip", joined.id);
+        await loadTripDetails();
+      }
+      route("timeline");
+    } catch (error) {
+      state.joinError = collabErrorText(error);
+      showToast(collabErrorText(error), "alert");
+    } finally {
+      state.joinLoading = false;
+      render();
+    }
   }
   function weatherScreen() {
     if (!state.trip)
@@ -5625,7 +6152,7 @@
       `<div class="sheet-options-group sheet-options-group--v2">${state.trips
         .map(
           (trip) =>
-            `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small></span>${String(trip.id) === String(state.trip?.id) ? checkDot("status-dot-check--selected") : icon("chevron", 22, "chevron")}</button>`,
+            `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${String(trip.id) === String(state.trip?.id) ? checkDot("status-dot-check--selected") : icon("chevron", 22, "chevron")}</button>`,
         )
         .join("")}</div>`,
     );
@@ -5793,6 +6320,8 @@
         case "trip-map": html = tripMapScreen(); break;
         case "weather": html = weatherScreen(); break;
         case "esim": html = esimScreen(); break;
+        case "collaboration": html = collaborationScreen(); break;
+        case "join": html = joinScreen(); break;
         default:
           html = state.trip ? timelineScreen() : firstRunScreen();
       }
@@ -5809,6 +6338,7 @@
     if (state.sheet === "move-booking") html += moveBookingSheet();
     if (state.sheet === "date-range") html += dateRangeSheet();
     if (state.sheet === "booking-email-trip") html += bookingEmailTripSheet();
+    if (state.sheet === "share") html += shareSheet();
     app.innerHTML = html + toast();
     if (state.sheet && state.sheet !== "driver") {
       const background = app.querySelector(".phone-app");
@@ -7322,8 +7852,26 @@
     // (a _blank tab bounces to the Maps app and leaves no history to go back to).
     window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   }
+  // Actions that mutate the CURRENT trip's contents. Blocked in the UI for
+  // view-only members (server still enforces with 403 as the real backstop).
+  // Account/cross-trip actions (create-trip, delete-account, email inbox…) are
+  // intentionally NOT here — viewers can still manage their own account.
+  const VIEWER_BLOCKED_ACTIONS = new Set([
+    "open-add", "open-add-booking", "add-booking", "add-checklist-suggested",
+    "add-document", "add-type", "add-duplicate-import", "confirm-import",
+    "delete-booking", "delete-checklist", "delete-trip", "edit-booking",
+    "edit-checklist", "edit-note", "edit-trip", "save-note", "toggle-checklist",
+    "move-booking", "apply-move", "manage-booking", "remove-document",
+    "remove-import", "reject-import", "review-import", "import",
+    "manual-attachment-remove", "manual-attachment-retry",
+    "open-forward-booking", "open-manual-booking", "open-upload-booking",
+  ]);
   async function handleAction(action, target, inputMethod = "pointer") {
+    if (VIEWER_BLOCKED_ACTIONS.has(action) && viewOnlyBlocked()) return;
     switch (action) {
+      case "view-only-hint":
+        showToast("You have view-only access to this trip.", "status");
+        break;
       case "back":
         {
           const goBack = () => {
@@ -7409,6 +7957,61 @@
       case "open-trip-menu":
         if (!state.trip) break;
         openSheet("trip-menu", target);
+        break;
+      case "open-collaboration":
+        closeSheet();
+        state.collabLoading = true;
+        state.collabError = null;
+        state.shareInvite = null;
+        route("collaboration");
+        await loadCollaboration();
+        break;
+      case "collab-sign-in":
+        route("account");
+        break;
+      case "reload-collaboration":
+        await loadCollaboration();
+        break;
+      case "open-share":
+        state.shareRole = state.shareRole === "viewer" ? "viewer" : "editor";
+        openSheet("share", target);
+        break;
+      case "share-role":
+        state.shareRole = target.dataset.role === "viewer" ? "viewer" : "editor";
+        render();
+        break;
+      case "create-invite":
+        await createInvite();
+        break;
+      case "copy-invite-link":
+        await copyInviteLink();
+        break;
+      case "share-invite-link":
+        await shareInviteLink();
+        break;
+      case "invite-revoke":
+        await revokeInvite(target.dataset.id);
+        break;
+      case "member-role":
+        await updateMemberRole(target.dataset.id, target.dataset.role);
+        break;
+      case "member-remove":
+        await removeMember(target.dataset.id, target.dataset.name);
+        break;
+      case "member-transfer":
+        await transferOwnership(target.dataset.id, target.dataset.name);
+        break;
+      case "leave-trip":
+        await leaveTrip();
+        break;
+      case "join-accept":
+        await acceptInvite();
+        break;
+      case "join-home":
+        try { sessionStorage.removeItem("tripto_join_token"); } catch (_) {}
+        state.joinToken = null;
+        state.joinPreview = null;
+        route("trips");
         break;
       case "open-weather":
         closeSheet();
@@ -7747,9 +8350,6 @@
       case "add-document":
         route("form", "document");
         break;
-      case "add-boarding-pass":
-        route("form", "document");
-        break;
       case "open-document":
       case "boarding-pass":
         await openLocalDocument(target.dataset.id);
@@ -8066,6 +8666,47 @@
           showToast("Copied.");
         } else showToast("Value unavailable.");
         break;
+      case "edit-note":
+        state.editingNote = target.dataset.id || null;
+        render();
+        requestAnimationFrame(() => {
+          const field = document.querySelector(".fd-note-edit__field");
+          if (field) {
+            field.focus();
+            field.setSelectionRange(field.value.length, field.value.length);
+          }
+        });
+        break;
+      case "cancel-note":
+        state.editingNote = null;
+        render();
+        break;
+      case "save-note": {
+        const id = target.dataset.id, kind = target.dataset.kind,
+          field = target.closest(".fd-note-edit")?.querySelector(".fd-note-edit__field"),
+          record = findBookingRecord(kind, id);
+        if (!record?.entity) {
+          showToast("This booking is no longer available.");
+          state.editingNote = null;
+          render();
+          break;
+        }
+        if (target.getAttribute("aria-busy") === "true") break;
+        target.setAttribute("aria-busy", "true");
+        target.textContent = "Saving…";
+        try {
+          await saveBookingNote(record.entity, kind, field ? field.value : "");
+          state.editingNote = null;
+          showToast("Note saved.");
+        } catch (error) {
+          showToast(error?.message || "The note was not saved.");
+          target.removeAttribute("aria-busy");
+          target.textContent = "Save note";
+          break;
+        }
+        render();
+        break;
+      }
       case "share-flight": {
         const flight = selectedFlight();
         if (!flight) return;
@@ -8197,6 +8838,7 @@
     state.selectedId = next.id;
     state.sheet = null;
     transitionRender();
+    maybeLoadScreenData();
     const restore = scrollPositions.get(next.screen) || 0;
     requestAnimationFrame(() => window.scrollTo({ top: restore, behavior: "instant" }));
   });

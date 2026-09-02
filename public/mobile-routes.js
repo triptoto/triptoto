@@ -21,6 +21,7 @@
     "import-history": "/bookings/import/history",
     "booking-email-inbox": "/bookings/email-inbox",
     sync: "/pending-changes",
+    collaboration: "/collaboration",
   });
 
   const DETAIL_PATHS = Object.freeze({
@@ -30,6 +31,7 @@
     plan: "/plans",
     traveler: "/travelers",
     "import-review": "/bookings/import/review",
+    join: "/join",
   });
 
   const EXACT_ROUTES = new Map(

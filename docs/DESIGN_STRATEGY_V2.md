@@ -35,19 +35,33 @@ Avoid equal visual weight across unrelated modules. The screen should have one d
 
 ## Typography
 
-Use the Apple system stack without external requests:
+Use the self-hosted Geist Sans variable font with native system fallbacks and no
+external font requests:
 
 ```css
-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-  "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  Roboto, "Helvetica Neue", Arial, sans-serif;
 ```
 
-- Display: trip title, NEXT event, destination/route.
-- Text: actions, booking titles, forms.
-- Metadata: dates, provenance, secondary location.
+- Display: 48–52px / 700 for Welcome and exceptional product moments.
+- Route: 40px / 700 for airport codes and primary travel numbers.
+- Screen: 28px / 700 for page titles.
+- Section: 20px / 600 for event, sheet, and grouped-content titles.
+- Text: 16px / 400 for body/forms and 16px / 600 for actions.
+- Metadata: 13px / 500 for dates, provenance, and secondary location.
+- Labels: 11px / 600 for short uppercase markers and bottom navigation.
+- Use tabular numerals for travel times, dates, gates, seats, and flight facts.
 - Use sentence case; avoid all-caps except very short contextual markers such as NEXT.
 - Do not use Inter as the primary font.
-- Keep body text approximately 15–17px and touch-critical labels at least 16px where practical.
+- Google Identity controls and the local Phosphor icon font remain intentionally
+  isolated from the application text font.
+
+## Icon system
+
+- Phosphor Regular is the default for navigation, booking categories, actions, and utility controls.
+- Phosphor Fill is used only for selected or current states.
+- Custom SVG is reserved for weather, destination artwork, and a deliberately approved branded travel symbol.
+- Do not mix in another general-purpose outline or solid icon family.
 
 ## Color
 

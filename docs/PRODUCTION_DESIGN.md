@@ -26,7 +26,13 @@ Welcome typography, artwork, spacing, and action heights scale against both view
 
 ## Typography and controls
 
-Use the native Apple/system stack from `--font` in `public/mobile-app.css`. Controls have a minimum 44×44px touch target. Primary, secondary, compact, and row actions use the shared height tokens. Focus remains visible for keyboard users, and reduced-motion preferences are respected.
+Use the self-hosted Geist Sans variable font from `public/vendor/geist/`, exposed
+through `--font` in `public/mobile-app.css`. The semantic scale is 52 / 40 / 28 /
+20 / 16 / 13 / 11px for display, route, screen, section, body, metadata, and
+labels. Controls have a minimum 44×44px touch target. Primary, secondary,
+compact, and row actions use the shared height tokens. Focus remains visible for
+keyboard users, and reduced-motion preferences are respected. Google Identity
+and Phosphor icons retain their required typography.
 
 ## Authenticated navigation
 
@@ -48,7 +54,7 @@ Welcome and focused creation/authentication tasks may omit bottom navigation. Th
 - Use strong hierarchy, compact rows, restrained cards, and honest unavailable states.
 - Keep scheduled booking data distinct from live status.
 - Never invent gate, terminal, seat, time, document, or location data.
-- Use local Phosphor/SVG icons; do not add external icon or font requests.
+- Use locally bundled Phosphor Regular for normal UI and Phosphor Fill for selected/current states. Reserve custom SVG for weather, destination, or branded illustration work; do not add external icon or font requests.
 - Fixed navigation and actions must respect device safe areas and never cover content.
 
 ## Release and preview rule

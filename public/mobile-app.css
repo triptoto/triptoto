@@ -35,7 +35,18 @@
   --button-secondary-height:48px;
   --button-primary-height:52px;
   --button-row-height:64px;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Arial,sans-serif;
+  --font:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --type-display:52px;
+  --type-route:40px;
+  --type-screen:28px;
+  --type-section:20px;
+  --type-body:16px;
+  --type-meta:13px;
+  --type-label:11px;
+  --weight-regular:400;
+  --weight-medium:500;
+  --weight-semibold:600;
+  --weight-bold:700;
   --shadow-card:0 14px 34px -22px rgba(0,0,0,.20),0 2px 6px -4px rgba(0,0,0,.10);
   --shadow-soft:0 10px 24px -20px rgba(0,0,0,.16);
   --keyboard-offset:0px;
@@ -112,12 +123,12 @@
 }
 .place-option__copy{ min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .place-option--plain{ grid-template-columns: minmax(0,1fr); min-height: 48px; }
-.place-option--plain .place-option__copy strong{ font-weight: 650; }
+.place-option--plain .place-option__copy strong{ font-weight:var(--weight-semibold); }
 .place-option__copy strong{
   min-width: 0;
-  font-size: 16px;
+  font-size:var(--type-body);
   line-height: 1.25;
-  font-weight: 750;
+  font-weight:var(--weight-semibold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -125,7 +136,8 @@
 .place-option__copy small{
   min-width: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size:var(--type-meta);
+  font-weight:var(--weight-medium);
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
@@ -140,12 +152,12 @@
   border-radius: 8px;
   background: var(--blue-soft);
   color: var(--accent);
-  font-size: 12px;
+  font-size:var(--type-label);
   font-style: normal;
-  font-weight: 800;
+  font-weight:var(--weight-semibold);
   letter-spacing: .04em;
 }
-.place-option__type{ background: var(--surface); color: var(--muted); font-weight: 700; letter-spacing: 0; }
+.place-option__type{ background: var(--surface); color: var(--muted); font-weight:var(--weight-semibold); letter-spacing: 0; }
 .place-loading{
   min-height: 56px;
   display: flex;
@@ -153,7 +165,8 @@
   justify-content: center;
   gap: 9px;
   color: var(--muted);
-  font-size: 14px;
+  font-size:var(--type-meta);
+  font-weight:var(--weight-medium);
 }
 .place-empty{
   display: grid;
@@ -161,8 +174,8 @@
   padding: 14px 12px 10px;
   color: var(--muted);
 }
-.place-empty strong{ color: var(--ink-strong); font-size: 16px; }
-.place-empty span{ font-size: 14px; line-height: 1.35; }
+.place-empty strong{ color: var(--ink-strong); font-size:var(--type-body); font-weight:var(--weight-semibold) }
+.place-empty span{ font-size:var(--type-meta); font-weight:var(--weight-medium); line-height: 1.35; }
 .place-empty > div{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .place-empty button{
   min-height: 44px;
@@ -172,8 +185,8 @@
   color: var(--ink);
   padding: 8px 12px;
   font: inherit;
-  font-size: 14px;
-  font-weight: 750;
+  font-size:var(--type-body);
+  font-weight:var(--weight-semibold);
 }
 .place-empty button:focus-visible{ outline: 3px solid var(--accent); outline-offset: 2px; }
 .place-timezone-fallback[hidden]{ display: none !important; }
@@ -191,7 +204,7 @@
 
 *{box-sizing:border-box}
 html{background:#eeeeee;color-scheme:light}
-html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-x:clip;font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-x:clip;font-family:var(--font);font-optical-sizing:auto;color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 body{background:#eeeeee;overscroll-behavior-y:none}
 body,button,input,select,textarea{font-family:var(--font)}
 button,input,select,textarea{font-size:16px}
@@ -285,7 +298,7 @@ button:active{transform:scale(.985)}
 
 .bottom-nav{
   position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));z-index:40;
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 56px minmax(0,1fr) minmax(0,1fr);align-items:center;gap:0;
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:0;
   width:min(calc(100% - 28px),calc(var(--app-width) - 28px));height:64px;
   padding:0 8px;
   transform:translateX(-50%);
@@ -439,12 +452,12 @@ button:active{transform:scale(.985)}
 .trip-map__row-copy strong{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trip-map__row-copy small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trip-map__row-nav{flex:0 0 auto;display:grid;place-items:center;width:52px;border:0;border-left:1px solid var(--line);background:none;color:var(--accent)}
-.trip-map__next{font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.trip-map__next{font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
 /* Weather screen (opened from the timeline more-options menu) */
 .weather-page{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch}
 .weather-now{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 16px;background:var(--card);border:1px solid var(--line);border-radius:18px}
 .weather-now__main{display:flex;align-items:center;gap:14px;color:var(--accent)}
-.weather-now__temp{font-size:44px;font-weight:800;line-height:1;color:var(--ink)}
+.weather-now__temp{font-size:44px;font-weight:700;line-height:1;color:var(--ink)}
 .weather-now__label{display:block;font-size:14px;color:var(--muted)}
 .weather-now__place{margin:0;font-size:14px;color:var(--muted)}
 .weather-refresh{align-self:center;display:inline-flex;align-items:center;gap:8px;width:auto;padding:8px 18px}
@@ -463,7 +476,7 @@ button:active{transform:scale(.985)}
 .wx-place-chip.is-active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .wx-place-chip.is-active .ph-svg,.wx-place-chip.is-active .ph{color:var(--accent-ink)}
 .wx-hero{flex:0 0 auto;display:flex;flex-direction:row;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 12px;padding:10px 4px;text-align:center;color:var(--accent)}
-.wx-hero__temp{font-size:40px;font-weight:800;line-height:1;letter-spacing:-.03em;color:var(--ink)}
+.wx-hero__temp{font-size:40px;font-weight:700;line-height:1;letter-spacing:-.03em;color:var(--ink)}
 .wx-hero__cond{font-size:14px;font-weight:600;color:var(--ink)}
 .wx-hero__hilo{font-size:12px;font-weight:600;color:var(--muted)}
 .wx-block{flex:0 0 auto;padding:10px 0 4px;border-top:1px solid var(--line)}
@@ -489,10 +502,10 @@ button:active{transform:scale(.985)}
 .esim-page{display:flex;flex-direction:column;gap:16px;padding:18px 16px calc(28px + env(safe-area-inset-bottom))}
 .esim-hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 18px;background:var(--card);border:1px solid var(--line);border-radius:18px;text-align:center}
 .esim-hero__icon{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;background:var(--surface);color:var(--accent)}
-.esim-hero h1{margin:2px 0 0;font-size:20px;font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--ink)}
+.esim-hero h1{margin:2px 0 0;font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.02em;color:var(--ink)}
 .esim-hero p{margin:0;font-size:14px;line-height:1.5;color:var(--muted);max-width:34ch}
 .esim-offer{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px;padding:12px 16px;border-radius:14px;background:var(--accent);color:var(--accent-ink);width:100%}
-.esim-offer strong{font-size:22px;font-weight:800;line-height:1}
+.esim-offer strong{font-size:22px;font-weight:700;line-height:1}
 .esim-offer span{font-size:12px;opacity:.85}
 .esim-code{display:inline-flex;align-items:center;gap:6px;margin-top:5px;padding:7px 14px;border:1px dashed var(--accent-ink);border-radius:999px;background:transparent;color:var(--accent-ink);font-size:14px;font-weight:700;letter-spacing:.08em}
 .esim-code:active{opacity:.7}
@@ -516,6 +529,59 @@ button:active{transform:scale(.985)}
 .weather-empty span{color:var(--accent)}
 .weather-empty h1{margin:0;font-size:20px;color:var(--ink)}
 .weather-empty p{margin:0;font-size:14px;max-width:34ch}
+/* Free trip collaboration */
+.collaboration-screen{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.collab-page{display:flex;flex-direction:column;gap:16px;padding:16px}
+.collab-empty,.collab-loading{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:48px 24px;color:var(--muted)}
+.collab-empty__icon{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;background:var(--surface);color:var(--accent)}
+.collab-empty h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.collab-empty p,.collab-loading p{margin:0;font-size:14px;line-height:1.5;max-width:36ch}
+.collab-intro{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:18px}
+.collab-intro__icon{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--surface);color:var(--accent)}
+.collab-intro p{margin:0;font-size:14px;line-height:1.5;color:var(--ink)}
+.collab-invite-cta{display:flex;align-items:center;justify-content:center;gap:8px}
+.collab-section{display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:18px}
+.collab-section__title{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.collab-members{display:flex;flex-direction:column;gap:2px}
+.collab-member{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.collab-member:last-child{border-bottom:0}
+.collab-member__icon{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:var(--surface);color:var(--accent)}
+.collab-member__text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+.collab-member__text strong{font-size:14px;font-weight:700;color:var(--ink)}
+.collab-member__text small{font-size:12px;color:var(--muted)}
+.collab-member__actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;padding-left:50px}
+.collab-member__remove{min-width:44px;min-height:44px;color:var(--muted);background:transparent;border:0}
+.collab-chip{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 12px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--ink);font-size:13px;font-weight:600}
+.collab-chip:active{opacity:.7}
+.collab-invite{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.collab-invite:last-child{border-bottom:0}
+.collab-invite__icon{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:var(--surface);color:var(--accent)}
+.collab-invite__text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+.collab-invite__text strong{font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.collab-invite__text small{font-size:12px;color:var(--muted)}
+.collab-note{margin:0;font-size:12px;line-height:1.5;color:var(--muted)}
+.collab-leave{margin-top:4px}
+.trip-shared-badge{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:2px 8px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:600;line-height:1.4;width:fit-content}
+.trip-shared-badge .ph,.trip-shared-badge svg{width:13px;height:13px}
+.nav-add--view-only>span{border-color:var(--line-strong);color:var(--muted)}
+.share-roles{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.share-role{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);color:var(--ink);text-align:left}
+.share-role.is-active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.share-role strong{display:block;font-size:14px;font-weight:700;color:var(--ink)}
+.share-role small{display:block;margin-top:1px;font-size:12px;color:var(--muted)}
+.share-create{display:flex;align-items:center;justify-content:center;gap:8px}
+.share-link{display:flex;flex-direction:column;gap:8px;margin:12px 0;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.share-link__label{margin:0;font-size:12px;font-weight:700;color:var(--muted)}
+.share-link__url{font-size:13px;line-height:1.4;color:var(--ink);word-break:break-all;user-select:all;padding:8px 10px;border-radius:8px;background:var(--surface)}
+.share-link__actions{display:flex;gap:8px;flex-wrap:wrap}
+.share-link__actions .mobile-primary-action,.share-link__actions .mobile-secondary-action{flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:6px}
+.join-screen .focused-page{display:flex;flex-direction:column;gap:16px;padding:20px}
+.join-hero{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:12px 0}
+.join-hero h1{margin:0;font-size:22px;font-weight:700;line-height:1.25;letter-spacing:-.02em;color:var(--ink)}
+.join-hero p{margin:0;font-size:14px;line-height:1.5;color:var(--muted)}
+.join-signin,.join-accept{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.join-signin p,.join-accept p{margin:0;font-size:14px;line-height:1.5;color:var(--muted);max-width:34ch}
+.join-accept .mobile-primary-action,.join-accept .mobile-secondary-action{width:100%;max-width:340px}
 .sheet-option--danger strong{color:var(--ink)}
 .sheet-option--danger .info-icon{background:transparent;color:var(--red)}
 .mobile-danger-action{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:340px;margin-inline:auto;min-height:var(--button-secondary-height);padding:0 16px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:600}
@@ -734,12 +800,26 @@ button:active{transform:scale(.985)}
 .fd-hero-image img{display:block;width:100%;height:100%;object-fit:cover}
 .fd-card--attached{border-top-left-radius:0;border-top-right-radius:0;border-top:0}
 .fd-sub{margin:8px 0 0;color:var(--muted);font-size:14px}
-.fd-title{margin:2px 0 8px;font-size:24px;font-weight:600;letter-spacing:-.03em;line-height:1.12}
+.fd-title{margin:2px 0 8px;font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.12}
 .fd-when{display:flex;align-items:center;gap:7px;margin:0;color:var(--muted);font-size:14px}
 .fd-when .ph,.fd-when .ph-svg{color:var(--muted-soft)}
 .fd-status:empty{display:none}
 .fd-row--note{align-items:start}
 .fd-row--note .fd-note{white-space:normal;overflow:visible;line-height:1.45;margin-top:2px}
+.fd-row--note-btn{width:100%;text-align:left;cursor:pointer;background:transparent}
+.fd-row--note-btn .fd-row__chev,.fd-row--note-add .fd-row__chev{align-self:center}
+/* Inline note editor, shared by every booking detail page */
+.fd-note-edit{display:flex;flex-direction:column;gap:10px;padding:14px 0}
+.fd-note-edit__head{display:flex;align-items:center;gap:12px;color:var(--ink);font-weight:600;font-size:15px}
+.fd-note-edit__head .fd-row__icon{color:var(--accent)}
+.fd-note-edit__title{font-family:var(--font)}
+.fd-note-edit__field{width:100%;box-sizing:border-box;resize:vertical;min-height:84px;padding:12px 14px;border:1px solid var(--line-strong);border-radius:14px;background:var(--card);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.45}
+.fd-note-edit__field:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.fd-note-edit__actions{display:flex;justify-content:flex-end;gap:10px}
+.fd-note-btn{min-height:44px;padding:0 18px;border-radius:12px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer}
+.fd-note-btn--ghost{border:1px solid var(--line-strong);background:transparent;color:var(--ink)}
+.fd-note-btn--save{border:0;background:var(--accent);color:var(--accent-ink)}
+.fd-note-btn--save[aria-busy="true"]{opacity:.7}
 
 /* Hotel, train, plan */
 .hotel-hero{position:relative;height:210px;background:var(--surface);overflow:hidden}
@@ -802,7 +882,7 @@ button:active{transform:scale(.985)}
 .account-v2 .account-card{padding:4px 0 14px}
 .account-v2 .account-profile{gap:11px}
 .account-v2 .avatar{width:44px;height:44px;font-size:16px}
-.account-v2 .account-profile strong{font-size:22px;font-weight:500}
+.account-v2 .account-profile strong{font-size:17px;font-weight:700}
 .account-v2 .account-meta{font-size:12px}
 .account-v2 .section-label{margin:16px 0 6px;font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--accent)}
 .account-v2 .simple-row{grid-template-columns:44px minmax(0,1fr) 18px;gap:12px;min-height:48px;padding:4px 0}
@@ -1171,7 +1251,13 @@ html .bottom-nav,html .trips-bg-screen .bottom-nav{
   backface-visibility:hidden;
 }
 html .bottom-nav .nav-item{color:var(--muted);font-size:12px;font-weight:600;min-height:var(--button-compact-height);height:auto;border-radius:0}
-html .bottom-nav .nav-item.active{color:var(--accent);font-weight:600}
+html .bottom-nav .nav-item.active{color:var(--muted);font-weight:600}
+/* No colored/highlighted box on the selected nav item — accent icon+label only. */
+html .bottom-nav .nav-item,
+html .bottom-nav .nav-item:focus,
+html .bottom-nav .nav-item:focus-visible,
+html .bottom-nav .nav-item:active,
+html .bottom-nav .nav-item.active{outline:none !important;box-shadow:none !important;background:transparent !important}
 html .bottom-nav .nav-item__icon{color:currentColor;font-size:26px;--icon-size:26px}
 html .bottom-nav .nav-add>span{
   width:48px;height:48px;border:0;border-radius:50%;background:var(--accent);color:#fff;box-shadow:none;font-size:32px;--icon-size:32px
@@ -1208,8 +1294,11 @@ html .fd-card,html .fd-list,html .trip-map__row,html .weather-now,html .weather-
 }
 /* Booking-detail page: align content to the page column (drop the card's inner
    inset), separate the hero from the row list, and hairline-divide the rows. */
-html .fd-card{padding:0 0 14px;border-bottom:1px solid var(--line)}
+html .fd-card{padding:0 0 14px;border-bottom:0}
 html .fd-list{margin-top:0;padding:0;overflow:visible}
+/* One clear divider between the hero and the details list on every booking
+   detail page (flight has no .fd-card, so anchor the divider on the list). */
+.flight-detail-screen .fd-list,.hotel-detail-screen .fd-list,.train-detail-screen .fd-list,.plan-detail-screen .fd-list{border-top:1px solid var(--line-strong);margin-top:16px;padding-top:4px}
 html .fd-hero-image{border-radius:0}
 html .fd-row,html .fd-row__main{padding-left:0;padding-right:0}
 html .fd-list>*+*{border-top:1px solid var(--line)}
@@ -1217,6 +1306,9 @@ html .fd-list>*+*{border-top:1px solid var(--line)}
 html .faq-list>*+*,html .esim-features>*+*,html .esim-steps>*+*{border-top:1px solid var(--line)}
 /* Standalone hero / summary blocks read as sections via a trailing divider. */
 html .weather-now,html .weather-forecast,html .esim-hero,html .next-action-card,html .offline-summary,html .health-summary,html .essentials-summary,html .sync-summary,html .wx-hero,html .wx-block,html .manual-essentials,html .manual-attachments,html .manual-booking-form .form-more{border-bottom:1px solid var(--line)}
+/* Collaboration screens follow the flattened production sections. */
+html .collab-intro,html .collab-section,html .share-link{background:transparent;border:0;border-radius:0;box-shadow:none;padding-left:0;padding-right:0}
+html .collab-intro,html .collab-section{border-bottom:1px solid var(--line)}
 /* Timeline: hairline divider under the sticky day header. */
 html .timeline-day__header{border-bottom:1px solid var(--line)}
 /* Booking-detail glyphs and the stay pill use the production accent. */
@@ -1242,11 +1334,11 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 .trip-group .trip-row.is-current .trip-row__mark,.journey-event--next .journey-marker,.journey-event--active .journey-marker{color:var(--accent) !important}
 .sheet-option--danger .info-icon{color:var(--red) !important}
 
-/* Larger icons everywhere — scale the glyph/svg up via a global multiplier.
-   phosphor.css sizes both .ph and .ph-svg from --icon-size (set inline per
-   icon); this multiplies that by --icon-scale. The welcome/first-run screen
-   opts out (keeps --icon-scale:1) so its layout is left exactly as designed. */
-:root{--icon-scale:1.22}
+/* Icon size — global multiplier applied to every glyph/svg. phosphor.css sizes
+   both .ph and .ph-svg from --icon-size (set inline per icon); this multiplies
+   that by --icon-scale. Baseline 1.0 (was 1.22 — user asked for smaller icons).
+   The welcome/first-run screen keeps 1 so its layout is left exactly as designed. */
+:root{--icon-scale:1}
 .ph,.ph-svg{
   width:calc(var(--icon-size,24px) * var(--icon-scale,1));
   height:calc(var(--icon-size,24px) * var(--icon-scale,1));
@@ -1322,7 +1414,7 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 .dark-detail .booking-documents{color:#fff}.dark-detail .booking-documents>h2{color:#fff}.dark-detail .booking-document-row{border-color:rgba(255,255,255,.14)}.dark-detail .booking-document-row__open{color:#fff}.dark-detail .booking-document-row__open small{color:rgba(255,255,255,.68)}
 
 .booking-email-address{display:grid;gap:5px;margin:0 0 16px;padding:18px;border-radius:16px;background:var(--ink-strong);color:#fff}
-.booking-email-address small{color:rgba(255,255,255,.66);font-size:12px;font-weight:650}
+.booking-email-address small{color:rgba(255,255,255,.66);font-size:12px;font-weight:600}
 .booking-email-address strong{font-size:24px;letter-spacing:-.035em}
 .booking-email-address p{margin:3px 0 0;color:rgba(255,255,255,.75);font-size:13px;line-height:1.42}
 .booking-email-list{display:grid;margin-bottom:16px;border-top:1px solid var(--line)}
@@ -1333,7 +1425,7 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 .booking-email-row__body strong{color:var(--ink-strong);font-size:14px}.booking-email-row__body small{color:var(--muted);font-size:11px}
 .booking-email-row__body .travel-state{justify-self:start;margin-top:2px}
 .booking-email-row__note{color:var(--muted);font-size:11px;line-height:1.35}
-.booking-email-row__action{display:flex;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:0 2px 0 8px;border:0;background:transparent;color:var(--accent);font-size:12px;font-weight:750;white-space:nowrap}
+.booking-email-row__action{display:flex;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:0 2px 0 8px;border:0;background:transparent;color:var(--accent);font-size:12px;font-weight:700;white-space:nowrap}
 .booking-email-row__action:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 60%,transparent);outline-offset:2px}
 .booking-email-empty{padding-block:36px}.booking-email-empty>span{color:var(--icon)}
 .booking-email-trip-note{margin:0 0 12px;padding:0 4px;color:var(--muted)}
@@ -1443,11 +1535,11 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 .cl-row{display:flex;align-items:center;gap:2px;min-height:56px;padding:0 6px 0 4px;border-bottom:0}
 .cl-row:last-child{border-bottom:0}
 .cl-row__toggle{flex:1 1 auto;display:flex;align-items:center;gap:12px;min-height:56px;min-width:0;padding:6px 8px;border:0;background:transparent;color:var(--ink);font-size:16px;text-align:left;cursor:pointer}
-.cl-check{flex:0 0 auto;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;border:2px solid var(--surface);background:transparent;color:transparent;transition:background .16s var(--ease),border-color .16s var(--ease)}
+.cl-check{flex:0 0 auto;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;border:2px solid var(--ink);background:transparent;color:transparent;transition:background .16s var(--ease),border-color .16s var(--ease)}
 .cl-row.is-complete .cl-check{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .cl-row__title{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
 .cl-row.is-complete .cl-row__title{color:var(--muted);text-decoration:line-through}
-.cl-row__act{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--muted);cursor:pointer}
+.cl-row__act{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--ink);cursor:pointer}
 .cl-row__act:active{transform:scale(.92)}
 .cl-row__del:active{color:var(--accent)}
 /* Inline rename (replaces window.prompt, which installed PWAs suppress) */
@@ -1506,7 +1598,7 @@ html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{back
   --welcome-x:clamp(24px,6.2vw,28px);
   --welcome-top:clamp(18px,min(6vw,3.6svh),30px);
   --welcome-brand:clamp(18px,4.8vw,21px);
-  --welcome-title:clamp(38px,min(11vw,6.2svh),52px);
+  --welcome-title:clamp(48px,min(12vw,6.2svh),var(--type-display));
   --welcome-subtitle:clamp(14px,min(3.8vw,2svh),16px);
   --welcome-cta-height:clamp(52px,min(13vw,6.4svh),56px);
   position:relative;display:flex;flex-direction:column;height:100svh;min-height:0;overflow:hidden;
@@ -1524,7 +1616,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
 .welcome-thread .first-run-main{display:flex;flex:1;flex-direction:column;gap:0;min-height:0;padding-top:clamp(24px,min(7vw,4svh),34px)}
 .welcome-thread .first-run-hero{flex:0 0 auto;text-align:left}
 .welcome-thread .first-run-eyebrow{
-  margin:0 0 clamp(10px,min(3vw,1.7svh),14px);color:var(--card);font-size:11px;font-weight:750;line-height:1.2;letter-spacing:.14em;text-transform:uppercase
+  margin:0 0 clamp(10px,min(3vw,1.7svh),14px);color:var(--card);font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.14em;text-transform:uppercase
 }
 .welcome-thread .first-run-hero h1{
   max-width:8ch;margin:0;color:var(--card);font-family:var(--font);font-size:var(--welcome-title);font-weight:700;line-height:.94;letter-spacing:-.055em
@@ -1542,7 +1634,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
   border-right:1px solid rgba(255,255,255,.72);border-bottom:1px solid rgba(255,255,255,.72);color:var(--card)
 }
 .welcome-thread .welcome-route-cell:nth-child(even){border-right:0}
-.welcome-thread .welcome-route-cell__index{font-size:10px;font-weight:800;line-height:1;letter-spacing:.1em;text-transform:uppercase}
+.welcome-thread .welcome-route-cell__index{font-size:10px;font-weight:700;line-height:1;letter-spacing:.1em;text-transform:uppercase}
 .welcome-thread .welcome-route-cell strong{font-size:clamp(19px,5.5vw,24px);font-weight:700;line-height:1.02;letter-spacing:-.035em}
 .welcome-thread .welcome-route-cell__sub{font-size:12px;font-weight:500;line-height:1.25}
 .welcome-thread .welcome-route-cell--next{background:var(--ink)}
@@ -1553,7 +1645,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
 .welcome-thread .first-run-google{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--welcome-cta-height);padding:0;background:transparent}
 .welcome-thread .first-run-google-preview{
   display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;height:var(--welcome-cta-height);gap:10px;padding:0 16px;border-radius:12px;
-  font-family:var(--font);font-size:16px;font-weight:650;letter-spacing:0;box-shadow:none
+  font-family:var(--font);font-size:16px;font-weight:600;letter-spacing:0;box-shadow:none
 }
 .welcome-thread .first-run-google-preview[data-action="preview-google"]{border:1px solid #747775;background:var(--card);color:#1f1f1f;font-family:Arial,sans-serif;font-size:14px;font-weight:600}
 .welcome-thread .first-run-google-preview[data-action="enter-app"]{border:0;background:var(--accent);color:var(--accent-ink)}
@@ -1563,7 +1655,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
 .welcome-thread .signin-error{margin:0;color:var(--accent);font-size:12px;text-align:center}
 .welcome-thread .first-run-secondary{
   display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:400px;height:var(--welcome-cta-height);margin:0 auto;padding:0 18px;border:1px solid var(--ink);border-radius:12px;
-  background:transparent;color:var(--ink);font-family:var(--font);font-size:16px;font-weight:650
+  background:transparent;color:var(--ink);font-family:var(--font);font-size:16px;font-weight:600
 }
 .welcome-thread .first-run-secondary .ph-svg,.welcome-thread .first-run-secondary .ph{margin-left:auto;color:var(--ink)}
 .welcome-thread .welcome-v2__footer{
@@ -1595,8 +1687,8 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .notif-item__icon{flex:0 0 22px;display:inline-flex;align-items:center;justify-content:center;color:var(--accent);opacity:.8;margin-top:1px}
 .notif-item.is-unread .notif-item__icon{opacity:1}
 .notif-item__copy{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
-.notif-item__copy strong{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:650;line-height:1.25;color:var(--ink)}
-.notif-item.is-unread .notif-item__copy strong{font-weight:750;color:var(--accent)}
+.notif-item__copy strong{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:600;line-height:1.25;color:var(--ink)}
+.notif-item.is-unread .notif-item__copy strong{font-weight:700;color:var(--accent)}
 .notif-item__dot{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .notif-item__desc{font-size:12.5px;line-height:1.38;color:var(--muted)}
 .notif-item__copy small{font-size:11.5px;color:var(--muted-soft);font-variant-numeric:tabular-nums;margin-top:1px}
@@ -1614,14 +1706,14 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .live-flight-strip--good strong,.live-flight-strip--active strong{color:#72e39e}.live-flight-strip--warning strong{color:#ffd16f}.live-flight-strip--danger strong{color:#ff8994}.live-flight-strip--neutral strong{color:#d9e0e6}
 .live-flight-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin:0 2px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.14);color:#fff}
 .live-flight-controls div{display:grid;gap:3px}.live-flight-controls strong{font-size:13px}.live-flight-controls small{color:rgba(255,255,255,.66);font-size:11px;line-height:1.35}
-.live-flight-controls button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:86px;min-height:44px;padding:0 13px;border:1px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:12px;font-weight:750}
+.live-flight-controls button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:86px;min-height:44px;padding:0 13px;border:1px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:12px;font-weight:700}
 .live-flight-controls button:disabled{opacity:.5}.live-flight-controls button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 @media(max-width:374px){.live-flight-strip{align-items:flex-start;flex-direction:column;gap:2px}.live-flight-strip span{text-align:left}.live-flight-controls{gap:8px}.live-flight-controls button{min-width:78px;padding-inline:9px}}
 
 .timeline-screen--ribbon .trip-v2-header{min-height:auto;padding:18px 20px 13px;border-bottom:1px solid var(--line);background:var(--paper);color:var(--ink-strong)}
 .timeline-screen--ribbon .trip-v2-selector{align-self:stretch}
 .timeline-screen--ribbon .trip-v2-selector strong{font-size:23px;font-weight:700;letter-spacing:-.04em}
-.timeline-screen--ribbon .trip-v2-selector small{font-size:15px;font-weight:450;color:var(--muted)}
+.timeline-screen--ribbon .trip-v2-selector small{font-size:15px;font-weight:500;color:var(--muted)}
 .timeline-screen--ribbon .trip-v2-actions{align-self:flex-start;margin-top:1px}
 .timeline-screen--ribbon .timeline-page--journey{padding:0 20px calc(var(--nav-height) + 30px + env(safe-area-inset-bottom));scrollbar-width:none}
 .timeline-screen--ribbon .timeline-page--journey::-webkit-scrollbar{display:none}
@@ -1632,11 +1724,11 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 }
 .timeline-screen--ribbon .timeline-context--next>span{
   grid-column:1;grid-row:1;color:var(--accent);
-  font-size:12px;font-weight:750;letter-spacing:.14em
+  font-size:12px;font-weight:700;letter-spacing:.14em
 }
 .timeline-screen--ribbon .timeline-context--next h2{
   grid-column:1;grid-row:2;margin:8px 0 0;color:var(--ink);font-size:22px;
-  font-weight:650;line-height:1.15;letter-spacing:-.025em
+  font-weight:600;line-height:1.15;letter-spacing:-.025em
 }
 .timeline-screen--ribbon .timeline-context--next p{
   grid-column:1;grid-row:3;margin:7px 0 0;color:var(--muted);font-size:15px;
@@ -1648,8 +1740,8 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 }
 .timeline-ribbon{position:relative;isolation:isolate}
 .timeline-ribbon::before{
-  content:"";position:absolute;z-index:0;top:24px;bottom:24px;left:95px;width:2px;
-  border-radius:999px;background:var(--muted)
+  content:"";position:absolute;z-index:0;top:26px;bottom:26px;left:95px;width:2px;
+  border-radius:999px;background:var(--line-strong)
 }
 .timeline-screen--ribbon .timeline-day{position:relative;z-index:1}
 .timeline-screen--ribbon .timeline-day+.timeline-day{margin-top:0}
@@ -1663,10 +1755,10 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
   box-shadow:none;color:var(--accent);font-size:12px;text-align:left
 }
 .timeline-screen--ribbon .timeline-day__header time span{
-  color:var(--accent);font-size:12px;font-weight:750;letter-spacing:.09em
+  color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.09em
 }
 .timeline-screen--ribbon .timeline-day__header time strong{
-  color:var(--accent);font-size:12px;font-weight:750;letter-spacing:.04em
+  color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.04em
 }
 .timeline-screen--ribbon .timeline-day__rail{
   display:block;justify-self:center;width:8px;height:8px;border:0;background:var(--accent);
@@ -1674,23 +1766,28 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 }
 .timeline-screen--ribbon .timeline-journey::before{display:none}
 .timeline-screen--ribbon .journey-event{
-  grid-template-columns:62px 66px minmax(0,1fr);min-height:86px;
+  grid-template-columns:62px 66px minmax(0,1fr);min-height:72px;
   border-radius:0;color:var(--ink);transition:opacity .16s var(--ease)
 }
 .timeline-screen--ribbon .journey-event--next,.timeline-screen--ribbon .journey-event--active{
   margin:0;padding:0;border:0;background:transparent
 }
 .timeline-screen--ribbon .journey-time{
+  justify-self:end;text-align:right;padding-right:10px;
   color:var(--ink);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums
 }
 .timeline-screen--ribbon .journey-marker{
-  width:48px;height:48px;border:2px solid var(--ink) !important;border-radius:50% !important;
-  background:var(--paper) !important;color:var(--icon);box-shadow:0 0 0 5px var(--paper) !important
+  width:44px;height:44px;border:1.5px solid var(--ink) !important;border-radius:50% !important;
+  background:var(--paper) !important;color:var(--ink);
+  box-shadow:0 0 0 5px var(--paper),0 2px 6px rgba(17,18,23,.10) !important
 }
-.timeline-screen--ribbon .journey-marker .ph{font-size:23px !important;font-weight:500}
-.timeline-screen--ribbon .journey-event--next .journey-marker,.timeline-screen--ribbon .journey-event--active .journey-marker{border-color:var(--accent) !important}
+.timeline-screen--ribbon .journey-marker .ph{font-size:21px !important;font-weight:500;display:grid;place-items:center;line-height:1}
+.timeline-screen--ribbon .journey-event--next .journey-marker,.timeline-screen--ribbon .journey-event--active .journey-marker{
+  border-color:var(--accent) !important;background:var(--paper) !important;
+  box-shadow:0 0 0 5px var(--paper),0 2px 6px rgba(17,18,23,.10) !important
+}
 .timeline-screen--ribbon .journey-content{
-  grid-template-columns:minmax(0,1fr) 24px;gap:8px;padding:16px 0 16px 12px
+  grid-template-columns:minmax(0,1fr) 24px;gap:8px;padding:13px 0 13px 12px
 }
 .timeline-screen--ribbon .journey-copy{gap:4px}
 .timeline-screen--ribbon .journey-copy strong{
@@ -1708,11 +1805,12 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 /* Paged days render one day at a time, so past/future look identical: keep the
    marker disc fully opaque (it masks the spine) and drop the past dimming. */
 .timeline-screen--ribbon .journey-event--past .journey-marker,.timeline-screen--ribbon .journey-event--past .journey-copy{opacity:1}
+.timeline-screen--ribbon .journey-event--past .journey-marker{border-color:var(--ink) !important;color:var(--ink)}
 
 @media(max-width:374px){
   .timeline-ribbon::before{left:94px}
   .timeline-screen--ribbon .timeline-day__header,.timeline-screen--ribbon .journey-event{grid-template-columns:62px 64px minmax(0,1fr)}
-  .timeline-screen--ribbon .journey-marker{width:44px;height:44px}
+  .timeline-screen--ribbon .journey-marker{width:42px;height:42px}
   .timeline-screen--ribbon .journey-copy strong{font-size:17px}
   .timeline-screen--ribbon .journey-content{padding-left:9px}
 }
@@ -1782,4 +1880,288 @@ html .manual-route-card,html .form-more,html .trip-group+.trip-group{
       the document-viewer popup bar's bottom hairline. */
 html .app-header,html .app-bar,html .trip-v2-header,html .timeline-day__header,html .doc-viewer__bar{
   border-bottom:0 !important
+}
+
+/* ============================================================================
+   Trips list — red canvas (matches the welcome screen), flat rows (no cards).
+   Appended last so these equal-specificity `html .trips-bg-screen` rules win
+   by source order over the earlier flat-design overrides.
+   ========================================================================== */
+html .trips-bg-screen{
+  background:var(--accent);
+  background-image:radial-gradient(120% 80% at 50% -10%,#e0396a 0%,var(--accent) 46%,#a81f46 100%);
+  color:var(--accent-ink)
+}
+/* Paint the page ancestors red too so no paper (white) gap shows below the last
+   row when the list is short or the browser overscrolls past the shell. */
+html:has(.trips-bg-screen),
+html:has(.trips-bg-screen) body,
+html:has(.trips-bg-screen) #app,
+html:has(.trips-bg-screen) .phone-app{background:#a81f46}
+html .trips-bg-screen::before,html .trips-bg-screen::after{display:none}
+/* Header: white brand title + white action icons (back, + and account glyphs
+   are normally dark/red, which reads wrong on the red canvas). */
+html .trips-bg-screen .app-bar{background:transparent;border-bottom:0}
+html .trips-bg-screen .app-bar-title strong{color:var(--accent-ink);text-shadow:none}
+html .trips-bg-screen .app-bar .icon-button,
+html .trips-bg-screen .app-bar-actions .icon-button,
+html .trips-bg-screen .icon-button.trips-header-add{color:var(--accent-ink)}
+/* Section labels: small soft-white uppercase eyebrows over the red. */
+html .trips-bg-screen .trip-group>h2{
+  margin:0 4px 4px;color:rgba(255,255,255,.82);opacity:1;text-shadow:none;
+  font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase
+}
+html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:16px}
+/* Flat rows: no card, no shadow, hairline separators between them. Compact. */
+html .trips-bg-screen .trip-group .mobile-list{
+  background:transparent;border:0;border-radius:0;box-shadow:none;
+  overflow:visible;padding:0;gap:0;margin-top:2px
+}
+html .trips-bg-screen .trip-group .trip-row{
+  content-visibility:visible;contain-intrinsic-size:auto;
+  grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:12px;
+  padding:10px 4px;border-radius:0;background:transparent;
+  border:0;border-bottom:1px solid rgba(255,255,255,.16);box-shadow:none
+}
+html .trips-bg-screen .trip-group .trip-row:last-child{border-bottom:0}
+html .trips-bg-screen .trip-group .trip-row:active{background:rgba(0,0,0,.08)}
+/* Marks: no circle — bright white glyph rendered like text (font). Match the
+   earlier bordered-circle rules' specificity (:not(.is-current)) so these win. */
+html .trips-bg-screen .trip-group .trip-row:not(.is-current) .trip-row__mark,
+html .trips-bg-screen .trip-group .trip-row.is-current .trip-row__mark,
+html .trips-bg-screen .trip-group .trip-row--past:not(.is-current) .trip-row__mark{
+  width:auto !important;height:auto !important;border:0 !important;border-radius:0 !important;
+  background:transparent !important;color:var(--accent-ink) !important;box-shadow:none !important
+}
+html .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph{font-size:34px !important;font-weight:400}
+/* Copy: white title + soft-white supporting line; white chevron. Compact. */
+html .trips-bg-screen .trip-group .trip-row__copy{gap:1px}
+html .trips-bg-screen .trip-group .trip-row__copy strong{
+  color:var(--accent-ink);text-shadow:none;font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1.14
+}
+html .trips-bg-screen .trip-group .trip-row__copy small{color:rgba(255,255,255,.78);font-size:15px}
+html .trips-bg-screen .chevron{color:rgba(255,255,255,.6)}
+/* Empty state: white text/icon over the red canvas. */
+html .trips-bg-screen .mobile-empty h1{color:var(--accent-ink)}
+html .trips-bg-screen .mobile-empty p{color:rgba(255,255,255,.82)}
+html .trips-bg-screen .mobile-empty__icon{background:rgba(255,255,255,.16);color:var(--accent-ink)}
+
+/* ============================================================================
+   Geist typography system.
+   One semantic scale controls the complete traveler-facing application while
+   preserving the Google Identity and Phosphor icon-font brand requirements.
+   ========================================================================== */
+html body{font-size:var(--type-body);font-weight:var(--weight-regular);line-height:1.45}
+
+html .welcome-thread .first-run-hero h1{
+  font-weight:var(--weight-bold)
+}
+
+html .flight-pass__airport-code,
+html .fd-route__code,
+html .next-action-time,
+html .weather-now__temp,
+html .wx-hero__temp,
+html .driver-name,
+html .account-brand{
+  font-size:var(--type-route);font-weight:var(--weight-bold);font-variant-numeric:tabular-nums
+}
+
+html .brand,
+html .timeline-empty h1,
+html .mobile-empty h1,
+html .empty-mobile h1,
+html .hotel-heading h1,
+html .plan-hero h1,
+html .screen-intro h1,
+html .health-summary h1,
+html .traveler-profile h1,
+html .v2-task-intro h1,
+html .form-section header h1,
+html .form-intro h1,
+html .error-state h1,
+html .quick-no-trip h1,
+html .google-auth-recovery__brand,
+html .loading-mark,
+html .driver-local{
+  font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.1
+}
+
+html .trip-v2-selector strong,
+html .timeline-context h2,
+html .journey-copy strong,
+html .trip-group .trip-row__copy strong,
+html .fd-flight,
+html .fd-title,
+html .account-profile strong,
+html .account-signin h2,
+html .sheet-title-row h2,
+html .manual-form-heading h1,
+html .manual-attachments>header h2,
+html .booking-documents>h2,
+html .document-list>.mobile-empty h1,
+html .help-support h2,
+html .cl-progress strong{
+  font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.2
+}
+html .fd-title{font-weight:var(--weight-bold)}
+
+html .timeline-context p,
+html .timeline-empty p,
+html .mobile-empty p,
+html .empty-mobile p,
+html .screen-intro p,
+html .health-summary p,
+html .account-signin p,
+html .v2-task-intro p,
+html .form-section header p,
+html .form-intro p,
+html .manual-form-heading p,
+html .primary-cta,
+html .mobile-primary-action,
+html .first-run-how-done,
+html .secondary-cta,
+html .mobile-secondary-action,
+html .hotel-action,
+html .fd-note-btn,
+html .app-bar .app-bar-save{
+  font-size:var(--type-body)
+}
+html .primary-cta,
+html .mobile-primary-action,
+html .first-run-how-done,
+html .secondary-cta,
+html .mobile-secondary-action,
+html .hotel-action,
+html .fd-note-btn,
+html .app-bar .app-bar-save{
+  font-weight:var(--weight-semibold)
+}
+html .flight-pass__actions .mobile-primary-action,
+html .flight-pass__secondary{
+  font-size:clamp(14px,4.1vw,var(--type-body));font-weight:var(--weight-semibold)
+}
+
+html .trip-v2-selector small,
+html .timeline-day-tab__date,
+html .timeline-day__header time,
+html .journey-copy small,
+html .flight-pass__status small,
+html .flight-pass__airport-name,
+html .flight-pass__duration,
+html .flight-pass__fact small,
+html .flight-pass__fact-copy small,
+html .flight-pass__time-copy small,
+html .fd-status-wrap small,
+html .fd-route__name,
+html .fd-route__dur,
+html .fd-times__col small,
+html .fd-meta__item small,
+html .fd-row__text small,
+html .hotel-heading p,
+html .hotel-status,
+html .hotel-stats span,
+html .hotel-stats small,
+html .row-copy span,
+html .travel-row__body small,
+html .document-row__copy small,
+html .trip-row__copy small,
+html .detail-row small,
+html .booking-card span,
+html .account-meta,
+html .field-helper,
+html .form-note,
+html .form-field>span,
+html .sheet-field>label,
+html .date-range-field legend,
+html .date-range-trigger__copy small,
+html .document-file-meta,
+html .document-verify-state,
+html .field-error,
+html .form-error,
+html .timezone-derived{
+  font-size:var(--type-meta);font-weight:var(--weight-medium)
+}
+
+html .section-label,
+html .timeline-context>span,
+html .timeline-empty__eyebrow,
+html .timeline-flag,
+html .mobile-group>h2,
+html .fd-label,
+html .flight-pass__fact>span:not(.flight-pass__fact-icon),
+html .flight-pass__fact-copy>span,
+html .flight-pass__time-copy>span,
+html .form-intro>span,
+html .v2-task-intro>span,
+html .form-section header>span,
+html .manual-form-heading>span,
+html .manual-essentials>h2,
+html .wx-block__title,
+html .nav-item{
+  font-size:var(--type-label);font-weight:var(--weight-semibold)
+}
+
+html .journey-time,
+html .timeline-day-tab__date,
+html .timeline-day__header time,
+html .flight-pass__airport-code,
+html .fd-route__code,
+html .flight-pass__fact strong,
+html .flight-pass__fact-copy strong,
+html .flight-pass__time-copy strong,
+html .fd-times__col strong,
+html .fd-meta__item strong,
+html .hotel-stats strong,
+html .date-range-trigger__copy strong,
+html .range-month,
+html .range-day{
+  font-variant-numeric:tabular-nums
+}
+
+/* The selected Timeline and dock have intentionally stronger component
+   selectors, so map those roles explicitly back onto the shared scale. */
+html .timeline-screen--ribbon .trip-v2-selector strong{
+  font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.1
+}
+html .timeline-screen--ribbon .timeline-context--next>span,
+html .timeline-screen--ribbon .timeline-day__header time span,
+html .timeline-screen--ribbon .timeline-day__header time strong,
+html .timeline-screen--ribbon .journey-copy>span{
+  font-size:var(--type-label);font-weight:var(--weight-semibold)
+}
+html .timeline-screen--ribbon .timeline-context--next h2,
+html .timeline-screen--ribbon .journey-copy strong{
+  font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.2
+}
+html .timeline-screen--ribbon .trip-v2-selector small,
+html .timeline-screen--ribbon .timeline-context--next p,
+html .timeline-screen--ribbon .journey-time,
+html .timeline-screen--ribbon .journey-copy small{
+  font-size:var(--type-meta);font-weight:var(--weight-medium)
+}
+html .bottom-nav .nav-item{
+  font-size:var(--type-label);font-weight:var(--weight-semibold)
+}
+html .trips-bg-screen .trip-group .trip-row__copy strong{
+  font-size:var(--type-section);font-weight:var(--weight-semibold)
+}
+html .trips-bg-screen .trip-group .trip-row__copy small{
+  font-size:var(--type-meta);font-weight:var(--weight-medium)
+}
+html .account-v2 .account-profile strong{
+  font-size:var(--type-section);font-weight:var(--weight-semibold)
+}
+/* Trip-header ⋮ overflow menu — biggest + bolder dots (user request). */
+html .trip-v2-actions .icon-button .ph-dots-three-vertical{
+  --icon-size:28px;-webkit-text-stroke:.75px currentColor;text-stroke:.75px currentColor
+}
+/* Timeline event titles a touch smaller (user request). */
+html .timeline-screen--ribbon .journey-copy strong{font-size:18px}
+/* Trips-page marks: always bright white glyphs on the red canvas (user). */
+html body .trips-bg-screen .trip-group .trip-row .trip-row__mark,
+html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph,
+html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
+  border:0 !important;background:transparent !important;box-shadow:none !important;
+  color:var(--accent-ink) !important;fill:var(--accent-ink) !important
 }
