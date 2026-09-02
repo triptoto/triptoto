@@ -1337,6 +1337,8 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
    on a filled circle (dark ink/white glyphs would vanish once the fill is gone). */
 .trip-group .trip-row.is-current .trip-row__mark,.journey-event--next .journey-marker,.journey-event--active .journey-marker{color:var(--accent) !important}
 .sheet-option--danger .info-icon{color:var(--red) !important}
+/* Add Booking choice icons use the theme accent (red). */
+.v2-choice>span:first-child{color:var(--accent) !important}
 
 /* Icon size — global multiplier applied to every glyph/svg. phosphor.css sizes
    both .ph and .ph-svg from --icon-size (set inline per icon); this multiplies
