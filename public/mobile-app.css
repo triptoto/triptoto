@@ -1318,6 +1318,11 @@ html .timeline-day__header{border-bottom:1px solid var(--line)}
 /* Booking-detail glyphs and the stay pill use the production accent. */
 html .fd-row__icon{color:var(--accent)}
 html .fd-flight .ph,html .fd-flight .ph-svg{color:var(--accent)}
+/* Plane glyphs read lighter: smaller header + connector planes (user: icons
+   not bold and big). Filled glyphs, so we downscale rather than restroke. */
+html .fd-flight .ph-svg{width:15px !important;height:15px !important}
+html .fd-route__track .ph-svg{width:17px !important;height:17px !important}
+html .fd-times__track .ph-svg{width:13px !important;height:13px !important}
 
 html .fd-title{margin-top:14px;color:var(--accent)}
 /* Hotel detail puts the property name in .fd-card__head .fd-flight (no separate
