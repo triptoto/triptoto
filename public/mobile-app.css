@@ -2175,7 +2175,7 @@ html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
    generous padding — so each section reads as a distinct, beautiful window.
    Scoped to .dark-detail (flight / hotel / train / plan) with !important so it
    wins over the global flatteners. */
-.dark-detail .detail-content{padding-top:18px;background:var(--surface)}
+.dark-detail .detail-content{padding-top:18px}
 .dark-detail .fd-card,
 .dark-detail .fd-list{
   background:#f4f4f6 !important;
