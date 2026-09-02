@@ -398,7 +398,7 @@ button:active{transform:scale(.985)}
 .journey-event--next .journey-marker,.journey-event--active .journey-marker{border-color:var(--indigo);background:var(--indigo);color:#fff}
 .journey-event--staying .journey-marker{border-color:var(--ink);color:var(--ink)}
 .journey-event--past .journey-marker,.journey-event--past .journey-copy{opacity:.55}
-.journey-content{display:grid;grid-template-columns:minmax(0,1fr) 24px;align-items:center;gap:8px;min-width:0;padding:12px 0 12px 12px}
+.journey-content{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:8px;min-width:0;padding:12px 0 12px 12px}
 .journey-copy{display:grid;gap:3px;min-width:0}
 .journey-copy strong{font-size:20px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .journey-copy small{color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1820,7 +1820,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
   box-shadow:0 0 0 5px var(--paper),0 2px 6px rgba(17,18,23,.10) !important
 }
 .timeline-screen--ribbon .journey-content{
-  grid-template-columns:minmax(0,1fr) 24px;gap:8px;padding:13px 0 13px 12px
+  grid-template-columns:minmax(0,1fr);gap:8px;padding:13px 0 13px 12px
 }
 .timeline-screen--ribbon .journey-copy{gap:4px}
 .timeline-screen--ribbon .journey-copy strong{
