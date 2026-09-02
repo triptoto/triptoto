@@ -17,7 +17,7 @@ import { accountStatus, accountMigrationPreview } from './routes/account.ts';
 import { diagnostics } from './routes/diagnostics.ts';
 import { exportTripJson, exportTripCalendar } from './routes/export.ts';
 import { tripSupportBundle } from './routes/support.ts';
-import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
+import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember, leaveTrip, transferOwnership } from './routes/sharing.ts';
 import { createDemoTrip } from './routes/demo.ts';
 import { previewForwardedEmail, previewUploadedDocument, listImports, getImport, resolveImportCandidate, listInboundEmails, deleteImport } from './routes/imports.ts';
 import { acknowledgeGoogleHandoff, createGoogleChallenge, exchangeGoogleHandoff, googleSignIn, googleSignInRedirect, signOut } from './routes/google-auth.ts';
@@ -184,6 +184,10 @@ export default {
       if (match && request.method==='GET') return listMembers(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/members\/([^/]+)$/);
       if (match) { const tripId=decodeURIComponent(match[1]), userId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateMemberRole(request,env,auth,tripId,userId); if(request.method==='DELETE') return removeMember(request,env,auth,tripId,userId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/leave$/);
+      if (match && request.method==='POST') return leaveTrip(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transfer-ownership$/);
+      if (match && request.method==='POST') return transferOwnership(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/invites$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listInvites(request,env,auth,tripId); if(request.method==='POST') return createInvite(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/invites\/([^/]+)$/);

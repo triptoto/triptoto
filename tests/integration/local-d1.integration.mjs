@@ -10,7 +10,7 @@ const { accountStatus, accountMigrationPreview }=await load('apps/worker/src/rou
 const { createDemoTrip }=await load('apps/worker/src/routes/demo.js');
 const { exportTripJson, exportTripCalendar }=await load('apps/worker/src/routes/export.js');
 const { tripSupportBundle }=await load('apps/worker/src/routes/support.js');
-const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, updateMemberRole, removeMember, revokeInvite }=await load('apps/worker/src/routes/sharing.js');
+const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, updateMemberRole, removeMember, revokeInvite, leaveTrip, transferOwnership }=await load('apps/worker/src/routes/sharing.js');
 const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-auth.js');
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
 const { refreshSession }=await load('apps/worker/src/routes/session.js');
@@ -29,7 +29,7 @@ const { createTransport }=await load('apps/worker/src/routes/transport.js');
 const { createActivity }=await load('apps/worker/src/routes/activities.js');
 const { createContact }=await load('apps/worker/src/routes/contacts.js');
 const { liveFlightUsageSummary, refreshLiveFlightById, runScheduledLiveFlightRefresh, scheduleLiveFlightMonitoring }=await load('apps/worker/src/live-flights.js');
-const { createTrip }=await load('apps/worker/src/routes/trips.js');
+const { createTrip, updateTrip, deleteTrip }=await load('apps/worker/src/routes/trips.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -264,6 +264,76 @@ assert(members.members.length===1,'member removal works');
 const revokeCandidate=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer',email:'another@example.test',expiresInDays:7}),env,owner,tripId));
 await revokeInvite(req('https://test/api/v1/trips/x/invites/z','DELETE',{}),env,owner,tripId,revokeCandidate.invite.id);
 assert(db.prepare(`SELECT status FROM trip_invites WHERE id=?`).get(revokeCandidate.invite.id).status==='revoked','invite revoke works');
+
+// Collaboration authorization matrix (free for all signed-in users; roles enforced
+// at the single access gate). Covers Section 20 release-blocker (editors cannot
+// delete/cancel a trip), viewer read-only, leave-trip, and ownership transfer.
+const collab=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Shared Kyoto',lifecycleState:'upcoming',startsOn:'2026-11-01',endsOn:'2026-11-07'}),env,owner));
+const collabTripId=collab.trip.id;
+const collabInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,collabTripId));
+addDevice(db,'collab-editor-device');
+const collabEditorLogin=await completeVerifiedIdentityLogin(env,'collab-editor-device',{provider:'email',providerSubject:'collab-editor@example.test',email:'collab-editor@example.test',emailVerified:true,displayName:'Collab Editor'});
+const collabEditor={deviceId:'collab-editor-device',userId:collabEditorLogin.userId};
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:collabInvite.invite.token}),env,collabEditor);
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND event_type='member_joined' AND actor_user_id=?`).get(collabTripId,collabEditorLogin.userId).c)===1,'member_joined recorded with actor attribution');
+
+// Editor may add bookings but not delete or cancel/edit the trip shell.
+const editorStay=await body(await createStay(req('https://test/api/v1/trips/x/stays','POST',{propertyName:'Editor Ryokan',checkInDate:'2026-11-02',checkOutDate:'2026-11-04'}),env,collabEditor,collabTripId));
+assert(editorStay.stay.id,'editor can add a booking to a shared trip');
+let collabVersion=Number(db.prepare(`SELECT version FROM trips WHERE id=?`).get(collabTripId).version);
+let editorDeleteBlocked=false;
+try{await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:collabVersion}),env,collabEditor,collabTripId);}catch(e){editorDeleteBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(editorDeleteBlocked,'editor cannot delete a shared trip (Section 20 release-blocker)');
+let editorCancelBlocked=false;
+try{await updateTrip(req('https://test/api/v1/trips/x','PATCH',{lifecycleState:'cancelled',version:collabVersion}),env,collabEditor,collabTripId);}catch(e){editorCancelBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(editorCancelBlocked,'editor cannot cancel or edit trip metadata');
+assert(db.prepare(`SELECT deleted_at,lifecycle_state FROM trips WHERE id=?`).get(collabTripId).deleted_at==null,'shared trip survives editor delete/cancel attempts');
+
+// Viewer is strictly read-only for trip content.
+await updateMemberRole(req('https://test/api/v1/trips/x/members/y','PATCH',{role:'viewer'}),env,owner,collabTripId,collabEditorLogin.userId);
+let viewerWriteBlocked=false;
+try{await createStay(req('https://test/api/v1/trips/x/stays','POST',{propertyName:'Viewer Cannot',checkInDate:'2026-11-03',checkOutDate:'2026-11-05'}),env,collabEditor,collabTripId);}catch(e){viewerWriteBlocked=e.code==='FORBIDDEN'&&e.status===403;}
+assert(viewerWriteBlocked,'viewer cannot write trip content');
+
+// Leaving a trip: owner cannot leave; a member can, idempotently.
+let ownerLeaveBlocked=false;
+try{await leaveTrip(req('https://test/api/v1/trips/x/leave','POST',{}),env,owner,collabTripId);}catch(e){ownerLeaveBlocked=e.code==='OWNER_CANNOT_LEAVE'&&e.status===409;}
+assert(ownerLeaveBlocked,'owner cannot leave the trip');
+const leaveResp=await leaveTrip(req('https://test/api/v1/trips/x/leave','POST',{}),env,collabEditor,collabTripId);
+assert(leaveResp.status===204,'member can leave the trip');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_members WHERE trip_id=? AND user_id=? AND status='active'`).get(collabTripId,collabEditorLogin.userId).c)===0,'left member is no longer active');
+const leaveAgain=await leaveTrip(req('https://test/api/v1/trips/x/leave','POST',{}),env,collabEditor,collabTripId);
+assert(leaveAgain.status===204,'leaving twice is idempotent');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND event_type='member_left' AND actor_user_id=?`).get(collabTripId,collabEditorLogin.userId).c)===1,'member_left recorded once with actor attribution');
+
+// Ownership transfer: atomic promotion, previous owner demoted to editor, never ownerless.
+const transferInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,collabTripId));
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:transferInvite.invite.token}),env,collabEditor);
+let nonOwnerTransferBlocked=false;
+try{await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:login.userId}),env,collabEditor,collabTripId);}catch(e){nonOwnerTransferBlocked=(e.code==='OWNER_REQUIRED'||e.code==='FORBIDDEN')&&e.status===403;}
+assert(nonOwnerTransferBlocked,'non-owner cannot transfer ownership');
+const transfer=await body(await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:collabEditorLogin.userId}),env,owner,collabTripId));
+assert(transfer.ownerUserId===collabEditorLogin.userId,'ownership transfer returns new owner');
+assert(db.prepare(`SELECT owner_user_id FROM trips WHERE id=?`).get(collabTripId).owner_user_id===collabEditorLogin.userId,'trips.owner_user_id updated on transfer');
+assert(db.prepare(`SELECT role FROM trip_members WHERE trip_id=? AND user_id=?`).get(collabTripId,collabEditorLogin.userId).role==='owner','new owner has owner role');
+assert(db.prepare(`SELECT role FROM trip_members WHERE trip_id=? AND user_id=?`).get(collabTripId,login.userId).role==='editor','previous owner demoted to editor');
+// The previous owner (now editor, same creator device) can no longer delete the shared trip.
+collabVersion=Number(db.prepare(`SELECT version FROM trips WHERE id=?`).get(collabTripId).version);
+let demotedOwnerDeleteBlocked=false;
+try{await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:collabVersion}),env,owner,collabTripId);}catch(e){demotedOwnerDeleteBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(demotedOwnerDeleteBlocked,'previous owner (now editor) cannot delete after transfer');
+// The new owner deletes successfully.
+const newOwnerDelete=await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:collabVersion}),env,collabEditor,collabTripId);
+assert(newOwnerDelete.status===204,'new owner can delete the trip');
+assert(db.prepare(`SELECT deleted_at FROM trips WHERE id=?`).get(collabTripId).deleted_at!=null,'owner delete soft-deletes the trip');
+
+// A guest owner of an unshared trip can still delete their own trip (no account required).
+addDevice(db,'solo-guest-device');
+const soloGuest={deviceId:'solo-guest-device'};
+const soloTrip=await body(await createDemoTrip(req('https://test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,soloGuest));
+const soloVersion=Number(db.prepare(`SELECT version FROM trips WHERE id=?`).get(soloTrip.demo.tripId).version);
+const soloDelete=await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:soloVersion}),env,soloGuest,soloTrip.demo.tripId);
+assert(soloDelete.status===204,'guest owner can delete their own unshared trip');
 
 // QA scenario: airport change should calculate a high-consequence connection problem.
 addDevice(db,'qa-device');
@@ -578,4 +648,4 @@ assert(db.prepare(`SELECT COUNT(*) c FROM trips WHERE id=?`).get(pa.demo.tripId)
 assert(db.prepare(`SELECT COUNT(*) c FROM usage_counters WHERE scope_id IN (?,?)`).get('user:'+privacyLogin.userId,'device:privacy-account-device').c===0,'account rate-limit identifiers deleted');
 assert(Number(db.prepare(`SELECT COUNT(*) c FROM privacy_deletions`).get().c)>=2,'anonymous privacy deletion counters recorded');
 
-console.log('Local D1 integration suite passed: auth, migration, sharing, imports, beta metrics, rate limits, ops privacy and data deletion.');
+console.log('Local D1 integration suite passed: auth, migration, sharing, collaboration roles, imports, beta metrics, rate limits, ops privacy and data deletion.');

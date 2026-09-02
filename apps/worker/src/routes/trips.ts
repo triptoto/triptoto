@@ -1,6 +1,6 @@
 import type { AuthContext, Env } from '../types.ts';
 import { HttpError, enumValue, json, nowMs, optionalString, readJson, requireString, uuid } from '../http.ts';
-import { requireTripAccess } from '../access.ts';
+import { requireTripAccess, requireTripOwner } from '../access.ts';
 import { recordBetaEvent } from '../beta-events.ts';
 
 const states = ['draft', 'upcoming', 'active', 'completed', 'cancelled'] as const;
@@ -94,7 +94,9 @@ export async function getTrip(request: Request, env: Env, auth: AuthContext, tri
 }
 
 export async function updateTrip(request: Request, env: Env, auth: AuthContext, tripId: string): Promise<Response> {
-  await requireTripAccess(env, auth, tripId, true);
+  // Trip-level metadata (title/dates) and lifecycle changes — including cancel —
+  // are owner-only. Editors change bookings/checklist/timeline, not the trip shell.
+  await requireTripOwner(env, auth, tripId);
   const body = await readJson<TripBody>(request);
   if (!Number.isSafeInteger(body.version)) throw new HttpError(400, 'VERSION_REQUIRED', 'Current entity version is required.');
   const existing = await env.DB.prepare('SELECT * FROM trips WHERE id=? AND deleted_at IS NULL').bind(tripId).first<Record<string, unknown>>();
@@ -116,7 +118,8 @@ export async function updateTrip(request: Request, env: Env, auth: AuthContext, 
 }
 
 export async function deleteTrip(request: Request, env: Env, auth: AuthContext, tripId: string): Promise<Response> {
-  await requireTripAccess(env, auth, tripId, true);
+  // Release-blocking: only the owner may delete a trip. Editors get 403.
+  await requireTripOwner(env, auth, tripId);
   const body = await readJson<{ version?: unknown }>(request);
   if (!Number.isSafeInteger(body.version)) throw new HttpError(400, 'VERSION_REQUIRED', 'Current entity version is required.');
   const now = nowMs();
