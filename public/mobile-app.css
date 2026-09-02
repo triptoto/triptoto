@@ -1718,7 +1718,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .live-flight-controls button:disabled{opacity:.5}.live-flight-controls button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 @media(max-width:374px){.live-flight-strip{align-items:flex-start;flex-direction:column;gap:2px}.live-flight-strip span{text-align:left}.live-flight-controls{gap:8px}.live-flight-controls button{min-width:78px;padding-inline:9px}}
 
-.timeline-screen--ribbon .trip-v2-header{min-height:auto;padding:18px 20px 13px;border-bottom:1px solid var(--line);background:var(--paper);color:var(--ink-strong)}
+.timeline-screen--ribbon .trip-v2-header{min-height:auto;padding:18px 20px 13px;border-bottom:0;background:var(--paper);color:var(--ink-strong)}
 .timeline-screen--ribbon .trip-v2-selector{align-self:stretch}
 .timeline-screen--ribbon .trip-v2-selector strong{font-size:23px;font-weight:700;letter-spacing:-.04em}
 .timeline-screen--ribbon .trip-v2-selector small{font-size:15px;font-weight:500;color:var(--muted)}
