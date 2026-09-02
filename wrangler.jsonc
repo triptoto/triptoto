@@ -70,7 +70,7 @@
         "ACCOUNT_AUTH_ENABLED": "true",
         "GOOGLE_CLIENT_ID": "832895442630-6enisft24gupqct0igg1uldv9hnqsjsh.apps.googleusercontent.com",
         "APP_BASE_URL": "https://tripto.to",
-        "SHARING_ENABLED": "false",
+        "SHARING_ENABLED": "true",
         "DEMO_TOOLS_ENABLED": "false",
         "BETA_RELEASE": "product-v2-preview",
         "BETA_METRICS_ENABLED": "true",
