@@ -26,13 +26,14 @@ Welcome typography, artwork, spacing, and action heights scale against both view
 
 ## Typography and controls
 
-Use the self-hosted Geist Sans variable font from `public/vendor/geist/`, exposed
-through `--font` in `public/mobile-app.css`. The semantic scale is 52 / 40 / 28 /
-20 / 16 / 13 / 11px for display, route, screen, section, body, metadata, and
-labels. Controls have a minimum 44×44px touch target. Primary, secondary,
-compact, and row actions use the shared height tokens. Focus remains visible for
-keyboard users, and reduced-motion preferences are respected. Google Identity
-and Phosphor icons retain their required typography.
+Use locally hosted DM Serif Display only for traveler-authored trip and booking
+titles. All interface text—including navigation, controls, forms, labels,
+metadata, status, and body copy—uses the native Apple system stack with standard
+system fallbacks. The semantic scale is 52 / 40 / 28 / 20 / 16 / 13 / 11px for
+display, route, screen, section, body, metadata, and labels. Controls have a
+minimum 44×44px touch target. Primary, secondary, compact, and row actions use
+the shared height tokens. Focus remains visible for keyboard users, and
+reduced-motion preferences are respected. No external font request is made.
 
 ## Authenticated navigation
 

@@ -7,7 +7,7 @@
 - Trip Timeline
 - Hotel Detail, including the premium local fallback hero
 - Show to Driver
-- Bottom navigation, Geist typography, and the tripto.to palette
+- Bottom navigation, DM Serif title/Apple interface typography, and the tripto.to palette
 
 ## Native mobile traveler flows
 

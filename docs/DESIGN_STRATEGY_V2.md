@@ -35,12 +35,13 @@ Avoid equal visual weight across unrelated modules. The screen should have one d
 
 ## Typography
 
-Use the self-hosted Geist Sans variable font with native system fallbacks and no
-external font requests:
+Use the native Apple system stack for all interface text and locally hosted DM
+Serif Display only for trip and booking titles. No external font request is made:
 
 ```css
-font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI",
-  Roboto, "Helvetica Neue", Arial, sans-serif;
+--font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+  "Helvetica Neue", Arial, sans-serif;
+--font-title: "DM Serif Display", Georgia, "Times New Roman", serif;
 ```
 
 - Display: 48–52px / 700 for Welcome and exceptional product moments.
@@ -52,9 +53,9 @@ font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI",
 - Labels: 11px / 600 for short uppercase markers and bottom navigation.
 - Use tabular numerals for travel times, dates, gates, seats, and flight facts.
 - Use sentence case; avoid all-caps except very short contextual markers such as NEXT.
-- Do not use Inter as the primary font.
-- Google Identity controls and the local Phosphor icon font remain intentionally
-  isolated from the application text font.
+- Do not use Inter or Geist as the primary interface font.
+- Google Identity controls and icon glyphs remain intentionally isolated from
+  the application text fonts.
 
 ## Icon system
 

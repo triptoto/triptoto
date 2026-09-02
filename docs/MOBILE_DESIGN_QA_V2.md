@@ -65,9 +65,10 @@ The protected runtime was checked with iPhone-style status/home-indicator geomet
 ## Design system observations
 
 - Product surfaces use white `#FFFFFF`, cool concrete `#F1F3F5`, silver slate borders `#CED4DA`, asphalt grey icons and secondary text `#495057`, and jet black `#111215`.
-- App content uses the self-hosted Geist Sans variable font with system fallbacks.
-  Google Identity controls, Phosphor icons, and protected device chrome retain
-  their provider/runtime typography.
+- Trip and booking titles use locally hosted DM Serif Display. All interface
+  text uses the native Apple system stack with standard fallbacks. Google
+  Identity controls, icons, and protected device chrome retain their
+  provider/runtime typography.
 - Jet black is reserved for primary actions and primary text; grey hierarchy carries secondary states.
 - White surfaces are the default, with cool-concrete card fill and silver separators.
 - The component language is consistent: 14–20px radii, subtle 1px borders, restrained shadows, and flat Timeline rows.
@@ -92,7 +93,7 @@ No second general-purpose icon family is loaded. Icon containers, optical sizes,
 - The app follows a disciplined 4/8/12/16/20/24/32 spacing rhythm.
 - Headers use consistent 20px side margins and 44px action zones.
 - Display, route, screen, section, body, metadata, and label roles use the shared
-  52 / 40 / 28 / 20 / 16 / 13 / 11px Geist hierarchy.
+  52 / 40 / 28 / 20 / 16 / 13 / 11px hierarchy.
 - Form text remains 16px or larger, preventing iOS input zoom.
 - Two-column booking fields collapse on narrow viewports to prevent cramped labels and controls.
 - Long-content review found no critical clipping; raw document filenames are deliberately subordinate to document type.

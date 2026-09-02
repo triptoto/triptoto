@@ -35,7 +35,9 @@
   --button-secondary-height:48px;
   --button-primary-height:52px;
   --button-row-height:64px;
-  --font:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  --font-title:"DM Serif Display",Georgia,"Times New Roman",serif;
+  --font:var(--font-ui);
   --type-display:52px;
   --type-route:40px;
   --type-screen:28px;
@@ -1984,9 +1986,10 @@ html .trips-bg-screen .mobile-empty p{color:rgba(255,255,255,.82)}
 html .trips-bg-screen .mobile-empty__icon{background:rgba(255,255,255,.16);color:var(--accent-ink)}
 
 /* ============================================================================
-   Geist typography system.
-   One semantic scale controls the complete traveler-facing application while
-   preserving the Google Identity and Phosphor icon-font brand requirements.
+   Editorial title + native interface typography system.
+   DM Serif Display identifies trip and booking titles. Every interface role —
+   navigation, controls, forms, labels, metadata, status, and body copy — uses
+   the native Apple/system stack through --font.
    ========================================================================== */
 html body{font-size:var(--type-body);font-weight:var(--weight-regular);line-height:1.45}
 
@@ -2235,3 +2238,35 @@ html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
 /* Hero rhythm: kicker → big title → date, a touch more air and no dead gap. */
 .dark-detail .fd-title{margin-top:10px !important}
 .dark-detail .fd-when{margin-top:8px}
+
+/* Final title-role lock. Later component sizing rules may tune size and line
+   height, but must not turn traveler-authored titles back into UI typography. */
+html .trip-v2-selector strong,
+html .trip-group .trip-row__copy strong,
+html .timeline-context h2,
+html .journey-copy strong,
+html .fd-title,
+html .hotel-detail-screen .fd-flight,
+html .hotel-heading h1,
+html .plan-hero h1,
+html .booking-card[data-action="booking-detail"] strong,
+html .booking-trip-group>h2,
+html .booking-trip-group .travel-row__body strong,
+html .booking-email-row__body strong,
+html .import-history-item .travel-row__body strong,
+html .quick-trip-context strong,
+html .quick-trip-list button strong,
+html [data-action="select-trip"] strong,
+html [data-action="assign-booking-email"] strong{
+  font-family:var(--font-title);
+  font-weight:400;
+  letter-spacing:-.012em;
+}
+html .timeline-screen--ribbon .trip-v2-selector strong,
+html .timeline-screen--ribbon .timeline-context--next h2,
+html .timeline-screen--ribbon .journey-copy strong,
+html .trips-bg-screen .trip-group .trip-row__copy strong{
+  font-family:var(--font-title);
+  font-weight:400;
+  letter-spacing:-.012em;
+}
