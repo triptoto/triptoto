@@ -25,6 +25,7 @@
     "validate:smart-import-auth": "bash scripts/validate-smart-import-auth.sh",
     "validate:manual-booking": "node tests/manual-booking-attachments.contract.mjs && node tests/manual-booking-ui.contract.mjs",
     "validate:live-flights": "node --import tsx/esm tests/scenarios/live-flights.scenarios.ts && node tests/live-flights.contract.mjs",
+    "validate:collaboration": "node tests/collaboration.contract.mjs",
     "validate:v2": "bash scripts/validate-v2.sh"
   },
   "devDependencies": {

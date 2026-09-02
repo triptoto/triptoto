@@ -4626,6 +4626,12 @@
       { id: "trip-map", q: "When can I use Trip Map?", a: "Open the trip menu and choose Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
       { id: "offline", q: "What works offline?", a: "Your cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and map tiles need a connection.", keywords: "offline internet connection cached without wifi" },
     ] },
+    { title: "Plan together", flag: "sharing", questions: [
+      { id: "collab-what", q: "Can I plan a trip with other people?", a: "Yes. Open the trip menu and choose Plan together to invite people. Everyone signs in with their own free account — planning together never costs anything.", keywords: "collaborate share invite together people group family plan", action: { label: "Plan together", action: "open-collaboration" } },
+      { id: "collab-roles", q: "What can invited people do?", a: "You choose a role for each person. Can edit lets them add and change bookings. View only lets them see the trip without changing it. As the owner you can change roles or remove people at any time.", keywords: "role owner editor viewer permissions can edit view only access" },
+      { id: "collab-invite", q: "How do invitation links work?", a: "Each invitation link works once and you can revoke it at any time. The person opens it, signs in with their own free account, and joins the trip.", keywords: "invite link join revoke expire one time accept" },
+      { id: "collab-leave", q: "How do I stop sharing or leave a trip?", a: "Owners can remove people or revoke pending invites from Plan together. If you were invited to someone else's trip, open Plan together and choose Leave this trip.", keywords: "leave remove revoke stop sharing unshare" },
+    ] },
     { title: "Account", questions: [
       { id: "sign-out", q: "How do I sign out?", a: "Open Account and tap Sign out at the top of the page.", keywords: "sign out log out account", action: { label: "Account", screen: "account" } },
     ] },
@@ -4640,7 +4646,7 @@
         : "";
       return `<div class="faq-row ${open ? "is-open" : ""}"><button type="button" class="faq-q" data-action="faq-toggle" data-id="${esc(item.id)}" aria-expanded="${open}" aria-controls="${panelId}"><span>${esc(item.q)}</span>${icon(open ? "chevronUp" : "chevronDown", 18, "faq-chev")}</button><div class="faq-a" id="${panelId}" role="region"${open ? "" : " hidden"}><p>${esc(item.a)}</p>${actionBtn}</div></div>`;
     };
-    const sections = FAQ_SECTIONS.map((s, i) => `<section class="faq-section faq-section--c${i % 4}"><h2 class="faq-section__label">${esc(s.title)}</h2><div class="faq-list">${s.questions.map(faqRow).join("")}</div></section>`).join("");
+    const sections = FAQ_SECTIONS.filter((s) => !s.flag || (s.flag === "sharing" && state.sharing?.enabled)).map((s, i) => `<section class="faq-section faq-section--c${i % 4}"><h2 class="faq-section__label">${esc(s.title)}</h2><div class="faq-list">${s.questions.map(faqRow).join("")}</div></section>`).join("");
     const quickStart = `<section class="help-quickstart"><h2>Quick start</h2><ol class="help-steps"><li>Create a trip</li><li>Add your bookings</li><li>Follow everything in the Timeline</li></ol></section>`;
     const intro = `<section class="help-intro"><p>Quick answers for planning your trip.</p></section>`;
     return mobilePage("Help & FAQ", `<div class="help-screen">${intro}${quickStart}${sections}</div>`, "help");

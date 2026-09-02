@@ -31,6 +31,8 @@ Primary navigation after authentication is **Trip / Alerts / + / To-do / Account
 | Notification Settings | Account | Back → Account |
 | Help | Account | Back → Account |
 | Tickets & Documents | Current Trip header | Back → same Timeline position |
+| Plan Together | Trip menu → Plan together (when sharing enabled) | People + pending invites; back → trip. Manage affordances owner-only |
+| Join Trip | Invitation deep link `/join/<token>` | Accept → shared trip Timeline; Not now → home |
 
 ## Contextual Timeline states
 
@@ -73,6 +75,7 @@ These are compositions of Trip Timeline, not separate destinations:
 | Delete trip/account | Explicit typed or strong confirmation | Destructive dialog |
 | Unsynced sign-out warning | Keep local work; retry sync; sign out only when safe | Blocking recovery dialog |
 | Offline/status detail | Human-readable availability/provenance | Small sheet only when explanation is needed |
+| Invite to this trip | Role choice (Can edit / View only) + create/copy one-time invite link | Bottom sheet; owner-only; link works once and is revocable |
 
 ## Advanced
 
@@ -86,7 +89,7 @@ These capabilities remain supported but leave the primary mental model:
 - checklist detail;
 - support export;
 - privacy export/deletion history;
-- share/invite administration (disabled until separately approved);
+- share/invite administration (built as free trip collaboration; gated by the `SHARING_ENABLED` kill-switch until acceptance QA — see COLLABORATION_V1.md);
 - provider/ops/demo diagnostics (not traveler-facing and disabled);
 - disabled provider/ops/demo diagnostics remain outside the traveler product.
 
