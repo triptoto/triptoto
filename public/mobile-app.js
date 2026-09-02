@@ -6225,10 +6225,20 @@
     return bottomSheet("document", "Save offline document", form);
   }
   function tripSwitchSheet() {
+    // Only current + upcoming trips are switchable here; always keep the
+    // currently-selected trip visible even if it has moved to the past.
+    const shown = state.trips.filter((trip) => {
+      const bucket = tripBucket(trip);
+      return (
+        bucket === "Current" ||
+        bucket === "Upcoming" ||
+        String(trip.id) === String(state.trip?.id)
+      );
+    });
     return bottomSheet(
       "trip",
       "Choose trip",
-      `<div class="sheet-options-group sheet-options-group--v2">${state.trips
+      `<div class="sheet-options-group sheet-options-group--v2">${shown
         .map(
           (trip) =>
             `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${String(trip.id) === String(state.trip?.id) ? checkDot("status-dot-check--selected") : icon("chevron", 22, "chevron")}</button>`,
