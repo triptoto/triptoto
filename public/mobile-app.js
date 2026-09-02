@@ -3886,7 +3886,24 @@
       curRibbon = screen.querySelector(".timeline-ribbon"),
       curTabs = screen.querySelector(".timeline-days");
     if (!freshRibbon || !curRibbon) return false;
-    if (freshTabs && curTabs) curTabs.replaceWith(freshTabs);
+    // Update the active day IN PLACE instead of swapping the whole strip, so the
+    // horizontal scroll position is preserved — tapping a day must not make the
+    // dates jump back to the start. Only fall back to a full swap if the set of
+    // days actually changed.
+    if (curTabs) {
+      const tabs = curTabs.querySelectorAll(".timeline-day-tab"),
+        freshCount = freshTabs ? freshTabs.querySelectorAll(".timeline-day-tab").length : tabs.length;
+      if (freshTabs && tabs.length !== freshCount) {
+        curTabs.replaceWith(freshTabs);
+      } else {
+        tabs.forEach((tab) => {
+          const on = tab.dataset.key === state.timelineDayKey;
+          tab.classList.toggle("timeline-day-tab--active", on);
+          if (on) tab.setAttribute("aria-current", "true");
+          else tab.removeAttribute("aria-current");
+        });
+      }
+    }
     curRibbon.replaceWith(freshRibbon);
     return true;
   }
