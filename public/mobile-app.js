@@ -3791,7 +3791,7 @@
         ? `<nav class="timeline-days" aria-label="Trip days">${groups
             .map(
               (group, index) =>
-                `<button type="button" class="timeline-day-tab${index === activeDayIdx ? " timeline-day-tab--active" : ""}" data-action="select-timeline-day" data-key="${esc(group.key)}"${index === activeDayIdx ? ' aria-current="true"' : ""}><span class="timeline-day-tab__label">Day ${index + 1}</span><span class="timeline-day-tab__date">${esc(group.day.date)}</span></button>`,
+                `<button type="button" class="timeline-day-tab${index === activeDayIdx ? " timeline-day-tab--active" : ""}" data-action="select-timeline-day" data-key="${esc(group.key)}"${index === activeDayIdx ? ' aria-current="true"' : ""}><span class="timeline-day-tab__label">${esc(group.day.weekday)} ${esc(group.day.dayOfMonth || group.day.date.split(" ").pop())}</span></button>`,
             )
             .join("")}${icon("chevron", 18, "timeline-days__more")}</nav>`
         : "";
@@ -3810,11 +3810,8 @@
                     zone = val(item, "start_timezone", "startTimezone"),
                     type = timelineType(item),
                     transport = transportForItem(itemId(item)),
-                    subtitle =
-                      item.subtitle ||
-                      (transport
-                        ? `${locationLabel(val(transport, "departure_location_id"))} → ${locationLabel(val(transport, "arrival_location_id"))}`
-                        : statusText(item.status)),
+                    glyph = timelineGlyph(item, type, transport),
+                    subtitle = timelineSecondary(item, type, transport, glyph),
                     exception = timelineException(item),
                     active =
                       !isCancelled(item) &&
@@ -3841,10 +3838,28 @@
                       : "Time unavailable",
                     flags = `${happeningNow ? '<span class="timeline-flag timeline-flag--now">Now</span>' : ""}${staying ? '<span class="timeline-flag timeline-flag--staying">Staying</span>' : ""}${next ? '<span class="timeline-flag timeline-flag--next">Next</span>' : ""}${exception ? `<span class="timeline-flag timeline-flag--${esc(exception.tone)}">${esc(exception.label)}</span>` : ""}`,
                     title = item.title || "Trip item",
-                    aria = [eventTime, title, subtitle, exception?.label]
+                    durationMs =
+                      starts != null && ends != null && ends > starts
+                        ? ends - starts
+                        : null,
+                    itemStatus = statusText(item.status),
+                    metaBits = [],
+                    // Optional third line: location/duration/status when available.
+                    meta = (() => {
+                      if (isStay && durationMs) {
+                        const nights = Math.round(durationMs / 86400000);
+                        metaBits.push(`${nights} night${nights === 1 ? "" : "s"}`);
+                      } else if (durationMs) {
+                        metaBits.push(durationLabel(durationMs));
+                      }
+                      if (itemStatus && itemStatus !== subtitle)
+                        metaBits.push(itemStatus);
+                      return metaBits.join(" · ");
+                    })(),
+                    aria = [eventTime, title, subtitle, meta, exception?.label]
                       .filter(Boolean)
                       .join(". ");
-                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker">${icon(timelineIcon(type), 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small></span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
+                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker">${icon(glyph, 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
                 })
                 .join("")}</div></section>`,
           )
@@ -3943,6 +3958,7 @@
         key: `${get("year")}-${get("month")}-${get("day")}`,
         weekday: get("weekday").toUpperCase(),
         date: `${get("month")} ${get("day")}`.toUpperCase(),
+        dayOfMonth: get("day"),
       };
     } catch (_) {
       return { key: "unavailable", weekday: "Date", date: "Unavailable" };
@@ -4018,6 +4034,57 @@
         document: "documents",
       }[String(type || "").toLowerCase()] || "calendar"
     );
+  }
+
+  // Human category label for a resolved timeline glyph (used in the secondary
+  // line so a row reads "Restaurant · Rome", never a bare "Tasting menu").
+  const TIMELINE_GLYPH_LABEL = {
+    flight: "Flight", train: "Train", ferry: "Ferry", cruise: "Cruise",
+    bus: "Bus", car: "Car", taxi: "Taxi", hotel: "Stay", bar: "Bar",
+    restaurant: "Restaurant", reservation: "Reservation", activity: "Activity",
+    landmark: "Landmark", tour: "Tour", event: "Event", ticket: "Ticket",
+  };
+  // Pick the most specific approved glyph for an item. Transport uses its
+  // transport_type; everything else is classified from the subtype + title so
+  // wine tasting → bar, cooking class → activity, restaurant → restaurant —
+  // never the generic hiking/activity glyph for unrelated bookings.
+  function timelineGlyph(item, type, transport) {
+    if (transport) return timelineIcon(type);
+    if (type === "hotel" || type === "stay") return "hotel";
+    const hay = `${val(item, "activity_type", "reservation_type", "subtype") || ""} ${item.title || ""} ${item.subtitle || ""}`.toLowerCase();
+    const has = (...ws) => ws.some((w) => hay.includes(w));
+    if (has("wine", "tasting", "cocktail", "brewery", "distillery", "pub", "aperitivo", "bar ", " bar")) return "bar";
+    if (has("restaurant", "dining", "dinner", "lunch", "brunch", "breakfast", "osteria", "trattoria", "bistro", "cafe", "café", "eatery", "supper")) return "restaurant";
+    if (has("cooking", "cook ", "workshop", "lesson", "course", "masterclass")) return "activity";
+    if (has("museum", "gallery", "monument", "cathedral", "palace", "castle", "ruins", "basilica", "landmark", "sightseeing")) return "landmark";
+    if (has("tour", "excursion", "guided", "hike", "trek", "safari", "cruise ", "boat trip")) return "tour";
+    if (has("concert", "show", "theatre", "theater", "opera", "festival", "match", "game", "gig")) return "event";
+    if (has("ticket", "admission", "entry", "pass ")) return "ticket";
+    if (has("reservation", "booking")) return "reservation";
+    return timelineIcon(type);
+  }
+  // Build the descriptive secondary line: what + where. Prefers a route for
+  // transport, a city for stays, and category + place for activities so the
+  // traveler understands the booking immediately.
+  function timelineSecondary(item, type, transport, glyph) {
+    if (transport) {
+      const from = locationLabel(val(transport, "departure_location_id", "start_location_id")),
+        to = locationLabel(val(transport, "arrival_location_id", "end_location_id")),
+        route = from && to ? `${from} → ${to}` : from || to || "",
+        num = type === "flight" ? flightNumber(item) : val(transport, "service_number", "carrier_name") || "";
+      return [num, route].filter(Boolean).join(" · ") || item.subtitle || statusText(item.status);
+    }
+    const loc = locationById(val(item, "property_location_id", "location_id", "start_location_id", "venue_location_id")),
+      place = val(loc, "city") || val(loc, "display_name") || "";
+    if (type === "hotel" || type === "stay")
+      return place || item.subtitle || "Stay";
+    const cat = TIMELINE_GLYPH_LABEL[glyph] || "",
+      detail =
+        item.subtitle &&
+        String(item.subtitle).toLowerCase() !== String(item.title || "").toLowerCase()
+          ? item.subtitle
+          : "";
+    return [cat, place || detail].filter(Boolean).join(" · ") || detail || statusText(item.status);
   }
 
   function flightScreen() {

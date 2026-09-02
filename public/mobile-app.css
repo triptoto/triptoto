@@ -343,7 +343,7 @@ button:active{transform:scale(.985)}
 /* Only the timeline list scrolls; header + bottom nav stay fixed */
 .timeline-screen{display:flex;flex-direction:column;height:100dvh;min-height:0;padding-bottom:0}
 .timeline-screen .trip-v2-header,.timeline-screen .mobile-alert{flex:0 0 auto}
-.timeline-screen .timeline-page{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav-height) + 24px + env(safe-area-inset-bottom))}
+.timeline-screen .timeline-page{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom) + 20px)}
 .timeline-screen .timeline-ribbon{margin-inline:22px}
 .timeline-screen .timeline-context,.timeline-screen .timeline-empty{max-width:400px;margin-inline:auto}
 .timeline-screen .timeline-day__header{top:0}
@@ -370,12 +370,13 @@ button:active{transform:scale(.985)}
 .timeline-context__wx-day>span{color:var(--muted);font-size:12px;font-weight:400;letter-spacing:.05em;text-transform:uppercase}
 .timeline-context__wx-day .ph-svg,.timeline-context__wx-day .ph{color:var(--ink)}
 .timeline-context__wx-day strong{font-size:12px;font-weight:400}
-.timeline-days{position:sticky;top:0;z-index:6;display:flex;align-items:flex-start;gap:40px;margin:0 0 6px;padding:14px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:var(--paper)}
+.timeline-days{position:sticky;top:0;z-index:6;display:flex;align-items:stretch;gap:8px;margin:0 0 6px;padding:14px 0 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:var(--paper);border-bottom:1px solid var(--line)}
 .timeline-days::-webkit-scrollbar{display:none}
-.timeline-day-tab{flex:0 0 auto;display:grid;gap:4px;justify-items:start;padding:0 0 9px;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--muted);text-align:left;white-space:nowrap;cursor:pointer;transition:border-color .18s var(--ease)}
-.timeline-day-tab__label{font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
-.timeline-day-tab__date{font-size:13px;font-weight:500;letter-spacing:.01em;color:var(--muted)}
-.timeline-day-tab--active{border-bottom-color:var(--accent)}
+.timeline-day-tab{flex:1 0 auto;position:relative;display:flex;justify-content:center;align-items:flex-start;padding:0 8px 11px;border:0;background:transparent;color:var(--muted);text-align:center;white-space:nowrap;cursor:pointer;transition:color .18s var(--ease)}
+.timeline-day-tab__label{font-size:15px;font-weight:600;letter-spacing:.02em;color:inherit}
+.timeline-day-tab--active{color:var(--accent)}
+.timeline-day-tab--active .timeline-day-tab__label{font-weight:700}
+.timeline-day-tab--active::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);width:64%;min-width:46px;height:3px;border-radius:999px;background:var(--accent)}
 .timeline-days__more{flex:0 0 auto;align-self:center;color:var(--muted);opacity:.7}
 .timeline-ribbon--paged .timeline-day__header{display:none}
 .timeline-ribbon--paged .timeline-day+.timeline-day{margin-top:0}
@@ -401,6 +402,7 @@ button:active{transform:scale(.985)}
 .journey-copy{display:grid;gap:3px;min-width:0}
 .journey-copy strong{font-size:20px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .journey-copy small{color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journey-copy small.journey-meta{color:var(--muted-soft);font-size:13px}
 .journey-chevron{color:var(--muted-soft)}
 .timeline-flags{display:flex;flex-wrap:wrap;gap:5px}
 .timeline-flag{font-size:12px;font-style:normal;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -1829,6 +1831,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
   color:var(--muted);font-size:14px;line-height:1.28;white-space:normal;
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden
 }
+.timeline-screen--ribbon .journey-meta{-webkit-line-clamp:1;font-size:12.5px;color:var(--muted-soft)}
 .timeline-screen--ribbon .timeline-flags{gap:6px;margin-bottom:1px}
 .timeline-screen--ribbon .timeline-flag{font-size:11px;letter-spacing:.1em}
 .timeline-screen--ribbon .timeline-flag--next,.timeline-screen--ribbon .timeline-flag--now{color:var(--accent)}
