@@ -2167,3 +2167,36 @@ html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
   border:0 !important;background:transparent !important;box-shadow:none !important;
   color:var(--accent-ink) !important;fill:var(--accent-ink) !important
 }
+
+/* ============================================================================
+   Booking / experience detail — flat but refined "window" cards (2026-09-02).
+   The global flat pass strips card surfaces app-wide; on the detail screens we
+   bring back clean white grouped surfaces — no dividers, just a soft lift and
+   generous padding — so each section reads as a distinct, beautiful window.
+   Scoped to .dark-detail (flight / hotel / train / plan) with !important so it
+   wins over the global flatteners. */
+.dark-detail .detail-content{padding-top:18px}
+.dark-detail .fd-card,
+.dark-detail .fd-list{
+  background:var(--card) !important;
+  border:0 !important;
+  border-radius:var(--radius-md) !important;
+  box-shadow:0 1px 2px rgba(17,18,23,.05),0 12px 26px -18px rgba(17,18,23,.16) !important;
+}
+.dark-detail .fd-card{padding:18px 18px 16px !important}
+.dark-detail .fd-list{margin-top:14px !important;padding:6px !important;overflow:hidden !important;border-top:0 !important}
+.dark-detail .fd-list>*+*{border-top:0 !important}
+/* Rows sit flush inside the padded list card and cushion on tap. */
+.dark-detail .fd-row,
+.dark-detail .fd-row__main{padding-left:11px !important;padding-right:11px !important;border-radius:14px}
+.dark-detail .fd-row--button,.dark-detail .fd-row__trail,.dark-detail .fd-row__main{transition:background .15s ease}
+.dark-detail .fd-row--button:active,.dark-detail .fd-row__main:active{background:var(--paper)}
+.dark-detail .fd-row__trail{border-radius:12px}
+.dark-detail .fd-row__trail:active{background:var(--paper)}
+.dark-detail .fd-row--doc{padding:0 !important}
+/* Hotel hero image joins the top of its details card as one continuous window. */
+.dark-detail .fd-hero-image{border-radius:var(--radius-md) var(--radius-md) 0 0 !important}
+.dark-detail .fd-card--attached{border-top-left-radius:0 !important;border-top-right-radius:0 !important;margin-top:0 !important}
+/* Hero rhythm: kicker → big title → date, a touch more air and no dead gap. */
+.dark-detail .fd-title{margin-top:10px !important}
+.dark-detail .fd-when{margin-top:8px}
