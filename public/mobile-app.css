@@ -1775,8 +1775,8 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 }
 .timeline-ribbon{position:relative;isolation:isolate}
 .timeline-ribbon::before{
-  content:"";position:absolute;z-index:0;top:26px;bottom:26px;left:95px;width:2px;
-  border-radius:999px;background:var(--line-strong)
+  content:"";position:absolute;z-index:0;top:26px;bottom:26px;left:94px;width:0;
+  border-left:2px dashed var(--line);opacity:.85
 }
 .timeline-screen--ribbon .timeline-day{position:relative;z-index:1}
 .timeline-screen--ribbon .timeline-day+.timeline-day{margin-top:0}
@@ -1812,14 +1812,17 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
   color:var(--ink);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums
 }
 .timeline-screen--ribbon .journey-marker{
-  width:44px;height:44px;border:1.5px solid var(--ink) !important;border-radius:50% !important;
-  background:var(--paper) !important;color:var(--ink);
-  box-shadow:0 0 0 5px var(--paper),0 2px 6px rgba(17,18,23,.10) !important
+  width:42px;height:42px;border-radius:50% !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  background:rgba(255,255,255,.42) !important;
+  -webkit-backdrop-filter:blur(13px) saturate(1.5);backdrop-filter:blur(13px) saturate(1.5);
+  color:var(--ink);
+  box-shadow:0 0 0 4px var(--paper),0 1px 1px rgba(255,255,255,.75) inset,0 7px 18px rgba(17,18,23,.15) !important
 }
 .timeline-screen--ribbon .journey-marker .ph{font-size:21px !important;font-weight:500;display:grid;place-items:center;line-height:1}
 .timeline-screen--ribbon .journey-event--next .journey-marker,.timeline-screen--ribbon .journey-event--active .journey-marker{
-  border-color:var(--accent) !important;background:var(--paper) !important;
-  box-shadow:0 0 0 5px var(--paper),0 2px 6px rgba(17,18,23,.10) !important
+  border-color:rgba(203,41,87,.55) !important;background:rgba(255,255,255,.55) !important;color:var(--accent);
+  box-shadow:0 0 0 4px var(--paper),0 0 0 6px rgba(203,41,87,.14),0 1px 1px rgba(255,255,255,.85) inset,0 7px 20px rgba(203,41,87,.30) !important
 }
 .timeline-screen--ribbon .journey-content{
   grid-template-columns:minmax(0,1fr);gap:8px;padding:13px 0 13px 12px
@@ -1841,7 +1844,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 /* Paged days render one day at a time, so past/future look identical: keep the
    marker disc fully opaque (it masks the spine) and drop the past dimming. */
 .timeline-screen--ribbon .journey-event--past .journey-marker,.timeline-screen--ribbon .journey-event--past .journey-copy{opacity:1}
-.timeline-screen--ribbon .journey-event--past .journey-marker{border-color:var(--ink) !important;color:var(--ink)}
+.timeline-screen--ribbon .journey-event--past .journey-marker{border-color:rgba(255,255,255,.6) !important;color:var(--ink)}
 
 @media(max-width:374px){
   .timeline-ribbon::before{left:94px}
