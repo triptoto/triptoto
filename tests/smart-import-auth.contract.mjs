@@ -9,7 +9,7 @@ assert(sw.includes("const CACHE='tripto-shell-product-v7-collab-docs'")&&sw.incl
 assert(headers.includes("script-src 'self' https://accounts.google.com")&&headers.includes('frame-src https://accounts.google.com'),'Google CSP is narrow');
 assert(worker.includes("'/api/v1/auth/google/challenge'")&&worker.includes("'/api/v1/auth/google'")&&worker.includes("'/api/v1/auth/signout'"),'auth endpoints wired');
 assert(worker.includes('imports\\/upload\\/preview')&&worker.includes('previewUploadedDocument'),'upload preview endpoint wired');
-for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','SHARING_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`${flag} must remain disabled`);
+for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`${flag} must remain disabled`);
 assert(wrangler.includes('"ACCOUNT_AUTH_ENABLED": "true"'),'Google account authentication must be enabled');
 assert(/"GOOGLE_CLIENT_ID": "[^"]+\.apps\.googleusercontent\.com"/.test(wrangler),'Google OAuth client ID must be configured');
 assert(migration.includes('auth_challenges')&&migration.includes('avatar_url')&&!/DROP\s+TABLE|DELETE\s+FROM/i.test(migration),'migration is additive');

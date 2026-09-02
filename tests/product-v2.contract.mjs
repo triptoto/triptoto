@@ -15,6 +15,6 @@ assert(migration.includes('CREATE TABLE verified_sender_emails')&&migration.incl
 assert(auth.includes('providerSubject')&&auth.includes("provider,provider_subject"),'stable provider subject identity missing');
 assert(auth.includes('UPDATE trips SET owner_user_id=')&&auth.includes('UPDATE imports SET user_id='),'guest migration does not preserve/attach existing records');
 assert(google.includes("header.alg!=='RS256'")&&google.includes('GOOGLE_JWKS')&&google.includes('crypto.subtle.verify'),'Google credential verification is incomplete');
-for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','SHARING_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`disabled flag changed: ${flag}`);
+for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`disabled flag changed: ${flag}`);
 assert(app.includes('go@tripto.to')&&app.includes('need attention')&&app.includes('Tickets and documents'),'V2 traveler concepts missing');
 console.log('Product V2 backend/auth/email contract passed.');

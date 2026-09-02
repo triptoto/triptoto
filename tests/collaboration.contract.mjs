@@ -38,10 +38,10 @@ assert(access.includes("read-only for the current member.")&&access.includes("![
 assert(sharing.includes("'OWNER_REQUIRED','Only the trip owner can manage sharing.'"),'sharing management must be owner-gated');
 assert(sharing.includes("'OWNER_CANNOT_LEAVE'")&&sharing.includes("'OWNER_CANNOT_BE_REMOVED'"),'owner-cannot-leave / cannot-be-removed guards missing');
 
-// --- SHARING_ENABLED is an operational kill-switch, still OFF, never a paid gate ---
+// --- SHARING_ENABLED is an operational kill-switch (now live), never a paid gate ---
 assert(sharing.includes("if(env.SHARING_ENABLED!=='true')throw new HttpError(503,'SHARING_DISABLED'"),'sharing kill-switch gate missing');
-assert(wrangler.includes('"SHARING_ENABLED": "false"'),'SHARING_ENABLED must remain false until acceptance QA');
-for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','SHARING_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`disabled flag changed: ${flag}`);
+assert(wrangler.includes('"SHARING_ENABLED": "true"'),'SHARING_ENABLED should be enabled (kill-switch remains in code)');
+for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`disabled flag changed: ${flag}`);
 
 // --- Frontend: free for all, roles, viewer read-only, token never logged ---
 assert(app.includes('Collaboration is free for every signed-in account — there is no paid gate.'),'collaboration must be free for all signed-in users');
