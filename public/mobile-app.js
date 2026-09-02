@@ -4240,6 +4240,20 @@
     if (lc === "active") return "Current";
     return "Upcoming";
   }
+  function tripCountdownLabel(trip) {
+    const start = String(val(trip, "starts_on", "startsOn") || "");
+    if (!start) return "";
+    const parts = start.split("-").map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return "";
+    const now = new Date(),
+      today = new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      startDate = new Date(parts[0], parts[1] - 1, parts[2]),
+      days = Math.round((startDate.getTime() - today.getTime()) / 86400000);
+    if (days < 0) return "";
+    if (days === 0) return "Starts today";
+    if (days === 1) return "Starts tomorrow";
+    return `Starts in ${days} days`;
+  }
   function tripListScreen() {
     // Trips list is the app home: instead of the bottom tab bar it carries two
     // header actions — a rose "+" (add booking) and an account shortcut.
@@ -4259,7 +4273,7 @@
           return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
         });
       if (!trips.length) return "";
-      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); return `<button class="trip-row trip-row--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small>${tripSharedBadge(trip)}</span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
+      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : ""; return `<button class="trip-row trip-row--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small>${countdown ? `<small class="trip-row__countdown">${esc(countdown)}</small>` : ""}${tripSharedBadge(trip)}</span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
     }).join("");
     const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "past" ? "past" : "upcoming"} trips</h1><p>${filter === "past" ? "Completed trips will appear here." : "Trips you have coming up will appear here."}</p></section>`;
     return page(pageTitle, body);

@@ -1952,6 +1952,9 @@ html .trips-bg-screen .trip-group .trip-row__copy strong{
   color:var(--accent-ink);text-shadow:none;font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1.14
 }
 html .trips-bg-screen .trip-group .trip-row__copy small{color:rgba(255,255,255,.78);font-size:15px}
+/* Upcoming trips show a bright countdown line ("Starts in X days"). */
+html .trips-bg-screen .trip-group .trip-row__countdown{color:#fff;font-weight:600}
+.trip-row__countdown{font-weight:600}
 html .trips-bg-screen .chevron{color:rgba(255,255,255,.6)}
 /* Empty state: white text/icon over the red canvas. */
 html .trips-bg-screen .mobile-empty h1{color:var(--accent-ink)}
