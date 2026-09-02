@@ -280,7 +280,9 @@ button:active{transform:scale(.985)}
 .icon-button--badged{position:relative}
 .unread-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#b72b35;color:#fff;font-size:10px;font-weight:600;line-height:16px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
 .unread-badge--inline{position:static;box-shadow:none;display:inline-grid;place-items:center;flex:0 0 auto}
-.app-bar{display:grid;grid-template-columns:48px 1fr auto;align-items:center;padding-inline:8px}
+.app-bar{display:grid;grid-template-columns:minmax(44px,1fr) auto minmax(44px,1fr);align-items:center;padding-inline:8px}
+.app-bar>.icon-button{justify-self:start}
+.app-bar>.app-bar-title{justify-self:center}
 .app-bar-actions{display:flex;align-items:center;justify-content:flex-end;gap:2px}
 .app-bar .app-bar-save{width:auto;max-width:none;margin:0;min-height:var(--button-compact-height);padding:0 20px;border-radius:999px;font-size:16px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
 .app-bar .app-bar-save:disabled{opacity:.55}
