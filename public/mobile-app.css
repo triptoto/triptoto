@@ -1248,6 +1248,10 @@ html .dark-detail .fd-row__chev:not(.flight-more__chevron){display:none !importa
    column too, so the trip name/date get the full width (no truncation). */
 html .bottom-sheet--trip .sheet-option .info-icon{display:none !important}
 html .bottom-sheet--trip .sheet-option{grid-template-columns:minmax(0,1fr) 24px !important}
+/* Account screen list rows: drop the trailing ">" chevron (user request).
+   Collapse the trailing grid column so the copy keeps full width. */
+html .account-v2 .simple-row .chevron{display:none !important}
+html .account-v2 .simple-row{grid-template-columns:44px minmax(0,1fr) !important}
 html .bottom-sheet .sheet-option,html .bottom-sheet .v2-choice,html .bottom-sheet .simple-row,html .bottom-sheet .travel-row,html .bottom-sheet .document-row,html .bottom-sheet .detail-row,html .bottom-sheet .checklist-row,html .bottom-sheet .first-run-how-list li{
   min-height:0 !important;padding-top:7px !important;padding-bottom:7px !important;gap:10px
 }

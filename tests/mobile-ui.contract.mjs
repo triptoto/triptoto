@@ -52,7 +52,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v25-choose-fullwidth'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, Google-auth, Geist, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('tripto-shell-product-v26-account-nochev'),'clean route, canonical host, lazy search, manual-attachment, booking-email inbox, live-flight, Google-auth, Geist, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Add it once.','Follow the trip.','The essential details stay close','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-route-matrix')&&app.includes('welcome-route-cell--next')&&app.includes('Times + route')&&app.includes('Ready offline')&&app.includes('Know what matters'),'Welcome route matrix is incomplete');
