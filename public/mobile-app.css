@@ -778,18 +778,18 @@ button:active{transform:scale(.985)}
 .fd-actions .flight-pass__secondary{min-width:0;padding:0 12px;white-space:nowrap}
 /* Grouped list card: boarding pass, flight details, documents, add */
 .fd-list{margin-top:10px;overflow:hidden;color:var(--navy)}
-.fd-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;min-height:60px;padding:11px 15px;border:0;background:transparent;color:var(--navy);text-align:left;font:inherit}
+.fd-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:11px;width:100%;min-height:46px;padding:7px 15px;border:0;background:transparent;color:var(--navy);text-align:left;font:inherit}
 .fd-row--button{cursor:pointer}
 .fd-row__icon{display:grid;place-items:center;color:var(--icon)}
 .fd-row__icon--warn{color:var(--amber)}
-.fd-row__icon .ph-svg{width:28px;height:28px}
-.fd-row__text{display:grid;gap:2px;min-width:0}
-.fd-row__text strong{font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fd-row__text small{color:var(--muted);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fd-row__icon .ph-svg{width:21px;height:21px}
+.fd-row__text{display:grid;gap:1px;min-width:0}
+.fd-row__text strong{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fd-row__text small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fd-row__chev{display:grid;place-items:center;color:var(--muted-soft)}
-.fd-row__chev .ph-svg,.fd-row__trail .ph-svg{width:24px;height:24px}
+.fd-row__chev .ph-svg,.fd-row__trail .ph-svg{width:18px;height:18px}
 .fd-row--doc{grid-template-columns:minmax(0,1fr) 44px;gap:0;padding:0}
-.fd-row__main{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:14px;min-width:0;min-height:60px;padding:11px 0 11px 15px;border:0;background:transparent;color:inherit;text-align:left;font:inherit}
+.fd-row__main{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:11px;min-width:0;min-height:46px;padding:7px 0 7px 15px;border:0;background:transparent;color:inherit;text-align:left;font:inherit}
 .fd-row__trail{display:grid;place-items:center;min-width:44px;min-height:44px;border:0;background:transparent;color:var(--muted)}
 .fd-panel{padding:0 18px 14px}
 .fd-panel dl{display:grid;margin:0}
