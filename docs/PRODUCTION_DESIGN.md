@@ -48,7 +48,9 @@ The bottom navigation is always ordered and labeled exactly:
 `Trip | Trip options | + | To-do | Account`
 
 - **Trip** opens the selected trip Timeline.
-- **Trip options** opens weather, currency, map, eSIM, alerts, documents, collaboration, booking imports, and Help & FAQ.
+- **Trip options** opens Local Guide, weather, currency, map, eSIM, alerts, documents, collaboration, booking imports, and Help & FAQ.
+
+Local Guide uses the destination and places already saved with the trip. It provides destination-aware category searches, local time, currency, and shortcuts to saved places without requesting the phone's location or presenting invented businesses as tripto.to recommendations.
 - **+** opens Add Booking / Create New Trip actions.
 - **To-do** opens the trip checklist.
 - **Account** opens identity, trip history, booking email, help, privacy, and account controls.

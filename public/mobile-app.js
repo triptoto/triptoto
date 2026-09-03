@@ -5878,8 +5878,35 @@
       ? optionCard("together", "users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
       : "";
     const alerts = totalNotificationCount();
-    const body = `<section class="trip-options-intro"><span>TRIP TOOLS</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>Everything that helps you plan, prepare, and travel with confidence—in one place.</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid">${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${collabCard}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid">${optionCard("edit", "edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
+    const body = `<section class="trip-options-intro"><span>TRIP TOOLS</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>Everything that helps you plan, prepare, and travel with confidence—in one place.</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("guide", "guide", "Local Guide", "Explore around your destination", `data-screen="local-guide"`)}${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid">${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${collabCard}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid">${optionCard("edit", "edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
     return mobilePage("Trip options", body, "trip-options", "", "trip-options-page");
+  }
+  function localGuideScreen() {
+    if (!state.trip) return missingDetailScreen("Local Guide", "Select a trip to explore its destination.");
+    const destinationLocation = (state.locations || []).find((location) => String(val(location, "type") || "") === "city") || (state.locations || []).find((location) => val(location, "city")) || (state.locations || [])[0] || null;
+    const destination = val(destinationLocation, "city", "display_name", "local_name") || state.trip.title || "Your destination";
+    const country = val(destinationLocation, "country", "country_name") || "";
+    const timezone = val(destinationLocation, "timezone") || "";
+    let localTime = "Not available";
+    if (timezone) {
+      try { localTime = new Intl.DateTimeFormat(undefined, { hour:"numeric", minute:"2-digit", timeZone:timezone }).format(new Date()); }
+      catch (_) {}
+    }
+    const categories = [
+      ["restaurant", "Food & drink", "Restaurants and local food", "restaurants"],
+      ["coffee", "Coffee", "Cafés and bakeries", "coffee shops"],
+      ["landmark", "See & do", "Landmarks and museums", "top sights"],
+      ["tour", "Walk & explore", "Tours and neighborhoods", "walking tours"],
+      ["shopping", "Shopping", "Markets and local shops", "shopping"],
+      ["pharmacy", "Essentials", "Pharmacies and practical stops", "pharmacy"],
+    ];
+    const categoryRows = categories.map(([iconName,title,copy,query]) => `<button type="button" class="local-guide-category" data-action="local-guide-search" data-query="${esc(`${query} in ${destination}`)}"><span class="local-guide-category__icon">${icon(iconName,22)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",16)}</button>`).join("");
+    const places = getMappableTripLocations().slice(0,4);
+    const savedRows = places.map((place) => `<button type="button" class="local-guide-place" data-action="trip-map-navigate" data-query="${esc(tripMapNavQuery(place))}"><span>${icon(mapMarkerIcon(place.markerKind || place.type),20)}</span><span><strong>${esc(place.name)}</strong><small>${esc(place.address || "Saved with your trip")}</small></span>${icon("navigation",17)}</button>`).join("");
+    const subtitle = [country, formatTripDates(state.trip)].filter(Boolean).join(" · ");
+    const offline = state.offline ? `<div class="local-guide-offline" role="status">${icon("offline",17)}<span>Your trip places remain available offline. Connect to explore nearby.</span></div>` : "";
+    const body = `<header class="local-guide-hero"><span class="local-guide-hero__eyebrow">LOCAL GUIDE</span><span class="local-guide-hero__mark">${icon("guide",32)}</span><h1>Explore ${esc(destination)}</h1><p>${esc(subtitle || "Useful places for this trip")}</p><div class="local-guide-facts"><span><small>LOCAL TIME</small><strong>${esc(localTime)}</strong></span><span><small>CURRENCY</small><strong>${esc(destinationCurrency())}</strong></span></div></header>${offline}<section class="local-guide-section" aria-labelledby="local-guide-explore"><div class="local-guide-section__head"><div><span>EXPLORE</span><h2 id="local-guide-explore">What do you need?</h2></div><small>Opens one search at a time</small></div><div class="local-guide-grid">${categoryRows}</div></section><section class="local-guide-section" aria-labelledby="local-guide-saved"><div class="local-guide-section__head"><div><span>YOUR TRIP</span><h2 id="local-guide-saved">Places already saved</h2></div><small>${places.length} place${places.length === 1 ? "" : "s"}</small></div><div class="local-guide-places">${savedRows || `<div class="local-guide-empty">${icon("location",24)}<p>Add a booking with a location and it will appear here.</p></div>`}</div></section><p class="local-guide-note">Search uses the destination saved in your trip—not your phone location. Specific places are shown by your maps app and are not recommendations from tripto.to.</p>`;
+    return mobilePage("Local Guide", body, "trip-options", "", "local-guide-page");
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
   // Collaboration is free for every signed-in account — there is no paid gate.
@@ -6595,6 +6622,7 @@
         case "trip-map": html = tripMapScreen(); break;
         case "weather": html = weatherScreen(); break;
         case "currency": html = currencyScreen(); break;
+        case "local-guide": html = localGuideScreen(); break;
         case "trip-options": html = tripOptionsScreen(); break;
         case "esim": html = esimScreen(); break;
         case "collaboration": html = collaborationScreen(); break;
@@ -8406,6 +8434,10 @@
         break;
       case "trip-map-navigate":
         if (state.offline) showToast("Connect to open directions. Your trip places remain available offline.");
+        else openMaps(target.dataset.query || "");
+        break;
+      case "local-guide-search":
+        if (state.offline) showToast("Connect to explore places. Your saved trip details remain available offline.");
         else openMaps(target.dataset.query || "");
         break;
       case "open-first-run-how":

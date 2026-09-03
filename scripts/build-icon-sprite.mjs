@@ -40,6 +40,7 @@ const icons = Object.freeze({
   coffee: "coffee",
   cooking: "cooking-pot",
   collaboration: "users-three",
+  guide: "compass",
   confirmed: "check-circle",
   copy: "copy",
   "create-trip": "map-trifold",
