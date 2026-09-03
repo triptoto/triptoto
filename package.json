@@ -4,6 +4,7 @@
   "version": "0.9.0-beta.1",
   "type": "module",
   "scripts": {
+    "build:app-shell": "esbuild public/mobile-app.js --minify --target=es2022 --outfile=public/mobile-app.min.js && esbuild public/mobile-app.css --minify --target=chrome100,safari15 --outfile=public/mobile-app.min.css",
     "build:icons": "node scripts/build-icon-sprite.mjs",
     "typecheck": "tsc --noEmit",
     "test:scenarios": "node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/inbound-email.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts",
@@ -14,7 +15,7 @@
     "update:places": "node scripts/build-places-dataset.mjs",
     "build:places": "esbuild packages/places/src/browser-provider.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-provider.js && esbuild packages/places/src/worker.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-search-worker.js",
     "validate:places": "npm run build:places && node --import tsx/esm tests/places-search.scenarios.ts && node tests/places-cache.scenarios.mjs && node tests/places-browser.contract.mjs",
-    "check:ui": "npm run build:icons && npm run build:smart-import && npm run build:airport-timezones && npm run build:places && node --check public/smart-import.js && node --check public/airport-timezones.js && node --check public/places-provider.js && node --check public/places-search-worker.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node tests/airport-timezones.contract.mjs && node tests/places-browser.contract.mjs && node tests/mobile-ui.contract.mjs && node tests/button-size.contract.mjs",
+    "check:ui": "npm run build:app-shell && npm run build:icons && npm run build:smart-import && npm run build:airport-timezones && npm run build:places && node --check public/mobile-app.min.js && node --check public/smart-import.js && node --check public/airport-timezones.js && node --check public/places-provider.js && node --check public/places-search-worker.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node tests/airport-timezones.contract.mjs && node tests/places-browser.contract.mjs && node tests/mobile-ui.contract.mjs && node tests/button-size.contract.mjs",
     "smoke:beta": "bash scripts/smoke-beta-milestone.sh",
     "test:integration": "bash scripts/test-local-d1.sh",
     "validate:beta": "npm run check:ui && npm run typecheck && npm run test:scenarios && npm run test:integration",

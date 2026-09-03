@@ -48,11 +48,10 @@
     );
   const ensureSmartImport = () =>
     loadModule("/smart-import.js?v=product-v2-conf6", "TriptoSmartImport");
-  // Warm the airport-timezone table in the background once the app is idle, so
-  // the quick-add form has it ready without blocking first paint.
-  (globalThis.requestIdleCallback || ((fn) => setTimeout(fn, 1200)))(() =>
-    ensureAirportTimezones().catch(() => {}),
-  );
+  // Keep the airport-timezone table fully on demand. Loading and parsing it in
+  // the first idle window can collide with a user's first Timeline scroll on
+  // mobile Safari. The relevant forms call ensureAirportTimezones() when they
+  // actually need the lookup.
   let googleRedirectMarker = googleAuth?.redirectMarker(location) || null;
 
   // Runtime aliases preserve the product vocabulary while the sprite owns the
@@ -111,7 +110,6 @@
     syncConflicts: [],
     localDocs: [],
     account: null,
-    importReview: null,
     importLocalDocumentId: null,
     importUploadRequest: null,
     imports: [],

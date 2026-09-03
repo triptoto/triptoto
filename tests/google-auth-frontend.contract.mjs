@@ -146,7 +146,7 @@ for (const [status, code] of [
 }
 
 assert.ok(
-  index.indexOf("/google-auth-client.js") < index.indexOf("/mobile-app.js"),
+  index.indexOf("/google-auth-client.js") < index.indexOf("/mobile-app.min.js"),
 );
 assert.ok(sw.includes("/google-auth-client.js"));
 assert.ok(headers.includes("Cross-Origin-Opener-Policy: same-origin-allow-popups"));

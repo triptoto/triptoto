@@ -353,7 +353,7 @@ assert(
 const attachmentScriptIndex = index.indexOf("/manual-booking-attachments.js");
 assert(attachmentScriptIndex >= 0, "local attachment helper is not loaded");
 assert(
-  attachmentScriptIndex < index.indexOf("/mobile-app.js"),
+  attachmentScriptIndex < index.indexOf("/mobile-app.min.js"),
   "local attachment helper must load before the app",
 );
 assert(

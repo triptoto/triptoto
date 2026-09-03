@@ -2404,3 +2404,37 @@ html body .bottom-nav .nav-item__badge{
   html body .trips-bg-screen .bottom-nav{width:calc(100% - 12px);padding-inline:5px}
   html body .bottom-nav .nav-item{font-size:11px}
 }
+
+/* Mobile rendering performance. The app uses an inner scrolling viewport so
+   the header and dock stay stable. Isolate its paint work, avoid promoting the
+   dock permanently, and do not scale full-width row buttons when a finger
+   starts a swipe. Tap feedback remains available through color/opacity. */
+html .timeline-screen .timeline-page,
+html .weather-page,
+html .sheet-scroll,
+html .doc-viewer__body{
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  contain:layout paint style;
+}
+html body .bottom-nav,
+html body .trips-bg-screen .bottom-nav{
+  will-change:auto;
+  backface-visibility:visible;
+  contain:layout paint style;
+}
+html :is(.journey-event,.trip-row,.travel-row,.document-row,.simple-row,.checklist-row,.notif-item,.sheet-option,.v2-choice):active{
+  transform:none;
+  filter:none;
+}
+.notif-item,.booking-email-row,.checklist-row,.manual-add-card,.fd-row{
+  content-visibility:auto;
+  contain-intrinsic-size:auto 72px;
+}
+@media(hover:none) and (pointer:coarse){
+  html body button:active{transform:none}
+  html body .mobile-primary-action:active,
+  html body .primary-cta:active,
+  html body .mobile-danger-action:active,
+  html body .first-run-how-done:active{filter:none;opacity:.84}
+}
