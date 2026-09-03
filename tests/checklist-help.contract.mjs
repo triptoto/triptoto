@@ -27,7 +27,7 @@ assert(help.includes('Quick answers for planning your trip.'),'Help subtitle mis
 const faq=app.slice(app.indexOf('const FAQ_SECTIONS'),app.indexOf('function helpScreen('));
 for(const label of ['Getting started','Bookings','Your trip','Account'])assert(faq.includes(`title: "${label}"`),`FAQ section missing: ${label}`);
 // Real product labels only — no invented controls.
-for(const real of ['Upload Booking','Add Booking Manually','Trip Map','Sign out','Timeline'])assert(faq.includes(real),`FAQ must reference real control: ${real}`);
+for(const real of ['Upload Booking','ADD NEW BOOKING','Trip Map','Sign out','Timeline'])assert(faq.includes(real),`FAQ must reference real control: ${real}`);
 // Forward Email option is hidden in the product, so it must NOT be documented.
 assert(!faq.includes('Forward'),'FAQ documents a hidden Forward Email option');
 // No invented support email beyond the real booking address.

@@ -96,7 +96,7 @@ const expectedCategories = [
 assert.deepEqual(
   Object.keys(registry),
   expectedCategories.map(([key]) => key),
-  "Add Booking Manually must expose the approved expanded categories in order",
+  "ADD NEW BOOKING must expose the approved expanded categories in order",
 );
 for (const [key, label, base, subtype, cta] of expectedCategories) {
   assert.equal(registry[key]?.label, label, `${key} label changed`);
