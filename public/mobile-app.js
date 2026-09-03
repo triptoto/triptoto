@@ -5751,10 +5751,11 @@
         : null,
       name = val(stay, "property_name", "title") || "Destination",
       localName = val(location, "local_name") || "",
+      showLocalName = localName && localName.trim().toLocaleLowerCase() !== String(name).trim().toLocaleLowerCase(),
       address =
         val(location, "local_address", "formatted_address") ||
         "Address unavailable";
-    return `<div class="phone-app"><section class="driver-screen"><div class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close" style="color:#fff">${icon("close", 26)}</button><strong>Show to Driver</strong><span></span></div><div class="driver-label">${icon("car", 34)} <span>Please drive to</span></div><h1 class="driver-name">${esc(name)}</h1><p class="driver-local">${esc(localName)}</p><div class="driver-rule"></div><div class="driver-address">${icon("pin", 30)}<span>${esc(address)}</span></div><div class="driver-cta">${primaryCta("Navigate", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</div></section></div>`;
+    return `<div class="phone-app"><section class="driver-screen"><header class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close">${icon("close", 26)}</button><strong>Show to Driver</strong><span aria-hidden="true"></span></header><main class="driver-main"><div class="driver-label">${icon("car", 24)} <span>Please drive to</span></div><section class="driver-pass" aria-labelledby="driver-destination-name"><span class="driver-pass__eyebrow">Destination</span><h1 class="driver-name" id="driver-destination-name">${esc(name)}</h1>${showLocalName ? `<p class="driver-local">${esc(localName)}</p>` : ""}<div class="driver-address">${icon("pin", 26)}<span><small>Address</small><strong>${esc(address)}</strong></span></div></section><p class="driver-hint">Show this screen to your driver. The destination is saved with your trip.</p></main><footer class="driver-cta">${primaryCta("Open directions", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</footer></section></div>`;
   }
   function bottomSheet(id, title, content) {
     return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
@@ -5860,6 +5861,10 @@
   function collabScaffold(sub, body) {
     return `<div class="phone-app"><section class="screen collaboration-screen">${appBar("Plan together", sub, true)}<main class="collab-page">${body}</main></section></div>`;
   }
+  function collabBenefits() {
+    const benefit = (iconName, title, body) => `<div class="collab-benefit"><span class="collab-benefit__icon">${icon(iconName, 21)}</span><span><strong>${esc(title)}</strong><small>${esc(body)}</small></span></div>`;
+    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><h2 id="collab-benefits-title">Why plan together?</h2>${benefit("edit", "Build one plan", "Editors can add bookings and update trip details.")}${benefit("bell", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</section>`;
+  }
   function collaborationScreen() {
     if (!state.trip)
       return missingDetailScreen("Plan together", "Select a trip to invite people.");
@@ -5867,7 +5872,7 @@
     if (!isSignedIn())
       return collabScaffold(
         sub,
-        `<section class="collab-empty"><span class="collab-empty__icon">${icon("users", 32)}</span><h1>Sign in to plan together</h1><p>Create a free tripto.to account to invite people to this trip. Everyone keeps their own sign-in — no shared passwords, and it never costs anything.</p><button type="button" class="mobile-primary-action" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button></section>`,
+        `<header class="collab-hero"><span class="collab-hero__icon">${icon("users", 30)}</span><span class="collab-hero__eyebrow">Shared planning</span><h1>One trip.<br>Everyone in sync.</h1><p>Invite the people travelling with you so the whole group can follow one clear plan.</p></header>${collabBenefits()}<section class="collab-signin"><h2>Ready to plan together?</h2><p>Sign in with your free account. Everyone uses their own login — no shared passwords.</p><button type="button" class="mobile-primary-action" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button><small>Free for every trip.</small></section>`,
       );
     if (state.collabLoading && !state.sharing)
       return collabScaffold(sub, `<section class="collab-loading" role="status"><span class="collab-empty__icon">${icon("users", 32)}</span><p>Loading who’s on this trip…</p></section>`);
@@ -5925,7 +5930,7 @@
     const cap = state.sharing?.maxMembers ? `<p class="collab-note">Up to ${esc(state.sharing.maxMembers)} people per trip.</p>` : "";
     return collabScaffold(
       sub,
-      `<header class="collab-intro"><span class="collab-intro__icon">${icon("users", 26)}</span><p>${intro}</p></header>${inviteBtn}<section class="collab-section"><h2 class="collab-section__title">People</h2><div class="collab-members">${memberRows || `<p class="collab-note">Just you so far.</p>`}</div>${cap}</section>${invitesSection}${leaveBtn}`,
+      `<header class="collab-hero"><span class="collab-hero__icon">${icon("users", 30)}</span><span class="collab-hero__eyebrow">Shared planning</span><h1>One trip.<br>Everyone in sync.</h1><p>${intro}</p></header>${collabBenefits()}${inviteBtn}<section class="collab-section"><h2 class="collab-section__title">People on this trip</h2><div class="collab-members">${memberRows || `<p class="collab-note">Just you so far. Invite someone when you’re ready.</p>`}</div>${cap}</section>${invitesSection}${leaveBtn}`,
     );
   }
   function shareSheet() {

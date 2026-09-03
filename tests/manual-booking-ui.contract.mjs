@@ -156,6 +156,7 @@ const formScreen = section(
   "function mobileFormScreen()",
   "function driverScreen()",
 );
+for(const copy of ['Show to Driver','Please drive to','Destination','Show this screen to your driver.','Open directions'])assert(app.includes(copy),`driver handoff UX missing: ${copy}`);
 assert(
   formScreen.includes("manualBookingConfig(kind)") &&
     formScreen.includes("bookingBaseKind(kind)"),

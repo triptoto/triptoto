@@ -48,5 +48,6 @@ assert(app.includes('Collaboration is free for every signed-in account — there
 assert(app.includes('owner: { label: "Owner", icon: "owner" }')&&app.includes('editor: { label: "Can edit", icon: "editor" }')&&app.includes('viewer: { label: "View only", icon: "viewer" }'),'COLLAB_ROLES labels changed');
 assert(app.includes('function canEditCurrentTrip()')&&app.includes('You have view-only access to this trip.'),'viewer read-only UI guard missing');
 assert(app.includes("never trusts or sends 'owner' as an assignable role"),'frontend owner-escalation guard comment missing');
+for(const copy of ['Why plan together?','Build one plan','Keep everyone aligned','You stay in control','One trip.<br>Everyone in sync.'])assert(app.includes(copy),`informative collaboration UX missing: ${copy}`);
 
 console.log('Free trip collaboration contract passed.');
