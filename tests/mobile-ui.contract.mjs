@@ -55,7 +55,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('tripto-shell-product-v42-add-copy'),'clean route, canonical host, lazy search, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('tripto-shell-product-v43-add-heading'),'clean route, canonical host, lazy search, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Add it once.','Follow the trip.','The essential details stay close','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-route-matrix')&&app.includes('welcome-route-cell--next')&&app.includes('Times + route')&&app.includes('Ready offline')&&app.includes('Know what matters'),'Welcome route matrix is incomplete');
@@ -72,7 +72,7 @@ assert(!app.includes('tripDateField(')&&!css.includes('.trip-date-control'),'old
 assert(app.includes('kind==="trip"?"add-booking"'),'Create Trip does not continue to Add Booking');
 assert(app.includes('sessionStorage.setItem(quickDraftKey(kind)')&&app.includes('Discard changes?'),'form recovery missing');
 const add=app.slice(app.indexOf('function addBookingScreen('),app.indexOf('function documentSheet('));
-for(const copy of ['ADD NEW BOOKING','What are you adding?','Choose a type and add the confirmed details.','Already have a confirmation?','Upload a file','Forward an email'])assert(add.includes(copy),`direct manual-add page missing: ${copy}`);
+for(const copy of ['ADD NEW BOOKING','Add to your trip','Choose a type and add the confirmed details.','Already have a confirmation?','Upload a file','Forward an email'])assert(add.includes(copy),`direct manual-add page missing: ${copy}`);
 for(const category of ['Flight','Train','Ferry','Bus / Coach','Cruise','Car Rental','Transfer','Taxi / Ride','Parking','Hotel / Stay','Restaurant','Tour / Excursion','Activity / Event','Museum / Attraction','Event / Show','Travel Insurance','Other'])assert(app.includes(`label: "${category}"`),`manual category missing: ${category}`);
 for(const selector of ['.manual-add-intro','.manual-add-grid','.manual-add-card','.manual-add-other'])assert(css.includes(selector),`manual-add design missing: ${selector}`);
 const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function addBookingScreen('));
