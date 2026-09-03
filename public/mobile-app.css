@@ -454,8 +454,6 @@ button:active{transform:scale(.985)}
 .trip-map__days::-webkit-scrollbar{display:none}
 .trip-map__day{flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font-size:14px;font-weight:600}
 .trip-map__day.is-active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.trip-map__open{display:flex;align-items:center;justify-content:center;gap:8px;margin:0}
-.trip-map__open[aria-disabled="true"]{opacity:.55}
 .trip-map__offline{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.35}
 .trip-map__note{margin:0;font-size:12px;color:var(--muted-soft);text-align:center;line-height:1.45}
 .trip-map__list{display:flex;flex-direction:column;gap:8px}
@@ -2468,6 +2466,43 @@ html body .bottom-nav .nav-item__badge{
   color:var(--accent-ink);
   box-shadow:0 0 0 2px var(--card);
 }
+
+/* Trip Map — private itinerary index. The complete itinerary is never sent to
+   Google; each destination opens individually only after a traveler taps it. */
+html .trip-map-screen{background:var(--paper);color:var(--ink);font-family:var(--font-ui)}
+html .trip-map{gap:16px;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
+html .trip-map__hero{display:grid;grid-template-columns:48px minmax(0,1fr) 44px;align-items:center;gap:12px;padding:16px;border:1px solid var(--line);border-radius:22px;background:var(--activity-soft)}
+html .trip-map__hero-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:var(--card);color:var(--icon)}
+html .trip-map__hero>div{min-width:0}
+html .trip-map__hero>div>span,html .trip-map__list-head>div>span{display:block;color:var(--accent);font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.1em;text-transform:uppercase}
+html .trip-map__hero h1{margin:3px 0 3px;color:var(--ink);font-family:var(--font-title);font-size:22px;font-weight:700;line-height:1.08;letter-spacing:-.03em}
+html .trip-map__hero p{margin:0;color:var(--muted);font-size:13px;font-weight:400;line-height:1.35}
+html .trip-map__hero>strong{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--card);color:var(--accent);font-size:16px;font-weight:700}
+html .trip-map__days{gap:8px;padding:0 0 2px}
+html .trip-map__day{min-height:44px;padding:0 15px;border:1px solid var(--line) !important;border-radius:999px !important;background:var(--card) !important;color:var(--muted);font-family:var(--font-ui);font-size:13px;font-weight:600}
+html .trip-map__day.is-active{border-color:var(--accent) !important;background:var(--accent) !important;color:var(--accent-ink)}
+html .trip-map__offline{padding:12px 14px;border:1px solid var(--line);border-radius:15px;background:var(--blue-soft);color:var(--ink);font-size:13px}
+html .trip-map__list-head{display:flex;align-items:end;justify-content:space-between;gap:12px;padding:2px 2px 0}
+html .trip-map__list-head h2{margin:3px 0 0;color:var(--ink);font-family:var(--font-title);font-size:20px;font-weight:700;line-height:1.15;letter-spacing:-.02em}
+html .trip-map__list-head>small{padding-bottom:2px;color:var(--muted);font-size:12px;font-weight:500;white-space:nowrap}
+html .trip-map__list{gap:10px}
+html .trip-map__row{overflow:hidden;border:1px solid var(--line) !important;border-radius:18px !important;background:var(--card) !important;box-shadow:none !important}
+html .trip-map__row.is-next{border-color:var(--accent) !important;box-shadow:0 0 0 1px var(--accent) !important}
+html .trip-map__row-main{display:grid;grid-template-columns:44px minmax(0,1fr) 50px;align-items:center;gap:12px;width:100%;min-height:78px;padding:10px 10px 10px 12px;color:var(--ink);font-family:var(--font-ui)}
+html .trip-map__row-icon{width:44px;height:44px;border-radius:15px;background:var(--surface);color:var(--icon)}
+html .trip-map__row-icon--flight{background:var(--flight-soft)}
+html :is(.trip-map__row-icon--car,.trip-map__row-icon--car-rental,.trip-map__row-icon--transfer,.trip-map__row-icon--taxi,.trip-map__row-icon--train,.trip-map__row-icon--ferry,.trip-map__row-icon--cruise){background:var(--transfer-soft)}
+html :is(.trip-map__row-icon--hotel,.trip-map__row-icon--stay){background:var(--stay-soft)}
+html :is(.trip-map__row-icon--activity,.trip-map__row-icon--tour,.trip-map__row-icon--attraction,.trip-map__row-icon--museum,.trip-map__row-icon--event){background:var(--activity-soft)}
+html :is(.trip-map__row-icon--restaurant,.trip-map__row-icon--dining,.trip-map__row-icon--food){background:var(--food-soft)}
+html .trip-map__row-copy{gap:3px}
+html .trip-map__row-copy strong{display:flex;color:var(--ink);font-family:var(--font-title);font-size:16px;font-weight:600;line-height:1.2;letter-spacing:-.015em;white-space:normal}
+html .trip-map__row-copy small{display:-webkit-box;overflow:hidden;color:var(--muted);font-size:13px;font-weight:400;line-height:1.3;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+html .trip-map__row-nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:50px;min-height:48px;border:0;color:var(--accent)}
+html .trip-map__row-nav small{color:var(--accent);font-size:10px;font-weight:600;line-height:1}
+html .trip-map__next{padding:3px 7px;background:var(--accent);color:var(--accent-ink);font-size:10px;font-weight:700}
+html .trip-map__note{max-width:38ch;margin:2px auto 0;color:var(--muted);font-size:12px;font-weight:400;line-height:1.45;text-align:center}
+@media(max-width:374px){html .trip-map{padding-inline:14px}html .trip-map__hero{grid-template-columns:44px minmax(0,1fr) 40px;padding:14px 12px}html .trip-map__hero-icon{width:44px;height:44px}html .trip-map__hero>strong{width:40px;height:40px}html .trip-map__hero h1{font-size:20px}html .trip-map__list-head>small{display:none}html .trip-map__row-main{grid-template-columns:42px minmax(0,1fr) 46px;gap:10px;padding-left:10px}html .trip-map__row-icon{width:42px;height:42px}}
 @media(max-width:374px){
   html body .bottom-nav,
   html body .trips-bg-screen .bottom-nav{width:calc(100% - 12px);padding-inline:5px}

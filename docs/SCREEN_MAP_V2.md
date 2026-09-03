@@ -158,4 +158,4 @@ The contact sheet must show the complete core and document state inventory toget
 
 ## Contextual Trip Map
 
-28. Trip Map (contextual) — reachable only via the central + menu, and only when the current trip has 2+ distinct mappable places. It is a full-screen state that returns to the Timeline; it is not a tab and there is no Timeline|Map switch. Sub-states: map with type-coded markers + NEXT marker, marker preview (View Booking + Navigate), "Also on this trip" address list, and the provider-unavailable state. See TRIP_MAP_V2.md.
+28. Trip Map (contextual) — reachable through Trip options when the current trip has 2+ distinct mappable places. It is a full-screen state, not a tab. Sub-states: day-filtered destination cards, NEXT destination, individual Directions, offline-readable place list, and insufficient-place recovery. The complete itinerary is never sent to Google Maps. See TRIP_MAP_V2.md.

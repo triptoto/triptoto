@@ -1539,36 +1539,6 @@
       .slice()
       .sort((a, b) => (a.when || Infinity) - (b.when || Infinity));
   }
-  function tripMapPointToken(p) {
-    if (p.lat != null && p.lon != null) return `${p.lat},${p.lon}`;
-    return p.address || p.name || "";
-  }
-  // Build a Google Maps URL that opens ALL the trip's points at once. One point
-  // → a search pin; multiple points → a multi-stop route through them (the only
-  // keyless, CSP-safe way to show several places in Google Maps). The URL API
-  // supports origin + up to 9 waypoints + destination (11 points); extras are
-  // dropped and reported so we never silently hide stops.
-  function tripMapAllPointsUrl(places) {
-    const tokens = places.map(tripMapPointToken).filter(Boolean);
-    if (!tokens.length) return { url: "", used: 0, dropped: 0 };
-    if (tokens.length === 1)
-      return {
-        url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tokens[0])}`,
-        used: 1,
-        dropped: 0,
-      };
-    const MAX = 11;
-    const used = tokens.length > MAX ? [...tokens.slice(0, MAX - 1), tokens[tokens.length - 1]] : tokens;
-    const origin = encodeURIComponent(used[0]);
-    const destination = encodeURIComponent(used[used.length - 1]);
-    const waypoints = used
-      .slice(1, -1)
-      .map((t) => encodeURIComponent(t))
-      .join("|");
-    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-    if (waypoints) url += `&waypoints=${waypoints}`;
-    return { url, used: used.length, dropped: tokens.length - used.length };
-  }
   function tripMapScreen() {
     if (!state.trip)
       return missingDetailScreen("Trip Map", "Select a trip to see its map.");
@@ -1597,20 +1567,21 @@
           )
           .join("")}</div>`
       : "";
-    const openAll = `<button type="button" class="mobile-primary-action trip-map__open" data-action="trip-map-open-all" data-day="${esc(activeDay || "")}"${state.offline ? " aria-disabled=\"true\"" : ""}>${icon("map", 20)} Open all points in Google Maps</button>`;
     const rows = ordered
       .map((p) => {
         const isNext = p.key === nextKey,
+          markerClass = String(p.markerKind || p.type || "place").toLowerCase().replace(/[^a-z0-9-]/g, "-"),
           when = p.when ? esc(formatDateTime(p.when)) : "",
           addr = esc(p.address || (p.hasCoords ? "Saved location" : "Address on file")),
           meta = [when, addr].filter(Boolean).join(" · ");
-        return `<div class="trip-map__row ${isNext ? "is-next" : ""}"><button type="button" class="trip-map__row-main" data-action="trip-map-navigate" data-query="${esc(tripMapNavQuery(p))}" aria-label="Open ${esc(p.name)} in Google Maps"><span class="trip-map__row-icon">${icon(mapMarkerIcon(p.markerKind || p.type), 18)}</span><span class="trip-map__row-copy"><strong>${esc(p.name)}${isNext ? `<span class="trip-map__next">NEXT</span>` : ""}</strong><small>${meta}</small></span><span class="trip-map__row-nav">${icon("navigation", 20)}</span></button></div>`;
+        return `<div class="trip-map__row ${isNext ? "is-next" : ""}"><button type="button" class="trip-map__row-main" data-action="trip-map-navigate" data-query="${esc(tripMapNavQuery(p))}" aria-label="Get directions to ${esc(p.name)}"><span class="trip-map__row-icon trip-map__row-icon--${esc(markerClass)}">${icon(mapMarkerIcon(p.markerKind || p.type), 20)}</span><span class="trip-map__row-copy"><strong>${esc(p.name)}${isNext ? `<span class="trip-map__next">NEXT</span>` : ""}</strong><small>${meta}</small></span><span class="trip-map__row-nav">${icon("navigation", 18)}<small>Directions</small></span></button></div>`;
       })
       .join("");
     const offlineNote = state.offline
-      ? `<div class="trip-map__offline" role="status">${icon("info", 18)}<span>Offline — your places are saved on this phone. Connect to open Google Maps.</span></div>`
+      ? `<div class="trip-map__offline" role="status">${icon("info", 18)}<span>Your places are saved on this phone. Connect for directions.</span></div>`
       : "";
-    return `<div class="phone-app"><section class="screen trip-map-screen">${appBar("Trip Map", tripDates ? `${state.trip.title || "Trip"} · ${formatTripDates(state.trip)}` : state.trip.title || "Trip", true)}<main class="trip-map">${chips}${offlineNote}${openAll}<section class="trip-map__list" aria-label="Trip places">${rows}</section><p class="trip-map__note">Opens Google Maps with your whole trip so you can view it and save it offline there. tripto.to never uses your location — your places stay saved on this phone.</p></main></section></div>`;
+    const listTitle = activeDay ? tripMapDayLabel(activeDay) : "All trip places";
+    return `<div class="phone-app"><section class="screen trip-map-screen">${appBar("Trip Map", tripDates ? `${state.trip.title || "Trip"} · ${formatTripDates(state.trip)}` : state.trip.title || "Trip", true)}<main class="trip-map"><header class="trip-map__hero"><span class="trip-map__hero-icon">${icon("map", 26)}</span><div><span>YOUR ROUTE</span><h1>Places in trip order</h1><p>Everything from your bookings, organized by day.</p></div><strong aria-label="${ordered.length} places">${ordered.length}</strong></header>${chips}${offlineNote}<div class="trip-map__list-head"><div><span>TRIP PLACES</span><h2>${esc(listTitle)}</h2></div><small>Tap for directions</small></div><section class="trip-map__list" aria-label="Trip places">${rows}</section><p class="trip-map__note">Directions open one destination at a time. tripto.to never requests your location or shares your complete itinerary with Google.</p></main></section></div>`;
   }
   // Short localized weekday for a "YYYY-MM-DD" date (noon avoids TZ edge cases).
   function weekdayLabel(date) {
@@ -8380,24 +8351,9 @@
         state.tripMapDay = target.dataset.day || null;
         render();
         break;
-      case "trip-map-open-all": {
-        if (state.offline) {
-          showToast("Connect to open Google Maps. Your places stay saved here offline.");
-          break;
-        }
-        const activeDay = target.dataset.day || state.tripMapDay || null,
-          built = tripMapAllPointsUrl(orderedTripMapPlaces(activeDay));
-        if (!built.url) {
-          showToast("No mappable places to open yet.");
-          break;
-        }
-        if (built.dropped > 0)
-          showToast(`Opening the first ${built.used} stops in Google Maps (${built.dropped} more not shown).`);
-        window.location.href = built.url;
-        break;
-      }
       case "trip-map-navigate":
-        openMaps(target.dataset.query || "");
+        if (state.offline) showToast("Connect to open directions. Your trip places remain available offline.");
+        else openMaps(target.dataset.query || "");
         break;
       case "open-first-run-how":
         openSheet("first-run-how", target);
