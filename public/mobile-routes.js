@@ -14,6 +14,7 @@
     "trip-map": "/trip-map",
     weather: "/weather",
     currency: "/currency",
+    "trip-options": "/trip-options",
     esim: "/esim",
     checklist: "/before-you-go",
     help: "/help",

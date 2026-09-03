@@ -41,6 +41,7 @@ const routeCases=[
   ['flight','flight-1','/flights/flight-1'],['hotel','stay-1','/hotels/stay-1'],
   ['train','train-1','/trains/train-1'],['plan','plan-1','/plans/plan-1'],
   ['documents',null,'/documents'],['ready',null,'/ready-offline'],
+  ['trip-options',null,'/trip-options'],
   ['health',null,'/trip-health'],['travelers',null,'/travelers'],
   ['traveler','traveler-1','/travelers/traveler-1'],['checklist',null,'/before-you-go'],
   ['import',null,'/bookings/import'],['import-review','review-1','/bookings/import/review/review-1'],
@@ -55,7 +56,7 @@ for(const [screen,id,path] of routeCases){
 }
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v51-currency-compact'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v52-trip-options'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Add it once.','Follow the trip.','The essential details stay close','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-route-matrix')&&app.includes('welcome-route-cell--next')&&app.includes('Times + route')&&app.includes('Ready offline')&&app.includes('Know what matters'),'Welcome route matrix is incomplete');
@@ -97,7 +98,7 @@ assert(!JSON.stringify(demo).includes('Venice'),'unreachable Venice stop leaked 
 assert(app.includes('timeline-screen--ribbon')&&app.includes('timeline-ribbon')&&css.includes('.timeline-screen--ribbon .timeline-day')&&css.includes('html .bottom-nav'),'selected production timeline and navigation system missing');
 for(const token of ['--timeline-trip-title-size:clamp(28px,7.7vw,32px)','--timeline-booking-title-size:clamp(19px,5.1vw,21px)','--timeline-metadata-size:clamp(15px,3.9vw,16px)','--timeline-status-size:clamp(14px,3.7vw,15px)','--timeline-time-size:clamp(15px,4vw,17px)','--timeline-day-size:clamp(14px,3.85vw,16px)'])assert(css.includes(token),`Timeline typography role missing: ${token}`);
 assert(app.includes('data-action="switch-trip"')&&app.includes('data-action="open-trip-menu"'),'trip selector / more-options menu missing');
-assert(app.includes('function tripMenuSheet(')&&app.includes('state.sheet === "trip-menu"')&&app.includes('data-screen="documents"'),'trip options menu (weather/map/documents/edit/delete) missing');
+assert(app.includes('function tripOptionsScreen(')&&app.includes('case "trip-options": html = tripOptionsScreen()')&&app.includes('route("trip-options")')&&app.includes('data-screen="documents"'),'full-page trip options (weather/map/documents/edit/help) missing');
 assert(app.includes('tripto-local-docs-v1')&&app.includes('crypto.subtle.digest("SHA-256"')&&app.includes('integrity === "verified"'),'document integrity missing');
 assert(app.includes('saved on this phone')&&app.includes('Scheduled booking data is never presented as live')&&app.includes('<small>Scheduled data</small>'),'data truth labeling missing');
 assert(app.includes('Not assigned')&&!app.includes('To be confirmed'),'unavailable data labeling invalid');

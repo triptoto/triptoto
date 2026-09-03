@@ -7,9 +7,9 @@ const app=read('public/mobile-app.js'),css=read('public/mobile-app.css'),index=r
 const nav=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
 assert(!nav.toLowerCase().includes('"map"')&&!nav.includes('data-screen="trip-map"')&&!nav.includes('map-trifold'),'a permanent Map tab leaked into the bottom navigation');
 assert(!app.includes('Timeline|Map')&&!app.includes('data-action="toggle-map"')&&!app.includes('timeline-map-switch'),'a permanent Timeline/Map switch is forbidden');
-const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function tripMenuSheet('));
+const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function tripOptionsScreen('));
 assert(!plus.includes('open-trip-map')&&!plus.includes('View Trip Map'),'Trip Map must NOT appear in the + menu — it lives in the trip options menu');
-const tripMenu=app.slice(app.indexOf('function tripMenuSheet('),app.indexOf('function weatherScreen('));
+const tripMenu=app.slice(app.indexOf('function tripOptionsScreen('),app.indexOf('// ===== Free trip collaboration'));
 assert(tripMenu.includes('canShowTripMap()')&&tripMenu.includes('data-action="open-trip-map"')&&tripMenu.includes('Trip Map'),'Trip Map must appear inside the trip options menu');
 assert(tripMenu.includes('data-action="open-weather"')&&tripMenu.indexOf('data-action="open-weather"')<tripMenu.indexOf('data-action="open-trip-map"'),'Trip options menu must render Weather before Trip Map');
 

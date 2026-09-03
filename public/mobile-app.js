@@ -5881,7 +5881,8 @@
       `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="open-add-booking"><span class="info-icon">${icon("plus",22)}</span><span><strong>Add Booking</strong><small>Add something to ${esc(state.trip?.title || "your trip")}</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-action="create-trip"><span class="info-icon">${icon("plane",22)}</span><span><strong>Create New Trip</strong><small>Start planning another trip</small></span>${icon("chevron",22)}</button></div>`,
     );
   }
-  function tripMenuSheet() {
+  function tripOptionsScreen() {
+    if (!state.trip) return missingDetailScreen("Trip options", "Select a trip to see its tools and settings.");
     const mapHint = canShowTripMap()
       ? "See this trip's places on a map"
       : "Add 2+ places to map this trip";
@@ -5889,16 +5890,16 @@
     const importsHint = pending
       ? `${pending} booking${pending === 1 ? "" : "s"} to review`
       : "Forwarded and uploaded bookings";
-    const menuRow = (iconName, title, sub, attr, trail = `<span class="fd-row__chev">${icon("chevron", 18)}</span>`) =>
-      `<button type="button" class="fd-row fd-row--button" ${attr}>${fdRowIcon(iconName)}${fdRowText(title, sub)}${trail}</button>`;
+    const optionCard = (tone, iconName, title, sub, attr, badge = "") =>
+      `<button type="button" class="trip-option-card trip-option-card--${esc(tone)}" ${attr}><span class="trip-option-card__icon">${icon(iconName, 24)}</span><span class="trip-option-card__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${badge || `<span class="trip-option-card__chevron">${icon("chevron", 17)}</span>`}</button>`;
+    const optionRow = (iconName, title, sub, attr, trail = `<span class="trip-option-row__chevron">${icon("chevron", 18)}</span>`) =>
+      `<button type="button" class="trip-option-row" ${attr}><span class="trip-option-row__icon">${icon(iconName, 21)}</span><span class="trip-option-row__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${trail}</button>`;
     const collabRow = state.sharing?.enabled
-      ? menuRow("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
+      ? optionRow("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
       : "";
-    return bottomSheet(
-      "trip-menu",
-      "Trip options",
-      `<section class="fd-list" aria-label="Trip options">${collabRow}${menuRow("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${menuRow("currency", "Currency converter", "Trip rates, saved for offline use", `data-action="open-currency"`)}${menuRow("map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${menuRow("sim", "Travel eSIM", "Data abroad, no roaming — 15% off", `data-action="open-esim"`)}${menuRow("mail", "Booking imports", importsHint, `data-screen="import-history"`, pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : `<span class="fd-row__chev">${icon("chevron", 18)}</span>`)}${menuRow("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${menuRow("edit", "Edit trip", "Name, dates and details", `data-action="edit-trip"`)}${menuRow("info", "Help & FAQ", "Guides and answers", `data-screen="help"`)}</section>`,
-    );
+    const importTrail = pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : `<span class="trip-option-row__chevron">${icon("chevron", 18)}</span>`;
+    const body = `<section class="trip-options-intro"><span>TRIP TOOLS</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>Everything that helps you plan, prepare, and travel with confidence—in one place.</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-list">${collabRow}${optionRow("mail", "Booking imports", importsHint, `data-screen="import-history"`, importTrail)}${optionRow("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-list">${optionRow("edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)}${optionRow("info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
+    return focusedTaskPage("Trip options", body, "trip-options-page");
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
   // Collaboration is free for every signed-in account — there is no paid gate.
@@ -6609,6 +6610,7 @@
         case "trip-map": html = tripMapScreen(); break;
         case "weather": html = weatherScreen(); break;
         case "currency": html = currencyScreen(); break;
+        case "trip-options": html = tripOptionsScreen(); break;
         case "esim": html = esimScreen(); break;
         case "collaboration": html = collaborationScreen(); break;
         case "join": html = joinScreen(); break;
@@ -6617,7 +6619,6 @@
       }
     html = decorateScreen(html);
     if (state.sheet === "add") html += addSheet();
-    if (state.sheet === "trip-menu") html += tripMenuSheet();
     if (state.sheet === "document") html += documentSheet();
     if (state.sheet === "trips") html += tripSwitchSheet();
     if (state.sheet === "first-run-how") html += firstRunHowSheet();
@@ -8249,7 +8250,7 @@
         break;
       case "open-trip-menu":
         if (!state.trip) break;
-        openSheet("trip-menu", target);
+        route("trip-options");
         break;
       case "open-collaboration":
         closeSheet();
