@@ -2,9 +2,10 @@ import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Checklist/Help contract failed: ${m}`)};
 const app=read('public/mobile-app.js'),css=read('public/mobile-app.css'),routes=read('public/mobile-routes.js');
 
-// ---- Contextual reachability (not permanent bottom tabs) ----
+// ---- Current approved primary navigation ----
 const nav=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
-assert(!nav.includes('navBtn("help"')&&!nav.includes('navBtn("checklist"'),'Help and Checklist must not displace the approved Trip / Add / Account navigation');
+for(const item of ['navBtn("trips"','navBtn("trip-options"','navBtn("checklist"','navBtn("account"'])assert(nav.includes(item),`approved navigation item missing: ${item}`);
+assert(nav.includes('class="nav-item nav-add"')&&!nav.includes('navBtn("help"'),'Help must remain contextual and Add must remain centered');
 
 // ---- Route registration (offline-capable deep links) ----
 assert(routes.includes('help: "/help"'),'Help route /help missing');
@@ -21,7 +22,11 @@ assert(help.includes('data-action="faq-toggle"'),'FAQ toggle action missing');
 assert(help.includes('type="button"'),'FAQ questions must be real buttons');
 assert(help.includes('role="region"'),'FAQ answer panel lacks region role');
 assert(help.includes('mobilePage("Help & FAQ"'),'Help screen title wrong');
-assert(help.includes('Quick answers for planning your trip.'),'Help subtitle missing');
+assert(help.includes('How can we help?')&&help.includes('Find a clear answer without leaving your trip.'),'Help introduction missing');
+assert(help.includes('data-faq-search')&&help.includes('data-faq-row')&&help.includes('data-faq-section'),'FAQ search structure missing');
+assert(app.includes('const faqSearch = event.target.closest?.("[data-faq-search]")')&&app.includes('row.hidden = !match'),'FAQ search behavior missing');
+assert(help.includes('data-faq-empty')&&help.includes('No answer found'),'FAQ empty search state missing');
+assert(help.includes('Take the tour')&&help.includes('href="/privacy"')&&help.includes('href="/terms"'),'Help utility links missing');
 
 // ---- FAQ content grounded in the real product ----
 const faq=app.slice(app.indexOf('const FAQ_SECTIONS'),app.indexOf('function helpScreen('));
@@ -32,9 +37,9 @@ for(const real of ['Upload Booking','ADD NEW BOOKING','Trip Map','Sign out','Tim
 assert(!faq.includes('Forward'),'FAQ documents a hidden Forward Email option');
 // No invented support email beyond the real booking address.
 assert(!/[a-z0-9._%+-]+@tripto\.to/i.test(faq.replace(/go@tripto\.to/g,'')),'FAQ invents an unsupported email address');
-// Question count sanity (search UI only warranted >12-15 questions; we keep it simple).
+// Question count sanity. Search keeps this comprehensive set easy to navigate.
 const qCount=(faq.match(/\bid: "/g)||[]).length;
-assert(qCount>=10&&qCount<=15,`unexpected FAQ question count: ${qCount}`);
+assert(qCount>=10&&qCount<=20,`unexpected FAQ question count: ${qCount}`);
 
 // ---- FAQ action links must map to real screens/actions ----
 assert(help.includes('data-screen="${esc(item.action.screen)}"')||help.includes('data-action="${esc(item.action.action)}"'),'FAQ actions not wired');
@@ -50,7 +55,7 @@ assert(cl.includes('mobilePage("Checklist"'),'checklist screen title wrong');
 assert(app.includes('function normalizeChecklist(')&&app.includes('completed_at')&&app.includes('completedAt != null'),'checklist completion normalization missing (completed_at bug guard)');
 assert(app.includes('function showUndoToast('),'undo toast for delete missing');
 assert(app.includes('function flushChecklistQueue('),'offline checklist replay missing');
-assert(app.includes('function addChecklistItem(')&&app.includes('function toggleChecklistItem(')&&app.includes('function deleteChecklistItem(')&&app.includes('function editChecklistItem('),'checklist CRUD handlers missing');
+assert(app.includes('function addChecklistItem(')&&app.includes('function toggleChecklistItem(')&&app.includes('function deleteChecklistItem(')&&app.includes('function renameChecklistItem('),'checklist CRUD handlers missing');
 assert(app.includes('persistChecklistCache('),'checklist offline persistence missing');
 
 // ---- Touch targets (>=44px) ----

@@ -2542,3 +2542,81 @@ html :is(.journey-event,.trip-row,.travel-row,.document-row,.simple-row,.checkli
   html body .mobile-danger-action:active,
   html body .first-run-how-done:active{filter:none;opacity:.84}
 }
+
+/* Help & FAQ — a calm, searchable travel guide using the production pastel
+   palette. This block intentionally follows the global flat-design rules so
+   its hierarchy remains visible without reintroducing heavy card chrome. */
+html .help-page{background:var(--paper);color:var(--ink);font-family:var(--font-ui)}
+html .help-page .mobile-page{padding:14px 16px calc(var(--nav-height) + 30px)}
+html .help-screen{gap:20px;padding:0}
+html .help-intro{position:relative;overflow:hidden;margin:0;padding:18px;border:1px solid var(--line);border-radius:22px;background:var(--activity-soft)}
+html .help-intro::after{content:"";position:absolute;right:-34px;top:-42px;width:116px;height:116px;border:22px solid color-mix(in srgb,var(--card) 58%,transparent);border-radius:50%;pointer-events:none}
+html .help-intro__icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;margin-bottom:15px;border-radius:16px;background:var(--card);color:var(--icon)}
+html .help-intro>span{position:relative;z-index:1;display:block;color:var(--accent);font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.12em}
+html .help-intro h1{position:relative;z-index:1;margin:4px 0 4px;color:var(--ink);font-family:var(--font-title);font-size:clamp(27px,7.8vw,32px);font-weight:700;line-height:1.08;letter-spacing:-.035em}
+html .help-intro>p{position:relative;z-index:1;margin:0;color:var(--muted);font-size:14px;line-height:1.4}
+html .help-search{position:relative;z-index:1;display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:52px;margin-top:16px;padding:0 12px;border:1px solid color-mix(in srgb,var(--ink) 10%,var(--line));border-radius:15px;background:var(--card);color:var(--icon)}
+html .help-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+html .help-search input{min-width:0;height:50px;padding:0;border:0;outline:0;background:transparent;color:var(--ink);font:500 16px/1.2 var(--font-ui);appearance:none}
+html .help-search input::placeholder{color:var(--muted);font-weight:400}
+html .help-search small{color:var(--muted);font-size:11px;font-weight:600;white-space:nowrap}
+
+html .help-quickstart{padding:16px !important;border:1px solid var(--line) !important;border-radius:20px !important;background:var(--card) !important}
+html .help-quickstart__head{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:11px}
+html .help-quickstart__head>span{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--transfer-soft);color:var(--icon)}
+html .help-quickstart h2{margin:0;color:var(--ink);font-size:17px;font-weight:600;line-height:1.2}
+html .help-quickstart__head p{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+html .help-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 0;padding:0;list-style:none}
+html .help-steps li{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:7px;padding:10px;border-radius:14px;background:var(--surface);color:var(--ink)}
+html .help-steps li:nth-child(1){background:var(--flight-soft)}
+html .help-steps li:nth-child(2){background:var(--stay-soft)}
+html .help-steps li:nth-child(3){background:var(--food-soft)}
+html .help-steps li>span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--card);color:var(--accent);font-size:12px;font-weight:700}
+html .help-steps li>strong{font-size:12px;font-weight:600;line-height:1.25}
+
+html .faq-results{display:flex;flex-direction:column;gap:20px}
+html .faq-section{gap:9px}
+html .faq-section__head{display:flex;align-items:center;gap:10px;padding:0 2px}
+html .faq-section__icon{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:var(--faq-tone,var(--surface));color:var(--icon)}
+html .faq-section--c0{--faq-tone:var(--flight-soft)}
+html .faq-section--c1{--faq-tone:var(--stay-soft)}
+html .faq-section--c2{--faq-tone:var(--transfer-soft)}
+html .faq-section--c3{--faq-tone:var(--food-soft)}
+html .faq-section--c4{--faq-tone:var(--activity-soft)}
+html .faq-section__head>div{min-width:0}
+html .faq-section__label{margin:0;color:var(--ink);font-size:16px;font-weight:600;line-height:1.2;letter-spacing:0;text-transform:none}
+html .faq-section__head small{display:block;margin-top:2px;color:var(--muted);font-size:12px;line-height:1.2}
+html .faq-list{overflow:hidden;border:1px solid var(--line) !important;border-radius:18px !important;background:var(--card) !important}
+html .faq-row+ .faq-row{border-top:1px solid var(--line) !important}
+html .faq-q{min-height:58px;padding:12px 13px 12px 15px;color:var(--ink);font-family:var(--font-ui);font-size:15px;font-weight:600;line-height:1.3}
+html .faq-q>span:first-child{min-width:0;padding-right:4px}
+html .faq-q__toggle{display:grid;flex:0 0 auto;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--faq-tone,var(--surface));color:var(--icon)}
+html .faq-row.is-open{background:color-mix(in srgb,var(--faq-tone,var(--surface)) 38%,var(--card))}
+html .faq-row.is-open .faq-q{color:var(--ink)}
+html .faq-a{padding:0 15px 16px 15px}
+html .faq-a p{max-width:39ch;color:var(--muted);font-size:14px;line-height:1.5}
+html .faq-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600}
+html .faq-empty{padding:24px 18px;border-radius:20px;background:var(--surface);text-align:center}
+html .faq-empty>.app-icon{color:var(--accent)}
+html .faq-empty h2{margin:9px 0 4px;color:var(--ink);font-size:18px;font-weight:600}
+html .faq-empty p{max-width:32ch;margin:0 auto;color:var(--muted);font-size:14px;line-height:1.4}
+
+html .help-support{padding:16px !important;border:1px solid var(--line) !important;border-radius:20px !important;background:var(--card) !important}
+html .help-support__copy{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:11px}
+html .help-support__icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--green-soft);color:var(--icon)}
+html .help-support h2{margin:0;color:var(--ink);font-size:17px;font-weight:600}
+html .help-support p{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+html .help-support__actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+html .help-link{display:grid;grid-template-columns:1fr;place-items:center;gap:5px;min-height:64px;padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:600;text-align:center;text-decoration:none}
+html .help-link>.app-icon:last-child{display:none}
+html .help-link:first-child{background:var(--activity-soft)}
+html .help-page :is(.faq-q,.faq-action,.help-link):focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media(max-width:374px){
+  html .help-page .mobile-page{padding-inline:14px}
+  html .help-intro{padding:16px 14px}
+  html .help-search{grid-template-columns:20px minmax(0,1fr)}
+  html .help-search small{display:none}
+  html .help-steps{gap:6px}
+  html .help-steps li{padding:9px 7px}
+  html .help-steps li>strong{font-size:11px}
+}

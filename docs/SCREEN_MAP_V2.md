@@ -29,7 +29,7 @@ Primary navigation after authentication is **Trip / Trip options / + / To-do / A
 | Cancelled Trips | Account → Trip History | Selected → Read-only cancelled trip |
 | Booking Email Settings | Account | Back → Account |
 | Notification Settings | Account | Back → Account |
-| Help | Account | Back → Account |
+| Help & FAQ | Trip options or Account | Search answers; open contextual actions, Tour, Privacy, or Terms; Back → entry screen |
 | Tickets & Documents | Current Trip header | Back → same Timeline position |
 | Plan Together | Trip menu → Plan together (when sharing enabled) | People + pending invites; back → trip. Manage affordances owner-only |
 | Join Trip | Invitation deep link `/join/<token>` | Accept → shared trip Timeline; Not now → home |

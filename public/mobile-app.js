@@ -4757,7 +4757,7 @@
       { id: "checklist", q: "How does the checklist work?", a: "Use the To-do tab in the bottom bar for things you do not want to forget, such as your passport, wallet or charger. Add your own items and tap one when it is packed. Tap it again to undo.", keywords: "checklist packing list passport wallet charger pack", action: { label: "Open checklist", screen: "checklist" } },
       { id: "documents", q: "Where are my tickets and documents?", a: "Documents attached to a booking open from that booking. You can also open the trip menu and choose Documents to see your trip files. Some files are stored only on this device.", keywords: "tickets documents files pdf storage device" },
       { id: "trip-map", q: "When can I use Trip Map?", a: "Open the trip menu and choose Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
-      { id: "offline", q: "What works offline?", a: "Your cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and map tiles need a connection.", keywords: "offline internet connection cached without wifi" },
+      { id: "offline", q: "What works offline?", a: "Your cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and opening directions need a connection.", keywords: "offline internet connection cached without wifi directions" },
     ] },
     { title: "Plan together", flag: "sharing", questions: [
       { id: "collab-what", q: "Can I plan a trip with other people?", a: "Yes. Open the trip menu and choose Plan together to invite people. Everyone signs in with their own free account — planning together never costs anything.", keywords: "collaborate share invite together people group family plan", action: { label: "Plan together", action: "open-collaboration" } },
@@ -4770,19 +4770,25 @@
     ] },
   ];
   function helpScreen() {
+    const visibleSections = FAQ_SECTIONS.filter((s) => !s.flag || (s.flag === "sharing" && state.sharing?.enabled));
+    const totalAnswers = visibleSections.reduce((total, section) => total + section.questions.length, 0);
     const faqRow = (item) => {
       const open = state.openFaq.has(item.id);
       const panelId = `faq-panel-${item.id}`;
+      const searchText = `${item.q} ${item.a} ${item.keywords || ""}`.toLocaleLowerCase();
       const safe = !item.action ? false : item.action.screen ? true : state.trip ? true : false;
       const actionBtn = item.action && safe
         ? `<div class="faq-actions">${item.action.screen ? `<button type="button" class="faq-action" data-screen="${esc(item.action.screen)}">${esc(item.action.label)}</button>` : `<button type="button" class="faq-action" data-action="${esc(item.action.action)}">${esc(item.action.label)}</button>`}</div>`
         : "";
-      return `<div class="faq-row ${open ? "is-open" : ""}"><button type="button" class="faq-q" data-action="faq-toggle" data-id="${esc(item.id)}" aria-expanded="${open}" aria-controls="${panelId}"><span>${esc(item.q)}</span>${icon(open ? "chevronUp" : "chevronDown", 18, "faq-chev")}</button><div class="faq-a" id="${panelId}" role="region"${open ? "" : " hidden"}><p>${esc(item.a)}</p>${actionBtn}</div></div>`;
+      return `<div class="faq-row ${open ? "is-open" : ""}" data-faq-row data-search="${esc(searchText)}"><button type="button" class="faq-q" id="faq-question-${esc(item.id)}" data-action="faq-toggle" data-id="${esc(item.id)}" aria-expanded="${open}" aria-controls="${panelId}"><span>${esc(item.q)}</span><span class="faq-q__toggle" aria-hidden="true">${icon(open ? "minus" : "plus", 18, "faq-chev")}</span></button><div class="faq-a" id="${panelId}" role="region" aria-labelledby="faq-question-${esc(item.id)}"${open ? "" : " hidden"}><p>${esc(item.a)}</p>${actionBtn}</div></div>`;
     };
-    const sections = FAQ_SECTIONS.filter((s) => !s.flag || (s.flag === "sharing" && state.sharing?.enabled)).map((s, i) => `<section class="faq-section faq-section--c${i % 4}"><h2 class="faq-section__label">${esc(s.title)}</h2><div class="faq-list">${s.questions.map(faqRow).join("")}</div></section>`).join("");
-    const quickStart = `<section class="help-quickstart"><h2>Quick start</h2><ol class="help-steps"><li>Create a trip</li><li>Add your bookings</li><li>Follow everything in the Timeline</li></ol></section>`;
-    const intro = `<section class="help-intro"><p>Quick answers for planning your trip.</p></section>`;
-    return mobilePage("Help & FAQ", `<div class="help-screen">${intro}${quickStart}${sections}</div>`, "help");
+    const sectionIcons = ["plane", "ticket", "map", "users", "user"];
+    const sections = visibleSections.map((s, i) => `<section class="faq-section faq-section--c${i % 5}" data-faq-section><header class="faq-section__head"><span class="faq-section__icon">${icon(sectionIcons[i] || "info", 20)}</span><div><h2 class="faq-section__label">${esc(s.title)}</h2><small>${s.questions.length} answer${s.questions.length === 1 ? "" : "s"}</small></div></header><div class="faq-list">${s.questions.map(faqRow).join("")}</div></section>`).join("");
+    const quickStart = `<section class="help-quickstart" aria-labelledby="help-quick-title"><div class="help-quickstart__head"><span>${icon("navigation", 20)}</span><div><h2 id="help-quick-title">Your trip in three steps</h2><p>Start simple. Add details whenever you have them.</p></div></div><ol class="help-steps"><li><span>1</span><strong>Create a trip</strong></li><li><span>2</span><strong>Add bookings</strong></li><li><span>3</span><strong>Follow the Timeline</strong></li></ol></section>`;
+    const intro = `<section class="help-intro"><div class="help-intro__icon">${icon("info", 28)}</div><span>TRAVEL HELP</span><h1>How can we help?</h1><p>Find a clear answer without leaving your trip.</p><label class="help-search"><span class="sr-only">Search help</span>${icon("search", 20)}<input type="search" data-faq-search placeholder="Search bookings, maps, offline…" autocomplete="off" enterkeyhint="search" aria-controls="faq-results"><small data-faq-count aria-live="polite">${totalAnswers} answer${totalAnswers === 1 ? "" : "s"}</small></label></section>`;
+    const empty = `<section class="faq-empty" data-faq-empty hidden>${icon("search", 24)}<h2>No answer found</h2><p>Try a shorter word such as “booking”, “map”, or “offline”.</p></section>`;
+    const links = `<section class="help-support"><div class="help-support__copy"><span class="help-support__icon">${icon("shield", 21)}</span><div><h2>Helpful links</h2><p>Learn the basics or review how your data is handled.</p></div></div><div class="help-support__actions"><button type="button" class="help-link" data-action="open-first-run-how">${icon("navigation", 19)}<span>Take the tour</span>${icon("chevron", 17)}</button><a class="help-link" href="/privacy">${icon("shield", 19)}<span>Privacy</span>${icon("chevron", 17)}</a><a class="help-link" href="/terms">${icon("document", 19)}<span>Terms</span>${icon("chevron", 17)}</a></div></section>`;
+    return mobilePage("Help & FAQ", `<div class="help-screen">${intro}${quickStart}<div class="faq-results" id="faq-results">${sections}</div>${empty}${links}</div>`, "trip-options", "", "help-page");
   }
   function travelerDocumentSummary(traveler) {
     const docs = state.localDocs.filter((d)=>d.integrity==="verified" && d.travelerIds?.includes(String(traveler.id))).length;
@@ -8206,9 +8212,16 @@
       case "faq-toggle":
         {
           const id = target.dataset.id;
-          if (state.openFaq.has(id)) state.openFaq.delete(id);
-          else state.openFaq.add(id);
-          render();
+          const opening = !state.openFaq.has(id);
+          if (opening) state.openFaq.add(id);
+          else state.openFaq.delete(id);
+          const row = target.closest(".faq-row");
+          const panel = row?.querySelector(".faq-a");
+          const toggle = target.querySelector(".faq-q__toggle");
+          row?.classList.toggle("is-open", opening);
+          target.setAttribute("aria-expanded", String(opening));
+          if (panel) panel.hidden = !opening;
+          if (toggle) toggle.innerHTML = icon(opening ? "minus" : "plus", 18, "faq-chev");
         }
         break;
       case "open-trip-menu":
@@ -9068,6 +9081,26 @@
     );
   });
   app.addEventListener("input", (event) => {
+    const faqSearch = event.target.closest?.("[data-faq-search]");
+    if (faqSearch) {
+      const query = String(faqSearch.value || "").trim().toLocaleLowerCase();
+      let visible = 0;
+      app.querySelectorAll("[data-faq-section]").forEach((section) => {
+        let sectionVisible = 0;
+        section.querySelectorAll("[data-faq-row]").forEach((row) => {
+          const match = !query || String(row.dataset.search || "").includes(query);
+          row.hidden = !match;
+          if (match) sectionVisible += 1;
+        });
+        section.hidden = sectionVisible === 0;
+        visible += sectionVisible;
+      });
+      const count = app.querySelector("[data-faq-count]");
+      const empty = app.querySelector("[data-faq-empty]");
+      if (count) count.textContent = `${visible} answer${visible === 1 ? "" : "s"}`;
+      if (empty) empty.hidden = visible !== 0;
+      return;
+    }
     const input = event.target.closest?.("[data-currency-amount]");
     if (!input) return;
     const currency = initCurrency(), amount = Math.max(0, Number(input.value) || 0);

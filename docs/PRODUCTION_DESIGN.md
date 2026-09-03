@@ -48,7 +48,7 @@ The bottom navigation is always ordered and labeled exactly:
 `Trip | Trip options | + | To-do | Account`
 
 - **Trip** opens the selected trip Timeline.
-- **Alerts** opens traveler-facing notifications and exceptions.
+- **Trip options** opens weather, currency, map, eSIM, alerts, documents, collaboration, booking imports, and Help & FAQ.
 - **+** opens Add Booking / Create New Trip actions.
 - **To-do** opens the trip checklist.
 - **Account** opens identity, trip history, booking email, help, privacy, and account controls.
@@ -59,6 +59,7 @@ Welcome and focused creation/authentication tasks may omit bottom navigation. Th
 
 - Timeline is the main authenticated surface.
 - Use strong hierarchy, compact rows, restrained cards, and honest unavailable states.
+- Help & FAQ uses a searchable accordion, contextual product actions, and direct Tour, Privacy, and Terms links. It must not invent support contacts or document unavailable features.
 - Keep scheduled booking data distinct from live status.
 - Never invent gate, terminal, seat, time, document, or location data.
 - Use the locally generated Phosphor SVG sprite consistently: Regular for normal controls and travel categories, Fill only for the selected bottom-navigation state. Timeline icons sit in semantic pastel circles, while standard controls remain unboxed unless a touch target needs a visible surface. Do not add external icon or font requests.
