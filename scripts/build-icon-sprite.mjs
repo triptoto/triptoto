@@ -1,0 +1,183 @@
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const phosphorRoot = path.join(root, "node_modules", "@phosphor-icons", "core", "assets");
+const output = path.join(root, "public", "icons", "tripto-system.svg");
+
+// Product-facing semantic names stay stable while Phosphor supplies one
+// professionally drawn geometry and optical weight across the application.
+const icons = Object.freeze({
+  accessibility: "wheelchair-motion",
+  activity: "person-simple-walk",
+  "add-booking": "calendar-plus",
+  back: "arrow-left",
+  "baggage-claim": "suitcase-rolling",
+  bar: "martini",
+  beach: "umbrella",
+  bed: "bed",
+  bicycle: "bicycle",
+  "boarding-pass": "ticket",
+  bookings: "calendar-dots",
+  bus: "bus",
+  calendar: "calendar-blank",
+  camera: "camera",
+  car: "car-profile",
+  "carry-on": "suitcase-rolling",
+  charging: "battery-charging",
+  check: "check",
+  "checked-bag": "suitcase-simple",
+  checklist: "clipboard-text",
+  "chevron-down": "caret-down",
+  "chevron-left": "caret-left",
+  "chevron-right": "caret-right",
+  "chevron-up": "caret-up",
+  child: "baby",
+  city: "buildings",
+  clock: "clock",
+  close: "x",
+  coffee: "coffee",
+  cooking: "cooking-pot",
+  collaboration: "users-three",
+  confirmed: "check-circle",
+  copy: "copy",
+  "create-trip": "map-trifold",
+  "credit-card": "credit-card",
+  cruise: "boat",
+  customs: "stamp",
+  delete: "trash-simple",
+  directions: "navigation-arrow",
+  documents: "files",
+  download: "download-simple",
+  "drag-handle": "dots-six-vertical",
+  edit: "pencil-simple",
+  emergency: "siren",
+  essentials: "backpack",
+  event: "calendar-check",
+  "external-link": "arrow-square-out",
+  eye: "eye",
+  "eye-off": "eye-slash",
+  family: "users-three",
+  favorite: "heart",
+  ferry: "sailboat",
+  filter: "funnel-simple",
+  flight: "airplane-tilt",
+  forward: "arrow-right",
+  fuel: "gas-pump",
+  gate: "door-open",
+  help: "question",
+  home: "house-simple",
+  hotel: "building-apartment",
+  info: "info",
+  landing: "airplane-landing",
+  landmark: "bank",
+  "link-booking": "link-simple",
+  location: "map-pin",
+  lock: "lock",
+  luggage: "suitcase",
+  map: "map-trifold",
+  medical: "first-aid-kit",
+  menu: "list",
+  minus: "minus",
+  more: "dots-three",
+  mountain: "mountains",
+  museum: "bank",
+  notes: "note-pencil",
+  notifications: "bell",
+  offline: "cloud-slash",
+  "open-in-maps": "navigation-arrow",
+  parking: "car-profile",
+  passport: "identification-card",
+  pet: "paw-print",
+  pharmacy: "pill",
+  photos: "images",
+  plus: "plus",
+  "power-adapter": "plug",
+  profile: "user-circle",
+  "qr-code": "qr-code",
+  rain: "cloud-rain",
+  refresh: "arrow-clockwise",
+  reservation: "calendar-check",
+  restaurant: "fork-knife",
+  review: "magnifying-glass",
+  "room-key": "key",
+  route: "path",
+  search: "magnifying-glass",
+  seat: "seat",
+  "security-check": "shield-check",
+  settings: "gear-six",
+  share: "share-network",
+  shopping: "shopping-bag",
+  snow: "snowflake",
+  stay: "bed",
+  sun: "sun",
+  support: "headset",
+  sync: "arrows-clockwise",
+  takeoff: "airplane-takeoff",
+  taxi: "taxi",
+  terminal: "building-office",
+  ticket: "ticket",
+  timeline: "list-checks",
+  timezone: "globe-hemisphere-west",
+  tour: "flag",
+  train: "train",
+  translate: "translate",
+  traveler: "user",
+  travelers: "users",
+  trips: "suitcase-simple",
+  unlock: "lock-open",
+  upload: "upload-simple",
+  walking: "person-simple-walk",
+  wallet: "wallet",
+  warning: "warning",
+  weather: "cloud-sun",
+  wifi: "wifi-high",
+  night: "moon-stars",
+  phone: "phone",
+  mail: "envelope-simple",
+  shield: "shield",
+  sim: "sim-card",
+  bolt: "lightning",
+  globe: "globe-simple",
+  invite: "user-plus",
+  owner: "crown",
+  editor: "pencil-simple",
+  viewer: "eye",
+  "wx-sun": "sun",
+  "wx-moon": "moon-stars",
+  "wx-cloud": "cloud",
+  "wx-cloud-sun": "cloud-sun",
+  "wx-cloud-rain": "cloud-rain",
+  "wx-cloud-snow": "cloud-snow",
+  "wx-fog": "cloud-fog",
+  "wx-storm": "cloud-lightning",
+  "wx-drop": "drop",
+  "wx-wind": "wind",
+});
+
+const filled = new Set(["flight", "notifications", "checklist", "traveler"]);
+
+async function symbol(id, sourceName, weight, suffix = "") {
+  const filename = weight === "fill" ? `${sourceName}-fill.svg` : `${sourceName}.svg`;
+  const sourcePath = path.join(phosphorRoot, weight, filename);
+  const source = await readFile(sourcePath, "utf8");
+  const viewBox = source.match(/viewBox="([^"]+)"/)?.[1];
+  const body = source.match(/<svg[^>]*>([\s\S]*?)<\/svg>/)?.[1]?.trim();
+  if (!viewBox || !body) throw new Error(`Invalid Phosphor source: ${sourcePath}`);
+  return `  <symbol id="${id}${suffix}" viewBox="${viewBox}"><g fill="currentColor">${body}</g></symbol>`;
+}
+
+const symbols = [];
+for (const [id, sourceName] of Object.entries(icons)) {
+  symbols.push(await symbol(id, sourceName, "regular"));
+  if (filled.has(id)) symbols.push(await symbol(id, sourceName, "fill", "--fill"));
+}
+
+await mkdir(path.dirname(output), { recursive: true });
+await writeFile(
+  output,
+  `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n${symbols.join("\n")}\n</svg>\n`,
+  "utf8",
+);
+console.log(`Built ${path.relative(root, output)} (${Object.keys(icons).length} regular, ${filled.size} selected).`);

@@ -61,7 +61,7 @@ Welcome and focused creation/authentication tasks may omit bottom navigation. Th
 - Use strong hierarchy, compact rows, restrained cards, and honest unavailable states.
 - Keep scheduled booking data distinct from live status.
 - Never invent gate, terminal, seat, time, document, or location data.
-- Use the single bundled outline icon family consistently. Timeline icons sit in semantic pastel circles, while standard controls remain unboxed unless a touch target needs a visible surface. Do not add external icon or font requests.
+- Use the locally generated Phosphor SVG sprite consistently: Regular for normal controls and travel categories, Fill only for the selected bottom-navigation state. Timeline icons sit in semantic pastel circles, while standard controls remain unboxed unless a touch target needs a visible surface. Do not add external icon or font requests.
 - Fixed navigation and actions must respect device safe areas and never cover content.
 
 ## Release and preview rule

@@ -1379,16 +1379,15 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 /* "ADD BOOKING" eyebrow label uses the theme accent (red). */
 .v2-task-intro>span{color:var(--accent) !important}
 
-/* Icon size — global multiplier applied to every glyph/svg. phosphor.css sizes
-   both .ph and .ph-svg from --icon-size (set inline per icon); this multiplies
-   that by --icon-scale. Baseline 1.0 (was 1.22 — user asked for smaller icons).
-   The welcome/first-run screen keeps 1 so its layout is left exactly as designed. */
+/* One icon scale for the local Phosphor SVG sprite. The semantic wrapper keeps
+   geometry, optical weight and alignment identical on every screen. */
 :root{--icon-scale:1}
 .ph,.ph-svg{
   width:calc(var(--icon-size,24px) * var(--icon-scale,1));
   height:calc(var(--icon-size,24px) * var(--icon-scale,1));
   font-size:calc(var(--icon-size,24px) * var(--icon-scale,1))
 }
+.app-icon{display:block;flex:none;overflow:visible;pointer-events:none}
 .first-run-screen{--icon-scale:1}
 /* Bottom nav keeps its original icon size — the global bump made the tab icons
    too large and clipped the labels. */
@@ -1837,7 +1836,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .timeline-screen--ribbon :is(.journey-marker--car,.journey-marker--taxi,.journey-marker--bus,.journey-marker--train,.journey-marker--ferry,.journey-marker--cruise){background:var(--transfer-soft) !important}
 .timeline-screen--ribbon :is(.journey-marker--hotel,.journey-marker--city){background:var(--stay-soft) !important}
 .timeline-screen--ribbon :is(.journey-marker--activity,.journey-marker--landmark,.journey-marker--tour,.journey-marker--camera,.journey-marker--event){background:var(--activity-soft) !important}
-.timeline-screen--ribbon :is(.journey-marker--restaurant,.journey-marker--coffee,.journey-marker--bar,.journey-marker--shopping,.journey-marker--reservation,.journey-marker--ticket){background:var(--food-soft) !important}
+.timeline-screen--ribbon :is(.journey-marker--restaurant,.journey-marker--coffee,.journey-marker--bar,.journey-marker--cooking,.journey-marker--shopping,.journey-marker--reservation,.journey-marker--ticket){background:var(--food-soft) !important}
 .timeline-screen--ribbon .journey-content{
   grid-template-columns:minmax(0,1fr);gap:8px;padding:13px 0 13px 12px
 }
