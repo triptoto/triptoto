@@ -3594,7 +3594,7 @@
       active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
     );
     const theme = document.querySelector('meta[name="theme-color"]');
-    if (theme) theme.setAttribute("content", active ? "#cb2957" : "#eeeeee");
+    if (theme) theme.setAttribute("content", "#fbf8f7");
   }
   function firstRunProductPreview() {
     const steps = [
@@ -3811,6 +3811,7 @@
                     type = timelineType(item),
                     transport = transportForItem(itemId(item)),
                     glyph = timelineGlyph(item, type, transport),
+                    markerClass = String(glyph || "calendar").replace(/[^a-z0-9-]/g, ""),
                     subtitle = timelineSecondary(item, type, transport, glyph),
                     exception = timelineException(item),
                     active =
@@ -3843,6 +3844,11 @@
                         ? ends - starts
                         : null,
                     itemStatus = statusText(item.status),
+                    confirmed = ["confirmed", "booked", "complete", "completed"].includes(
+                      String(val(item, "status", "booking_status") || "")
+                        .toLowerCase()
+                        .replace(/[_\s]+/g, "-"),
+                    ),
                     metaBits = [],
                     // Optional third line: location/duration/status when available.
                     meta = (() => {
@@ -3859,7 +3865,7 @@
                     aria = [eventTime, title, subtitle, meta, exception?.label]
                       .filter(Boolean)
                       .join(". ");
-                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker">${icon(glyph, 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
+                  return `<button type="button" class="journey-event journey-event--${phase}${confirmed ? " journey-event--confirmed" : ""}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
                 })
                 .join("")}</div></section>`,
           )
@@ -4057,7 +4063,7 @@
   // line so a row reads "Restaurant · Rome", never a bare "Tasting menu").
   const TIMELINE_GLYPH_LABEL = {
     flight: "Flight", train: "Train", ferry: "Ferry", cruise: "Cruise",
-    bus: "Bus", car: "Car", taxi: "Taxi", hotel: "Stay", bar: "Bar",
+    bus: "Bus", car: "Car", taxi: "Taxi", hotel: "Stay", city: "Stay", bar: "Bar",
     restaurant: "Restaurant", reservation: "Reservation", activity: "Activity",
     landmark: "Landmark", tour: "Tour", event: "Event", ticket: "Ticket",
   };
@@ -4067,7 +4073,7 @@
   // never the generic hiking/activity glyph for unrelated bookings.
   function timelineGlyph(item, type, transport) {
     if (transport) return timelineIcon(type);
-    if (type === "hotel" || type === "stay") return "hotel";
+    if (type === "hotel" || type === "stay") return "city";
     const hay = `${val(item, "activity_type", "reservation_type", "subtype") || ""} ${item.title || ""} ${item.subtitle || ""}`.toLowerCase();
     const has = (...ws) => ws.some((w) => hay.includes(w));
     if (has("wine", "tasting", "cocktail", "brewery", "distillery", "pub", "aperitivo", "bar ", " bar")) return "bar";

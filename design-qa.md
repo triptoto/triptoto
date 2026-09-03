@@ -100,7 +100,6 @@ The comparison normalizes both images to the dialog region. The reference is a c
 - The production Google control is rendered by Google Identity Services, so its internal typography remains provider-owned while its Welcome-only width and placement match the approved composition.
 
 final result: passed
-
 ---
 
 # Design QA — Welcome responsive scale correction
@@ -212,5 +211,39 @@ Final result: passed
 - P0: none
 - P1: none
 - P2: none
+
+final result: passed
+
+---
+
+# Design QA — pastel travel system
+
+- Reference: `/Users/arthurberlin/Library/Messages/Attachments/de/14/58D71E70-9153-491D-81F9-3CCC2C34C0D6/IMG_4494.png`
+- Reference pixels: 853 × 1844
+- Implementation screenshot: `artifacts/pastel-travel-v33/timeline-390x844.png`
+- Implementation pixels: 390 × 844 at 1× capture density
+- Browser viewport: 390 × 844
+- Application state: local preview, populated Rome 2026 Timeline, first trip day selected
+- Comparison artifact: `artifacts/pastel-travel-v33/timeline-comparison.png`
+
+## Interaction tested
+
+- Timeline rendered with the populated deterministic preview state.
+- The Friday day tab was selected and the visible day changed to Friday without navigation or console failure.
+- Bottom navigation touch targets measured at 44px minimum; the central Add action measured 54px.
+- Document width matched the viewport with no horizontal overflow.
+
+## Visual comparison
+
+- Warm ivory canvas, dark navy typography, violet navigation/action emphasis, orange `NEXT`, green confirmation copy, and yellow Add action match the supplied direction.
+- Flight, transfer, and stay markers use distinct pale blue, peach, and mint circles with consistent navy outline icons.
+- The Timeline remains flat and readable, with the same editorial titles and compact hierarchy as the reference.
+- Welcome, Add Flight, and Account were spot-checked at phone size to confirm the shared palette reaches onboarding, forms, content, and navigation.
+
+## Runtime audit
+
+- JavaScript console errors: none observed.
+- Browser warnings: none observed.
+- Horizontal overflow: none at 390 × 844.
 
 final result: passed

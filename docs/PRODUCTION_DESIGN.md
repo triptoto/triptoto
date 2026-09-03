@@ -10,17 +10,23 @@ The app is mobile-first from 360px through 430px and remains centered at a maxim
 
 ## Production palette
 
-- Application canvas: `#EEEEEE`
+- Application canvas: `#FBF8F7`
 - Raised surface/card: `#FFFFFF`
-- Quiet control surface: `#E4E4E4`
-- Divider: `#DDDDDD`
-- Primary text and icons: `#111217`
-- Secondary text: `#5A5A5A`
-- Primary accent: `#CB2957`
-- Verified success text: `#1B704B`
-- Notification badge: `#B72B35` with white text
+- Quiet control surface: `#F3EFF0`
+- Divider: `#E6E0E5`
+- Primary text and icons: `#05152D`
+- Secondary text: `#596474`
+- Primary accent: `#5547B7`
+- Primary add action: `#FBC840`
+- Next/action cue: `#B84D16`
+- Verified success text: `#007852`
+- Flight marker: `#D9E4FB`
+- Transfer marker: `#FEE4CF`
+- Stay marker: `#D1EDDE`
+- Activity marker: `#E7E1FB`
+- Notification badge: `#5547B7` with white text
 
-The Welcome screen is the single intentional exception to the authenticated canvas: it uses one uninterrupted bright brand background `#CB2957` from edge to edge with white typography. The journey is an editable local SVG route (`welcome-thread-line-v1.svg`) with three independently positioned HTML icon markers; it must not appear as a separate card or second background. This is part of the same production design, not a selectable theme.
+The Welcome screen uses the same warm canvas, navy typography, and pastel journey colors as the authenticated product. Its compact route matrix is part of the same production design, not a selectable theme.
 
 Welcome typography, artwork, spacing, and action heights scale against both viewport width and available viewport height. The layout uses `100svh`, remains no-scroll with mobile browser chrome present, and retains 44px minimum interactive targets.
 
@@ -55,7 +61,7 @@ Welcome and focused creation/authentication tasks may omit bottom navigation. Th
 - Use strong hierarchy, compact rows, restrained cards, and honest unavailable states.
 - Keep scheduled booking data distinct from live status.
 - Never invent gate, terminal, seat, time, document, or location data.
-- Use locally bundled Phosphor Regular for normal UI and Phosphor Fill for selected/current states. Reserve custom SVG for weather, destination, or branded illustration work; do not add external icon or font requests.
+- Use the single bundled outline icon family consistently. Timeline icons sit in semantic pastel circles, while standard controls remain unboxed unless a touch target needs a visible surface. Do not add external icon or font requests.
 - Fixed navigation and actions must respect device safe areas and never cover content.
 
 ## Release and preview rule

@@ -1,30 +1,39 @@
 :root{
-  /* Single production design: warm light canvas, obsidian text and restrained
-     crimson emphasis. This is the only traveler-facing palette. */
-  --navy:#111217;
-  --indigo:#5a5a5a;
-  --yellow:#cb2957;
-  --paper:#eeeeee;
+  /* Single production design: warm travel canvas, deep navy type and a
+     restrained passport palette inspired by sky, sun and arrival states. */
+  --navy:#05152d;
+  --indigo:#5547b7;
+  --yellow:#fbc840;
+  --paper:#fbf8f7;
   --card:#ffffff;
-  --surface:#e4e4e4;
-  --ink:#111217;
-  --ink-strong:#111217;
-  --muted:#5a5a5a;
-  --muted-soft:#8a8a8a;
-  --line:#dddddd;
-  --line-strong:#cfcfcf;
-  --blue-soft:#fbe7ec;
-  --icon:#111217;
-  --green:#1b704b;
-  --green-soft:#e7f6ee;
-  --amber:#b06f12;
-  --amber-soft:#fdeccf;
-  --red:#cb2957;
-  --red-soft:#fbe7ec;
+  --surface:#f3eff0;
+  --ink:#05152d;
+  --ink-strong:#05152d;
+  --muted:#596474;
+  --muted-soft:#7d8794;
+  --line:#e6e0e5;
+  --line-strong:#d5ced7;
+  --blue-soft:#d9e4fb;
+  --icon:#0a2445;
+  --green:#007852;
+  --green-soft:#d1edde;
+  --amber:#b84d16;
+  --amber-soft:#fee4cf;
+  --red:#b63d4e;
+  --red-soft:#f8dde3;
   --chrome:#ffffff;
-  --chrome-line:#dddddd;
-  --accent:#cb2957;
+  --chrome-line:#e6e0e5;
+  --accent:#5547b7;
   --accent-ink:#ffffff;
+  --next:#b84d16;
+  --fab:#fbc840;
+  --fab-ink:#05152d;
+  --flight-soft:#d9e4fb;
+  --transfer-soft:#fee4cf;
+  --stay-soft:#d1edde;
+  --activity-soft:#e7e1fb;
+  --food-soft:#f8dde3;
+  --timeline-rail:#c9c2f6;
   --app-width:430px;
   --header-h:68px;
   --nav-height:88px;
@@ -49,8 +58,8 @@
   --weight-medium:500;
   --weight-semibold:600;
   --weight-bold:700;
-  --shadow-card:0 14px 34px -22px rgba(0,0,0,.20),0 2px 6px -4px rgba(0,0,0,.10);
-  --shadow-soft:0 10px 24px -20px rgba(0,0,0,.16);
+  --shadow-card:0 16px 34px -24px rgba(5,21,45,.22),0 2px 8px -6px rgba(5,21,45,.12);
+  --shadow-soft:0 10px 24px -20px rgba(5,21,45,.18);
   --keyboard-offset:0px;
   --ease:cubic-bezier(.2,.8,.2,1);
 }
@@ -205,9 +214,9 @@
 }
 
 *{box-sizing:border-box}
-html{background:#eeeeee;color-scheme:light}
+html{background:var(--paper);color-scheme:light}
 html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-x:clip;font-family:var(--font);font-optical-sizing:auto;color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-body{background:#eeeeee;overscroll-behavior-y:none}
+body{background:var(--paper);overscroll-behavior-y:none}
 body,button,input,select,textarea{font-family:var(--font)}
 button,input,select,textarea{font-size:16px}
 button{cursor:pointer}
@@ -280,7 +289,7 @@ button:active{transform:scale(.985)}
 }
 .header-icon:hover,.icon-button:hover{background:var(--surface)}
 .icon-button--badged{position:relative}
-.unread-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#b72b35;color:#fff;font-size:10px;font-weight:600;line-height:16px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
+.unread-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:var(--accent);color:#fff;font-size:10px;font-weight:600;line-height:16px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
 .unread-badge--inline{position:static;box-shadow:none;display:inline-grid;place-items:center;flex:0 0 auto}
 .app-bar{display:grid;grid-template-columns:minmax(44px,1fr) auto minmax(44px,1fr);align-items:center;padding-inline:8px}
 .app-bar>.icon-button{justify-self:start}
@@ -318,7 +327,7 @@ button:active{transform:scale(.985)}
 .nav-add>span{flex:0 0 auto;display:grid;place-items:center;width:48px;height:48px;aspect-ratio:1;border-radius:50%;background:transparent;color:var(--accent);border:2px solid var(--accent);box-shadow:none}
 .nav-add:active>span{opacity:.6}
 .nav-item__icon{position:relative;display:grid;place-items:center;line-height:0}
-.nav-item__badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:9px;background:#b72b35;color:#fff;font-size:9px;font-weight:700;line-height:15px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
+.nav-item__badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:9px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;line-height:15px;text-align:center;box-shadow:0 0 0 2px var(--chrome,#0a1020);pointer-events:none}
 
 @media(max-width:374px){
   .bottom-nav{width:calc(100% - 20px);padding-inline:6px}
@@ -431,7 +440,7 @@ button:active{transform:scale(.985)}
 .primary-cta{justify-content:space-between}
 .cta-left{display:flex;align-items:center;gap:10px}
 .secondary-cta,.mobile-secondary-action,.hotel-action,.flight-pass__secondary{
-  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:var(--button-secondary-height);padding:0 16px;border:0;border-radius:var(--radius-md);background:var(--ink);color:#fff;font-weight:600;box-shadow:var(--shadow-soft)
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:var(--button-secondary-height);padding:0 16px;border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--card);color:var(--accent);font-weight:600;box-shadow:none
 }
 .secondary-cta .ph,.mobile-secondary-action .ph,.hotel-action .ph,.flight-pass__secondary .ph{color:currentColor}
 .mobile-primary-action:active,.primary-cta:active,.first-run-how-done:active{transform:scale(.975);filter:brightness(.97)}
@@ -874,7 +883,7 @@ button:active{transform:scale(.985)}
 /* Trips, Bookings, Account */
 .segmented-control{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:20px;padding:3px;border-radius:12px;background:var(--surface)}.segmented-control button{min-height:var(--button-compact-height);padding:0 7px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;font-weight:600}.segmented-control button.is-active{background:#fff;color:var(--navy)}
 .travel-state{justify-self:start;color:var(--green);font-size:12px;font-style:normal;font-weight:600}.travel-state--attention{color:var(--amber)}
-.account-section{padding-bottom:8px}.account-card{padding:8px 0 20px;border-bottom:1px solid var(--line)}.account-profile{display:flex;align-items:center;gap:13px}.account-profile__id{flex:1 1 auto;min-width:0}.account-profile__id strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.account-signout-btn{flex:0 0 auto;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600;box-shadow:none}.avatar,.traveler-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;font-size:20px;font-weight:600}.account-profile strong{font-size:20px}.account-meta{margin-top:3px;color:var(--muted);font-size:12px}.account-signin{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface)}.account-signin h2{margin:0 0 5px;font-size:20px}.account-signin p{color:var(--muted);font-size:14px;line-height:1.4}.account-signin--active{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 12px 16px;border-color:rgba(255,255,255,.1);background:#111217;color:#fff}.account-signin--active .account-signin__label{display:flex;align-items:center;gap:9px;min-width:0}.account-signin--active .account-signin__label strong{color:#fff;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.account-signin--active .account-signin__out{flex:0 0 auto;width:auto;min-height:44px;margin:0;padding:0 20px;border:0;border-radius:999px;background:#fff;color:#111217;box-shadow:none}.simple-row--danger{color:var(--red)}.app-version{text-align:center;margin:28px 0 0;color:var(--muted-soft);font-size:12px}
+.account-section{padding-bottom:8px}.account-card{padding:8px 0 20px;border-bottom:1px solid var(--line)}.account-profile{display:flex;align-items:center;gap:13px}.account-profile__id{flex:1 1 auto;min-width:0}.account-profile__id strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.account-signout-btn{flex:0 0 auto;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600;box-shadow:none}.avatar,.traveler-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;font-size:20px;font-weight:600}.account-profile strong{font-size:20px}.account-meta{margin-top:3px;color:var(--muted);font-size:12px}.account-signin{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface)}.account-signin h2{margin:0 0 5px;font-size:20px}.account-signin p{color:var(--muted);font-size:14px;line-height:1.4}.account-signin--active{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 12px 16px;border-color:rgba(255,255,255,.1);background:var(--ink);color:#fff}.account-signin--active .account-signin__label{display:flex;align-items:center;gap:9px;min-width:0}.account-signin--active .account-signin__label strong{color:#fff;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.account-signin--active .account-signin__out{flex:0 0 auto;width:auto;min-height:44px;margin:0;padding:0 20px;border:0;border-radius:999px;background:#fff;color:var(--ink);box-shadow:none}.simple-row--danger{color:var(--red)}.app-version{text-align:center;margin:28px 0 0;color:var(--muted-soft);font-size:12px}
 .sheet-note{text-align:center;margin:16px 0 0;color:var(--muted-soft);font-size:12px}
 /* Big tripto.to wordmark anchoring the foot of the Account screen. Pushed to
    the bottom (just above the nav) so there's no dead space below it. */
@@ -925,7 +934,7 @@ html.keyboard-open .form-save-bar{display:none}
 .document-file-picker{display:flex;align-items:center;gap:12px;min-height:var(--button-row-height);padding:11px 13px;border:1px dashed var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--indigo)}.document-file-picker>span{display:grid;gap:3px}.document-file-picker small,.document-file-meta,.document-verify-state{color:var(--muted);font-size:12px}.document-file-meta,.document-verify-state{margin-top:6px}
 
 .sheet-open body{overflow:hidden}.sheet-backdrop{position:fixed;inset:0;z-index:70;background:rgba(6,10,16,.55);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
-.bottom-sheet{position:fixed;left:50%;bottom:0;z-index:71;width:min(100%,var(--app-width));max-height:min(82dvh,760px);padding:8px 20px calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);border-radius:26px 26px 0 0;background:var(--surface);box-shadow:0 -14px 36px rgba(17,18,21,.14);overflow:hidden}
+.bottom-sheet{position:fixed;left:50%;bottom:0;z-index:71;width:min(100%,var(--app-width));max-height:min(82dvh,760px);padding:8px 20px calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);border-radius:26px 26px 0 0;background:var(--card);box-shadow:0 -18px 42px rgba(5,21,45,.16);overflow:hidden}
 .sheet-handle{width:38px;height:4px;margin:0 auto 6px;border-radius:999px;background:var(--line)}.sheet-title-row{display:flex;align-items:center;justify-content:space-between;min-height:var(--button-primary-height)}.sheet-title-row h2{margin:0;font-size:20px;letter-spacing:-.035em}.sheet-scroll{max-height:calc(min(82dvh,760px) - 76px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}.sheet-options-group{display:grid}.sheet-option{grid-template-columns:44px minmax(0,1fr) 24px}.sheet-option>span:nth-child(2){display:grid;gap:3px}.sheet-option small{color:var(--muted);font-size:12px}.sheet-option>span:nth-child(2) strong,.sheet-option>span:nth-child(2) small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.manual-v2-options{grid-template-columns:1fr 1fr;gap:0 16px}.first-run-how-list{display:grid;gap:0;margin:0;padding:0;list-style:none}.first-run-how-list li{display:grid;grid-template-columns:28px 40px 1fr;align-items:center;gap:10px;min-height:var(--button-row-height);border-bottom:1px solid var(--line)}.first-run-how-list__number{color:var(--muted);font-size:12px}.first-run-how-list__icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--blue-soft);color:var(--icon)}.first-run-how-done{margin-top:16px}
 .move-day-list{gap:2px}.sheet-option.move-day-option{grid-template-columns:34px minmax(0,1fr) auto;align-items:center}.move-day-option__index{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--surface);color:var(--muted);font-size:13px;font-weight:700}.move-day-option--current .move-day-option__index{background:var(--accent);color:var(--accent-ink)}.move-day-option__body{display:grid;gap:2px;min-width:0}.move-day-option__body strong{font-size:15px}.move-day-option__body small{color:var(--muted);font-size:12px}.move-day-option__here{color:var(--muted);font-size:12px;font-weight:600}.move-day-option[disabled]{cursor:default}
 .bottom-sheet--date-range{max-height:min(88dvh,760px)}.range-picker{padding:2px 0}.range-picker__summary{display:grid;gap:4px;min-height:52px;padding:10px 12px;border-radius:12px;background:var(--blue-soft)}.range-picker__summary small{color:var(--indigo);font-size:12px;font-weight:600;text-transform:uppercase}.range-picker__summary strong{font-size:16px}.range-month{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:10px 0 4px;text-align:center}.range-month strong{font-size:16px}.range-weekdays,.range-days{display:grid;grid-template-columns:repeat(7,1fr)}.range-weekdays span{display:grid;place-items:center;height:28px;color:var(--muted);font-size:12px;font-weight:600}.range-day{position:relative;display:grid;place-items:center;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:var(--navy);font-size:14px}.range-day span{position:relative;z-index:2;display:grid;place-items:center;width:36px;height:36px;border-radius:50%}.range-day.is-outside{color:var(--muted-soft)}.range-day.is-between{background:var(--blue-soft)}.range-day.is-start,.range-day.is-end{color:#fff}.range-day.is-start span,.range-day.is-end span{background:var(--indigo)}.range-picker__apply{margin-top:12px}
@@ -1153,7 +1162,7 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .sync-conflict-list{display:grid;gap:10px;margin-top:14px}
 .sync-conflict-detail{display:grid;gap:4px;padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface)}
 .sync-conflict-detail span,.sync-conflict-detail small{color:var(--muted);font-size:12px;line-height:1.4}
-html,html body{background:#ffffff}
+html,html body{background:var(--paper)}
 
 html .app-header,html .app-bar,html .trip-v2-header,html .app-bar--dark{color:var(--ink)}
 /* Detail screens pass dark=true → .app-bar--dark uses --chrome (white), leaving a
@@ -1165,10 +1174,10 @@ html .brand-dot{color:var(--accent)}
 html .header-icon,html .icon-button,html .app-bar--dark .icon-button{color:var(--ink)}
 html .header-icon:hover,html .icon-button:hover{background:var(--blue-soft)}
 html .app-bar-title span{color:var(--muted)}
-/* Bottom nav on white: muted inactive, blue active, yellow FAB. */
+/* Bottom nav: muted inactive, navy active, sun-yellow primary action. */
 html .nav-item{color:var(--muted)}
-html .nav-item.active{color:var(--indigo)}
-html .nav-add>span{background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 22px -10px rgba(10,44,102,.35)}
+html .nav-item.active{color:var(--ink)}
+html .nav-add>span{background:var(--fab);color:var(--fab-ink);box-shadow:0 10px 24px -15px rgba(184,116,0,.44)}
 /* Save bar: yellow CTA on the (now white) bar; delete-trip text goes red. */
 html .form-save-bar .mobile-primary-action{background:var(--accent) !important;color:var(--accent-ink) !important}
 html .form-save-bar .trip-delete-text{color:var(--red)}
@@ -1184,7 +1193,7 @@ html .account-signin__label .ph{color:var(--accent)}
 html .form-field input:focus,html .form-field select:focus,html .form-field textarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--blue-soft)}
 /* Protect content that is meant to stay dark. The document viewer keeps a dark
    chrome bar over its dark media stage. */
-html .doc-viewer__bar{background:#111217;border-bottom-color:rgba(255,255,255,.12)}
+html .doc-viewer__bar{background:var(--ink);border-bottom-color:rgba(255,255,255,.12)}
 /* The "dark-detail" booking/pass screens are now light (paper is white); the
    linked-document rows had hardcoded #fff text for the old dark hero. */
 html .dark-detail .booking-documents,html .dark-detail .booking-documents>h2,html .dark-detail .booking-document-row__open{color:var(--ink)}
@@ -1209,7 +1218,7 @@ html .trips-bg-screen .chevron{color:var(--muted-soft)}
 html .trips-bg-screen .mobile-empty h1{color:var(--ink)}
 html .trips-bg-screen .mobile-empty p{color:var(--muted)}
 html .trips-bg-screen .mobile-empty__icon{background:var(--blue-soft);color:var(--indigo)}
-html,html body{background:#eeeeee}
+html,html body{background:var(--paper)}
 
 /* The production design uses flat, card-less sections. Every boxed card is stripped back to the
    bare page and sections are separated by hairline dividers (the same rule the
@@ -1271,14 +1280,15 @@ html .bottom-nav,html .trips-bg-screen .bottom-nav{
   height:auto;min-height:66px;
   padding:9px 8px calc(10px + env(safe-area-inset-bottom));
   border:0;border-top:1px solid var(--line);border-radius:0;
-  background:var(--paper);
+  background:color-mix(in srgb,var(--card) 94%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15);
   box-shadow:none;
   transform:translateX(-50%) translateZ(0);
   will-change:transform;
   backface-visibility:hidden;
 }
 html .bottom-nav .nav-item{color:var(--muted);font-size:12px;font-weight:600;min-height:var(--button-compact-height);height:auto;border-radius:0}
-html .bottom-nav .nav-item.active{color:var(--muted);font-weight:600}
+html .bottom-nav .nav-item.active{color:var(--ink);font-weight:600}
 /* No colored/highlighted box on the selected nav item — accent icon+label only. */
 html .bottom-nav .nav-item,
 html .bottom-nav .nav-item:focus,
@@ -1287,7 +1297,7 @@ html .bottom-nav .nav-item:active,
 html .bottom-nav .nav-item.active{outline:none !important;box-shadow:none !important;background:transparent !important}
 html .bottom-nav .nav-item__icon{color:currentColor;font-size:26px;--icon-size:26px}
 html .bottom-nav .nav-add>span{
-  width:48px;height:48px;border:0;border-radius:50%;background:var(--accent);color:#fff;box-shadow:none;font-size:32px;--icon-size:32px
+  width:54px;height:54px;border:0;border-radius:50%;background:var(--fab);color:var(--fab-ink);box-shadow:0 10px 24px -14px rgba(184,116,0,.42);font-size:30px;--icon-size:30px
 }
 html .bottom-nav .nav-add:active>span{opacity:1;transform:scale(.94)}
 html .bottom-nav .nav-item__badge{box-shadow:0 0 0 2px var(--paper)}
@@ -1479,7 +1489,7 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 .doc-viewer__back{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;min-height:var(--button-compact-height);padding:0 14px 0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-size:14px;font-weight:600}
 .doc-viewer__title{flex:1 1 auto;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 .doc-viewer__ext{flex:0 0 auto;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;text-decoration:none}
-.doc-viewer__body{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:#111217;display:flex}
+.doc-viewer__body{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--ink);display:flex}
 .doc-viewer__media{flex:1 1 auto;width:100%;height:100%;border:0}
 img.doc-viewer__media{object-fit:contain;align-self:center}
 .doc-viewer__fallback{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px 24px;text-align:center;color:#fff}
@@ -1625,10 +1635,9 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 .help-support p{margin:0 0 12px;font-size:14px;color:var(--muted)}
 .help-support__actions{display:flex;flex-direction:column;gap:10px}
 
-/* Selected Welcome option 12 — Route Matrix.
-   Only first-run presentation changes; authentication, Tour, offline state,
-   legal routes and the authenticated application remain untouched. */
-html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:var(--accent);background-image:none}
+/* Welcome — the same warm passport palette as the authenticated product.
+   Authentication, Tour, offline state and legal routes remain untouched. */
+html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:var(--paper);background-image:none}
 .first-run-screen.welcome-thread{
   --welcome-x:clamp(24px,6.2vw,28px);
   --welcome-top:clamp(18px,min(6vw,3.6svh),30px);
@@ -1638,44 +1647,45 @@ html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{back
   --welcome-cta-height:clamp(52px,min(13vw,6.4svh),56px);
   position:relative;display:flex;flex-direction:column;height:100svh;min-height:0;overflow:hidden;
   padding:max(var(--welcome-top),env(safe-area-inset-top)) var(--welcome-x) 0;
-  background:var(--accent);color:var(--card);font-family:var(--font)
+  background:var(--paper);color:var(--ink);font-family:var(--font)
 }
 .first-run-screen.welcome-thread::before,.first-run-screen.welcome-thread::after{display:none}
 .welcome-thread .first-run-brand-row,.welcome-thread .first-run-main{position:relative;z-index:1}
 .welcome-thread .first-run-brand-row{display:flex;align-items:center;justify-content:flex-start;flex:0 0 auto;min-height:clamp(20px,5.5vw,24px)}
-.welcome-thread .first-run-brand{color:var(--card);font-family:var(--font);font-size:var(--welcome-brand);font-weight:700;line-height:1;letter-spacing:-.045em}
+.welcome-thread .first-run-brand{color:var(--ink);font-family:var(--font);font-size:var(--welcome-brand);font-weight:700;line-height:1;letter-spacing:-.045em}
 html.first-run-open .welcome-thread .first-run-brand__name,
-html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run-brand__dot,
-html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run-brand__to{color:var(--card)}
-.welcome-thread .first-run-offline{position:absolute;right:0;top:0;color:var(--card)}
+html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run-brand__to{color:var(--ink)}
+html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run-brand__dot{color:var(--accent)}
+.welcome-thread .first-run-offline{position:absolute;right:0;top:0;color:var(--green)}
 .welcome-thread .first-run-main{display:flex;flex:1;flex-direction:column;gap:0;min-height:0;padding-top:clamp(24px,min(7vw,4svh),34px)}
 .welcome-thread .first-run-hero{flex:0 0 auto;text-align:left}
 .welcome-thread .first-run-eyebrow{
-  margin:0 0 clamp(10px,min(3vw,1.7svh),14px);color:var(--card);font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.14em;text-transform:uppercase
+  margin:0 0 clamp(10px,min(3vw,1.7svh),14px);color:var(--next);font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.14em;text-transform:uppercase
 }
 .welcome-thread .first-run-hero h1{
-  max-width:8ch;margin:0;color:var(--card);font-family:var(--font);font-size:var(--welcome-title);font-weight:700;line-height:.94;letter-spacing:-.055em
+  max-width:8ch;margin:0;color:var(--ink);font-family:var(--font);font-size:var(--welcome-title);font-weight:700;line-height:.94;letter-spacing:-.055em
 }
 .welcome-thread .first-run-title__line{display:block}
 .welcome-thread .first-run-hero .first-run-lede{
-  max-width:34ch;margin:clamp(10px,min(3vw,1.8svh),14px) 0 0;color:var(--card);font-family:var(--font);font-size:var(--welcome-subtitle);font-weight:500;line-height:1.4
+  max-width:34ch;margin:clamp(10px,min(3vw,1.8svh),14px) 0 0;color:var(--muted);font-family:var(--font);font-size:var(--welcome-subtitle);font-weight:500;line-height:1.4
 }
 .welcome-thread .welcome-route-matrix{
   display:grid;flex:1 1 auto;min-height:0;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
-  margin:clamp(16px,min(5vw,2.8svh),24px) calc(-1 * var(--welcome-x)) 0;padding:0;border-top:1px solid rgba(255,255,255,.72);list-style:none
+  gap:10px;margin:clamp(16px,min(5vw,2.8svh),24px) 0 0;padding:0;border:0;list-style:none
 }
 .welcome-thread .welcome-route-cell{
   display:grid;min-width:0;min-height:0;align-content:center;gap:4px;padding:clamp(12px,min(4.5vw,2.2svh),18px) var(--welcome-x);
-  border-right:1px solid rgba(255,255,255,.72);border-bottom:1px solid rgba(255,255,255,.72);color:var(--card)
+  border:1px solid color-mix(in srgb,var(--ink) 6%,transparent);border-radius:18px;background:var(--flight-soft);color:var(--ink)
 }
-.welcome-thread .welcome-route-cell:nth-child(even){border-right:0}
+.welcome-thread .welcome-route-cell:nth-child(2){background:var(--stay-soft)}
+.welcome-thread .welcome-route-cell:nth-child(3){background:var(--transfer-soft)}
 .welcome-thread .welcome-route-cell__index{font-size:10px;font-weight:700;line-height:1;letter-spacing:.1em;text-transform:uppercase}
 .welcome-thread .welcome-route-cell strong{font-size:clamp(19px,5.5vw,24px);font-weight:700;line-height:1.02;letter-spacing:-.035em}
 .welcome-thread .welcome-route-cell__sub{font-size:12px;font-weight:500;line-height:1.25}
-.welcome-thread .welcome-route-cell--next{background:var(--ink)}
+.welcome-thread .welcome-route-cell--next{background:var(--activity-soft);color:var(--ink)}
 .welcome-thread .welcome-route-cell--next strong{max-width:9ch}
 .welcome-thread .first-run-actions{
-  display:grid;gap:clamp(10px,min(3vw,1.8svh),13px);margin:0 calc(-1 * var(--welcome-x));padding:clamp(14px,min(4vw,2.2svh),18px) var(--welcome-x) 0;flex:0 0 auto;background:var(--paper);color:var(--ink)
+  display:grid;gap:clamp(10px,min(3vw,1.8svh),13px);margin:0;padding:clamp(14px,min(4vw,2.2svh),18px) 0 0;flex:0 0 auto;background:transparent;color:var(--ink)
 }
 .welcome-thread .first-run-google{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--welcome-cta-height);padding:0;background:transparent}
 .welcome-thread .first-run-google-preview{
@@ -1689,17 +1699,17 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
 .welcome-thread #google-signin-button>div{max-width:100%!important}
 .welcome-thread .signin-error{margin:0;color:var(--accent);font-size:12px;text-align:center}
 .welcome-thread .first-run-secondary{
-  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:400px;height:var(--welcome-cta-height);margin:0 auto;padding:0 18px;border:1px solid var(--ink);border-radius:12px;
-  background:transparent;color:var(--ink);font-family:var(--font);font-size:16px;font-weight:600
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:400px;height:var(--welcome-cta-height);margin:0 auto;padding:0 18px;border:1px solid var(--accent);border-radius:12px;
+  background:var(--card);color:var(--accent);font-family:var(--font);font-size:16px;font-weight:600
 }
-.welcome-thread .first-run-secondary .ph-svg,.welcome-thread .first-run-secondary .ph{margin-left:auto;color:var(--ink)}
+.welcome-thread .first-run-secondary .ph-svg,.welcome-thread .first-run-secondary .ph{margin-left:auto;color:var(--accent)}
 .welcome-thread .welcome-v2__footer{
   display:flex;align-items:center;justify-content:center;gap:12px;flex:0 0 auto;min-height:44px;margin:0 calc(-1 * var(--welcome-x));padding:0 var(--welcome-x) max(8px,env(safe-area-inset-bottom));
-  background:var(--paper);color:var(--muted);font-size:12px
+  background:transparent;color:var(--muted);font-size:12px
 }
 .welcome-thread .welcome-v2__footer a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:inherit;text-decoration:none}
 .welcome-thread .welcome-v2__footer>span{width:3px;height:3px;border-radius:50%;background:var(--muted)}
-.welcome-thread :is(button,a):focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.welcome-thread :is(button,a):focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 
 @media(max-height:620px){
   .first-run-screen.welcome-thread{--welcome-top:clamp(10px,min(4vw,2svh),16px);--welcome-title:clamp(29px,min(8.6vw,5.8svh),35px);--welcome-cta-height:48px}
@@ -1758,7 +1768,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
   margin:0 0 12px;padding:22px 0 26px;border-bottom:0
 }
 .timeline-screen--ribbon .timeline-context--next>span{
-  grid-column:1;grid-row:1;color:var(--accent);
+  grid-column:1;grid-row:1;color:var(--next);
   font-size:12px;font-weight:700;letter-spacing:.14em
 }
 .timeline-screen--ribbon .timeline-context--next h2{
@@ -1771,18 +1781,18 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 }
 .timeline-screen--ribbon .timeline-context--next button{
   grid-column:2;grid-row:2/4;min-height:44px;margin:0;padding:0 2px 0 12px;
-  color:var(--ink);font-size:15px;font-weight:600
+  color:var(--accent);font-size:15px;font-weight:600
 }
 .timeline-ribbon{position:relative;isolation:isolate}
 .timeline-ribbon::before{
-  content:"";position:absolute;z-index:0;top:26px;bottom:26px;left:94px;width:0;
-  border-left:2px dashed var(--line);opacity:.85
+  content:"";position:absolute;z-index:0;top:26px;bottom:26px;left:94px;width:1px;
+  background:var(--timeline-rail);opacity:1
 }
 .timeline-screen--ribbon .timeline-day{position:relative;z-index:1}
 .timeline-screen--ribbon .timeline-day+.timeline-day{margin-top:0}
 .timeline-screen--ribbon .timeline-day__header{
   grid-template-columns:62px 66px minmax(0,1fr);min-height:54px;padding:12px 0 2px;
-  background:linear-gradient(90deg,var(--paper) 0,var(--paper) 142px,rgba(18,27,34,.96) 72%,rgba(18,27,34,0) 100%)
+  background:var(--paper)
 }
 .timeline-screen--ribbon .timeline-day__header time{
   grid-column:1;display:grid;align-items:center;justify-content:start;gap:2px;
@@ -1796,12 +1806,12 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
   color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.04em
 }
 .timeline-screen--ribbon .timeline-day__rail{
-  display:block;justify-self:center;width:8px;height:8px;border:0;background:var(--accent);
-  box-shadow:0 0 0 7px rgba(235,95,94,.12),0 0 13px rgba(235,95,94,.55)
+  display:block;justify-self:center;width:8px;height:8px;border:0;background:var(--next);
+  box-shadow:0 0 0 6px var(--amber-soft)
 }
 .timeline-screen--ribbon .timeline-journey::before{display:none}
 .timeline-screen--ribbon .journey-event{
-  grid-template-columns:62px 66px minmax(0,1fr);min-height:72px;
+  grid-template-columns:62px 66px minmax(0,1fr);min-height:82px;
   border-radius:0;color:var(--ink);transition:opacity .16s var(--ease)
 }
 .timeline-screen--ribbon .journey-event--next,.timeline-screen--ribbon .journey-event--active{
@@ -1812,18 +1822,22 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
   color:var(--ink);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums
 }
 .timeline-screen--ribbon .journey-marker{
-  width:42px;height:42px;border-radius:50% !important;
-  border:1px solid rgba(255,255,255,.65) !important;
-  background:rgba(255,255,255,.42) !important;
-  -webkit-backdrop-filter:blur(13px) saturate(1.5);backdrop-filter:blur(13px) saturate(1.5);
-  color:var(--ink);
-  box-shadow:0 0 0 4px var(--paper),0 1px 1px rgba(255,255,255,.75) inset,0 7px 18px rgba(17,18,23,.15) !important
+  width:48px;height:48px;border-radius:50% !important;
+  border:1px solid color-mix(in srgb,var(--ink) 7%,transparent) !important;
+  background:var(--activity-soft) !important;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  color:var(--icon) !important;
+  box-shadow:0 0 0 5px var(--paper) !important
 }
-.timeline-screen--ribbon .journey-marker .ph{font-size:21px !important;font-weight:500;display:grid;place-items:center;line-height:1}
+.timeline-screen--ribbon .journey-marker .ph,.timeline-screen--ribbon .journey-marker .ph-svg{font-size:24px !important;width:24px !important;height:24px !important;font-weight:500;display:grid;place-items:center;line-height:1;color:var(--icon) !important}
 .timeline-screen--ribbon .journey-event--next .journey-marker,.timeline-screen--ribbon .journey-event--active .journey-marker{
-  border-color:rgba(203,41,87,.55) !important;background:rgba(255,255,255,.55) !important;color:var(--accent);
-  box-shadow:0 0 0 4px var(--paper),0 0 0 6px rgba(203,41,87,.14),0 1px 1px rgba(255,255,255,.85) inset,0 7px 20px rgba(203,41,87,.30) !important
+  color:var(--icon) !important;box-shadow:0 0 0 5px var(--paper) !important
 }
+.timeline-screen--ribbon .journey-marker--flight{background:var(--flight-soft) !important}
+.timeline-screen--ribbon :is(.journey-marker--car,.journey-marker--taxi,.journey-marker--bus,.journey-marker--train,.journey-marker--ferry,.journey-marker--cruise){background:var(--transfer-soft) !important}
+.timeline-screen--ribbon :is(.journey-marker--hotel,.journey-marker--city){background:var(--stay-soft) !important}
+.timeline-screen--ribbon :is(.journey-marker--activity,.journey-marker--landmark,.journey-marker--tour,.journey-marker--event){background:var(--activity-soft) !important}
+.timeline-screen--ribbon :is(.journey-marker--restaurant,.journey-marker--bar,.journey-marker--reservation,.journey-marker--ticket){background:var(--food-soft) !important}
 .timeline-screen--ribbon .journey-content{
   grid-template-columns:minmax(0,1fr);gap:8px;padding:13px 0 13px 12px
 }
@@ -1839,7 +1853,8 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .timeline-screen--ribbon .journey-meta{-webkit-line-clamp:1;font-size:12.5px;color:var(--muted-soft)}
 .timeline-screen--ribbon .timeline-flags{gap:6px;margin-bottom:1px}
 .timeline-screen--ribbon .timeline-flag{font-size:11px;letter-spacing:.1em}
-.timeline-screen--ribbon .timeline-flag--next,.timeline-screen--ribbon .timeline-flag--now{color:var(--accent)}
+.timeline-screen--ribbon .timeline-flag--next,.timeline-screen--ribbon .timeline-flag--now{color:var(--next)}
+.timeline-screen--ribbon .journey-event--confirmed .journey-meta{color:var(--green)}
 .timeline-screen--ribbon .journey-chevron{display:inline-flex;color:var(--muted)}
 /* Paged days render one day at a time, so past/future look identical: keep the
    marker disc fully opaque (it masks the spine) and drop the past dimming. */
@@ -1849,7 +1864,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 @media(max-width:374px){
   .timeline-ribbon::before{left:94px}
   .timeline-screen--ribbon .timeline-day__header,.timeline-screen--ribbon .journey-event{grid-template-columns:62px 64px minmax(0,1fr)}
-  .timeline-screen--ribbon .journey-marker{width:42px;height:42px}
+  .timeline-screen--ribbon .journey-marker{width:44px;height:44px}
   .timeline-screen--ribbon .journey-copy strong{font-size:17px}
   .timeline-screen--ribbon .journey-content{padding-left:9px}
 }
@@ -1922,71 +1937,54 @@ html .app-header,html .app-bar,html .trip-v2-header,html .timeline-day__header,h
 }
 
 /* ============================================================================
-   Trips list — red canvas (matches the welcome screen), flat rows (no cards).
-   Appended last so these equal-specificity `html .trips-bg-screen` rules win
-   by source order over the earlier flat-design overrides.
+   Trips list — the same warm passport canvas used across the application.
+   Rows remain flat and quiet; pastel markers carry category and state color.
    ========================================================================== */
-html .trips-bg-screen{
-  background:var(--accent);
-  background-image:radial-gradient(120% 80% at 50% -10%,#e0396a 0%,var(--accent) 46%,#a81f46 100%);
-  color:var(--accent-ink)
-}
-/* Paint the page ancestors red too so no paper (white) gap shows below the last
-   row when the list is short or the browser overscrolls past the shell. */
+html .trips-bg-screen{background:var(--paper);background-image:none;color:var(--ink)}
 html:has(.trips-bg-screen),
 html:has(.trips-bg-screen) body,
 html:has(.trips-bg-screen) #app,
-html:has(.trips-bg-screen) .phone-app{background:#a81f46}
+html:has(.trips-bg-screen) .phone-app{background:var(--paper)}
 html .trips-bg-screen::before,html .trips-bg-screen::after{display:none}
-/* Header: white brand title + white action icons (back, + and account glyphs
-   are normally dark/red, which reads wrong on the red canvas). */
 html .trips-bg-screen .app-bar{background:transparent;border-bottom:0}
-html .trips-bg-screen .app-bar-title strong{color:var(--accent-ink);text-shadow:none}
+html .trips-bg-screen .app-bar-title strong{color:var(--ink);text-shadow:none}
 html .trips-bg-screen .app-bar .icon-button,
 html .trips-bg-screen .app-bar-actions .icon-button,
-html .trips-bg-screen .icon-button.trips-header-add{color:var(--accent-ink)}
-/* Section labels: small soft-white uppercase eyebrows over the red. */
+html .trips-bg-screen .icon-button.trips-header-add{color:var(--ink)}
 html .trips-bg-screen .trip-group>h2{
-  margin:0 4px 4px;color:rgba(255,255,255,.82);opacity:1;text-shadow:none;
+  margin:0 4px 6px;color:var(--next);opacity:1;text-shadow:none;
   font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase
 }
 html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:16px}
-/* Flat rows: no card, no shadow, hairline separators between them. Compact. */
 html .trips-bg-screen .trip-group .mobile-list{
   background:transparent;border:0;border-radius:0;box-shadow:none;
-  overflow:visible;padding:0;gap:0;margin-top:2px
+  overflow:visible;padding:0;gap:2px;margin-top:2px
 }
 html .trips-bg-screen .trip-group .trip-row{
   content-visibility:visible;contain-intrinsic-size:auto;
   grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:12px;
-  padding:10px 4px;border-radius:0;background:transparent;
-  border:0;border-bottom:1px solid rgba(255,255,255,.16);box-shadow:none
+  padding:10px 4px;border:0;border-radius:14px;background:transparent;box-shadow:none
 }
-html .trips-bg-screen .trip-group .trip-row:last-child{border-bottom:0}
-html .trips-bg-screen .trip-group .trip-row:active{background:rgba(0,0,0,.08)}
-/* Marks: no circle — bright white glyph rendered like text (font). Match the
-   earlier bordered-circle rules' specificity (:not(.is-current)) so these win. */
+html .trips-bg-screen .trip-group .trip-row:active{background:var(--surface)}
 html .trips-bg-screen .trip-group .trip-row:not(.is-current) .trip-row__mark,
 html .trips-bg-screen .trip-group .trip-row.is-current .trip-row__mark,
 html .trips-bg-screen .trip-group .trip-row--past:not(.is-current) .trip-row__mark{
-  width:auto !important;height:auto !important;border:0 !important;border-radius:0 !important;
-  background:transparent !important;color:var(--accent-ink) !important;box-shadow:none !important
+  width:44px !important;height:44px !important;border:1px solid color-mix(in srgb,var(--ink) 7%,transparent) !important;border-radius:50% !important;
+  background:var(--blue-soft) !important;color:var(--icon) !important;box-shadow:none !important
 }
-html .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph{font-size:34px !important;font-weight:400}
-/* Copy: white title + soft-white supporting line; white chevron. Compact. */
-html .trips-bg-screen .trip-group .trip-row__copy{gap:1px}
-html .trips-bg-screen .trip-group .trip-row__copy strong{
-  color:var(--accent-ink);text-shadow:none;font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1.14
-}
-html .trips-bg-screen .trip-group .trip-row__copy small{color:rgba(255,255,255,.78);font-size:15px}
-/* Upcoming trips show a bright countdown line ("Starts in X days"). */
-html .trips-bg-screen .trip-group .trip-row__countdown{color:#fff;font-weight:600}
+html .trips-bg-screen .trip-group .trip-row.is-current .trip-row__mark{background:var(--activity-soft) !important}
+html .trips-bg-screen .trip-group .trip-row--past:not(.is-current) .trip-row__mark{background:var(--surface) !important;color:var(--muted) !important}
+html .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph,
+html .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{font-size:24px !important;width:24px !important;height:24px !important;font-weight:400}
+html .trips-bg-screen .trip-group .trip-row__copy{gap:2px}
+html .trips-bg-screen .trip-group .trip-row__copy strong{color:var(--ink);text-shadow:none;font-size:21px;line-height:1.14}
+html .trips-bg-screen .trip-group .trip-row__copy small{color:var(--muted);font-size:15px}
+html .trips-bg-screen .trip-group .trip-row__countdown{color:var(--green);font-weight:600}
 .trip-row__countdown{font-weight:600}
-html .trips-bg-screen .chevron{color:rgba(255,255,255,.6)}
-/* Empty state: white text/icon over the red canvas. */
-html .trips-bg-screen .mobile-empty h1{color:var(--accent-ink)}
-html .trips-bg-screen .mobile-empty p{color:rgba(255,255,255,.82)}
-html .trips-bg-screen .mobile-empty__icon{background:rgba(255,255,255,.16);color:var(--accent-ink)}
+html .trips-bg-screen .chevron{color:var(--accent)}
+html .trips-bg-screen .mobile-empty h1{color:var(--ink)}
+html .trips-bg-screen .mobile-empty p{color:var(--muted)}
+html .trips-bg-screen .mobile-empty__icon{background:var(--blue-soft);color:var(--icon)}
 
 /* ============================================================================
    Editorial title + native interface typography system.
@@ -2201,12 +2199,11 @@ html .trip-v2-actions .icon-button .ph-dots-three-vertical{
 }
 /* Timeline event titles a touch smaller (user request). */
 html .timeline-screen--ribbon .journey-copy strong{font-size:18px}
-/* Trips-page marks: always bright white glyphs on the red canvas (user). */
+/* Trips-page marks inherit the navy-on-pastel travel palette. */
 html body .trips-bg-screen .trip-group .trip-row .trip-row__mark,
 html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph,
 html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
-  border:0 !important;background:transparent !important;box-shadow:none !important;
-  color:var(--accent-ink) !important;fill:var(--accent-ink) !important
+  color:var(--icon) !important;fill:currentColor !important
 }
 
 /* ============================================================================
@@ -2219,7 +2216,7 @@ html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
 .dark-detail .detail-content{padding-top:18px}
 .dark-detail .fd-card,
 .dark-detail .fd-list{
-  background:var(--paper) !important;
+  background:var(--card) !important;
   border:0 !important;
   border-radius:var(--radius-md) !important;
   box-shadow:0 1px 2px rgba(17,18,23,.05),0 12px 26px -18px rgba(17,18,23,.16) !important;

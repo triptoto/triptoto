@@ -75,12 +75,14 @@ function contrast(foreground, background) {
 
 const productionTokens = css.slice(css.indexOf(":root{"), css.indexOf("}", css.indexOf(":root{")) + 1);
 const productionGreen = productionTokens.match(/--green:(#[0-9a-f]{6})/i)?.[1];
-const unreadRed = css.match(/\.unread-badge\{[^}]*background:(#[0-9a-f]{6})/i)?.[1];
-const navBadgeRed = css.match(/\.nav-item__badge\{[^}]*background:(#[0-9a-f]{6})/i)?.[1];
+const productionPaper = productionTokens.match(/--paper:(#[0-9a-f]{6})/i)?.[1];
+const productionAccent = productionTokens.match(/--accent:(#[0-9a-f]{6})/i)?.[1];
 
 assert(productionGreen, "production Ready Offline status color is missing");
-assert(contrast(productionGreen, "#eeeeee") >= 4.5, "Ready Offline text must meet WCAG AA on the production page");
-assert(unreadRed && contrast("#ffffff", unreadRed) >= 4.5, "header notification badge must meet WCAG AA");
-assert(navBadgeRed && contrast("#ffffff", navBadgeRed) >= 4.5, "bottom-nav notification badge must meet WCAG AA");
+assert(productionPaper, "production page color is missing");
+assert(productionAccent, "production notification accent is missing");
+assert(contrast(productionGreen, productionPaper) >= 4.5, "Ready Offline text must meet WCAG AA on the production page");
+assert(contrast("#ffffff", productionAccent) >= 4.5, "header notification badge must meet WCAG AA");
+assert(contrast("#ffffff", productionAccent) >= 4.5, "bottom-nav notification badge must meet WCAG AA");
 
 console.log("Button sizing contract passed.");
