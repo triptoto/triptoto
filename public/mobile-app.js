@@ -3887,8 +3887,7 @@
           )
           .join("")}</div>`
       : `<div class="timeline-empty">${emptySetup ? '<span class="timeline-empty__eyebrow">Start building</span>' : ""}<span class="timeline-empty__icon">${icon(emptySetup ? "plus" : "calendar", 30)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${emptySetup ? `<div class="timeline-empty__actions"><button class="primary-cta timeline-empty__add" data-action="open-add-booking"><span>Add booking</span>${icon("plus",18)}</button><button class="text-action timeline-empty__skip" data-screen="trips">Skip for now</button></div>` : primaryCta("Add booking", "open-add", "plus")}</div>`;
-    const pendingImports = pendingImportCount();
-    const headerAction = `<div class="trip-v2-actions"><button class="icon-button icon-button--badged" data-action="open-trip-menu" aria-label="More options${pendingImports ? `, ${pendingImports} booking${pendingImports === 1 ? "" : "s"} to review` : ""}">${icon("more",28)}${pendingImports ? `<span class="unread-badge" aria-hidden="true">${pendingImports > 9 ? "9+" : pendingImports}</span>` : ""}</button></div>`;
+    const headerAction = `<div class="trip-v2-actions">${notifyAction()}</div>`;
     const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
     return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${emptySetup ? "" : timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
   }

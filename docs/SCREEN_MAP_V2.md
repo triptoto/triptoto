@@ -14,6 +14,8 @@ The V2 primary screen count is intentionally small. “Screen” means a navigab
 
 Primary navigation after authentication is **Trip / Trip options / + / To-do / Account**. Alerts remain available as a card inside Trip options. Welcome, Tour, and creation tasks do not show that navigation when it would distract from completion.
 
+The Timeline header uses the selected-trip control on the left and Notifications on the right. Trip options is not repeated in the header.
+
 ## Secondary full-screen tasks
 
 | Screen | Entry | Exit |

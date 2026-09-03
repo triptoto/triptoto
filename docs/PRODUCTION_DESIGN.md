@@ -55,6 +55,8 @@ The bottom navigation is always ordered and labeled exactly:
 
 Welcome and focused creation/authentication tasks may omit bottom navigation. The center `+` is the only filled circular navigation action.
 
+The Timeline header pairs the trip selector with Notifications. Trip options is not duplicated in the header because it already has a permanent bottom-navigation destination. The notification button displays the unread count and opens the traveler-facing alerts sheet.
+
 ## Component language
 
 - Timeline is the main authenticated surface.
