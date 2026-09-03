@@ -74,3 +74,9 @@ Trip options uses the Phosphor Route/Path symbol rather than a map tile. This di
 ## Release and preview rule
 
 Every UI release bumps both the asset query version in `public/index.html` and the shell cache name in `public/sw.js`. Review builds use a Cloudflare Worker preview alias derived from the exact Git commit SHA. Production is changed only by a separate production deployment.
+# Popup system
+
+- All app dialogs use one compact bottom-sheet pattern with a 48px header and 44px minimum touch controls.
+- Currency selection uses the in-app two-column picker instead of the oversized native iOS selection panel.
+- Long lists scroll inside the sheet; the page behind remains locked and visually subdued.
+- Date range keeps a taller sheet only where the calendar needs the additional space.

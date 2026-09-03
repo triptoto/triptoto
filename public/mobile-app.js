@@ -102,6 +102,7 @@
     weather: null,
     weatherRefreshing: false,
     currency: null,
+    currencyPickerField: null,
     currencyLoading: false,
     currencyError: "",
     travelers: [],
@@ -5822,6 +5823,17 @@
   function bottomSheet(id, title, content) {
     return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
   }
+  function currencyPickerSheet() {
+    const currency = initCurrency();
+    const field = state.currencyPickerField === "from" ? "from" : "to";
+    const selected = currency[field];
+    const title = field === "from" ? "You pay in" : "Convert to";
+    const choices = TRAVEL_CURRENCIES.map(([code, name]) => {
+      const active = code === selected;
+      return `<button type="button" class="currency-picker-option${active ? " is-selected" : ""}" role="option" aria-selected="${active}" data-action="select-currency" data-field="${field}" data-code="${code}"><strong>${code}</strong><span>${esc(name)}</span>${active ? icon("check", 17) : ""}</button>`;
+    }).join("");
+    return bottomSheet("currency-picker", title, `<div class="currency-picker-grid" role="listbox" aria-label="${esc(title)}">${choices}</div>`);
+  }
   function rangeMonthStart(value) {
     const match = String(value || "").match(/^(\d{4})-(\d{2})/), now = new Date();
     return match ? `${match[1]}-${match[2]}-01` : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
@@ -6338,7 +6350,12 @@
       try { return new Intl.NumberFormat(undefined, { style:"currency", currency:code, maximumFractionDigits:2 }).format(value); }
       catch (_) { return `${value.toFixed(2)} ${code}`; }
     };
-    const options = (selected) => TRAVEL_CURRENCIES.map(([code,name]) => `<option value="${code}"${code === selected ? " selected" : ""}>${code} · ${esc(name)}</option>`).join("");
+    const currencyChoice = (field) => {
+      const code = currency[field];
+      const name = TRAVEL_CURRENCIES.find(([itemCode]) => itemCode === code)?.[1] || "Currency";
+      const label = field === "from" ? "From currency" : "To currency";
+      return `<button type="button" class="currency-select-trigger" data-action="open-currency-picker" data-field="${field}" aria-haspopup="dialog" aria-label="${label}: ${esc(code)}, ${esc(name)}"><strong>${esc(code)}</strong><span>${esc(name)}</span>${icon("chevron-down",16)}</button>`;
+    };
     const destinationLocation = (state.locations || []).find((location) => String(val(location,"type") || "") === "city");
     const destination = val(destinationLocation,"city","display_name") || state.trip.title || "Your destination";
     const status = state.currencyLoading
@@ -6347,7 +6364,7 @@
         ? `<span class="currency-status">${currency.cached ? "Saved offline" : "Rate updated"}${currency.date ? ` · ${esc(currency.date)}` : ""}</span>`
         : `<span class="currency-status">Rate not loaded</span>`;
     const error = state.currencyError ? `<section class="currency-error" role="status">${icon("info",18)}<span>${esc(state.currencyError)}</span></section>` : "";
-    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><header class="currency-hero"><span class="currency-hero__icon">${icon("currency",23)}</span><div><span>TRIP RATE</span><h1 id="currency-converter-title">${esc(destination)} uses ${esc(destinationCurrency())}</h1><p>Your destination currency is ready automatically.</p></div></header><section class="currency-workspace" aria-labelledby="currency-converter-title"><section class="currency-zone currency-zone--pay"><header class="currency-zone__head"><span>You pay</span><label><span class="sr-only">From currency</span><select data-currency-field="from" aria-label="From currency">${options(currency.from)}</select></label></header><label class="currency-amount"><span class="sr-only">Amount in ${esc(currency.from)}</span><input data-currency-amount type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label><div class="currency-quick" aria-label="Quick amounts">${[10,50,100,500].map((value) => `<button type="button" data-action="currency-quick" data-value="${value}"${Number(currency.amount) === value ? " class=\"is-active\"" : ""}>${value}</button>`).join("")}</div></section><div class="currency-bridge"><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",21)}</button><span class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Update to load this rate"}</span></div><section class="currency-zone currency-zone--receive"><header class="currency-zone__head"><span>You get</span><label><span class="sr-only">To currency</span><select data-currency-field="to" aria-label="To currency">${options(currency.to)}</select></label></header><output class="currency-result" aria-live="polite"><strong class="currency-result__amount">${esc(result == null ? "—" : money(result, currency.to))}</strong><span>${esc(currency.to)} · ${esc(TRAVEL_CURRENCIES.find(([code]) => code === currency.to)?.[1] || "Currency")}</span></output></section><footer class="currency-update-row"><div>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${state.currencyLoading ? "Updating" : "Update"}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
+    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><header class="currency-hero"><span class="currency-hero__icon">${icon("currency",23)}</span><div><span>TRIP RATE</span><h1 id="currency-converter-title">${esc(destination)} uses ${esc(destinationCurrency())}</h1><p>Your destination currency is ready automatically.</p></div></header><section class="currency-workspace" aria-labelledby="currency-converter-title"><section class="currency-zone currency-zone--pay"><header class="currency-zone__head"><span>You pay</span>${currencyChoice("from")}</header><label class="currency-amount"><span class="sr-only">Amount in ${esc(currency.from)}</span><input data-currency-amount type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label><div class="currency-quick" aria-label="Quick amounts">${[10,50,100,500].map((value) => `<button type="button" data-action="currency-quick" data-value="${value}"${Number(currency.amount) === value ? " class=\"is-active\"" : ""}>${value}</button>`).join("")}</div></section><div class="currency-bridge"><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",21)}</button><span class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Update to load this rate"}</span></div><section class="currency-zone currency-zone--receive"><header class="currency-zone__head"><span>You get</span>${currencyChoice("to")}</header><output class="currency-result" aria-live="polite"><strong class="currency-result__amount">${esc(result == null ? "—" : money(result, currency.to))}</strong><span>${esc(currency.to)} · ${esc(TRAVEL_CURRENCIES.find(([code]) => code === currency.to)?.[1] || "Currency")}</span></output></section><footer class="currency-update-row"><div>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${state.currencyLoading ? "Updating" : "Update"}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
   }
   function esimScreen() {
     const dest =
@@ -6598,6 +6615,7 @@
     if (state.sheet === "date-range") html += dateRangeSheet();
     if (state.sheet === "booking-email-trip") html += bookingEmailTripSheet();
     if (state.sheet === "share") html += shareSheet();
+    if (state.sheet === "currency-picker") html += currencyPickerSheet();
     app.innerHTML = html + toast();
     if (state.sheet && state.sheet !== "driver") {
       const background = app.querySelector(".phone-app");
@@ -6642,6 +6660,7 @@
         state.sheet = null;
         state.dateRange = null;
         state.moveBooking = null;
+        state.currencyPickerField = null;
         render();
         restoreSheetFocus();
       };
@@ -8293,6 +8312,28 @@
         route("currency");
         void ensureCurrencyRates();
         break;
+      case "open-currency-picker":
+        state.currencyPickerField = target.dataset.field === "from" ? "from" : "to";
+        openSheet("currency-picker", target);
+        break;
+      case "select-currency": {
+        const currency = initCurrency();
+        const field = target.dataset.field === "from" ? "from" : "to";
+        const code = String(target.dataset.code || "").toUpperCase();
+        if (!TRAVEL_CURRENCIES.some(([itemCode]) => itemCode === code)) break;
+        currency[field] = code;
+        if (currency.from === currency.to)
+          currency[field === "from" ? "to" : "from"] = code === "USD" ? "EUR" : "USD";
+        currency.rate = null;
+        currency.source = "";
+        saveCurrencyPreferences();
+        state.sheet = null;
+        state.currencyPickerField = null;
+        render();
+        restoreSheetFocus();
+        void ensureCurrencyRates(true);
+        break;
+      }
       case "refresh-currency":
         await ensureCurrencyRates(true);
         break;
@@ -9112,19 +9153,6 @@
       catch (_) { result.textContent = converted == null ? "—" : `${converted.toFixed(2)} ${currency.to}`; }
     }
     if (note && Number.isFinite(rate)) note.textContent = `1 ${currency.from} = ${rate.toFixed(rate < 1 ? 4 : 3)} ${currency.to}`;
-  });
-  app.addEventListener("change", (event) => {
-    const select = event.target.closest?.("[data-currency-field]");
-    if (!select) return;
-    const currency = initCurrency(), field = select.dataset.currencyField;
-    if (!['from','to'].includes(field)) return;
-    currency[field] = select.value;
-    if (currency.from === currency.to) currency[field === 'from' ? 'to' : 'from'] = select.value === 'USD' ? 'EUR' : 'USD';
-    currency.rate = null;
-    currency.source = "";
-    saveCurrencyPreferences();
-    render();
-    void ensureCurrencyRates(true);
   });
   window.addEventListener(
     "pointerdown",

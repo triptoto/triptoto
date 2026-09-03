@@ -11,7 +11,8 @@ const icons = read("scripts/build-icon-sprite.mjs");
 
 assert(routes.includes('currency: "/currency"'), "Currency route is missing");
 assert(app.includes('"Currency converter"') && app.includes('data-action="open-currency"'), "Trip options entry is missing");
-assert(app.includes('data-currency-amount') && app.includes('data-currency-field="from"') && app.includes('data-currency-field="to"'), "Converter controls are missing");
+assert(app.includes('data-currency-amount') && app.includes('data-action="open-currency-picker"') && app.includes('data-action="select-currency"'), "Compact converter controls are missing");
+assert(app.includes('role="listbox"') && app.includes('role="option"') && !app.includes('data-currency-field="from"'), "Currency selection must use the accessible custom picker instead of the native full-screen select");
 assert(app.includes("tripto_currency_rate_v1:") && app.includes("Saved offline"), "Offline currency cache is missing");
 assert(app.includes("Amounts are calculated on this phone") && !app.includes("amount=${encodeURIComponent"), "Amounts must remain on-device");
 assert(worker.includes("/api/v1/currency") && worker.includes("currencyRates"), "Currency API route is missing");
