@@ -2276,7 +2276,7 @@ html .trips-bg-screen .trip-group .trip-row__copy strong{
   --timeline-booking-title-size:clamp(19px,5.1vw,21px);
   --timeline-metadata-size:clamp(15px,3.9vw,16px);
   --timeline-status-size:clamp(14px,3.7vw,15px);
-  --timeline-time-size:clamp(16px,4.35vw,18px);
+  --timeline-time-size:clamp(15px,4vw,17px);
   --timeline-day-size:clamp(14px,3.85vw,16px);
 }
 html .timeline-screen--ribbon .trip-v2-selector strong{
