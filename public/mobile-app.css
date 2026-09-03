@@ -1836,8 +1836,8 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .timeline-screen--ribbon .journey-marker--flight{background:var(--flight-soft) !important}
 .timeline-screen--ribbon :is(.journey-marker--car,.journey-marker--taxi,.journey-marker--bus,.journey-marker--train,.journey-marker--ferry,.journey-marker--cruise){background:var(--transfer-soft) !important}
 .timeline-screen--ribbon :is(.journey-marker--hotel,.journey-marker--city){background:var(--stay-soft) !important}
-.timeline-screen--ribbon :is(.journey-marker--activity,.journey-marker--landmark,.journey-marker--tour,.journey-marker--event){background:var(--activity-soft) !important}
-.timeline-screen--ribbon :is(.journey-marker--restaurant,.journey-marker--bar,.journey-marker--reservation,.journey-marker--ticket){background:var(--food-soft) !important}
+.timeline-screen--ribbon :is(.journey-marker--activity,.journey-marker--landmark,.journey-marker--tour,.journey-marker--camera,.journey-marker--event){background:var(--activity-soft) !important}
+.timeline-screen--ribbon :is(.journey-marker--restaurant,.journey-marker--coffee,.journey-marker--bar,.journey-marker--shopping,.journey-marker--reservation,.journey-marker--ticket){background:var(--food-soft) !important}
 .timeline-screen--ribbon .journey-content{
   grid-template-columns:minmax(0,1fr);gap:8px;padding:13px 0 13px 12px
 }

@@ -4051,6 +4051,11 @@
         reservation: "reservation",
         restaurant: "restaurant",
         dining: "restaurant",
+        coffee: "coffee",
+        cafe: "coffee",
+        bar: "bar",
+        shopping: "shopping",
+        camera: "camera",
         ticket: "ticket",
         generic_ticket: "ticket",
         document: "documents",
@@ -4063,21 +4068,27 @@
   const TIMELINE_GLYPH_LABEL = {
     flight: "Flight", train: "Train", ferry: "Ferry", cruise: "Cruise",
     bus: "Bus", car: "Car", taxi: "Taxi", hotel: "Stay", city: "Stay", bar: "Bar",
+    coffee: "Coffee", camera: "Photography", shopping: "Shopping",
     restaurant: "Restaurant", reservation: "Reservation", activity: "Activity",
     landmark: "Landmark", tour: "Tour", event: "Event", ticket: "Ticket",
   };
   // Pick the most specific approved glyph for an item. Transport uses its
   // transport_type; everything else is classified from the subtype + title so
   // wine tasting → bar, cooking class → activity, restaurant → restaurant —
-  // never the generic hiking/activity glyph for unrelated bookings.
+  // never a generic walking/calendar glyph for a specific traveler activity.
   function timelineGlyph(item, type, transport) {
     if (transport) return timelineIcon(type);
     if (type === "hotel" || type === "stay") return "city";
     const hay = `${val(item, "activity_type", "reservation_type", "subtype") || ""} ${item.title || ""} ${item.subtitle || ""}`.toLowerCase();
     const has = (...ws) => ws.some((w) => hay.includes(w));
-    if (has("wine", "tasting", "cocktail", "brewery", "distillery", "pub", "aperitivo", "bar ", " bar")) return "bar";
-    if (has("restaurant", "dining", "dinner", "lunch", "brunch", "breakfast", "osteria", "trattoria", "bistro", "cafe", "café", "eatery", "supper")) return "restaurant";
+    if (has("gondola", "boat ride", "boat cruise", "water taxi")) return "ferry";
+    if (has("souvenir", "shopping", "shop ", "market visit")) return "shopping";
+    if (has("photography", "photo walk", "photo tour", "camera walk")) return "camera";
+    if (has("city transfer", "private transfer", "airport transfer", "taxi ride")) return "taxi";
+    if (has("coffee", "espresso", "cappuccino")) return "coffee";
+    if (has("wine", "cocktail", "brewery", "distillery", "pub", "aperitivo", "bar ", " bar")) return "bar";
     if (has("cooking", "cook ", "workshop", "lesson", "course", "masterclass")) return "activity";
+    if (has("restaurant", "dining", "dinner", "lunch", "brunch", "breakfast", "tasting menu", "osteria", "trattoria", "bistro", "cafe", "café", "eatery", "supper")) return "restaurant";
     if (has("museum", "gallery", "monument", "cathedral", "palace", "castle", "ruins", "basilica", "landmark", "sightseeing")) return "landmark";
     if (has("tour", "excursion", "guided", "hike", "trek", "safari", "cruise ", "boat trip")) return "tour";
     if (has("concert", "show", "theatre", "theater", "opera", "festival", "match", "game", "gig")) return "event";
