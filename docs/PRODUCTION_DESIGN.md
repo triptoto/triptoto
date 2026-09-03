@@ -59,6 +59,8 @@ The Timeline header pairs the trip selector with Notifications. Trip options is 
 
 The bottom navigation is a single light-lavender edge-to-edge surface. Standard destinations share the same navy-to-purple icon treatment; category-specific icon tiles are intentionally not used. The selected destination uses a restrained purple underline, while the yellow center Add action remains the only standalone color control.
 
+Trip options uses the Phosphor Route/Path symbol rather than a map tile. This distinguishes the collection of trip tools from the dedicated Trip Map screen.
+
 ## Component language
 
 - Timeline is the main authenticated surface.

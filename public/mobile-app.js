@@ -67,8 +67,8 @@
   // One locally bundled Phosphor sprite provides the same geometry and optical
   // weight everywhere. Regular is the default; Fill is reserved for the active
   // bottom-navigation state. No external icon request is made.
-  const ICON_SPRITE = "/icons/tripto-system.svg?v=phosphor-v3";
-  const FILLED_ICON_IDS = new Set(["flight", "map", "notifications", "checklist", "traveler"]);
+  const ICON_SPRITE = "/icons/tripto-system.svg?v=phosphor-v4";
+  const FILLED_ICON_IDS = new Set(["flight", "map", "route", "notifications", "checklist", "traveler"]);
   const state = {
     token: localStorage.getItem("tripto_token") || "",
     loading: true,
@@ -3237,7 +3237,7 @@
     const addBtn = canEditCurrentTrip()
       ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>`
       : `<button class="nav-item nav-add nav-add--view-only" data-action="view-only-hint" aria-label="View only — you can't add to this trip"><span>${icon("viewer", 26)}</span></button>`;
-    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "plane", "Trip")}${navBtn("trip-options", "map", "Trip options")}${addBtn}${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
+    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "plane", "Trip")}${navBtn("trip-options", "route", "Trip options")}${addBtn}${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
