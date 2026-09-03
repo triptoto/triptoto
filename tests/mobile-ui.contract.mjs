@@ -42,6 +42,7 @@ const routeCases=[
   ['train','train-1','/trains/train-1'],['plan','plan-1','/plans/plan-1'],
   ['documents',null,'/documents'],['ready',null,'/ready-offline'],
   ['trip-options',null,'/trip-options'],
+  ['collaboration',null,'/collaboration'],
   ['health',null,'/trip-health'],['travelers',null,'/travelers'],
   ['traveler','traveler-1','/travelers/traveler-1'],['checklist',null,'/before-you-go'],
   ['import',null,'/bookings/import'],['import-review','review-1','/bookings/import/review/review-1'],
@@ -54,9 +55,11 @@ for(const [screen,id,path] of routeCases){
   const parsed=router.parsePath(path);
   assert(parsed.screen===screen&&String(parsed.id||'')===String(id||''),`clean path parsing mismatch for ${path}`);
 }
+const retiredLocalGuide=router.parsePath('/local-guide');
+assert(retiredLocalGuide.screen==='trip-options'&&retiredLocalGuide.redirect===true,'retired Local Guide route must redirect to Trip Options');
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
-assert(app.includes('if (location.hash)')&&app.includes('history.replaceState(null, "", routeUrl(legacy.screen, legacy.id))'),'legacy hash migration missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v67-weather-esim-scroll'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(app.includes('startupRoute.redirect || location.hash')&&app.includes('routeUrl(startupRoute.screen, startupRoute.id)'),'legacy hash and retired-route canonicalization missing');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v68-collaboration-qa'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Add it once.','Follow the trip.','The essential details stay close','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-route-matrix')&&app.includes('welcome-route-cell--next')&&app.includes('Times + route')&&app.includes('Ready offline')&&app.includes('Know what matters'),'Welcome route matrix is incomplete');
@@ -90,6 +93,7 @@ assert(app.includes('showTimelineStatus = !["confirmed", "booked", "complete", "
 runInNewContext(glyphSource,glyphContext);
 for(const [title,type,expected] of [['Breakfast reservation','activity','restaurant'],['Lunch in Rome','activity','restaurant'],['Coffee & pastry','activity','coffee'],['Wine tasting','activity','bar'],['Gondola ride','activity','ferry'],['City transfer','activity','taxi'],['Photography walk','activity','camera'],['Souvenir shopping','activity','shopping'],['Italian cooking class','activity','cooking'],['Tasting menu','activity','restaurant'],['Rome walking tour','activity','tour']])assert(glyphContext.timelineGlyph({title},type,null)===expected,`wrong Timeline glyph for ${title}: expected ${expected}`);}
 {const previewSource=app.slice(app.indexOf('function previewData('),app.indexOf('function applyPreviewData(')),previewContext={};runInNewContext(previewSource,previewContext);const demo=previewContext.previewData(),romeIds=new Set(['breakfast','photo-walk','coffee','lunch','activity','shopping','wine']),romeDay=demo.timeline.filter(item=>romeIds.has(item.id)).sort((a,b)=>a.starts_at_utc-b.starts_at_utc),locations=new Map(demo.locations.map(location=>[location.id,location]));
+assert(demo.sharing?.enabled===true,'Plan Together must be available in visual preview');
 assert(romeDay.length===romeIds.size,'trustworthy Rome demo day is incomplete');
 assert(romeDay.every((item,index)=>item.start_timezone==='Europe/Rome'&&locations.get(item.start_location_id)?.city==='Rome'&&(!index||romeDay[index-1].ends_at_utc<=item.starts_at_utc)),'Rome demo day changes city, overlaps, or loses local timezone');
 const outbound=demo.transport.find(item=>item.id==='train'),returning=demo.transport.find(item=>item.id==='train-return');

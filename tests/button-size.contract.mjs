@@ -46,6 +46,10 @@ assert(
   css.includes(".traveler-pill span{display:inline-flex;align-items:center;min-height:var(--button-compact-height)"),
   "traveler chips must meet the compact touch target",
 );
+assert(
+  css.includes(".collab-chip{display:inline-flex;align-items:center;gap:5px;min-height:var(--button-compact-height)"),
+  "collaboration actions must meet the compact touch target",
+);
 
 assert(
   css.includes("html .bottom-nav .nav-item{color:var(--muted);font-size:12px;font-weight:600;min-height:var(--button-compact-height);height:auto"),

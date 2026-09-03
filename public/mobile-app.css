@@ -607,7 +607,7 @@ button:active{transform:scale(.985)}
 .collab-member__text small{font-size:12px;color:var(--muted)}
 .collab-member__actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;padding-left:50px}
 .collab-member__remove{min-width:44px;min-height:44px;color:var(--muted);background:transparent;border:0}
-.collab-chip{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 12px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--ink);font-size:13px;font-weight:600}
+.collab-chip{display:inline-flex;align-items:center;gap:5px;min-height:var(--button-compact-height);padding:0 12px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--ink);font-size:13px;font-weight:600}
 .collab-chip:active{opacity:.7}
 .collab-invite{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .collab-invite:last-child{border-bottom:0}

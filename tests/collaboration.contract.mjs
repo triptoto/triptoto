@@ -1,4 +1,5 @@
 import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Collaboration contract failed: ${m}`)};
 const sharing=read('apps/worker/src/routes/sharing.ts'),access=read('apps/worker/src/access.ts'),trips=read('apps/worker/src/routes/trips.ts'),readiness=read('apps/worker/src/routes/readiness.ts'),worker=read('apps/worker/src/index.ts'),members=read('migrations/0002_trips.sql'),invites=read('migrations/0012_accounts_sharing.sql'),wrangler=read('wrangler.jsonc'),app=read('public/mobile-app.js');
 
@@ -58,6 +59,31 @@ assert(app.includes('!["tour", "join"].includes(state.screen)'),'direct invitati
 assert(app.includes('Pending invitations couldn’t be loaded.')&&app.includes('state.inviteLoadError'),'pending-invitation errors must not render as an empty list');
 assert(app.includes("never trusts or sends 'owner' as an assignable role"),'frontend owner-escalation guard comment missing');
 for(const copy of ['Why plan together?','Build one plan','Keep everyone aligned','You stay in control','One trip.<br>Everyone in sync.'])assert(app.includes(copy),`informative collaboration UX missing: ${copy}`);
+assert(app.includes('POST_AUTH_DESTINATION_KEY')&&app.includes('rememberPostAuthDestination("collaboration", state.trip?.id || null)'),'Plan Together sign-in must remember the intended destination');
+assert((app.match(/await resumePostAuthDestination\(\)/g)||[]).length>=2,'popup and redirect Google sign-in must resume Plan Together');
+assert(app.includes('Date.now() - Number(destination.savedAt) <= 30 * 60 * 1000'),'post-auth destination must expire instead of becoming a stale redirect');
+{
+  const authSource=`const POST_AUTH_DESTINATION_KEY="tripto_post_auth_destination_v1";${app.slice(app.indexOf('function rememberPostAuthDestination('),app.indexOf('let googleScriptPromise'))}`;
+  const storage=new Map(),calls=[];
+  const context={
+    state:{account:{mode:'guest'},trips:[{id:'trip-a'}],trip:{id:'trip-a'}},
+    sessionStorage:{setItem:(key,value)=>storage.set(key,value),getItem:key=>storage.get(key)||null,removeItem:key=>storage.delete(key)},
+    localStorage:{setItem:(key,value)=>calls.push(['local',key,value])},
+    isSignedIn:()=>context.state.account.mode==='account',
+    loadTripDetails:async()=>calls.push(['details']),
+    route:(screen,id,replace)=>calls.push(['route',screen,id,replace]),
+    loadCollaboration:async()=>calls.push(['collaboration']),
+  };
+  runInNewContext(authSource,context);
+  context.rememberPostAuthDestination('collaboration','trip-a');
+  assert(storage.has('tripto_post_auth_destination_v1'),'Plan Together return intent was not saved');
+  context.state.account.mode='account';
+  assert(await context.resumePostAuthDestination()===true,'valid Plan Together return intent was not resumed');
+  assert(calls.some(call=>call[0]==='route'&&call[1]==='collaboration'&&call[3]===true)&&calls.some(call=>call[0]==='collaboration'),'successful sign-in did not reopen and load Plan Together');
+  assert(!storage.has('tripto_post_auth_destination_v1'),'used Plan Together return intent was not cleared');
+  storage.set('tripto_post_auth_destination_v1',JSON.stringify({screen:'collaboration',tripId:'trip-a',savedAt:0}));
+  assert(await context.resumePostAuthDestination()===false&&!storage.has('tripto_post_auth_destination_v1'),'expired Plan Together return intent was not rejected and cleared');
+}
 
 for(const table of ['users','auth_identities','auth_challenges','devices','trip_members','trip_invites'])assert(readiness.includes(`'${table}'`),`readiness must verify ${table}`);
 assert(readiness.includes("accountAuth:env.ACCOUNT_AUTH_ENABLED==='true'")&&readiness.includes("sharing:env.SHARING_ENABLED==='true'"),'readiness feature report must include auth and sharing');

@@ -70,6 +70,12 @@
     if (["/", "/app", "/index.html"].includes(path))
       return { screen: "home", id: null };
 
+    // Local Guide was retired from the product. Keep old bookmarks useful by
+    // taking travelers to the current Trip Options page and canonicalizing the
+    // URL in the app shell.
+    if (path === "/local-guide")
+      return { screen: "trip-options", id: null, redirect: true };
+
     if (path === "/trips/new") return { screen: "form", id: "trip" };
     if (path === "/travelers/new")
       return { screen: "form", id: "traveler" };

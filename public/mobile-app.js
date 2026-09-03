@@ -5,6 +5,7 @@
   const CACHE_PREFIX = "tripto_cache_v3:";
   const LOCAL_DOC_DB = "tripto-local-docs-v1";
   const PENDING_KEY = "tripto_pending_mutations_v1";
+  const POST_AUTH_DESTINATION_KEY = "tripto_post_auth_destination_v1";
   const PREVIEW_MODE =
     new URLSearchParams(location.search).get("preview") === "1";
   const LOCAL_QA_MODE =
@@ -2864,6 +2865,12 @@
       florenceTrainBack = departure + 3 * 86400000 + 10 * 3600000;
     return {
       account: { mode: "guest" },
+      sharing: {
+        enabled: true,
+        role: "owner",
+        canManage: true,
+        activeMembers: 1,
+      },
       trips: [
         {
           id: "preview-trip",
@@ -4943,9 +4950,49 @@
     return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div><div class="account-list">${row("plus","Create trip","Start planning a new trip","","create-trip")}${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}</div><div class="section-label">Booking email</div><div class="account-list">${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}</div><div class="section-label">Preferences</div><div class="account-list">${pending?row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync"):""}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")}</div><div class="section-label">Privacy & data</div><div class="account-list">${row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data")}${mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account"):""}</div><div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
   }
 
+  function rememberPostAuthDestination(screen, tripId = null) {
+    try {
+      sessionStorage.setItem(
+        POST_AUTH_DESTINATION_KEY,
+        JSON.stringify({ screen, tripId, savedAt: Date.now() }),
+      );
+    } catch (_) {}
+  }
+  async function resumePostAuthDestination() {
+    if (!isSignedIn()) return false;
+    let destination = null;
+    try {
+      destination = JSON.parse(
+        sessionStorage.getItem(POST_AUTH_DESTINATION_KEY) || "null",
+      );
+    } catch (_) {}
+    const valid =
+      destination?.screen === "collaboration" &&
+      Number.isFinite(Number(destination.savedAt)) &&
+      Date.now() - Number(destination.savedAt) <= 30 * 60 * 1000;
+    if (!valid) {
+      try { sessionStorage.removeItem(POST_AUTH_DESTINATION_KEY); } catch (_) {}
+      return false;
+    }
+    const intendedTrip = destination.tripId
+      ? state.trips.find(
+          (trip) => String(trip.id) === String(destination.tripId),
+        )
+      : state.trip;
+    try { sessionStorage.removeItem(POST_AUTH_DESTINATION_KEY); } catch (_) {}
+    if (!intendedTrip) return false;
+    if (String(state.trip?.id || "") !== String(intendedTrip.id)) {
+      state.trip = intendedTrip;
+      localStorage.setItem("tripto_selected_trip", intendedTrip.id);
+      await loadTripDetails();
+    }
+    route("collaboration", null, true);
+    await loadCollaboration();
+    return true;
+  }
   let googleScriptPromise=null,googleRedirectExchangePromise=null,googleSignInChallenge=null,googleInitializedChallengeId="";
   function loadGoogleIdentityScript(){if(globalThis.google?.accounts?.id)return Promise.resolve();if(googleScriptPromise)return googleScriptPromise;googleScriptPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client?hl=en";script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error("Google sign-in could not load."));document.head.appendChild(script);});return googleScriptPromise;}
-  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{if(!googleAuth)throw new Error("Google sign-in could not load.");const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(!googleSignInChallenge||Number(googleSignInChallenge.expiresAt||0)<Date.now()+60000)googleSignInChallenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});const challenge=googleSignInChallenge;await loadGoogleIdentityScript();if(googleInitializedChallengeId!==challenge.challengeId){const initializeOptions=googleAuth.buildInitializeOptions(challenge,navigator,location.origin);if(initializeOptions.ux_mode==="popup")initializeOptions.callback=async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});googleSignInChallenge=null;googleInitializedChallengeId="";state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}};globalThis.google.accounts.id.initialize(initializeOptions);googleInitializedChallengeId=challenge.challengeId;}const buttonOptions=googleAuth.buildButtonOptions(challenge,navigator,location.origin),availableWidth=Math.floor(container.getBoundingClientRect().width||Number(buttonOptions.width)||320);buttonOptions.width=String(Math.max(200,Math.min(Number(buttonOptions.width)||320,availableWidth)));globalThis.google.accounts.id.renderButton(container,buttonOptions);container.dataset.rendered="1";}catch(error){container.dataset.ready="";const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
+  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{if(!googleAuth)throw new Error("Google sign-in could not load.");const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(!googleSignInChallenge||Number(googleSignInChallenge.expiresAt||0)<Date.now()+60000)googleSignInChallenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});const challenge=googleSignInChallenge;await loadGoogleIdentityScript();if(googleInitializedChallengeId!==challenge.challengeId){const initializeOptions=googleAuth.buildInitializeOptions(challenge,navigator,location.origin);if(initializeOptions.ux_mode==="popup")initializeOptions.callback=async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});googleSignInChallenge=null;googleInitializedChallengeId="";state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();await resumePostAuthDestination();showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}};globalThis.google.accounts.id.initialize(initializeOptions);googleInitializedChallengeId=challenge.challengeId;}const buttonOptions=googleAuth.buildButtonOptions(challenge,navigator,location.origin),availableWidth=Math.floor(container.getBoundingClientRect().width||Number(buttonOptions.width)||320);buttonOptions.width=String(Math.max(200,Math.min(Number(buttonOptions.width)||320,availableWidth)));globalThis.google.accounts.id.renderButton(container,buttonOptions);container.dataset.rendered="1";}catch(error){container.dataset.ready="";const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
   function clearGoogleRedirectMarker(){googleAuth?.clearRedirectMarker(location,history);googleRedirectMarker=null;}
   async function acknowledgeGoogleRedirectSession(token){
     try{
@@ -5016,7 +5063,7 @@
           state.joinPreview=null;
           route("join",pendingJoin,true);
           void loadJoinPreview(pendingJoin);
-        }
+        } else await resumePostAuthDestination();
         showToast("Signed in with Google.");
       }
       else if(result?.error)showToast(result.error,"alert");
@@ -8335,6 +8382,7 @@
         await loadCollaboration();
         break;
       case "collab-sign-in":
+        rememberPostAuthDestination("collaboration", state.trip?.id || null);
         route("account");
         break;
       case "reload-collaboration":
@@ -9411,9 +9459,12 @@
     show: route,
     getState: () => state,
   };
-  if (location.hash) {
-    const legacy = parseRoute();
-    history.replaceState(null, "", routeUrl(legacy.screen, legacy.id));
-  }
+  const startupRoute = parseRoute();
+  if (startupRoute.redirect || location.hash)
+    history.replaceState(
+      null,
+      "",
+      routeUrl(startupRoute.screen, startupRoute.id),
+    );
   resumeGoogleRedirectSession();
 })();
