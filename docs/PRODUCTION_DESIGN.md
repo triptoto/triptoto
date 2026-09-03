@@ -57,6 +57,8 @@ Welcome and focused creation/authentication tasks may omit bottom navigation. Th
 
 The Timeline header pairs the trip selector with Notifications. Trip options is not duplicated in the header because it already has a permanent bottom-navigation destination. The notification button displays the unread count and opens the traveler-facing alerts sheet.
 
+The bottom navigation is a single light-lavender edge-to-edge surface. Standard destinations share the same navy-to-purple icon treatment; category-specific icon tiles are intentionally not used. The selected destination uses a restrained purple underline, while the yellow center Add action remains the only standalone color control.
+
 ## Component language
 
 - Timeline is the main authenticated surface.

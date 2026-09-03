@@ -2410,44 +2410,54 @@ html .timeline-screen--ribbon .timeline-day__header time strong{
   font-weight:600;line-height:1.15
 }
 
-/* Pastel travel dock — each destination role borrows the same soft category
-   surfaces used by the Timeline, while the white dock stays calm and clear. */
+/* Unified travel dock — one quiet pastel surface, matching the restrained
+   header language. Icons share one color system; only the active destination
+   and the primary Add action receive emphasis. */
 html body .bottom-nav,
 html body .trips-bg-screen .bottom-nav{
-  bottom:calc(10px + env(safe-area-inset-bottom));
-  width:min(calc(100% - 20px),calc(var(--app-width) - 20px));
-  min-height:74px;
-  padding:7px 8px;
-  border:1px solid var(--line);
-  border-radius:28px;
-  background:color-mix(in srgb,var(--card) 96%,transparent);
+  bottom:0;
+  width:min(100%,var(--app-width));
+  min-height:calc(76px + env(safe-area-inset-bottom));
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  border:0;
+  border-top:1px solid color-mix(in srgb,var(--accent) 14%,var(--line));
+  border-radius:0;
+  background:color-mix(in srgb,var(--activity-soft) 72%,var(--card));
   color:var(--ink);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
-  box-shadow:0 18px 38px -26px color-mix(in srgb,var(--ink) 42%,transparent),0 2px 8px -6px color-mix(in srgb,var(--ink) 22%,transparent);
+  box-shadow:0 -12px 30px -28px color-mix(in srgb,var(--ink) 42%,transparent);
 }
 html body .bottom-nav .nav-item{
+  position:relative;
   min-height:58px;
-  gap:3px;
-  border-radius:18px;
+  gap:2px;
+  border-radius:14px;
   color:var(--muted);
-  transition:background-color .18s var(--ease),color .18s var(--ease),transform .18s var(--ease);
+  transition:color .18s var(--ease),transform .18s var(--ease);
 }
 html body .bottom-nav .nav-item.active{
   background:transparent !important;
   color:var(--accent);
+}
+html body .bottom-nav .nav-item.active:not(.nav-add)::after{
+  content:"";
+  position:absolute;
+  right:50%;
+  bottom:0;
+  width:16px;
+  height:2px;
+  border-radius:2px;
+  background:currentColor;
+  transform:translateX(50%);
 }
 html body .bottom-nav .nav-item:focus-visible{
   outline:2px solid var(--accent) !important;
   outline-offset:2px;
 }
 html body .bottom-nav .nav-item:active{transform:scale(.96)}
-html body .bottom-nav .nav-item__icon{display:grid;place-items:center;width:36px;height:36px;border-radius:13px;color:var(--icon);--icon-size:22px;font-size:22px;transition:box-shadow .18s var(--ease),transform .18s var(--ease)}
-html body .bottom-nav .nav-item:nth-child(1) .nav-item__icon{background:var(--flight-soft)}
-html body .bottom-nav .nav-item:nth-child(2) .nav-item__icon{background:var(--food-soft)}
-html body .bottom-nav .nav-item:nth-child(4) .nav-item__icon{background:var(--stay-soft)}
-html body .bottom-nav .nav-item:nth-child(5) .nav-item__icon{background:var(--activity-soft)}
-html body .bottom-nav .nav-item.active .nav-item__icon{box-shadow:0 0 0 2px var(--accent);transform:translateY(-1px)}
+html body .bottom-nav .nav-item__icon{display:grid;place-items:center;width:36px;height:32px;border-radius:0;background:transparent;color:currentColor;--icon-size:23px;font-size:23px;transition:transform .18s var(--ease)}
+html body .bottom-nav .nav-item.active .nav-item__icon{box-shadow:none;transform:translateY(-1px)}
 html body .bottom-nav .nav-add>span{
   width:52px;
   height:52px;
@@ -2464,7 +2474,7 @@ html body .bottom-nav .nav-add:focus-visible>span{
 html body .bottom-nav .nav-item__badge{
   background:var(--accent);
   color:var(--accent-ink);
-  box-shadow:0 0 0 2px var(--card);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--activity-soft) 72%,var(--card));
 }
 
 /* Trip Map — private itinerary index. The complete itinerary is never sent to
@@ -2505,7 +2515,7 @@ html .trip-map__note{max-width:38ch;margin:2px auto 0;color:var(--muted);font-si
 @media(max-width:374px){html .trip-map{padding-inline:14px}html .trip-map__hero{grid-template-columns:44px minmax(0,1fr) 40px;padding:14px 12px}html .trip-map__hero-icon{width:44px;height:44px}html .trip-map__hero>strong{width:40px;height:40px}html .trip-map__hero h1{font-size:20px}html .trip-map__list-head>small{display:none}html .trip-map__row-main{grid-template-columns:42px minmax(0,1fr) 46px;gap:10px;padding-left:10px}html .trip-map__row-icon{width:42px;height:42px}}
 @media(max-width:374px){
   html body .bottom-nav,
-  html body .trips-bg-screen .bottom-nav{width:calc(100% - 12px);padding-inline:5px}
+  html body .trips-bg-screen .bottom-nav{width:100%;padding-inline:5px}
   html body .bottom-nav .nav-item{font-size:11px}
 }
 
