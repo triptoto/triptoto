@@ -157,16 +157,23 @@
   const scrollPositions = new Map();
   const DIRTY_TASK_SCREENS = new Set(["form", "import", "import-review"]);
   const MANUAL_BOOKING_TYPES = Object.freeze({
-    flight: { label: "Flight", icon: "plane", base: "flight", cta: "Add Flight", documentType: "ticket" },
-    hotel: { label: "Hotel / Stay", shortLabel: "Stay", icon: "hotel", base: "hotel", cta: "Add Stay", documentType: "hotel_confirmation" },
-    train: { label: "Train", icon: "train", base: "train", cta: "Add Train", documentType: "ticket" },
-    "car-rental": { label: "Car Rental", icon: "car", base: "transport", subtype: "car", cta: "Add Car Rental", documentType: "reservation" },
-    transfer: { label: "Transfer", icon: "navigation", base: "transport", subtype: "transfer", cta: "Add Transfer", documentType: "reservation" },
-    cruise: { label: "Cruise", icon: "trips", base: "activity", subtype: "cruise", cta: "Add Cruise", documentType: "ticket" },
-    ferry: { label: "Ferry", icon: "navigation", base: "train", subtype: "ferry", cta: "Add Ferry", documentType: "ticket" },
-    restaurant: { label: "Restaurant", icon: "restaurant", base: "reservation", subtype: "restaurant", cta: "Add Restaurant", documentType: "reservation" },
-    activity: { label: "Activity / Event", shortLabel: "Activity", icon: "star", base: "activity", subtype: "activity", cta: "Add Activity", documentType: "ticket" },
-    other: { label: "Other", icon: "calendar", base: "reservation", subtype: "other", cta: "Add to Trip", documentType: "other" },
+    flight: { label: "Flight", hint: "Air travel", group: "Getting there", tone: "flight", icon: "flight", base: "flight", cta: "Add Flight", documentType: "ticket" },
+    train: { label: "Train", hint: "Rail journey", group: "Getting there", tone: "flight", icon: "train", base: "train", cta: "Add Train", documentType: "ticket" },
+    ferry: { label: "Ferry", hint: "Boat or crossing", group: "Getting there", tone: "flight", icon: "ferry", base: "train", subtype: "ferry", cta: "Add Ferry", documentType: "ticket" },
+    bus: { label: "Bus / Coach", shortLabel: "Bus", hint: "Intercity journey", group: "Getting there", tone: "flight", icon: "bus", base: "transport", subtype: "bus", cta: "Add Bus", documentType: "ticket" },
+    cruise: { label: "Cruise", hint: "Sailing itinerary", group: "Getting there", tone: "flight", icon: "cruise", base: "activity", subtype: "cruise", cta: "Add Cruise", documentType: "ticket" },
+    "car-rental": { label: "Car Rental", hint: "Pickup and return", group: "Getting around", tone: "transfer", icon: "car", base: "transport", subtype: "car", cta: "Add Car Rental", documentType: "reservation" },
+    transfer: { label: "Transfer", hint: "Booked transport", group: "Getting around", tone: "transfer", icon: "directions", base: "transport", subtype: "transfer", cta: "Add Transfer", documentType: "reservation" },
+    taxi: { label: "Taxi / Ride", shortLabel: "Taxi", hint: "Pickup and drop-off", group: "Getting around", tone: "transfer", icon: "taxi", base: "transport", subtype: "taxi", cta: "Add Taxi", documentType: "reservation" },
+    parking: { label: "Parking", hint: "Reserved parking", group: "Getting around", tone: "transfer", icon: "parking", base: "reservation", subtype: "parking", cta: "Add Parking", documentType: "reservation" },
+    hotel: { label: "Hotel / Stay", shortLabel: "Stay", hint: "Hotel or apartment", group: "Stay & plans", tone: "stay", icon: "hotel", base: "hotel", cta: "Add Stay", documentType: "hotel_confirmation" },
+    restaurant: { label: "Restaurant", hint: "Table reservation", group: "Stay & plans", tone: "food", icon: "restaurant", base: "reservation", subtype: "restaurant", cta: "Add Restaurant", documentType: "reservation" },
+    tour: { label: "Tour / Excursion", shortLabel: "Tour", hint: "Guided experience", group: "Stay & plans", tone: "activity", icon: "tour", base: "activity", subtype: "tour", cta: "Add Tour", documentType: "ticket" },
+    activity: { label: "Activity / Event", shortLabel: "Activity", hint: "Class or free-time plan", group: "Stay & plans", tone: "activity", icon: "activity", base: "activity", subtype: "activity", cta: "Add Activity", documentType: "ticket" },
+    attraction: { label: "Museum / Attraction", shortLabel: "Attraction", hint: "Timed entry or visit", group: "Stay & plans", tone: "activity", icon: "landmark", base: "activity", subtype: "attraction", cta: "Add Attraction", documentType: "ticket" },
+    event: { label: "Event / Show", shortLabel: "Event", hint: "Concert or performance", group: "Stay & plans", tone: "activity", icon: "ticket", base: "activity", subtype: "event", cta: "Add Event", documentType: "ticket" },
+    insurance: { label: "Travel Insurance", shortLabel: "Insurance", hint: "Policy details", group: "Travel essentials", tone: "essential", icon: "shield", base: "reservation", subtype: "insurance", cta: "Add Insurance", documentType: "other" },
+    other: { label: "Other", hint: "Any confirmed plan", group: "Travel essentials", tone: "essential", icon: "calendar", base: "reservation", subtype: "other", cta: "Add to Trip", documentType: "other" },
   });
   const QUICK_ADD_KINDS = new Set([
     ...Object.keys(MANUAL_BOOKING_TYPES),
@@ -641,11 +648,20 @@
     if (kind === "ferry") return "ferry";
     if (kind === "car") return "car-rental";
     if (kind === "transfer") return "transfer";
+    if (kind === "bus") return "bus";
+    if (kind === "taxi") return "taxi";
     if (kind === "hotel") return "hotel";
     const subtype = String(val(entity || {}, "reservation_type", "activity_type", "type") || "").toLowerCase();
     if (subtype === "restaurant") return "restaurant";
     if (subtype === "transfer") return "transfer";
+    if (subtype === "bus") return "bus";
+    if (subtype === "taxi") return "taxi";
     if (["car_rental", "car"].includes(subtype)) return "car-rental";
+    if (subtype === "parking") return "parking";
+    if (subtype === "insurance") return "insurance";
+    if (subtype === "tour") return "tour";
+    if (["attraction", "museum"].includes(subtype)) return "attraction";
+    if (["event", "concert", "theatre", "show"].includes(subtype)) return "event";
     if (subtype === "other") return "other";
     if (subtype === "cruise") return "cruise";
     if (["reservation", "plan"].includes(subtype)) return "other";
@@ -5498,7 +5514,7 @@
         arr = zonedDateTimeParts(val(entity, "scheduled_arrival_utc", "ends_at_utc"), arrZone),
         from = locationInputValue(val(entity, "departure_location_id", "start_location_id"), "reservation"),
         to = locationInputValue(val(entity, "arrival_location_id", "end_location_id"), "reservation"),
-        contact = directItemContact(entity, kind === "car-rental" ? "rental_car" : "driver") || {},
+        contact = directItemContact(entity, kind === "car-rental" ? "rental_car" : kind === "bus" ? "other" : "driver") || {},
         details = parseManualDetailNotes(val(contact, "notes"));
       return {
         title: String(val(entity, "carrier_name", "title") || ""),
@@ -5524,7 +5540,7 @@
       end = zonedDateTimeParts(val(entity, "ends_at_utc"), tz),
       rawNotes = String(val(entity, "notes", "activity_notes", "reservation_notes") || ""),
       details = parseManualDetailNotes(rawNotes),
-      contactType = kind === "restaurant" ? "other" : kind === "cruise" || kind === "activity" ? "tour_operator" : "other",
+      contactType = kind === "restaurant" ? "other" : ["cruise","activity","tour","attraction","event"].includes(kind) ? "tour_operator" : "other",
       providerContact = directItemContact(entity, contactType) || contactFor(entity, contactType) || {},
       location = locationById(val(entity, "start_location_id", "venue_location_id")) || {},
       dateName = baseKind === "activity" ? "activityDate" : "reservationDate",
@@ -5669,12 +5685,18 @@
       primary = `${quickField("title","Rental company",{required:true,placeholder:"Company",attrs:'list="suggest-carrental"'})}${manualRouteCard(kind,{name:"location",label:"Pickup location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"},{name:"endLocation",label:"Drop-off location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"})}${dateRangeField("reservationDate", "endDate", "Rental dates", "Pickup", "Drop-off", formPrefill?.reservationDate||dateDefault, formPrefill?.endDate||"")}<div class="form-fields form-fields--date-time">${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}${quickField("endTime","Drop-off time",{type:"time",optional:true,wide:false})}</div><input type="hidden" name="transportType" value="car">`;
       moreContent = `<div class="form-fields">${quickField("timezone","Pickup timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("endTimezone","Drop-off timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("vehicle","Vehicle / class",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("driver","Driver name",{})}${quickField("phone","Rental phone",{type:"tel"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Pickup and drop-off are kept together as one rental booking.";
-    } else if (kind === "transfer") {
+    } else if (["transfer","bus","taxi"].includes(kind)) {
+      const isBus = kind === "bus", isTaxi = kind === "taxi",
+        providerLabel = isBus ? "Bus operator" : isTaxi ? "Company / driver" : "Provider / driver",
+        fromLabel = isBus ? "Departure stop" : "From",
+        toLabel = isBus ? "Arrival stop" : "To",
+        dateLabel = isBus ? "Departure date" : "Pickup date",
+        timeLabel = isBus ? "Departure time" : "Pickup time";
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Provider / driver",{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:"From",placeholder:"Pickup location",list:"quick-reservation-locations"},{name:"endLocation",label:"To",placeholder:"Destination",list:"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Pickup date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}</div><input type="hidden" name="transportType" value="transfer">`;
-      moreContent = `<div class="form-fields">${quickField("timezone","Pickup timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("endTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone","Driver / provider phone",{type:"tel"})}${quickField("vehicle","Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
-      note = "Only confirmed pickup details are shown in the Timeline.";
+      primary = `${quickField("title",providerLabel,{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:fromLabel,placeholder:isBus?"Station or stop":"Pickup location",list:"quick-reservation-locations"},{name:"endLocation",label:toLabel,placeholder:isBus?"Station or stop":"Destination",list:"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",dateLabel,{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",timeLabel,{type:"time",required:true,wide:false})}</div><input type="hidden" name="transportType" value="${esc(manualBookingConfig(kind)?.subtype || "transfer")}">`;
+      moreContent = `<div class="form-fields">${quickField("timezone",isBus?"Departure timezone":"Pickup timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("endTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone",isBus?"Operator phone":"Driver / provider phone",{type:"tel"})}${quickField("vehicle",isBus?"Service number / coach":"Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      note = isBus ? "Add the confirmed departure details shown on your ticket." : "Only confirmed pickup details are shown in the Timeline.";
     } else if (kind === "cruise") {
       list = quickLocationList("activity");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
@@ -5687,18 +5709,26 @@
       primary = `${quickField("title","Restaurant name",{required:true,placeholder:"Restaurant"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Reservation date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",optional:true,wide:false})}</div>${quickField("guests","Guests",{type:"number",optional:true,wide:false,attrs:'min="1" max="99" inputmode="numeric"'})}<input type="hidden" name="reservationType" value="restaurant">`;
       moreContent = `<div class="form-fields">${quickField("location","City / location",{optional:true,placeholder:"City or saved trip location",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("streetAddress","Street address",{optional:true,placeholder:"Restaurant address"})}${quickField("phone","Restaurant phone",{type:"tel",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Guest count and confirmation stay with this reservation.";
-    } else if (kind === "activity") {
+    } else if (["activity","tour","attraction","event"].includes(kind)) {
+      const activitySubtype = manualBookingConfig(kind)?.subtype || "activity",
+        activityLabel = kind === "tour" ? "Tour name" : kind === "attraction" ? "Attraction name" : kind === "event" ? "Event name" : "Activity name",
+        activityPlaceholder = kind === "tour" ? "Guided city tour" : kind === "attraction" ? "Vatican Museums" : kind === "event" ? "Concert or show" : "Vatican Museums",
+        typeControl = kind === "activity" ? quickField("activityType","Type",{type:"select",optional:true,choices:'<option value="activity">Activity</option><option value="tour">Tour</option><option value="concert">Concert</option><option value="theatre">Theatre</option><option value="museum">Museum</option><option value="attraction">Attraction</option><option value="sports">Sports</option><option value="meeting">Meeting</option><option value="show">Show</option><option value="other">Other</option>'}) : `<input type="hidden" name="activityType" value="${esc(activitySubtype)}">`;
       list = quickLocationList("activity");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Activity name",{required:true,placeholder:"Vatican Museums"})}${quickField("activityType","Type",{type:"select",optional:true,choices:'<option value="activity">Activity</option><option value="tour">Tour</option><option value="concert">Concert</option><option value="theatre">Theatre</option><option value="museum">Museum</option><option value="attraction">Attraction</option><option value="sports">Sports</option><option value="meeting">Meeting</option><option value="show">Show</option><option value="other">Other</option>'})}${quickField("activityDate","Date",{type:"date",required:true,value:dateDefault})}<input type="hidden" name="timeMode" value="specific"><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",optional:true,wide:false})}${quickField("timezone","Timezone",{optional:true,wide:false,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location","Venue",{optional:true,placeholder:"Venue or saved trip location",attrs:'list="quick-activity-locations"'})}`;
+      primary = `${quickField("title",activityLabel,{required:true,placeholder:activityPlaceholder})}${typeControl}${quickField("activityDate","Date",{type:"date",required:true,value:dateDefault})}<input type="hidden" name="timeMode" value="specific"><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",optional:true,wide:false})}${quickField("timezone","Timezone",{optional:true,wide:false,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location","Venue",{optional:true,placeholder:"Venue or saved trip location",attrs:'list="quick-activity-locations"'})}`;
       moreContent = `<div class="form-fields">${quickField("endTime","End time",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickField("seatSection","Seat / section",{optional:true})}${quickField("streetAddress","Address",{optional:true,placeholder:"Venue address"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Use the venue's local time. Nothing is presented as live.";
-    } else if (["other","reservation"].includes(kind)) {
+    } else if (["other","reservation","parking","insurance"].includes(kind)) {
+      const config = manualBookingConfig(kind), isParking = kind === "parking", isInsurance = kind === "insurance",
+        titleLabel = isParking ? "Parking name" : isInsurance ? "Policy / provider" : "Booking title",
+        titlePlaceholder = isParking ? "Airport parking" : isInsurance ? "Travel insurance" : "What did you book?",
+        dateLabel = isParking ? "Start date" : isInsurance ? "Coverage starts" : "Date";
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title","Booking title",{required:true,placeholder:"What did you book?"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",optional:true,wide:false})}</div><input type="hidden" name="reservationType" value="other">`;
+      primary = `${quickField("title",titleLabel,{required:true,placeholder:titlePlaceholder})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",dateLabel,{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",isParking?"Entry time":"Local time",{type:"time",optional:true,wide:false})}</div><input type="hidden" name="reservationType" value="${esc(config?.subtype || "other")}">`;
       moreContent = `<div class="form-fields">${quickField("location","Location",{optional:true,placeholder:"Optional",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<div class="form-fields--date-time">${quickField("endDate","End date",{type:"date",wide:false})}${quickField("endTime","End time",{type:"time",wide:false})}</div>${quickField("confirmationNumber","Confirmation number",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
-      note = "Add only the details you know; nothing is guessed.";
+      note = isInsurance ? "Keep the policy reference with your trip; private documents remain on this device." : "Add only the details you know; nothing is guessed.";
     } else {
       const bookingOptions = bookingRows().map(({item}) => `<option value="${esc(itemId(item))}">${esc(val(item,"title","property_name")||"Booking")}</option>`).join(""),
         travelerSpecific = state.travelers.length ? quickTravelerField() : "";
@@ -6253,8 +6283,14 @@
   }
   function addBookingScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
-    const choice = (ic,title,copy,action) => `<button class="v2-choice" data-action="${action}"><span>${icon(ic,23)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",20)}</button>`;
-    return focusedTaskPage(`Add to ${state.trip.title || "trip"}`, `<section class="v2-task-intro"><span>Add Booking</span><h1>How would you like<br>to add it?</h1><p>Everything you add appears in the Timeline.</p></section><div class="v2-choice-list">${choice("document","Upload Booking","Choose a ticket or confirmation file","open-upload-booking")}${choice("mail","Forward Confirmation Email","Send it to go@tripto.to","open-forward-booking")}${choice("plus","Add Manually","Enter only the confirmed details","open-manual-booking")}</div>`, "v2-add-booking");
+    const groups = [...new Set(Object.values(MANUAL_BOOKING_TYPES).map((config) => config.group))];
+    const category = ([type, config]) => `<button type="button" class="manual-add-card manual-add-card--${esc(config.tone)}" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" aria-label="Add ${esc(config.label)}"><span class="manual-add-card__icon">${icon(config.icon,24)}</span><span class="manual-add-card__copy"><strong>${esc(config.label)}</strong><small>${esc(config.hint)}</small></span></button>`;
+    const groupedCategories = groups.map((group) => {
+      const id = `manual-group-${group.toLowerCase().replace(/[^a-z0-9]+/g,"-")}`;
+      return `<section class="manual-add-group" aria-labelledby="${esc(id)}"><h2 id="${esc(id)}">${esc(group)}</h2><div class="manual-add-grid">${Object.entries(MANUAL_BOOKING_TYPES).filter(([,config])=>config.group===group).map(category).join("")}</div></section>`;
+    }).join("");
+    const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
+    return focusedTaskPage(`Add to ${state.trip.title || "trip"}`, `<section class="manual-add-intro"><span>Add Booking Manually</span><h1>What are you adding?</h1><p>Choose a type and add the confirmed details. You can attach tickets or vouchers inside the booking.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page");
   }
   function manualBookingSheet() {
     const options = Object.entries(MANUAL_BOOKING_TYPES);
@@ -6959,11 +6995,12 @@
   }
   function syncQuickTimezone(form, input) {
     const kind = form.dataset.kind,
+      baseKind = bookingBaseKind(kind),
       role = input.dataset.locationRole,
-      locationKind = kind === "flight" ? "flight" : kind === "train" ? "train" : "activity",
+      locationKind = kind === "flight" ? "flight" : ["train","ferry"].includes(kind) ? "train" : "activity",
       selectedPlace = selectedPlaceForInput(input),
       timezone = String(selectedPlace?.timezone || timezoneForLocationInput(input.value, locationKind) || ""),
-      timezoneName = role === "arrival" ? "arrivalTimezone" : kind === "activity" || kind === "reservation" ? "timezone" : "departureTimezone",
+      timezoneName = role === "arrival" ? "arrivalTimezone" : ["activity","reservation","transport"].includes(baseKind) ? "timezone" : "departureTimezone",
       control = form.elements[timezoneName],
       field = input.closest(".form-field");
     if (!control) return;
@@ -6993,7 +7030,7 @@
     );
   }
   function syncQuickConditionalFields(form) {
-    if (form.dataset.kind === "activity") {
+    if (["activity","tour","attraction","event"].includes(form.dataset.kind)) {
       const unset = form.elements.timeMode?.value === "unset",
         group = form.querySelector(".form-fields--activity-time"),
         time = form.elements.activityTime,
@@ -7440,15 +7477,17 @@
         await saveScopedContact("rental_car", String(fd.get("title") || "Car rental"), {
           phone:fd.get("phone"), notes:buildManualDetailNotes([["Driver", fd.get("driver")]], userNotes),
         });
-      } else if (kind === "transfer") {
+      } else if (["transfer", "taxi"].includes(kind)) {
         await saveScopedContact("driver", String(fd.get("driver") || fd.get("title") || "Transfer"), {
           phone:fd.get("phone"), notes:buildManualDetailNotes([["Driver", fd.get("driver")], ["Vehicle", fd.get("vehicle")]], userNotes),
         });
+      } else if (kind === "bus") {
+        await saveScopedContact("other", String(fd.get("title") || "Bus operator"), { phone:fd.get("phone"), notes:userNotes });
       } else if (kind === "cruise") {
         await saveScopedContact("tour_operator", String(fd.get("provider") || "Cruise line"));
       } else if (kind === "restaurant") {
         await saveScopedContact("other", String(fd.get("title") || "Restaurant"), { phone:fd.get("phone") });
-      } else if (kind === "activity" && fd.get("provider")) {
+      } else if (["activity", "tour", "attraction", "event"].includes(kind) && fd.get("provider")) {
         await saveScopedContact("tour_operator", String(fd.get("provider")));
       }
       return "";
@@ -7552,7 +7591,7 @@
           local=explicitDate&&explicitTime?`${explicitDate}T${explicitTime}`:"", ms=local?resolveEventLocalDateTime(local,timezone):null,
           locationName=String(fd.get("location")||""), existingLocationId=String(val(existingBookingEntity,"start_location_id","venue_location_id")||"");
         let location=null;
-        if (["restaurant","activity"].includes(kind) && (locationName || fd.get("streetAddress"))) {
+        if (["restaurant","activity","tour","attraction","event"].includes(kind) && (locationName || fd.get("streetAddress"))) {
           location=await createManualVenueLocation(kind==="restaurant"?"restaurant":"attraction",fd.get("title"),locationName,fd.get("streetAddress"),timezone,fd.get("locationPlace"),existingLocationId);
         } else if (kind === "cruise" && locationName) {
           const existingLocation=locationById(existingLocationId);

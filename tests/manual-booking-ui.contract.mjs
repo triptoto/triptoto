@@ -76,20 +76,27 @@ const registry = JSON.parse(
 );
 const expectedCategories = [
   ["flight", "Flight", "flight", null, "Add Flight"],
-  ["hotel", "Hotel / Stay", "hotel", null, "Add Stay"],
   ["train", "Train", "train", null, "Add Train"],
+  ["ferry", "Ferry", "train", "ferry", "Add Ferry"],
+  ["bus", "Bus / Coach", "transport", "bus", "Add Bus"],
+  ["cruise", "Cruise", "activity", "cruise", "Add Cruise"],
   ["car-rental", "Car Rental", "transport", "car", "Add Car Rental"],
   ["transfer", "Transfer", "transport", "transfer", "Add Transfer"],
-  ["cruise", "Cruise", "activity", "cruise", "Add Cruise"],
-  ["ferry", "Ferry", "train", "ferry", "Add Ferry"],
+  ["taxi", "Taxi / Ride", "transport", "taxi", "Add Taxi"],
+  ["parking", "Parking", "reservation", "parking", "Add Parking"],
+  ["hotel", "Hotel / Stay", "hotel", null, "Add Stay"],
   ["restaurant", "Restaurant", "reservation", "restaurant", "Add Restaurant"],
+  ["tour", "Tour / Excursion", "activity", "tour", "Add Tour"],
   ["activity", "Activity / Event", "activity", "activity", "Add Activity"],
+  ["attraction", "Museum / Attraction", "activity", "attraction", "Add Attraction"],
+  ["event", "Event / Show", "activity", "event", "Add Event"],
+  ["insurance", "Travel Insurance", "reservation", "insurance", "Add Insurance"],
   ["other", "Other", "reservation", "other", "Add to Trip"],
 ];
 assert.deepEqual(
   Object.keys(registry),
   expectedCategories.map(([key]) => key),
-  "Add Manually must expose exactly the approved ten categories in order",
+  "Add Booking Manually must expose the approved expanded categories in order",
 );
 for (const [key, label, base, subtype, cta] of expectedCategories) {
   assert.equal(registry[key]?.label, label, `${key} label changed`);
@@ -97,6 +104,9 @@ for (const [key, label, base, subtype, cta] of expectedCategories) {
   assert.equal(registry[key]?.subtype || null, subtype, `${key} subtype changed`);
   assert.equal(registry[key]?.cta, cta, `${key} primary CTA changed`);
   assert(registry[key]?.icon, `${key} needs a category icon`);
+  assert(registry[key]?.hint, `${key} needs concise traveler-facing helper copy`);
+  assert(registry[key]?.group, `${key} needs a clear category group`);
+  assert(registry[key]?.tone, `${key} needs a theme-token tone`);
   assert(registry[key]?.documentType, `${key} needs a contextual document type`);
 }
 
@@ -108,7 +118,7 @@ const manualSheet = section(
 assert(
   manualSheet.includes("MANUAL_BOOKING_TYPES") &&
     manualSheet.includes("Object.entries"),
-  "category sheet must render from the shared ten-category registry",
+  "category sheet must render from the shared category registry",
 );
 for (const token of [
   "<button",
@@ -125,7 +135,7 @@ assert(
   "a category must close the temporary sheet and open its purpose-built form",
 );
 
-// All ten traveler concepts have clean, shareable routes even when several use
+// All traveler concepts have clean, shareable routes even when several use
 // the same existing backend entity kind.
 const routeContext = Object.create(null);
 runInNewContext(routesSource, routeContext);
@@ -156,11 +166,11 @@ for (const branch of [
   'kind === "hotel"',
   '["train","ferry"].includes(kind)',
   'kind === "car-rental"',
-  'kind === "transfer"',
+  '["transfer","bus","taxi"].includes(kind)',
   'kind === "cruise"',
   'kind === "restaurant"',
-  'kind === "activity"',
-  '["other","reservation"].includes(kind)',
+  '["activity","tour","attraction","event"].includes(kind)',
+  '["other","reservation","parking","insurance"].includes(kind)',
 ]) {
   assert(formScreen.includes(branch), `purpose-built form branch missing: ${branch}`);
 }
@@ -168,12 +178,12 @@ const formBranches = {
   flight: section(formScreen, 'if (kind === "flight") {', '} else if (kind === "hotel") {'),
   hotel: section(formScreen, '} else if (kind === "hotel") {', '} else if (["train","ferry"].includes(kind)) {'),
   rail: section(formScreen, '} else if (["train","ferry"].includes(kind)) {', '} else if (kind === "car-rental") {'),
-  car: section(formScreen, '} else if (kind === "car-rental") {', '} else if (kind === "transfer") {'),
-  transfer: section(formScreen, '} else if (kind === "transfer") {', '} else if (kind === "cruise") {'),
+  car: section(formScreen, '} else if (kind === "car-rental") {', '} else if (["transfer","bus","taxi"].includes(kind)) {'),
+  transfer: section(formScreen, '} else if (["transfer","bus","taxi"].includes(kind)) {', '} else if (kind === "cruise") {'),
   cruise: section(formScreen, '} else if (kind === "cruise") {', '} else if (kind === "restaurant") {'),
-  restaurant: section(formScreen, '} else if (kind === "restaurant") {', '} else if (kind === "activity") {'),
-  activity: section(formScreen, '} else if (kind === "activity") {', '} else if (["other","reservation"].includes(kind)) {'),
-  other: section(formScreen, '} else if (["other","reservation"].includes(kind)) {', '} else {'),
+  restaurant: section(formScreen, '} else if (kind === "restaurant") {', '} else if (["activity","tour","attraction","event"].includes(kind)) {'),
+  activity: section(formScreen, '} else if (["activity","tour","attraction","event"].includes(kind)) {', '} else if (["other","reservation","parking","insurance"].includes(kind)) {'),
+  other: section(formScreen, '} else if (["other","reservation","parking","insurance"].includes(kind)) {', '} else {'),
 };
 
 // Required/optional semantics are an acceptance boundary, not merely copy. A
