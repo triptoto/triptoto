@@ -1,6 +1,6 @@
 # tripto.to — Historical full product QA record
 
-This file records the QA state before the single production design was consolidated. It is retained as an engineering audit, not as a visual or navigation specification. The current source of truth is `PRODUCTION_DESIGN.md`, including the `Trip | Alerts | + | To-do | Account` menu.
+This file records the QA state before the single production design was consolidated. It is retained as an engineering audit, not as a visual or navigation specification. The current source of truth is `PRODUCTION_DESIGN.md`, including the `Trip | Trip options | + | To-do | Account` menu.
 
 Status: complete. Branch `qa-full-product-code-design`. All validation suites green
 (`validate:beta`, `validate:v2`, `validate:major`, `validate:manual-booking`, `validate:places`).

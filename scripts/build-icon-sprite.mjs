@@ -158,7 +158,7 @@ const icons = Object.freeze({
   "wx-wind": "wind",
 });
 
-const filled = new Set(["flight", "notifications", "checklist", "traveler"]);
+const filled = new Set(["flight", "map", "notifications", "checklist", "traveler"]);
 
 async function symbol(id, sourceName, weight, suffix = "") {
   const filename = weight === "fill" ? `${sourceName}-fill.svg` : `${sourceName}.svg`;

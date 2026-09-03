@@ -211,12 +211,12 @@ Automatic initial selection uses active, nearest upcoming, then relevant recent 
 Five controls are primary:
 
 - **Trip** — current trip Timeline;
-- **Alerts** — traveler-facing notifications and important changes;
+- **Trip options** — weather, currency, map, eSIM, alerts, collaboration, imports, documents, and trip management;
 - **+** — Add Booking or Create New Trip;
 - **To-do** — current trip checklist;
 - **Account** — identity, trips, forwarding email, help, privacy, and sign out.
 
-This exact order is the V2 navigation model: `Trip | Alerts | + | To-do | Account`.
+This exact order is the V2 navigation model: `Trip | Trip options | + | To-do | Account`.
 
 ## Account
 
@@ -333,7 +333,7 @@ Unify entry around Upload, Forward Email, and Add Manually. Preserve determinist
 
 ### Phase E — Timeline as primary experience
 
-Introduce the V2 Timeline shell, compact booking rows, booking details, contextual documents, trip selector, and `Trip | Alerts | + | To-do | Account` navigation. Rollback uses immutable Git/Worker history rather than a second runtime theme.
+Introduce the V2 Timeline shell, compact booking rows, booking details, contextual documents, trip selector, and `Trip | Trip options | + | To-do | Account` navigation. Rollback uses immutable Git/Worker history rather than a second runtime theme.
 
 ### Phase F — contextual guidance
 

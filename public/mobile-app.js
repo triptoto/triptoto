@@ -67,8 +67,8 @@
   // One locally bundled Phosphor sprite provides the same geometry and optical
   // weight everywhere. Regular is the default; Fill is reserved for the active
   // bottom-navigation state. No external icon request is made.
-  const ICON_SPRITE = "/icons/tripto-system.svg?v=phosphor-v2";
-  const FILLED_ICON_IDS = new Set(["flight", "notifications", "checklist", "traveler"]);
+  const ICON_SPRITE = "/icons/tripto-system.svg?v=phosphor-v3";
+  const FILLED_ICON_IDS = new Set(["flight", "map", "notifications", "checklist", "traveler"]);
   const state = {
     token: localStorage.getItem("tripto_token") || "",
     loading: true,
@@ -3254,25 +3254,19 @@
     return `<button class="icon-button notify-button" data-action="open-notifications" aria-label="${esc(label)}">${icon("bell", 24)}${badge}</button>`;
   }
   function bottomNav(active) {
-    const norm = state.sheet === "notifications"
-      ? "alerts"
-      : active === "account"
+    const norm = active === "account"
         ? "account"
         : active === "checklist"
           ? "checklist"
+          : active === "trip-options"
+            ? "trip-options"
           : "trips";
     const navBtn = (screen, ic, label) =>
       `<button class="nav-item ${norm === screen ? "active" : ""}" data-screen="${screen}" ${norm === screen ? 'aria-current="page"' : ""}><span class="nav-item__icon">${icon(ic, 23, "", norm === screen ? "fill" : "regular")}</span><span>${label}</span></button>`;
-    const unread = totalNotificationCount();
-    const alertLabel = unread ? `Alerts, ${unread} unread` : "Alerts";
-    const alertBadge = unread
-      ? `<span class="nav-item__badge" aria-hidden="true">${unread > 9 ? "9+" : unread}</span>`
-      : "";
-    const alerts = `<button class="nav-item nav-item--notify ${norm === "alerts" ? "active" : ""}" data-action="open-notifications" aria-label="${esc(alertLabel)}" aria-expanded="${state.sheet === "notifications"}"><span class="nav-item__icon">${icon("bell", 23, "", norm === "alerts" ? "fill" : "regular")}${alertBadge}</span><span>Alerts</span></button>`;
     const addBtn = canEditCurrentTrip()
       ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>`
       : `<button class="nav-item nav-add nav-add--view-only" data-action="view-only-hint" aria-label="View only — you can't add to this trip"><span>${icon("viewer", 26)}</span></button>`;
-    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "plane", "Trip")}${alerts}${addBtn}${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
+    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "plane", "Trip")}${navBtn("trip-options", "map", "Trip options")}${addBtn}${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
@@ -5890,16 +5884,14 @@
     const importsHint = pending
       ? `${pending} booking${pending === 1 ? "" : "s"} to review`
       : "Forwarded and uploaded bookings";
-    const optionCard = (tone, iconName, title, sub, attr, badge = "") =>
-      `<button type="button" class="trip-option-card trip-option-card--${esc(tone)}" ${attr}><span class="trip-option-card__icon">${icon(iconName, 24)}</span><span class="trip-option-card__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${badge || `<span class="trip-option-card__chevron">${icon("chevron", 17)}</span>`}</button>`;
-    const optionRow = (iconName, title, sub, attr, trail = `<span class="trip-option-row__chevron">${icon("chevron", 18)}</span>`) =>
-      `<button type="button" class="trip-option-row" ${attr}><span class="trip-option-row__icon">${icon(iconName, 21)}</span><span class="trip-option-row__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${trail}</button>`;
-    const collabRow = state.sharing?.enabled
-      ? optionRow("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
+    const optionCard = (tone, iconName, title, sub, attr, badge = 0) =>
+      `<button type="button" class="trip-option-card trip-option-card--${esc(tone)}" ${attr}><span class="trip-option-card__icon">${icon(iconName, 24)}</span>${badge ? `<span class="trip-option-card__badge" aria-label="${badge} waiting">${badge > 9 ? "9+" : badge}</span>` : ""}<span class="trip-option-card__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span><span class="trip-option-card__chevron">${icon("chevron", 17)}</span></button>`;
+    const collabCard = state.sharing?.enabled
+      ? optionCard("together", "users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
       : "";
-    const importTrail = pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : `<span class="trip-option-row__chevron">${icon("chevron", 18)}</span>`;
-    const body = `<section class="trip-options-intro"><span>TRIP TOOLS</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>Everything that helps you plan, prepare, and travel with confidence—in one place.</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-list">${collabRow}${optionRow("mail", "Booking imports", importsHint, `data-screen="import-history"`, importTrail)}${optionRow("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-list">${optionRow("edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)}${optionRow("info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
-    return focusedTaskPage("Trip options", body, "trip-options-page");
+    const alerts = totalNotificationCount();
+    const body = `<section class="trip-options-intro"><span>TRIP TOOLS</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>Everything that helps you plan, prepare, and travel with confidence—in one place.</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid">${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${collabCard}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid">${optionCard("edit", "edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
+    return mobilePage("Trip options", body, "trip-options", "", "trip-options-page");
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
   // Collaboration is free for every signed-in account — there is no paid gate.

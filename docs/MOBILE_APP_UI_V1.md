@@ -29,7 +29,7 @@ Unavailable values remain unavailable. No gate, seat, status, address, document 
 
 Welcome, Timeline, Alerts, To-do, Flight Detail, Hotel Detail, Bookings, Documents, Ready Offline, Trip Health, Account, Add Booking bottom sheet, Add Document bottom sheet and Show to Driver.
 
-Authenticated bottom navigation is exactly `Trip | Alerts | + | To-do | Account`.
+Authenticated bottom navigation is exactly `Trip | Trip options | + | To-do | Account`.
 
 ## Single presentation layer
 

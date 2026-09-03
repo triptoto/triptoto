@@ -45,7 +45,7 @@ reduced-motion preferences are respected. No external font request is made.
 
 The bottom navigation is always ordered and labeled exactly:
 
-`Trip | Alerts | + | To-do | Account`
+`Trip | Trip options | + | To-do | Account`
 
 - **Trip** opens the selected trip Timeline.
 - **Alerts** opens traveler-facing notifications and exceptions.
