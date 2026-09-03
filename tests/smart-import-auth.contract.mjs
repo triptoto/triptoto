@@ -5,7 +5,7 @@ for(const value of ['.pdf','.heic','.eml','.docx','.ics','.pkpass'])assert(app.i
 for(const value of ['TriptoSmartImport.recognizeFile','saveLocalDocument(file','duplicateDisposition:"add_anyway"','resolveImport'])assert(app.includes(value),`missing Smart Import contract ${value}`);
 assert(imports.includes('rawBytesReceived:false')&&imports.includes('extractedTextReceived:false'),'upload privacy response missing');
 assert(!html.includes('/smart-import.js')&&app.includes('ensureSmartImport'),'recognizer must remain flow-lazy');
-assert(sw.includes("const CACHE='tripto-shell-product-v67-collaboration-tools'")&&sw.includes('/canonical-host.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&!sw.includes('/vendor/phosphor/')&&!sw.includes('/vendor/dm-serif-display/')&&sw.includes('await cache.put(request,response.clone())'),'service worker runtime cache updated');
+assert(sw.includes("const CACHE='tripto-shell-product-v67-weather-esim-scroll'")&&sw.includes('/canonical-host.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&!sw.includes('/vendor/phosphor/')&&!sw.includes('/vendor/dm-serif-display/')&&sw.includes('await cache.put(request,response.clone())'),'service worker runtime cache updated');
 assert(headers.includes("script-src 'self' https://accounts.google.com")&&headers.includes('frame-src https://accounts.google.com'),'Google CSP is narrow');
 assert(worker.includes("'/api/v1/auth/google/challenge'")&&worker.includes("'/api/v1/auth/google'")&&worker.includes("'/api/v1/auth/signout'"),'auth endpoints wired');
 assert(worker.includes('imports\\/upload\\/preview')&&worker.includes('previewUploadedDocument'),'upload preview endpoint wired');
