@@ -67,7 +67,7 @@
   // One locally bundled Phosphor sprite provides the same geometry and optical
   // weight everywhere. Regular is the default; Fill is reserved for the active
   // bottom-navigation state. No external icon request is made.
-  const ICON_SPRITE = "/icons/tripto-system.svg?v=phosphor-v1";
+  const ICON_SPRITE = "/icons/tripto-system.svg?v=phosphor-v2";
   const FILLED_ICON_IDS = new Set(["flight", "notifications", "checklist", "traveler"]);
   const state = {
     token: localStorage.getItem("tripto_token") || "",
@@ -101,6 +101,9 @@
     locations: [],
     weather: null,
     weatherRefreshing: false,
+    currency: null,
+    currencyLoading: false,
+    currencyError: "",
     travelers: [],
     connections: [],
     health: null,
@@ -1197,6 +1200,96 @@
       return { query, place: query };
     }
     return null;
+  }
+
+  // Currency conversion is calculated entirely on-device. The Worker only
+  // receives the selected ISO currency codes; entered amounts never leave the
+  // phone. Last successful rates are retained for offline trips.
+  const TRAVEL_CURRENCIES = Object.freeze([
+    ["AUD", "Australian dollar"], ["CAD", "Canadian dollar"], ["CHF", "Swiss franc"],
+    ["CNY", "Chinese yuan"], ["CZK", "Czech koruna"], ["DKK", "Danish krone"],
+    ["EUR", "Euro"], ["GBP", "British pound"], ["HKD", "Hong Kong dollar"],
+    ["HUF", "Hungarian forint"], ["ILS", "Israeli new shekel"], ["INR", "Indian rupee"],
+    ["ISK", "Icelandic króna"], ["JPY", "Japanese yen"], ["KRW", "South Korean won"],
+    ["MXN", "Mexican peso"], ["NOK", "Norwegian krone"], ["NZD", "New Zealand dollar"],
+    ["PLN", "Polish złoty"], ["RON", "Romanian leu"], ["SEK", "Swedish krona"],
+    ["SGD", "Singapore dollar"], ["THB", "Thai baht"], ["TRY", "Turkish lira"],
+    ["USD", "US dollar"], ["ZAR", "South African rand"],
+  ]);
+  const COUNTRY_CURRENCY = Object.freeze({
+    AT:"EUR",BE:"EUR",BG:"EUR",HR:"EUR",CY:"EUR",EE:"EUR",FI:"EUR",FR:"EUR",DE:"EUR",GR:"EUR",IE:"EUR",IT:"EUR",LV:"EUR",LT:"EUR",LU:"EUR",MT:"EUR",NL:"EUR",PT:"EUR",SK:"EUR",SI:"EUR",ES:"EUR",
+    AU:"AUD",CA:"CAD",CH:"CHF",CN:"CNY",CZ:"CZK",DK:"DKK",GB:"GBP",HK:"HKD",HU:"HUF",IL:"ILS",IN:"INR",IS:"ISK",JP:"JPY",KR:"KRW",MX:"MXN",NO:"NOK",NZ:"NZD",PL:"PLN",RO:"RON",SE:"SEK",SG:"SGD",TH:"THB",TR:"TRY",US:"USD",ZA:"ZAR",
+  });
+  function localeCurrency() {
+    const locale = String(navigator.language || "en-US"), region = locale.match(/[-_]([A-Za-z]{2})\b/)?.[1]?.toUpperCase();
+    return COUNTRY_CURRENCY[region] || "USD";
+  }
+  function destinationCurrency() {
+    const locations = state.locations || [];
+    for (const location of locations) {
+      const code = String(val(location, "country_code", "countryCode") || "").toUpperCase();
+      if (COUNTRY_CURRENCY[code]) return COUNTRY_CURRENCY[code];
+    }
+    const context = `${state.trip?.title || ""} ${locations.map((location) => `${val(location,"city") || ""} ${val(location,"display_name") || ""} ${val(location,"timezone") || ""}`).join(" ")}`.toLowerCase();
+    const hints = [["rome","EUR"],["italy","EUR"],["europe/rome","EUR"],["paris","EUR"],["france","EUR"],["london","GBP"],["tokyo","JPY"],["japan","JPY"],["tel aviv","ILS"],["jerusalem","ILS"],["israel","ILS"],["new york","USD"],["united states","USD"],["sydney","AUD"],["australia","AUD"],["singapore","SGD"],["bangkok","THB"],["istanbul","TRY"]];
+    return hints.find(([hint]) => context.includes(hint))?.[1] || "EUR";
+  }
+  function initCurrency() {
+    if (state.currency) return state.currency;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem("tripto_currency_preferences_v1") || "null"); } catch (_) {}
+    const from = TRAVEL_CURRENCIES.some(([code]) => code === saved?.from) ? saved.from : destinationCurrency();
+    let to = TRAVEL_CURRENCIES.some(([code]) => code === saved?.to) ? saved.to : localeCurrency();
+    if (to === from) to = from === "USD" ? "EUR" : "USD";
+    state.currency = { from, to, amount: Number(saved?.amount) > 0 ? Number(saved.amount) : 100, rate: null, date: null, fetchedAt: null, source: "", cached: false };
+    return state.currency;
+  }
+  function currencyCacheKey(from, to) { return `tripto_currency_rate_v1:${from}:${to}`; }
+  function saveCurrencyPreferences() {
+    const currency = initCurrency();
+    try { localStorage.setItem("tripto_currency_preferences_v1", JSON.stringify({ from:currency.from, to:currency.to, amount:currency.amount })); } catch (_) {}
+  }
+  function readCurrencyCache(from, to) {
+    try { return JSON.parse(localStorage.getItem(currencyCacheKey(from, to)) || "null"); } catch (_) { return null; }
+  }
+  async function ensureCurrencyRates(force = false) {
+    const currency = initCurrency();
+    if (state.currencyLoading) return;
+    const cached = readCurrencyCache(currency.from, currency.to);
+    if (cached?.rate && (!currency.rate || !force)) Object.assign(currency, cached, { cached:true });
+    if (PREVIEW_MODE) {
+      const previewRates = { "EUR:ILS":3.5118, "EUR:USD":1.1591, "ILS:EUR":0.28475, "USD:EUR":0.86274 };
+      currency.rate = previewRates[`${currency.from}:${currency.to}`] || (currency.from === currency.to ? 1 : 1.25);
+      currency.date = new Date().toISOString().slice(0,10);
+      currency.fetchedAt = Date.now();
+      currency.source = "Preview reference rate";
+      currency.cached = false;
+      state.currencyError = "";
+      if (state.screen === "currency") render();
+      return;
+    }
+    if (!navigator.onLine) {
+      state.currencyError = cached?.rate ? "" : "Connect once to save this currency pair for offline use.";
+      if (state.screen === "currency") render();
+      return;
+    }
+    state.currencyLoading = true;
+    state.currencyError = "";
+    if (state.screen === "currency") render();
+    try {
+      const response = await fetchWithTimeout(`${API}/api/v1/currency?base=${encodeURIComponent(currency.from)}&quotes=${encodeURIComponent(currency.to)}`, { headers:{ accept:"application/json" } });
+      if (!response.ok) throw new Error("Rates could not be updated.");
+      const payload = await response.json(), data = payload?.currency, rate = Number(data?.rates?.[currency.to]);
+      if (!Number.isFinite(rate) || rate <= 0) throw new Error("This currency pair is unavailable.");
+      Object.assign(currency, { rate, date:data.date || null, fetchedAt:Number(data.fetchedAt) || Date.now(), source:data.source || "Reference rate", cached:false });
+      try { localStorage.setItem(currencyCacheKey(currency.from, currency.to), JSON.stringify({ rate:currency.rate, date:currency.date, fetchedAt:currency.fetchedAt, source:currency.source })); } catch (_) {}
+    } catch (error) {
+      state.currencyError = cached?.rate ? "" : (error?.message || "Rates could not be updated.");
+      if (cached?.rate) Object.assign(currency, cached, { cached:true });
+    } finally {
+      state.currencyLoading = false;
+      if (state.screen === "currency") render();
+    }
   }
 
   // ==================== Trip Map (contextual) ====================
@@ -2559,6 +2652,7 @@
       state.tripsLoaded = !state.error;
       state.loading = false;
       render();
+      maybeLoadScreenData();
       return;
     }
     const hydrated = hydrateAppFromCache();
@@ -5803,7 +5897,7 @@
     return bottomSheet(
       "trip-menu",
       "Trip options",
-      `<section class="fd-list" aria-label="Trip options">${collabRow}${menuRow("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${menuRow("map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${menuRow("sim", "Travel eSIM", "Data abroad, no roaming — 15% off", `data-action="open-esim"`)}${menuRow("mail", "Booking imports", importsHint, `data-screen="import-history"`, pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : `<span class="fd-row__chev">${icon("chevron", 18)}</span>`)}${menuRow("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${menuRow("edit", "Edit trip", "Name, dates and details", `data-action="edit-trip"`)}${menuRow("info", "Help & FAQ", "Guides and answers", `data-screen="help"`)}</section>`,
+      `<section class="fd-list" aria-label="Trip options">${collabRow}${menuRow("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${menuRow("currency", "Currency converter", "Trip rates, saved for offline use", `data-action="open-currency"`)}${menuRow("map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${menuRow("sim", "Travel eSIM", "Data abroad, no roaming — 15% off", `data-action="open-esim"`)}${menuRow("mail", "Booking imports", importsHint, `data-screen="import-history"`, pending ? `<span class="unread-badge unread-badge--inline">${pending > 9 ? "9+" : pending}</span>` : `<span class="fd-row__chev">${icon("chevron", 18)}</span>`)}${menuRow("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${menuRow("edit", "Edit trip", "Name, dates and details", `data-action="edit-trip"`)}${menuRow("info", "Help & FAQ", "Guides and answers", `data-screen="help"`)}</section>`,
     );
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
@@ -6038,6 +6132,7 @@
     }
   }
   function maybeLoadScreenData() {
+    if (state.screen === "currency") void ensureCurrencyRates();
     if (PREVIEW_MODE) return;
     if (state.screen === "join") {
       const token = state.selectedId || "";
@@ -6264,6 +6359,26 @@
       body = `<section class="weather-empty"><span>${icon("weather", 30)}</span><h1>${state.weatherRefreshing ? "Loading forecast…" : "No forecast yet"}</h1><p>We could not find a forecast for this trip's destination.</p><button type="button" class="mobile-secondary-action" data-action="refresh-weather">${icon("refresh", 18)} Try again</button></section>`;
     }
     return `<div class="phone-app"><section class="screen weather-screen">${appBar("Weather", sub, true)}<main class="weather-page">${selector}${body}</main></section></div>`;
+  }
+  function currencyScreen() {
+    if (!state.trip) return missingDetailScreen("Currency", "Select a trip to use the converter.");
+    const currency = initCurrency(), rate = currency.rate == null ? NaN : Number(currency.rate), amount = Number(currency.amount) || 0;
+    const result = Number.isFinite(rate) ? amount * rate : null;
+    const money = (value, code) => {
+      if (!Number.isFinite(value)) return "—";
+      try { return new Intl.NumberFormat(undefined, { style:"currency", currency:code, maximumFractionDigits:2 }).format(value); }
+      catch (_) { return `${value.toFixed(2)} ${code}`; }
+    };
+    const options = (selected) => TRAVEL_CURRENCIES.map(([code,name]) => `<option value="${code}"${code === selected ? " selected" : ""}>${code} · ${esc(name)}</option>`).join("");
+    const destinationLocation = (state.locations || []).find((location) => String(val(location,"type") || "") === "city");
+    const destination = val(destinationLocation,"city","display_name") || state.trip.title || "Your destination";
+    const status = state.currencyLoading
+      ? `<span class="currency-status is-loading">${icon("refresh",14)} Updating rates…</span>`
+      : currency.rate
+        ? `<span class="currency-status">${currency.cached ? "Saved offline" : "Latest saved rate"}${currency.date ? ` · ${esc(currency.date)}` : ""}</span>`
+        : `<span class="currency-status">Rate not loaded</span>`;
+    const error = state.currencyError ? `<section class="currency-error" role="status">${icon("info",18)}<span>${esc(state.currencyError)}</span></section>` : "";
+    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><section class="currency-trip-note"><span>${icon("currency",24)}</span><div><strong>${esc(destination)} uses ${esc(destinationCurrency())}</strong><p>Your trip currency was added automatically. You can change either currency below.</p></div></section><section class="currency-rate-strip"><span>${icon("refresh",20)}</span><div><strong>Exchange rate</strong>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div></section><section class="currency-converter" aria-labelledby="currency-converter-title"><div class="currency-card-head"><div><span>CONVERTER</span><h1 id="currency-converter-title">Know what it costs</h1></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",20)}</button></div><label class="currency-field"><span>From</span><select data-currency-field="from" aria-label="From currency">${options(currency.from)}</select></label><label class="currency-amount"><span>Amount in ${esc(currency.from)}</span><input data-currency-amount type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label><div class="currency-quick" aria-label="Quick amounts">${[10,50,100,500].map((value) => `<button type="button" data-action="currency-quick" data-value="${value}"${Number(currency.amount) === value ? " class=\"is-active\"" : ""}>${value}</button>`).join("")}</div><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",20)}<span>Swap</span></button><label class="currency-field"><span>To</span><select data-currency-field="to" aria-label="To currency">${options(currency.to)}</select></label><output class="currency-result" aria-live="polite"><span>${esc(currency.to)} · ${esc(TRAVEL_CURRENCIES.find(([code]) => code === currency.to)?.[1] || "Currency")}</span><strong class="currency-result__amount">${esc(result == null ? "—" : money(result, currency.to))}</strong></output><p class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Choose currencies and update the rate."}</p>${error}</section><button type="button" class="mobile-primary-action currency-update" data-action="refresh-currency"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",19)} ${state.currencyLoading ? "Updating…" : "Update rates"}</button><p class="currency-disclaimer">Reference rates only. Your bank, card, or exchange desk may use a different rate or add fees. Amounts are calculated on this phone.</p></main></section></div>`;
   }
   function esimScreen() {
     const dest =
@@ -6493,6 +6608,7 @@
         case "form": html = mobileFormScreen(); break;
         case "trip-map": html = tripMapScreen(); break;
         case "weather": html = weatherScreen(); break;
+        case "currency": html = currencyScreen(); break;
         case "esim": html = esimScreen(); break;
         case "collaboration": html = collaborationScreen(); break;
         case "join": html = joinScreen(); break;
@@ -8196,6 +8312,30 @@
         route("weather");
         void ensureWeather();
         break;
+      case "open-currency":
+        closeSheet();
+        route("currency");
+        void ensureCurrencyRates();
+        break;
+      case "refresh-currency":
+        await ensureCurrencyRates(true);
+        break;
+      case "currency-quick":
+        initCurrency().amount = Number(target.dataset.value) || 100;
+        saveCurrencyPreferences();
+        render();
+        break;
+      case "currency-swap": {
+        const currency = initCurrency(), from = currency.from;
+        currency.from = currency.to;
+        currency.to = from;
+        currency.rate = null;
+        currency.source = "";
+        saveCurrencyPreferences();
+        render();
+        void ensureCurrencyRates(true);
+        break;
+      }
       case "open-esim":
         closeSheet();
         route("esim");
@@ -8977,6 +9117,33 @@
     handleAction(target.dataset.action, target, "pointer").catch((error) =>
       showToast(error instanceof Error ? error.message : String(error), "alert"),
     );
+  });
+  app.addEventListener("input", (event) => {
+    const input = event.target.closest?.("[data-currency-amount]");
+    if (!input) return;
+    const currency = initCurrency(), amount = Math.max(0, Number(input.value) || 0);
+    currency.amount = amount;
+    saveCurrencyPreferences();
+    const result = app.querySelector(".currency-result__amount"), note = app.querySelector(".currency-rate-note"), rate = Number(currency.rate);
+    if (result) {
+      const converted = Number.isFinite(rate) ? amount * rate : null;
+      try { result.textContent = converted == null ? "—" : new Intl.NumberFormat(undefined, { style:"currency", currency:currency.to, maximumFractionDigits:2 }).format(converted); }
+      catch (_) { result.textContent = converted == null ? "—" : `${converted.toFixed(2)} ${currency.to}`; }
+    }
+    if (note && Number.isFinite(rate)) note.textContent = `1 ${currency.from} = ${rate.toFixed(rate < 1 ? 4 : 3)} ${currency.to}`;
+  });
+  app.addEventListener("change", (event) => {
+    const select = event.target.closest?.("[data-currency-field]");
+    if (!select) return;
+    const currency = initCurrency(), field = select.dataset.currencyField;
+    if (!['from','to'].includes(field)) return;
+    currency[field] = select.value;
+    if (currency.from === currency.to) currency[field === 'from' ? 'to' : 'from'] = select.value === 'USD' ? 'EUR' : 'USD';
+    currency.rate = null;
+    currency.source = "";
+    saveCurrencyPreferences();
+    render();
+    void ensureCurrencyRates(true);
   });
   window.addEventListener(
     "pointerdown",

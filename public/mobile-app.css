@@ -245,7 +245,7 @@ h1,h2{font-weight:700;letter-spacing:-.03em}
 }
 .screen{min-height:100dvh;padding-bottom:calc(var(--nav-height) + 24px + env(safe-area-inset-bottom));background:var(--paper)}
 /* Detail screens without a bottom nav must not reserve nav-height space. */
-.esim-screen,.trip-map-screen{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.esim-screen,.trip-map-screen,.currency-screen{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 /* Weather is a single, non-scrolling page: fix the screen to the viewport and
    let the inner sections share the height so everything fits at once. */
 .weather-screen{height:100dvh;min-height:0;padding-bottom:0;display:flex;flex-direction:column;overflow:hidden}
@@ -540,6 +540,46 @@ button:active{transform:scale(.985)}
 .esim-steps li strong{font-weight:700}
 .esim-cta{display:flex;align-items:center;justify-content:center;gap:8px}
 .esim-note{margin:0;font-size:12px;line-height:1.5;color:var(--muted-soft);text-align:center}
+/* Trip currency converter — destination-aware, local calculation, cached rate. */
+.currency-page{display:flex;flex-direction:column;gap:12px;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
+.currency-trip-note{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;align-items:start;padding:14px;border-radius:18px;background:var(--stay-soft);color:var(--ink)}
+.currency-trip-note>span{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--card);color:var(--green)}
+.currency-trip-note strong{display:block;margin-top:1px;font-size:15px;font-weight:700}
+.currency-trip-note p{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+.currency-rate-strip{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.currency-rate-strip>span{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--blue-soft);color:var(--accent)}
+.currency-rate-strip>div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 8px;min-width:0}
+.currency-rate-strip strong{font-size:14px;color:var(--ink)}
+.currency-rate-strip small{grid-column:1/-1;color:var(--muted-soft);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.currency-status{color:var(--muted);font-size:11px;text-align:right;white-space:nowrap}
+.currency-status.is-loading{display:inline-flex;align-items:center;gap:4px;color:var(--accent)}
+.currency-status.is-loading .ph-svg{animation:wx-spin .8s linear infinite}
+.currency-converter{display:flex;flex-direction:column;gap:12px;padding:18px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--card)}
+.currency-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.currency-card-head span{display:block;color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.12em}
+.currency-card-head h1{margin:4px 0 0;color:var(--ink);font-size:24px;line-height:1.05;letter-spacing:-.035em}
+.currency-refresh{display:grid;place-items:center;flex:0 0 auto;width:44px;height:44px;border:0;border-radius:14px;background:var(--activity-soft);color:var(--accent)}
+.currency-refresh:disabled{opacity:.5}
+.currency-field{display:grid;grid-template-columns:48px minmax(0,1fr);align-items:center;gap:8px;min-height:54px;padding:0 12px;border-radius:16px;background:var(--surface)}
+.currency-field>span{color:var(--muted);font-size:13px;font-weight:600}
+.currency-field select{width:100%;min-width:0;height:46px;padding:0 30px 0 4px;border:0;background:transparent;color:var(--ink);font:600 15px/1 var(--font-ui)}
+.currency-amount{position:relative;display:block;padding-top:8px}
+.currency-amount>span{position:absolute;z-index:1;top:0;left:16px;padding:0 5px;background:var(--card);color:var(--accent);font-size:11px;font-weight:700}
+.currency-amount input{width:100%;height:72px;padding:12px 16px 0;border:2px solid var(--accent);border-radius:18px;background:var(--card);color:var(--ink);font:700 30px/1 var(--font-ui);font-variant-numeric:tabular-nums}
+.currency-amount input:focus-visible,.currency-field select:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 24%,transparent);outline-offset:2px}
+.currency-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.currency-quick button{min-width:0;min-height:44px;border:1px solid var(--line-strong);border-radius:13px;background:var(--card);color:var(--muted);font-size:14px;font-weight:600}
+.currency-quick button.is-active{border-color:var(--accent);background:var(--activity-soft);color:var(--accent)}
+.currency-swap{align-self:center;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 15px;border:0;border-radius:999px;background:var(--blue-soft);color:var(--accent);font-size:13px;font-weight:700}
+.currency-result{display:grid;gap:4px;padding:17px;border-radius:18px;background:var(--activity-soft);color:var(--ink)}
+.currency-result>span{color:var(--muted);font-size:12px;font-weight:600}
+.currency-result>strong{font-size:clamp(28px,9vw,38px);line-height:1.05;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.currency-rate-note{margin:-4px 0 0;color:var(--muted);font-size:12px;text-align:right}
+.currency-error{display:flex;align-items:flex-start;gap:8px;padding:11px 12px;border-radius:13px;background:var(--amber-soft);color:var(--amber);font-size:12px;line-height:1.4}
+.currency-update{max-width:none;margin:2px 0 0}
+.currency-update:disabled{opacity:.55}
+.currency-disclaimer{margin:0;padding:0 8px;color:var(--muted-soft);font-size:11px;line-height:1.45;text-align:center}
+@media(max-width:374px){.currency-page{padding-inline:12px}.currency-converter{padding:15px}.currency-card-head h1{font-size:22px}.currency-rate-strip>div{grid-template-columns:1fr}.currency-status{text-align:left}.currency-rate-strip small{grid-column:1}.currency-quick{gap:5px}}
 .weather-empty{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:40px 20px;color:var(--muted)}
 .weather-empty span{color:var(--accent)}
 .weather-empty h1{margin:0;font-size:20px;color:var(--ink)}

@@ -13,6 +13,7 @@
     account: "/account",
     "trip-map": "/trip-map",
     weather: "/weather",
+    currency: "/currency",
     esim: "/esim",
     checklist: "/before-you-go",
     help: "/help",
