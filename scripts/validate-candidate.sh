@@ -45,9 +45,10 @@ grep -q "/vendor/dm-serif-display/DMSerifDisplay-LatinExt.woff2" public/sw.js
 grep -q "/assets/google-g.svg" public/sw.js
 ! grep -q "/legacy.html" public/sw.js
 grep -q "key.startsWith('tripto-shell-')" public/sw.js
-for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED SHARING_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
+for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
   grep -q "\"$flag\": \"false\"" wrangler.jsonc
 done
+grep -q '"SHARING_ENABLED": "true"' wrangler.jsonc
 grep -Eq '"ACCOUNT_AUTH_ENABLED": "(false|true)"' wrangler.jsonc
 
 echo '6/8 Offline places validation'
