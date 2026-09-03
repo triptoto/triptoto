@@ -1854,7 +1854,6 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .timeline-screen--ribbon .timeline-flags{gap:6px;margin-bottom:1px}
 .timeline-screen--ribbon .timeline-flag{font-size:11px;letter-spacing:.1em}
 .timeline-screen--ribbon .timeline-flag--next,.timeline-screen--ribbon .timeline-flag--now{color:var(--next)}
-.timeline-screen--ribbon .journey-event--confirmed .journey-meta{color:var(--green)}
 .timeline-screen--ribbon .journey-chevron{display:inline-flex;color:var(--muted)}
 /* Paged days render one day at a time, so past/future look identical: keep the
    marker disc fully opaque (it masks the spine) and drop the past dimming. */

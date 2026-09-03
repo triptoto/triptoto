@@ -3844,11 +3844,10 @@
                         ? ends - starts
                         : null,
                     itemStatus = statusText(item.status),
-                    confirmed = ["confirmed", "booked", "complete", "completed"].includes(
-                      String(val(item, "status", "booking_status") || "")
-                        .toLowerCase()
-                        .replace(/[_\s]+/g, "-"),
-                    ),
+                    statusKey = String(val(item, "status", "booking_status") || "")
+                      .toLowerCase()
+                      .replace(/[_\s]+/g, "-"),
+                    showTimelineStatus = !["confirmed", "booked", "complete", "completed"].includes(statusKey),
                     metaBits = [],
                     // Optional third line: location/duration/status when available.
                     meta = (() => {
@@ -3858,14 +3857,14 @@
                       } else if (durationMs) {
                         metaBits.push(durationLabel(durationMs));
                       }
-                      if (itemStatus && itemStatus !== subtitle)
+                      if (showTimelineStatus && itemStatus && itemStatus !== subtitle)
                         metaBits.push(itemStatus);
                       return metaBits.join(" · ");
                     })(),
                     aria = [eventTime, title, subtitle, meta, exception?.label]
                       .filter(Boolean)
                       .join(". ");
-                  return `<button type="button" class="journey-event journey-event--${phase}${confirmed ? " journey-event--confirmed" : ""}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
+                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
                 })
                 .join("")}</div></section>`,
           )
