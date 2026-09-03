@@ -35,27 +35,27 @@ Avoid equal visual weight across unrelated modules. The screen should have one d
 
 ## Typography
 
-Use the native Apple system stack for all interface text and locally hosted DM
-Serif Display only for trip and booking titles. No external font request is made:
+Use the native Apple system stack for all text, including trip and booking
+titles. No external font request is made:
 
 ```css
 --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
   "Helvetica Neue", Arial, sans-serif;
---font-title: "DM Serif Display", Georgia, "Times New Roman", serif;
+--font-title: var(--font-ui);
 ```
 
-- Display: 48–52px / 700 for Welcome and exceptional product moments.
+- Display: 36–40px / 700 for Welcome and exceptional product moments.
 - Route: 40px / 700 for airport codes and primary travel numbers.
 - Screen: 28px / 700 for page titles.
 - Section: 20px / 600 for event, sheet, and grouped-content titles.
 - Text: 16px / 400 for body/forms and 16px / 600 for actions.
-- Metadata: 13px / 500 for dates, provenance, and secondary location.
-- Labels: 11px / 600 for short uppercase markers and bottom navigation.
+- Metadata: 14px / 500 for dates, provenance, and secondary location.
+- Labels: 12px / 600 for short uppercase markers and bottom navigation.
 - Use tabular numerals for travel times, dates, gates, seats, and flight facts.
 - Use sentence case; avoid all-caps except very short contextual markers such as NEXT.
 - Do not use Inter or Geist as the primary interface font.
-- Google Identity controls and icon glyphs remain intentionally isolated from
-  the application text fonts.
+- Provider-rendered Google Identity controls retain their required provider
+  typography; all Tripto-rendered fallback controls use the Apple system stack.
 
 ## Icon system
 

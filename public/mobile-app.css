@@ -10,16 +10,16 @@
   --ink:#05152d;
   --ink-strong:#05152d;
   --muted:#596474;
-  --muted-soft:#7d8794;
+  --muted-soft:#667180;
   --line:#e6e0e5;
   --line-strong:#d5ced7;
   --blue-soft:#d9e4fb;
   --icon:#0a2445;
-  --green:#007852;
+  --green:#006b49;
   --green-soft:#d1edde;
-  --amber:#b84d16;
+  --amber:#9b3b0b;
   --amber-soft:#fee4cf;
-  --red:#b63d4e;
+  --red:#9f2f41;
   --red-soft:#f8dde3;
   --chrome:#ffffff;
   --chrome-line:#e6e0e5;
@@ -45,15 +45,15 @@
   --button-primary-height:52px;
   --button-row-height:64px;
   --font-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;
-  --font-title:"DM Serif Display",Georgia,"Times New Roman",serif;
+  --font-title:var(--font-ui);
   --font:var(--font-ui);
-  --type-display:52px;
+  --type-display:40px;
   --type-route:40px;
   --type-screen:28px;
   --type-section:20px;
   --type-body:16px;
-  --type-meta:13px;
-  --type-label:11px;
+  --type-meta:14px;
+  --type-label:12px;
   --weight-regular:400;
   --weight-medium:500;
   --weight-semibold:600;
@@ -215,7 +215,7 @@
 
 *{box-sizing:border-box}
 html{background:var(--paper);color-scheme:light}
-html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-x:clip;font-family:var(--font);font-optical-sizing:auto;color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-x:clip;font-family:var(--font);font-optical-sizing:auto;font-synthesis:none;color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 body{background:var(--paper);overscroll-behavior-y:none}
 body,button,input,select,textarea{font-family:var(--font)}
 button,input,select,textarea{font-size:16px}
@@ -1641,7 +1641,7 @@ html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{back
   --welcome-x:clamp(24px,6.2vw,28px);
   --welcome-top:clamp(18px,min(6vw,3.6svh),30px);
   --welcome-brand:clamp(18px,4.8vw,21px);
-  --welcome-title:clamp(48px,min(12vw,6.2svh),var(--type-display));
+  --welcome-title:clamp(36px,min(10vw,5.8svh),var(--type-display));
   --welcome-subtitle:clamp(14px,min(3.8vw,2svh),16px);
   --welcome-cta-height:clamp(52px,min(13vw,6.4svh),56px);
   position:relative;display:flex;flex-direction:column;height:100svh;min-height:0;overflow:hidden;
@@ -1691,7 +1691,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
   display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;height:var(--welcome-cta-height);gap:10px;padding:0 16px;border-radius:12px;
   font-family:var(--font);font-size:16px;font-weight:600;letter-spacing:0;box-shadow:none
 }
-.welcome-thread .first-run-google-preview[data-action="preview-google"]{border:1px solid #747775;background:var(--card);color:#1f1f1f;font-family:Arial,sans-serif;font-size:14px;font-weight:600}
+.welcome-thread .first-run-google-preview[data-action="preview-google"]{border:1px solid #747775;background:var(--card);color:#1f1f1f;font-family:var(--font);font-size:14px;font-weight:600}
 .welcome-thread .first-run-google-preview[data-action="enter-app"]{border:0;background:var(--accent);color:var(--accent-ink)}
 .welcome-thread .first-run-google-preview img{width:18px;height:18px;padding:0;border-radius:0;background:transparent}
 .welcome-thread #google-signin-button{display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;min-height:var(--welcome-cta-height);margin:0 auto;padding:0}
@@ -1985,10 +1985,10 @@ html .trips-bg-screen .mobile-empty p{color:var(--muted)}
 html .trips-bg-screen .mobile-empty__icon{background:var(--blue-soft);color:var(--icon)}
 
 /* ============================================================================
-   Editorial title + native interface typography system.
-   DM Serif Display identifies trip and booking titles. Every interface role —
-   navigation, controls, forms, labels, metadata, status, and body copy — uses
-   the native Apple/system stack through --font.
+   Native Apple typography system.
+   Every role — including trip and booking titles, navigation, controls, forms,
+   labels, metadata, status, and body copy — uses the platform San Francisco
+   stack through --font.
    ========================================================================== */
 html body{font-size:var(--type-body);font-weight:var(--weight-regular);line-height:1.45}
 
@@ -2237,8 +2237,8 @@ html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
 .dark-detail .fd-title{margin-top:10px !important}
 .dark-detail .fd-when{margin-top:8px}
 
-/* Final title-role lock. Later component sizing rules may tune size and line
-   height, but must not turn traveler-authored titles back into UI typography. */
+/* Final title-role lock. Traveler-authored titles use the same Apple stack as
+   the interface, with weight and size providing the hierarchy. */
 html .trip-v2-selector strong,
 html .trip-group .trip-row__copy strong,
 html .timeline-context h2,
@@ -2257,16 +2257,16 @@ html .quick-trip-list button strong,
 html [data-action="select-trip"] strong,
 html [data-action="assign-booking-email"] strong{
   font-family:var(--font-title);
-  font-weight:400;
-  letter-spacing:-.012em;
+  font-weight:var(--weight-semibold);
+  letter-spacing:-.02em;
 }
 html .timeline-screen--ribbon .trip-v2-selector strong,
 html .timeline-screen--ribbon .timeline-context--next h2,
 html .timeline-screen--ribbon .journey-copy strong,
 html .trips-bg-screen .trip-group .trip-row__copy strong{
   font-family:var(--font-title);
-  font-weight:400;
-  letter-spacing:-.012em;
+  font-weight:var(--weight-semibold);
+  letter-spacing:-.02em;
 }
 
 /* Timeline typography roles. The values interpolate across supported phone
@@ -2281,12 +2281,12 @@ html .trips-bg-screen .trip-group .trip-row__copy strong{
 }
 html .timeline-screen--ribbon .trip-v2-selector strong{
   font-family:var(--font-title);font-size:var(--timeline-trip-title-size);
-  font-weight:400;line-height:1.06;letter-spacing:-.018em
+  font-weight:var(--weight-bold);line-height:1.06;letter-spacing:-.035em
 }
 html .timeline-screen--ribbon .timeline-context--next h2,
 html .timeline-screen--ribbon .journey-copy strong{
   font-family:var(--font-title);font-size:var(--timeline-booking-title-size);
-  font-weight:400;line-height:1.16;letter-spacing:-.012em
+  font-weight:var(--weight-semibold);line-height:1.16;letter-spacing:-.02em
 }
 html .timeline-screen--ribbon .trip-v2-selector small,
 html .timeline-screen--ribbon .timeline-context--next p,

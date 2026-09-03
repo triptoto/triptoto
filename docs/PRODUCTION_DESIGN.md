@@ -19,7 +19,7 @@ The app is mobile-first from 360px through 430px and remains centered at a maxim
 - Primary accent: `#5547B7`
 - Primary add action: `#FBC840`
 - Next/action cue: `#B84D16`
-- Verified success text: `#007852`
+- Verified success text: `#006B49`
 - Flight marker: `#D9E4FB`
 - Transfer marker: `#FEE4CF`
 - Stay marker: `#D1EDDE`
@@ -32,11 +32,11 @@ Welcome typography, artwork, spacing, and action heights scale against both view
 
 ## Typography and controls
 
-Use locally hosted DM Serif Display only for traveler-authored trip and booking
-titles. All interface text—including navigation, controls, forms, labels,
-metadata, status, and body copy—uses the native Apple system stack with standard
-system fallbacks. The semantic scale is 52 / 40 / 28 / 20 / 16 / 13 / 11px for
-display, route, screen, section, body, metadata, and labels. Controls have a
+All text—including trip and booking titles, navigation, controls, forms, labels,
+metadata, status, and body copy—uses the native Apple/San Francisco system stack
+with standard system fallbacks. The semantic scale is 40 / 28 / 20 / 16 / 14 /
+12px for display, screen, section, body, metadata, and labels; travel route
+numbers share the 40px display size. Controls have a
 minimum 44×44px touch target. Primary, secondary, compact, and row actions use
 the shared height tokens. Focus remains visible for keyboard users, and
 reduced-motion preferences are respected. No external font request is made.

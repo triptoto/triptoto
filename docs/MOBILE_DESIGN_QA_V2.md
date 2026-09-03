@@ -65,10 +65,9 @@ The protected runtime was checked with iPhone-style status/home-indicator geomet
 ## Design system observations
 
 - Product surfaces use white `#FFFFFF`, cool concrete `#F1F3F5`, silver slate borders `#CED4DA`, asphalt grey icons and secondary text `#495057`, and jet black `#111215`.
-- Trip and booking titles use locally hosted DM Serif Display. All interface
-  text uses the native Apple system stack with standard fallbacks. Google
-  Identity controls, icons, and protected device chrome retain their
-  provider/runtime typography.
+- Trip and booking titles and all interface text use the native Apple system
+  stack with standard fallbacks. Provider-rendered Google Identity controls,
+  icons, and protected device chrome retain their provider/runtime typography.
 - Jet black is reserved for primary actions and primary text; grey hierarchy carries secondary states.
 - White surfaces are the default, with cool-concrete card fill and silver separators.
 - The component language is consistent: 14–20px radii, subtle 1px borders, restrained shadows, and flat Timeline rows.
