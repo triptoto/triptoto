@@ -265,6 +265,16 @@ const revokeCandidate=await body(await createInvite(req('https://test/api/v1/tri
 await revokeInvite(req('https://test/api/v1/trips/x/invites/z','DELETE',{}),env,owner,tripId,revokeCandidate.invite.id);
 assert(db.prepare(`SELECT status FROM trip_invites WHERE id=?`).get(revokeCandidate.invite.id).status==='revoked','invite revoke works');
 
+const restrictedInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer',email:'restricted@example.test'}),env,owner,tripId));
+let restrictedMismatch=false;
+try{await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:restrictedInvite.invite.token}),env,editor);}catch(e){restrictedMismatch=e.code==='INVITE_EMAIL_MISMATCH'&&e.status===403;}
+assert(restrictedMismatch,'email-restricted invite rejects a different verified account');
+const expiredInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,tripId));
+db.prepare(`UPDATE trip_invites SET expires_at=? WHERE id=?`).run(Date.now()-1,expiredInvite.invite.id);
+let expiredBlocked=false;
+try{await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:expiredInvite.invite.token}),env,editor);}catch(e){expiredBlocked=e.code==='INVITE_EXPIRED'&&e.status===410;}
+assert(expiredBlocked,'expired invite cannot be accepted');
+
 // Collaboration authorization matrix (free for all signed-in users; roles enforced
 // at the single access gate). Covers Section 20 release-blocker (editors cannot
 // delete/cancel a trip), viewer read-only, leave-trip, and ownership transfer.
@@ -326,6 +336,72 @@ assert(demotedOwnerDeleteBlocked,'previous owner (now editor) cannot delete afte
 const newOwnerDelete=await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:collabVersion}),env,collabEditor,collabTripId);
 assert(newOwnerDelete.status===204,'new owner can delete the trip');
 assert(db.prepare(`SELECT deleted_at FROM trips WHERE id=?`).get(collabTripId).deleted_at!=null,'owner delete soft-deletes the trip');
+
+// A completed ownership transfer leaves exactly one effective owner. A stale
+// membership row is also treated as editor by the canonical access gate.
+const raceTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Ownership race',lifecycleState:'upcoming'}),env,owner));
+const raceTripId=raceTrip.trip.id;
+const raceInviteA=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,raceTripId));
+const raceInviteB=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,raceTripId));
+const raceAccounts=[];
+for(const suffix of ['a','b']){
+  const deviceId=`race-${suffix}-device`,email=`race-${suffix}@example.test`;
+  addDevice(db,deviceId);
+  const account=await completeVerifiedIdentityLogin(env,deviceId,{provider:'email',providerSubject:email,email,emailVerified:true,displayName:`Race ${suffix.toUpperCase()}`});
+  raceAccounts.push({deviceId,userId:account.userId});
+}
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:raceInviteA.invite.token}),env,raceAccounts[0]);
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:raceInviteB.invite.token}),env,raceAccounts[1]);
+await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:raceAccounts[0].userId}),env,owner,raceTripId);
+let staleTransferBlocked=false;
+try{await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:raceAccounts[1].userId}),env,owner,raceTripId);}catch(e){staleTransferBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(staleTransferBlocked,'previous owner cannot issue a second ownership transfer');
+const canonicalRaceOwner=String(db.prepare(`SELECT owner_user_id FROM trips WHERE id=?`).get(raceTripId).owner_user_id);
+const activeRaceOwners=db.prepare(`SELECT user_id FROM trip_members WHERE trip_id=? AND status='active' AND role='owner'`).all(raceTripId);
+assert(activeRaceOwners.length===1&&String(activeRaceOwners[0].user_id)===canonicalRaceOwner,'ownership transfer leaves one canonical owner role');
+const losingRaceAccount=raceAccounts.find(account=>account.userId!==canonicalRaceOwner);
+db.prepare(`UPDATE trip_members SET role='owner' WHERE trip_id=? AND user_id=?`).run(raceTripId,losingRaceAccount.userId);
+const staleOwnerStatus=await body(await sharingStatus(req('https://test/api/v1/trips/x/sharing'),env,losingRaceAccount,raceTripId));
+assert(staleOwnerStatus.sharing.role==='editor'&&staleOwnerStatus.sharing.canManage===false,'stale membership owner role cannot grant owner authorization');
+db.prepare(`UPDATE trips SET deleted_at=? WHERE id=?`).run(Date.now(),raceTripId);
+
+// Pending-invite capacity is enforced by the INSERT itself. Two requests that
+// start with one slot left can commit only one invitation.
+const inviteLimitTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Invite capacity',lifecycleState:'upcoming'}),env,owner));
+for(let index=0;index<9;index+=1)await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,inviteLimitTrip.trip.id);
+const inviteLimitRace=await Promise.allSettled([
+  createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,inviteLimitTrip.trip.id),
+  createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,inviteLimitTrip.trip.id),
+]);
+assert(inviteLimitRace.filter(result=>result.status==='fulfilled').length===1,'one invite wins when one pending slot remains');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_invites WHERE trip_id=? AND status='invited'`).get(inviteLimitTrip.trip.id).c)===10,'concurrent invite creation cannot exceed pending limit');
+db.prepare(`UPDATE trips SET deleted_at=? WHERE id=?`).run(Date.now(),inviteLimitTrip.trip.id);
+
+// Member capacity is enforced by the guarded invite-accept update as well as
+// the early user-facing check. With one place left, only one invite can join.
+const memberLimitTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Member capacity',lifecycleState:'upcoming'}),env,owner));
+const capacityNow=Date.now();
+for(let index=0;index<8;index+=1){
+  const userId=`capacity-member-${index}`,deviceId=`capacity-member-device-${index}`;
+  db.prepare(`INSERT INTO users(id,display_name,created_at,updated_at,version) VALUES (?,?,?, ?,1)`).run(userId,`Capacity ${index}`,capacityNow,capacityNow);
+  addDevice(db,deviceId,userId);
+  db.prepare(`INSERT INTO trip_members(trip_id,user_id,role,status,joined_at) VALUES (?,?,'viewer','active',?)`).run(memberLimitTrip.trip.id,userId,capacityNow);
+}
+const capacityInviteA=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,memberLimitTrip.trip.id));
+const capacityInviteB=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,memberLimitTrip.trip.id));
+const capacityCandidates=[];
+for(const suffix of ['a','b']){
+  const userId=`capacity-candidate-${suffix}`,deviceId=`capacity-candidate-device-${suffix}`;
+  db.prepare(`INSERT INTO users(id,display_name,created_at,updated_at,version) VALUES (?,?,?, ?,1)`).run(userId,`Candidate ${suffix.toUpperCase()}`,capacityNow,capacityNow);
+  addDevice(db,deviceId,userId);
+  capacityCandidates.push({deviceId,userId});
+}
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:capacityInviteA.invite.token}),env,capacityCandidates[0]);
+let memberLimitBlocked=false;
+try{await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:capacityInviteB.invite.token}),env,capacityCandidates[1]);}catch(e){memberLimitBlocked=e.code==='MEMBER_LIMIT_REACHED'&&e.status===409;}
+assert(memberLimitBlocked,'second acceptance is blocked when the member limit is reached');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_members WHERE trip_id=? AND status='active'`).get(memberLimitTrip.trip.id).c)===10,'concurrent invite acceptance cannot exceed member limit');
+db.prepare(`UPDATE trips SET deleted_at=? WHERE id=?`).run(Date.now(),memberLimitTrip.trip.id);
 
 // A guest owner of an unshared trip can still delete their own trip (no account required).
 addDevice(db,'solo-guest-device');

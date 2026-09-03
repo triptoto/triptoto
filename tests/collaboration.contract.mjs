@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Collaboration contract failed: ${m}`)};
-const sharing=read('apps/worker/src/routes/sharing.ts'),access=read('apps/worker/src/access.ts'),trips=read('apps/worker/src/routes/trips.ts'),worker=read('apps/worker/src/index.ts'),members=read('migrations/0002_trips.sql'),invites=read('migrations/0012_accounts_sharing.sql'),wrangler=read('wrangler.jsonc'),app=read('public/mobile-app.js');
+const sharing=read('apps/worker/src/routes/sharing.ts'),access=read('apps/worker/src/access.ts'),trips=read('apps/worker/src/routes/trips.ts'),readiness=read('apps/worker/src/routes/readiness.ts'),worker=read('apps/worker/src/index.ts'),members=read('migrations/0002_trips.sql'),invites=read('migrations/0012_accounts_sharing.sql'),wrangler=read('wrangler.jsonc'),app=read('public/mobile-app.js');
 
 // --- Endpoints wired ---
 assert(worker.includes("from './routes/sharing.ts'")&&['sharingStatus','previewInvite','listMembers','listInvites','createInvite','revokeInvite','acceptInvite','updateMemberRole','removeMember','leaveTrip','transferOwnership'].every(fn=>worker.includes(fn)),'sharing routes not imported/wired');
@@ -35,8 +35,13 @@ assert(sharing.includes('WHERE user_id=? AND email_verified=1 AND lower(email)=l
 assert(trips.includes('await requireTripOwner(env, auth, tripId);')&&trips.includes('only the owner may delete a trip. Editors get 403.'),'trip deletion is not owner-gated');
 assert(access.includes("if (access.role !== 'owner') throw new HttpError(403, 'OWNER_REQUIRED'"),'requireTripOwner must 403 non-owners');
 assert(access.includes("read-only for the current member.")&&access.includes("!['owner', 'editor'].includes(trip.role)"),'viewer write-block missing');
+assert(access.includes("WHEN tm.role = 'owner' THEN 'editor'")&&trips.includes("WHEN tm.role='owner' THEN 'editor'"),'membership owner role must not override canonical trips.owner_user_id');
 assert(sharing.includes("'OWNER_REQUIRED','Only the trip owner can manage sharing.'"),'sharing management must be owner-gated');
 assert(sharing.includes("'OWNER_CANNOT_LEAVE'")&&sharing.includes("'OWNER_CANNOT_BE_REMOVED'"),'owner-cannot-leave / cannot-be-removed guards missing');
+assert(sharing.includes('owner_user_id=? AND version=? AND EXISTS')&&sharing.includes('Number(transfer[0]?.meta?.changes??0)!==1'),'ownership transfer must use a checked compare-and-swap');
+assert(sharing.includes("UPDATE trip_members SET role='editor' WHERE trip_id=? AND role='owner' AND user_id<>?"),'ownership transfer must clean up non-canonical owner roles');
+assert(sharing.includes("SELECT ?,?,?,?,?,'invited',?,?,?")&&sharing.includes('PRODUCT_LIMITS.pendingInvitesPerTrip'),'pending invite limit must be enforced by the insert');
+assert(sharing.includes("EXISTS (SELECT 1 FROM trip_members WHERE trip_id=? AND user_id=? AND status='active') OR (SELECT COUNT(*) FROM trip_members")&&sharing.includes('Number(acceptance[0]?.meta?.changes??0)!==1'),'member limit must be enforced by invite acceptance write');
 
 // --- SHARING_ENABLED is an operational kill-switch (now live), never a paid gate ---
 assert(sharing.includes("if(env.SHARING_ENABLED!=='true')throw new HttpError(503,'SHARING_DISABLED'"),'sharing kill-switch gate missing');
@@ -47,7 +52,14 @@ for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_
 assert(app.includes('Collaboration is free for every signed-in account — there is no paid gate.'),'collaboration must be free for all signed-in users');
 assert(app.includes('owner: { label: "Owner", icon: "owner" }')&&app.includes('editor: { label: "Can edit", icon: "editor" }')&&app.includes('viewer: { label: "View only", icon: "viewer" }'),'COLLAB_ROLES labels changed');
 assert(app.includes('function canEditCurrentTrip()')&&app.includes('You have view-only access to this trip.'),'viewer read-only UI guard missing');
+assert(app.includes('function canManageCurrentTrip()')&&app.includes('Only the trip owner can change trip details.'),'owner-only trip metadata UI guard missing');
+assert(app.includes('state.collabTripId')&&app.includes('state.joinCheckedToken !== token'),'collaboration and invitation routes must render loading until current data is verified');
+assert(app.includes('!["tour", "join"].includes(state.screen)'),'direct invitation links must take priority over the first-run welcome');
+assert(app.includes('Pending invitations couldn’t be loaded.')&&app.includes('state.inviteLoadError'),'pending-invitation errors must not render as an empty list');
 assert(app.includes("never trusts or sends 'owner' as an assignable role"),'frontend owner-escalation guard comment missing');
 for(const copy of ['Why plan together?','Build one plan','Keep everyone aligned','You stay in control','One trip.<br>Everyone in sync.'])assert(app.includes(copy),`informative collaboration UX missing: ${copy}`);
+
+for(const table of ['users','auth_identities','auth_challenges','devices','trip_members','trip_invites'])assert(readiness.includes(`'${table}'`),`readiness must verify ${table}`);
+assert(readiness.includes("accountAuth:env.ACCOUNT_AUTH_ENABLED==='true'")&&readiness.includes("sharing:env.SHARING_ENABLED==='true'"),'readiness feature report must include auth and sharing');
 
 console.log('Free trip collaboration contract passed.');

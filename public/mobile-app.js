@@ -133,8 +133,12 @@
     googleAuthHandoffStatus: null,
     googleAuthHandoffMessage: "",
     sharing: null,
+    sharingTripId: null,
     members: [],
     invites: [],
+    inviteLoadError: null,
+    collabTripId: null,
+    collabRequestId: 0,
     collabLoading: false,
     collabError: null,
     shareRole: "editor",
@@ -142,6 +146,8 @@
     shareBusy: false,
     joinToken: null,
     joinPreview: null,
+    joinCheckedToken: null,
+    joinRequestId: 0,
     joinLoading: false,
     joinError: null,
   };
@@ -2793,9 +2799,15 @@
       state.contacts = [];
       state.syncStatus = null;
       state.localDocs = [];
+      resetCollaborationState();
       return;
     }
     const tripId = state.trip.id;
+    if (
+      (state.sharingTripId && String(state.sharingTripId) !== String(tripId)) ||
+      (state.collabTripId && String(state.collabTripId) !== String(tripId))
+    )
+      resetCollaborationState();
     const results = await Promise.allSettled(tripDetailPaths().map(apiGet));
     // Drop the response if the user switched trips while it was in flight, so a
     // slow request can never overwrite the newly-opened trip's data.
@@ -3602,7 +3614,9 @@
         (state.account?.mode || "guest") !== "account" &&
         !state.trip &&
         state.trips.length === 0 &&
-        !["tour"].includes(state.screen),
+        // A direct invitation link is an intentional entry flow. It must take
+        // priority over the generic first-run welcome for a brand-new guest.
+        !["tour", "join"].includes(state.screen),
     );
   }
   function syncFirstRunPresentation(active) {
@@ -4392,7 +4406,7 @@
           return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
         });
       if (!trips.length) return "";
-      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="mobile-list">${trips.map((trip) => { const dur = tripDurationLabel(trip); const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : ""; return `<button class="trip-row trip-row--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-row__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}${dur ? ` · ${esc(dur)}` : ""}</small>${countdown ? `<small class="trip-row__countdown">${esc(countdown)}</small>` : ""}${tripSharedBadge(trip)}</span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
+      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="trip-card-list">${trips.map((trip) => { const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : ""; return `<button class="trip-card trip-card--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-card__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-card__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(countdown || formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
     }).join("");
     const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "past" ? "past" : "upcoming"} trips</h1><p>${filter === "past" ? "Completed trips will appear here." : "Trips you have coming up will appear here."}</p></section>`;
     return page(pageTitle, body);
@@ -5877,36 +5891,12 @@
     const collabCard = state.sharing?.enabled
       ? optionCard("together", "users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
       : "";
+    const editTripCard = canManageCurrentTrip()
+      ? optionCard("edit", "edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)
+      : "";
     const alerts = totalNotificationCount();
-    const body = `<section class="trip-options-intro"><span>TRIP TOOLS</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>Everything that helps you plan, prepare, and travel with confidence—in one place.</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("guide", "guide", "Local Guide", "Explore around your destination", `data-screen="local-guide"`)}${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid">${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${collabCard}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid">${optionCard("edit", "edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
+    const body = `<section class="trip-options-intro"><span>TRIP TOOLS</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>Everything that helps you plan, prepare, and travel with confidence—in one place.</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid">${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${collabCard}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid">${editTripCard}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
     return mobilePage("Trip options", body, "trip-options", "", "trip-options-page");
-  }
-  function localGuideScreen() {
-    if (!state.trip) return missingDetailScreen("Local Guide", "Select a trip to explore its destination.");
-    const destinationLocation = (state.locations || []).find((location) => String(val(location, "type") || "") === "city") || (state.locations || []).find((location) => val(location, "city")) || (state.locations || [])[0] || null;
-    const destination = val(destinationLocation, "city", "display_name", "local_name") || state.trip.title || "Your destination";
-    const country = val(destinationLocation, "country", "country_name") || "";
-    const timezone = val(destinationLocation, "timezone") || "";
-    let localTime = "Not available";
-    if (timezone) {
-      try { localTime = new Intl.DateTimeFormat(undefined, { hour:"numeric", minute:"2-digit", timeZone:timezone }).format(new Date()); }
-      catch (_) {}
-    }
-    const categories = [
-      ["restaurant", "Food & drink", "Restaurants and local food", "restaurants"],
-      ["coffee", "Coffee", "Cafés and bakeries", "coffee shops"],
-      ["landmark", "See & do", "Landmarks and museums", "top sights"],
-      ["tour", "Walk & explore", "Tours and neighborhoods", "walking tours"],
-      ["shopping", "Shopping", "Markets and local shops", "shopping"],
-      ["pharmacy", "Essentials", "Pharmacies and practical stops", "pharmacy"],
-    ];
-    const categoryRows = categories.map(([iconName,title,copy,query]) => `<button type="button" class="local-guide-category" data-action="local-guide-search" data-query="${esc(`${query} in ${destination}`)}"><span class="local-guide-category__icon">${icon(iconName,22)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",16)}</button>`).join("");
-    const places = getMappableTripLocations().slice(0,4);
-    const savedRows = places.map((place) => `<button type="button" class="local-guide-place" data-action="trip-map-navigate" data-query="${esc(tripMapNavQuery(place))}"><span>${icon(mapMarkerIcon(place.markerKind || place.type),20)}</span><span><strong>${esc(place.name)}</strong><small>${esc(place.address || "Saved with your trip")}</small></span>${icon("navigation",17)}</button>`).join("");
-    const subtitle = [country, formatTripDates(state.trip)].filter(Boolean).join(" · ");
-    const offline = state.offline ? `<div class="local-guide-offline" role="status">${icon("offline",17)}<span>Your trip places remain available offline. Connect to explore nearby.</span></div>` : "";
-    const body = `<header class="local-guide-hero"><span class="local-guide-hero__eyebrow">LOCAL GUIDE</span><span class="local-guide-hero__mark">${icon("guide",32)}</span><h1>Explore ${esc(destination)}</h1><p>${esc(subtitle || "Useful places for this trip")}</p><div class="local-guide-facts"><span><small>LOCAL TIME</small><strong>${esc(localTime)}</strong></span><span><small>CURRENCY</small><strong>${esc(destinationCurrency())}</strong></span></div></header>${offline}<section class="local-guide-section" aria-labelledby="local-guide-explore"><div class="local-guide-section__head"><div><span>EXPLORE</span><h2 id="local-guide-explore">What do you need?</h2></div><small>Opens one search at a time</small></div><div class="local-guide-grid">${categoryRows}</div></section><section class="local-guide-section" aria-labelledby="local-guide-saved"><div class="local-guide-section__head"><div><span>YOUR TRIP</span><h2 id="local-guide-saved">Places already saved</h2></div><small>${places.length} place${places.length === 1 ? "" : "s"}</small></div><div class="local-guide-places">${savedRows || `<div class="local-guide-empty">${icon("location",24)}<p>Add a booking with a location and it will appear here.</p></div>`}</div></section><p class="local-guide-note">Search uses the destination saved in your trip—not your phone location. Specific places are shown by your maps app and are not recommendations from tripto.to.</p>`;
-    return mobilePage("Local Guide", body, "trip-options", "", "local-guide-page");
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
   // Collaboration is free for every signed-in account — there is no paid gate.
@@ -5942,6 +5932,24 @@
     // trips with no role) can edit. Server still enforces on every write.
     return currentTripRole() !== "viewer";
   }
+  function canManageCurrentTrip() {
+    const role = currentTripRole();
+    // Signed-in editors and viewers never manage the trip shell. A local guest
+    // trip has no membership role and remains manageable on its creator device.
+    return role !== "editor" && role !== "viewer";
+  }
+  function resetCollaborationState() {
+    state.collabRequestId += 1;
+    state.sharing = null;
+    state.sharingTripId = null;
+    state.members = [];
+    state.invites = [];
+    state.inviteLoadError = null;
+    state.collabTripId = null;
+    state.collabLoading = false;
+    state.collabError = null;
+    state.shareInvite = null;
+  }
   function viewOnlyBlocked() {
     if (canEditCurrentTrip()) return false;
     showToast("You have view-only access to this trip.", "status");
@@ -5963,7 +5971,7 @@
   }
   function collabBenefits() {
     const benefit = (iconName, title, body) => `<div class="collab-benefit"><span class="collab-benefit__icon">${icon(iconName, 21)}</span><span><strong>${esc(title)}</strong><small>${esc(body)}</small></span></div>`;
-    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><h2 id="collab-benefits-title">Why plan together?</h2>${benefit("edit", "Build one plan", "Editors can add bookings and update trip details.")}${benefit("bell", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</section>`;
+    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><h2 id="collab-benefits-title">Why plan together?</h2>${benefit("edit", "Build one plan", "Editors can add and update bookings.")}${benefit("bell", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</section>`;
   }
   function collaborationScreen() {
     if (!state.trip)
@@ -5974,9 +5982,9 @@
         sub,
         `<header class="collab-hero"><span class="collab-hero__icon">${icon("users", 30)}</span><span class="collab-hero__eyebrow">Shared planning</span><h1>One trip.<br>Everyone in sync.</h1><p>Invite the people travelling with you so the whole group can follow one clear plan.</p></header>${collabBenefits()}<section class="collab-signin"><h2>Ready to plan together?</h2><p>Sign in with your free account. Everyone uses their own login — no shared passwords.</p><button type="button" class="mobile-primary-action" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button><small>Free for every trip.</small></section>`,
       );
-    if (state.collabLoading && !state.sharing)
+    if (state.collabLoading || String(state.collabTripId || "") !== String(state.trip.id))
       return collabScaffold(sub, `<section class="collab-loading" role="status"><span class="collab-empty__icon">${icon("users", 32)}</span><p>Loading who’s on this trip…</p></section>`);
-    if (state.collabError && !state.sharing)
+    if (state.collabError)
       return collabScaffold(
         sub,
         `<section class="collab-empty"><span class="collab-empty__icon">${icon("warning", 32)}</span><h1>Couldn’t load collaboration</h1><p>${esc(state.collabError)}</p><button type="button" class="mobile-secondary-action" data-action="reload-collaboration">${icon("refresh", 18)} Try again</button></section>`,
@@ -6016,8 +6024,11 @@
     const inviteBtn = state.sharing?.enabled && manage
       ? `<button type="button" class="mobile-primary-action collab-invite-cta" data-action="open-share">${icon("invite", 18)} Invite people</button>`
       : "";
+    const inviteContent = state.inviteLoadError
+      ? `<div role="alert"><p class="collab-note">Pending invitations couldn’t be loaded.</p><button type="button" class="collab-chip" data-action="reload-collaboration">Try again</button></div>`
+      : inviteRows || `<p class="collab-note">No pending invitations.</p>`;
     const invitesSection = manage
-      ? `<section class="collab-section"><h2 class="collab-section__title">Pending invitations</h2>${inviteRows || `<p class="collab-note">No pending invitations.</p>`}</section>`
+      ? `<section class="collab-section"><h2 class="collab-section__title">Pending invitations</h2>${inviteContent}</section>`
       : "";
     const leaveBtn = state.sharing?.role && state.sharing.role !== "owner"
       ? `<button type="button" class="mobile-secondary-action collab-leave" data-action="leave-trip">Leave this trip</button>`
@@ -6053,7 +6064,7 @@
     const token = state.selectedId || state.joinToken || "";
     if (!token)
       return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("invite", 32)}</span><h1>Invitation link incomplete</h1><p>Open the full invitation link you were sent to join a trip.</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
-    if (state.joinLoading && !state.joinPreview)
+    if (state.joinCheckedToken !== token || (state.joinLoading && !state.joinPreview))
       return focusedTaskPage("Join trip", `<section class="collab-loading" role="status"><span class="collab-empty__icon">${icon("invite", 32)}</span><p>Checking your invitation…</p></section>`, "join-screen");
     if (state.joinError && !state.joinPreview)
       return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("warning", 32)}</span><h1>Invitation unavailable</h1><p>${esc(state.joinError)}</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
@@ -6082,6 +6093,7 @@
       const data = await apiGet(`/api/v1/trips/${encodeURIComponent(tripId)}/sharing`);
       if (state.trip?.id !== tripId) return;
       state.sharing = data?.sharing || null;
+      state.sharingTripId = tripId;
     } catch (_) {
       /* non-fatal: leave any prior sharing status untouched */
     }
@@ -6089,54 +6101,83 @@
   async function loadCollaboration() {
     if (PREVIEW_MODE || !state.trip || !isSignedIn()) return;
     const tripId = state.trip.id;
+    const requestId = state.collabRequestId + 1;
+    state.collabRequestId = requestId;
     state.collabLoading = true;
     state.collabError = null;
+    state.inviteLoadError = null;
+    state.collabTripId = null;
+    state.sharing = null;
+    state.members = [];
+    state.invites = [];
+    render();
     try {
       const [statusRes, membersRes] = await Promise.all([
         api(`/api/v1/trips/${encodeURIComponent(tripId)}/sharing`),
         api(`/api/v1/trips/${encodeURIComponent(tripId)}/members`),
       ]);
-      if (state.trip?.id !== tripId) return;
+      if (state.trip?.id !== tripId || state.collabRequestId !== requestId) return;
       state.sharing = statusRes?.sharing || null;
+      state.sharingTripId = tripId;
       state.members = membersRes?.members || [];
+      state.collabTripId = tripId;
       if (canManageSharing()) {
         try {
           const invRes = await api(`/api/v1/trips/${encodeURIComponent(tripId)}/invites`);
-          if (state.trip?.id !== tripId) return;
+          if (state.trip?.id !== tripId || state.collabRequestId !== requestId) return;
           state.invites = invRes?.invites || [];
-        } catch (_) {
+        } catch (error) {
           state.invites = [];
+          state.inviteLoadError = error?.message || "Pending invitations could not be loaded.";
         }
       } else {
         state.invites = [];
       }
     } catch (error) {
-      state.collabError = error?.message || "Collaboration could not be loaded.";
+      if (state.trip?.id === tripId && state.collabRequestId === requestId) {
+        state.sharing = null;
+        state.members = [];
+        state.invites = [];
+        state.collabTripId = tripId;
+        state.collabError = error?.message || "Collaboration could not be loaded.";
+      }
     } finally {
-      state.collabLoading = false;
-      render();
+      if (state.trip?.id === tripId && state.collabRequestId === requestId) {
+        state.collabLoading = false;
+        render();
+      }
     }
   }
   async function loadJoinPreview(token) {
     if (PREVIEW_MODE || !token) return;
+    const requestId = state.joinRequestId + 1;
+    state.joinRequestId = requestId;
     state.joinLoading = true;
     state.joinError = null;
+    state.joinPreview = null;
+    state.joinCheckedToken = null;
+    render();
     try {
       const data = await api("/api/v1/invites/preview", {
         method: "POST",
         body: JSON.stringify({ token }),
       });
+      if (state.joinRequestId !== requestId || String(state.selectedId || state.joinToken || "") !== String(token)) return;
       state.joinPreview = data?.invite || null;
       if (!state.joinPreview) state.joinError = "This invitation could not be found.";
     } catch (error) {
+      if (state.joinRequestId !== requestId || String(state.selectedId || state.joinToken || "") !== String(token)) return;
       state.joinPreview = null;
       state.joinError =
         error?.code === "INVITE_NOT_FOUND"
           ? "This invitation link is not valid. Ask the trip owner for a new one."
           : error?.message || "This invitation could not be checked.";
     } finally {
-      state.joinLoading = false;
-      render();
+      if (state.joinRequestId === requestId && String(state.selectedId || state.joinToken || "") === String(token)) {
+        state.joinCheckedToken = token;
+        state.joinLoading = false;
+        render();
+      }
     }
   }
   function maybeLoadScreenData() {
@@ -6144,9 +6185,10 @@
     if (PREVIEW_MODE) return;
     if (state.screen === "join") {
       const token = state.selectedId || "";
-      if (token && state.joinToken !== token) {
+      if (token && (state.joinToken !== token || state.joinCheckedToken !== token)) {
         state.joinToken = token;
         state.joinPreview = null;
+        state.joinCheckedToken = null;
         // Preserve the token across a Google redirect sign-in (Slice 2 resume).
         try { sessionStorage.setItem("tripto_join_token", token); } catch (_) {}
         void loadJoinPreview(token);
@@ -6284,9 +6326,7 @@
       await api(`/api/v1/trips/${encodeURIComponent(tripId)}/leave`, { method: "POST" });
       showToast("You left the trip.");
       state.trip = null;
-      state.sharing = null;
-      state.members = [];
-      state.invites = [];
+      resetCollaborationState();
       if (localStorage.getItem("tripto_selected_trip") === String(tripId))
         localStorage.removeItem("tripto_selected_trip");
       await loadApp();
@@ -6555,6 +6595,14 @@
       "sheet-open",
       Boolean(state.sheet && state.sheet !== "driver"),
     );
+    // Weather and eSIM are single-viewport pages that must never scroll. The
+    // phone frame's min-height:100dvh would otherwise stretch past the visible
+    // (svh) area and let the document drift under the toolbar; this class pins
+    // the frame to the small viewport so the page holds perfectly still.
+    document.documentElement.classList.toggle(
+      "fixed-screen",
+      !state.sheet && (state.screen === "weather" || state.screen === "esim"),
+    );
     if (state.loading) {
       app.innerHTML = decorateScreen(loadingScreen());
       return;
@@ -6622,7 +6670,6 @@
         case "trip-map": html = tripMapScreen(); break;
         case "weather": html = weatherScreen(); break;
         case "currency": html = currencyScreen(); break;
-        case "local-guide": html = localGuideScreen(); break;
         case "trip-options": html = tripOptionsScreen(); break;
         case "esim": html = esimScreen(); break;
         case "collaboration": html = collaborationScreen(); break;
@@ -8175,8 +8222,13 @@
     "manual-attachment-remove", "manual-attachment-retry",
     "open-forward-booking", "open-manual-booking", "open-upload-booking",
   ]);
+  const OWNER_ONLY_ACTIONS = new Set(["edit-trip", "delete-trip"]);
   async function handleAction(action, target, inputMethod = "pointer") {
     if (VIEWER_BLOCKED_ACTIONS.has(action) && viewOnlyBlocked()) return;
+    if (OWNER_ONLY_ACTIONS.has(action) && !canManageCurrentTrip()) {
+      showToast("Only the trip owner can change trip details.", "alert");
+      return;
+    }
     switch (action) {
       case "view-only-hint":
         showToast("You have view-only access to this trip.", "status");
@@ -8434,10 +8486,6 @@
         break;
       case "trip-map-navigate":
         if (state.offline) showToast("Connect to open directions. Your trip places remain available offline.");
-        else openMaps(target.dataset.query || "");
-        break;
-      case "local-guide-search":
-        if (state.offline) showToast("Connect to explore places. Your saved trip details remain available offline.");
         else openMaps(target.dataset.query || "");
         break;
       case "open-first-run-how":

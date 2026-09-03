@@ -7,7 +7,9 @@ export async function requireTripAccess(env: Env, auth: AuthContext, tripId: str
       CASE
         WHEN t.owner_user_id IS NULL AND t.created_by_device_id = ? THEN 'owner'
         WHEN t.owner_user_id IS NOT NULL AND t.owner_user_id = ? THEN 'owner'
-        ELSE COALESCE(tm.role, '')
+        -- The canonical owner is trips.owner_user_id. Never let a stale or
+        -- corrupted membership row grant owner-only authorization.
+        ELSE CASE WHEN tm.role = 'owner' THEN 'editor' ELSE COALESCE(tm.role, '') END
       END AS role
     FROM trips t
     LEFT JOIN trip_members tm ON tm.trip_id = t.id AND tm.user_id = ? AND tm.status = 'active'
