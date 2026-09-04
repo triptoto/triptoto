@@ -1305,8 +1305,10 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-create-destination .place-suggestions{top:calc(100% + 7px)}
 
 .trip-create-details{display:grid;padding:4px 16px}
-.trip-create-details>.date-range-field,.trip-create-details>.form-field{margin:0;padding:13px 0;border:0;background:transparent}
-.trip-create-details>.date-range-field legend,.trip-create-details>.form-field>span{margin:0 0 7px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.trip-create-details>.date-range-field{margin:0;padding:8px 0;border:0;background:transparent}
+.trip-create-details>.date-range-field legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.trip-create-details>.form-field{margin:0;padding:13px 0;border:0;background:transparent}
+.trip-create-details>.form-field>span{margin:0 0 7px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
 .trip-create-details .field-optional{text-transform:none;letter-spacing:0;font-size:11px;font-weight:500;opacity:.78}
 .trip-create-details__divider{display:block;height:1px;background:var(--line)}
 .trip-create-details .date-range-trigger{grid-template-columns:44px minmax(0,1fr) 22px;min-height:54px;padding:2px 0;border:0;background:transparent}
