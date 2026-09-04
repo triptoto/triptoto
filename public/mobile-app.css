@@ -1344,7 +1344,7 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-create-destination .place-suggestions{top:calc(100% + 7px)}
 .trip-create-destination__close,.trip-create-search-guide{display:none}
 .place-search-open body{overflow:hidden}
-.trip-create-destination.is-fullscreen{position:fixed;z-index:120;top:0;bottom:auto;left:50%;display:flex;flex-direction:column;width:min(100%,var(--app-width));height:max(320px,calc(100svh - var(--keyboard-offset)));min-height:0;margin:0;padding:0 18px calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);animation:none;border:0;border-radius:0;background:var(--picker-bg);color:var(--picker-ink);box-shadow:none;overflow:hidden}
+.trip-create-destination.is-fullscreen{position:fixed;z-index:120;top:0;bottom:auto;left:50%;display:flex;flex-direction:column;width:min(100%,var(--app-width));height:100svh;min-height:0;margin:0;padding:0 18px calc(18px + env(safe-area-inset-bottom) + var(--keyboard-offset));transform:translateX(-50%);animation:none;border:0;border-radius:0;background:var(--picker-bg);color:var(--picker-ink);box-shadow:none;overflow:hidden}
 .trip-create-destination.is-fullscreen .trip-create-destination__head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:10px;min-height:calc(74px + env(safe-area-inset-top));margin:0 -18px 16px;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;border-bottom:1px solid var(--picker-line);background:var(--picker-bg)}
 .trip-create-destination.is-fullscreen .trip-create-destination__head>span{display:none}
 .trip-create-destination.is-fullscreen .trip-create-destination__head>div{grid-column:2;grid-row:1;gap:1px;text-align:center}

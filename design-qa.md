@@ -322,3 +322,23 @@ final result: passed
 - Horizontal overflow: none at 390 × 844.
 
 final result: passed
+
+---
+
+# Design QA — destination viewport coverage
+
+- Reference: `/tmp/codex-remote-attachments/01a02032-728d-7ce2-b111-775c80ec1cf0/03426886-5E4D-450B-BBCF-730DA00C158F/1-Фото-1.jpg`
+- Reported defect: the full-screen destination search ended above the viewport bottom while the keyboard offset was active, exposing the underlying `Choose dates` card.
+- Root cause: the keyboard height was subtracted from the overlay height instead of being reserved inside its layout.
+- Correction: the destination surface remains `100svh` tall and applies the keyboard offset to its internal bottom padding, preserving a continuous opaque screen while keeping results reachable above the keyboard.
+- Regression contract: rejects viewport-height subtraction and requires the keyboard offset inside the full-screen surface padding.
+- Local in-app-browser measurement: viewport `1280 × 720`; destination surface top `0`, bottom `720`, height `720`; the bottom viewport pixel resolves inside the destination surface.
+- Paris result state: city and airport suggestions remain readable and vertically scrollable with no horizontal overflow; the underlying trip-date card is not visible.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
