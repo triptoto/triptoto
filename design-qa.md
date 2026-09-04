@@ -100,6 +100,47 @@ The comparison normalizes both images to the dialog region. The reference is a c
 - The production Google control is rendered by Google Identity Services, so its internal typography remains provider-owned while its Welcome-only width and placement match the approved composition.
 
 final result: passed
+
+---
+
+# Design QA — full-screen destination and date selection
+
+## Source and implementation evidence
+
+- Reported popup defect: `/Users/arthurberlin/Downloads/tripto.to 41.png`
+- Source pixels: `1260 × 1810`
+- Destination screen: `artifacts/fullscreen-trip-pickers-v84/destination-430x720.png`
+- Date-range screen: `artifacts/fullscreen-trip-pickers-v84/dates-430x720.png`
+- Direct before/after comparison: `artifacts/fullscreen-trip-pickers-v84/comparison-popup-vs-fullscreen.png`
+- Browser state: local deterministic preview, Create Trip, `430 × 720` application viewport
+
+The source is treated as defect evidence: search results were constrained inside the Create Trip card and competed with the mobile keyboard. The implementation target is a dedicated, calm, full-screen task rather than a pixel match to that popup.
+
+## Visual and interaction findings
+
+- **P1 fixed:** Destination search now owns the complete application viewport, with its own back control, centered title, prominent search field, scrollable results, and clear city/airport labels.
+- **P1 fixed:** Date selection now opens as a full-screen single-calendar task, with explicit start/end states and one bottom confirmation action.
+- **P2 fixed:** The destination result list has an independent scroll region, zero horizontal overflow, and keyboard-aware available height.
+- **P2 fixed:** Calendar day targets remain `44px` high even on a `720px`-tall viewport. Header controls and the clear action also meet the `44px` touch target.
+- **P2 fixed:** Both screens use the existing production palette, Apple system typography, Phosphor icon family, surface radii, and spacing system.
+
+## Measured browser evidence
+
+- Destination dialog: `430 × 720`; search field: `394 × 58`; 8 ranked results; result viewport `531px` tall and scrollable; horizontal overflow `0`.
+- Date dialog: `430 × 720`; no `.bottom-sheet` remains; day target height `44px`; horizontal overflow `0`.
+- Destination selection closes the screen and updates the visible destination.
+- Back from destination preserves the typed text, dismisses the keyboard, removes the document scroll lock, and cancels any in-flight search so delayed results cannot reopen the panel.
+- Date start/end selection enables `Use these dates`; applying closes the screen and updates the date-range summary.
+- Back from dates closes without applying an incomplete range.
+- Dialog, listbox, combobox, grid, labels, and modal semantics are present in the accessibility tree.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
 ---
 
 # Design QA — Welcome responsive scale correction

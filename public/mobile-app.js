@@ -5173,13 +5173,17 @@
     const types = String(input.dataset.placeTypes || "city,airport").split(",").filter(Boolean),
       preferredType = input.dataset.placePreferred || undefined,
       listId = `${input.id}-place-list`,
-      popup = document.createElement("div");
+      popup = document.createElement("div"),
+      fullScreenPanel = input.closest(".trip-create-destination"),
+      closeSearchButton = fullScreenPanel?.querySelector("[data-place-search-close]");
     popup.className = "place-suggestions";
     popup.id = listId;
     popup.setAttribute("role", "listbox");
     popup.setAttribute("aria-label", input.dataset.placeLabel || "Places");
     popup.hidden = true;
     input.insertAdjacentElement("afterend", popup);
+    if (fullScreenPanel)
+      input.insertAdjacentHTML("afterend", `<span class="trip-create-destination__search-icon" aria-hidden="true">${icon("search",19)}</span>`);
     input.setAttribute("role", "combobox");
     input.setAttribute("aria-autocomplete", "list");
     input.setAttribute("aria-haspopup", "listbox");
@@ -5188,15 +5192,61 @@
     let results = [], active = -1, request = 0, timer = 0;
     const snapshot = selectedPlaceForInput(input);
     if (snapshot) input.dataset.selectedValue = input.value;
+    const setFullScreen = (open, restoreFocus = false) => {
+      if (!fullScreenPanel) return;
+      fullScreenPanel.classList.toggle("is-fullscreen", open);
+      document.documentElement.classList.toggle("place-search-open", open);
+      if (open) {
+        fullScreenPanel.setAttribute("role", "dialog");
+        fullScreenPanel.setAttribute("aria-modal", "true");
+        fullScreenPanel.setAttribute("aria-label", "Search destination");
+        closeSearchButton?.removeAttribute("aria-hidden");
+        closeSearchButton?.removeAttribute("tabindex");
+      } else {
+        fullScreenPanel.removeAttribute("role");
+        fullScreenPanel.removeAttribute("aria-modal");
+        fullScreenPanel.setAttribute("aria-label", "Destination search");
+        closeSearchButton?.setAttribute("aria-hidden", "true");
+        closeSearchButton?.setAttribute("tabindex", "-1");
+      }
+      [...(form.closest(".focused-task") || form).querySelectorAll(".app-bar,.mobile-alert,.trip-create-head,.trip-create-fields>*")]
+        .filter((element) => element !== fullScreenPanel && !element.contains(fullScreenPanel))
+        .forEach((element) => {
+          if (open) {
+            element.setAttribute("inert", "");
+            element.setAttribute("aria-hidden", "true");
+            element.dataset.placeSearchHidden = "true";
+          } else if (element.dataset.placeSearchHidden === "true") {
+            element.removeAttribute("inert");
+            element.removeAttribute("aria-hidden");
+            delete element.dataset.placeSearchHidden;
+          }
+        });
+      if (restoreFocus) {
+        requestAnimationFrame(() => {
+          fullScreenPanel.setAttribute("tabindex", "-1");
+          fullScreenPanel.focus({ preventScroll:true });
+        });
+      }
+    };
     const close = () => {
       popup.hidden = true;
+      fullScreenPanel?.classList.remove("has-results");
       input.setAttribute("aria-expanded", "false");
       input.removeAttribute("aria-activedescendant");
       active = -1;
     };
     const open = () => {
       popup.hidden = false;
+      fullScreenPanel?.classList.add("has-results");
       input.setAttribute("aria-expanded", "true");
+    };
+    const closeFullScreen = (restoreFocus = true) => {
+      request += 1;
+      window.clearTimeout(timer);
+      close();
+      setFullScreen(false, restoreFocus);
+      saveQuickDraft(form);
     };
     const setActive = (next) => {
       const options = [...popup.querySelectorAll('[role="option"]')];
@@ -5216,13 +5266,18 @@
       input.value = value;
       input.dataset.selectedValue = value;
       input.dataset.placeId = place.id;
-      hidden.value = JSON.stringify(place);
+      const serializedPlace = JSON.stringify(place);
+      hidden.value = serializedPlace;
+      hidden.setAttribute("value", serializedPlace);
       hidden.dispatchEvent(new Event("input", { bubbles:true }));
       setManualTimezoneFallback(form, input, false);
       syncQuickTimezone(form, input);
       input.dispatchEvent(new Event("change", { bubbles:true }));
       close();
-      input.focus({ preventScroll:true });
+      if (fullScreenPanel) {
+        setFullScreen(false);
+        input.blur();
+      } else input.focus({ preventScroll:true });
     };
     const renderResults = (rows) => {
       results = rows;
@@ -5266,15 +5321,25 @@
     input.addEventListener("input", () => {
       if (input.dataset.selectedValue !== input.value) {
         const hidden = form.elements[`${input.name}Place`];
-        if (hidden) hidden.value = "";
+        if (hidden) {
+          hidden.value = "";
+          hidden.setAttribute("value", "");
+        }
         delete input.dataset.placeId;
         delete input.dataset.selectedValue;
       }
       queueSearch();
     });
-    input.addEventListener("focus", queueSearch);
+    input.addEventListener("focus", () => {
+      if (fullScreenPanel) setFullScreen(true);
+      queueSearch();
+    });
     input.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") { close(); return; }
+      if (event.key === "Escape") {
+        if (fullScreenPanel?.classList.contains("is-fullscreen")) closeFullScreen();
+        else close();
+        return;
+      }
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         if (popup.hidden) queueSearch();
         else setActive(active + (event.key === "ArrowDown" ? 1 : -1));
@@ -5298,12 +5363,16 @@
       }
       if (event.target.closest("[data-place-manual]")) {
         const hidden = form.elements[`${input.name}Place`];
-        if (hidden) hidden.value = "";
+        if (hidden) {
+          hidden.value = "";
+          hidden.setAttribute("value", "");
+        }
         setManualTimezoneFallback(form, input, true);
-        close();
-        input.focus();
+        if (fullScreenPanel) closeFullScreen();
+        else { close(); input.focus(); }
       }
     });
+    closeSearchButton?.addEventListener("click", () => closeFullScreen());
   }
   function bindDatalistAutocomplete(form, input) {
     if (input.dataset.datalistBound === "1") return;
@@ -5510,7 +5579,7 @@
       const tripNameField = editingTrip
         ? `<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}`
         : "";
-      const tripBody=`<header class="trip-create-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div><div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("globe",18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("flight",23)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("location",20)}</span></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
+      const tripBody=`<header class="trip-create-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div><div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("globe",18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("flight",23)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("location",20)}</span></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p><div class="trip-create-search-guide"><span>${icon("globe",28)}</span><strong>Find any city or airport</strong><p>Type at least two letters. Your search stays private and works offline after the first download.</p><small>Try Paris, CDG, Tel Aviv, or London</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
       return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form trip-create-form" id="native-form" data-kind="trip"${editAttrs} novalidate>${tripBody}</form>`, "form-screen trip-create-screen", headerActions);
     }
     return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);
@@ -5947,8 +6016,14 @@
       cells.push(`<button type="button" role="gridcell" tabindex="${isFocused ? "0" : "-1"}" class="range-day${inMonth ? "" : " is-outside"}${inRange ? " is-between" : ""}${isStart ? " is-start" : ""}${isEnd ? " is-end" : ""}" data-action="select-range-day" data-date="${iso}" aria-label="${esc(label)}${isStart ? ", start date" : isEnd ? ", end date" : ""}" aria-selected="${isStart || isEnd}"><span>${date.getUTCDate()}</span></button>`);
     }
     const summary = range.start ? range.end ? `${formatDateOnly(range.start)} – ${formatDateOnly(range.end)}` : range.allowSingle ? formatDateOnly(range.start) : `${formatDateOnly(range.start)} · now choose ${range.endLabel.toLowerCase()}` : `Choose ${range.startLabel.toLowerCase()}`;
-    const ready = Boolean(range.start && (range.end || range.allowSingle));
-    return bottomSheet("date-range", range.title, `<div class="range-picker"><div class="range-picker__summary" role="status" tabindex="-1"><small>${esc(range.allowSingle ? range.startLabel : `${range.startLabel} → ${range.endLabel}`)}</small><strong>${esc(summary)}</strong></div><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back", 20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron", 20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Use this date" : "Use these dates"}</button></div>`);
+    const ready = Boolean(range.start && (range.end || range.allowSingle)),
+      heading = range.allowSingle ? `Choose ${range.startLabel.toLowerCase()}` : "Choose your dates",
+      instruction = range.allowSingle
+        ? `Tap the ${range.startLabel.toLowerCase()} you want.`
+        : `Tap ${range.startLabel.toLowerCase()} first, then ${range.endLabel.toLowerCase()}.`,
+      startValue = range.start ? formatDateOnly(range.start) : "Select",
+      endValue = range.end ? formatDateOnly(range.end) : range.allowSingle ? "Optional" : "Select";
+    return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><small>${esc(range.title)}</small><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><header class="range-picker__intro"><span>${icon("calendar",25)}</span><div><span>PLAN YOUR TRIP</span><h1>${esc(heading)}</h1><p>${esc(instruction)}</p></div></header><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<span class="range-picker__arrow" aria-hidden="true">${icon("chevron",18)}</span><section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back",20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p></main><footer class="full-screen-picker__footer"><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Use this date" : "Use these dates"}</button></footer></section>`;
   }
   function addSheet() {
     return bottomSheet(
@@ -6670,6 +6745,7 @@
   }
   function render() {
     if (!app) return;
+    document.documentElement.classList.remove("place-search-open");
     const firstRun = shouldShowFirstRun();
     const showWelcome = firstRun || state.screen === "home";
     syncFirstRunPresentation(showWelcome);
@@ -6820,7 +6896,7 @@
     render();
   }
   function closeSheet() {
-    const sheet = document.querySelector(".bottom-sheet"),
+    const sheet = document.querySelector(".bottom-sheet,.full-screen-picker"),
       backdrop = document.querySelector(".sheet-backdrop"),
       finish = () => {
         state.sheet = null;
@@ -6839,13 +6915,14 @@
     setTimeout(finish, 180);
   }
   function setupSheet() {
-    const sheet = document.querySelector(".bottom-sheet");
+    const sheet = document.querySelector(".bottom-sheet,.full-screen-picker");
     if (!sheet) return;
     const first =
       sheet.querySelector(
-        '.range-picker__summary,.sheet-option,input,select,button:not([data-action="close-sheet"])',
+        '.full-screen-picker__back,.range-picker__summary,.sheet-option,input,select,button:not([data-action="close-sheet"])',
       ) || sheet;
     requestAnimationFrame(() => first.focus());
+    if (!sheet.classList.contains("bottom-sheet")) return;
     sheet.addEventListener("pointerdown", (event) => {
       if (!event.target.closest("[data-sheet-drag]") || sheet.scrollTop > 0)
         return;
@@ -8605,6 +8682,16 @@
         openSheet("date-range", target);
         break;
       }
+      case "clear-date-range":
+        if (state.dateRange) {
+          const today = new Date().toISOString().slice(0, 10);
+          state.dateRange.start = "";
+          state.dateRange.end = "";
+          state.dateRange.focusDate = today;
+          state.dateRange.month = rangeMonthStart(today);
+          render();
+        }
+        break;
       case "range-month":
         if (state.dateRange) {
           state.dateRange.month = shiftRangeMonth(state.dateRange.month, Number(target.dataset.offset) || 0);
@@ -9485,7 +9572,7 @@
       return;
     }
     if (event.key !== "Tab") return;
-    const sheet = document.querySelector(".bottom-sheet"),
+    const sheet = document.querySelector(".bottom-sheet,.full-screen-picker"),
       focusable = sheet
         ? [...sheet.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')]
         : [];
