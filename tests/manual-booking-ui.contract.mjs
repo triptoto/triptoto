@@ -256,7 +256,6 @@ assertFormFields(formBranches.car, {
   title: { required: true },
   reservationTime: { required: true },
   endTime: { optional: true },
-  endTimezone: {},
   vehicle: {},
   confirmationNumber: {},
   driver: {},
@@ -328,12 +327,57 @@ assertFormFields(formBranches.other, {
   reservationDate: { required: true },
   reservationTime: { optional: true },
   location: { optional: true },
-  timezone: { optional: true },
   endDate: {},
   endTime: {},
   confirmationNumber: {},
   notes: {},
 }, "other-booking form");
+
+// Timezones are auto-derived from the selected location (TripIt-style), never
+// typed. Every non-flight booking still persists its zone, now through a hidden
+// input that syncQuickTimezone() fills from the chosen place — no
+// traveler-facing timezone field may reappear.
+for (const [key, names] of [
+  ["rail", ["departureTimezone", "arrivalTimezone"]],
+  ["car", ["timezone", "endTimezone"]],
+  ["transfer", ["timezone", "endTimezone"]],
+  ["cruise", ["timezone"]],
+  ["restaurant", ["timezone"]],
+  ["activity", ["timezone"]],
+  ["other", ["timezone"]],
+]) {
+  for (const name of names) {
+    assert(
+      !new RegExp(`quickField\\("${name}"`).test(formBranches[key]),
+      `${key} form must not expose a traveler-facing ${name} field`,
+    );
+    assert(
+      new RegExp(`hiddenTz\\("${name}"`).test(formBranches[key]),
+      `${key} form must persist ${name} through a hidden auto-derived input`,
+    );
+  }
+}
+// Single-location forms wire the location field so the zone can be derived.
+for (const key of ["restaurant", "activity", "other"]) {
+  assert(
+    formBranches[key].includes('data-location-role="location"'),
+    `${key} form must derive its timezone from the chosen location`,
+  );
+}
+// The hidden control seeds a safe fallback (trip → device → UTC) and
+// syncQuickTimezone restores it when a location is cleared, so
+// resolveEventLocalDateTime always receives a valid zone.
+assert(
+  app.includes("const hiddenTz = (name, role) =>") &&
+    app.includes("data-default-timezone=") &&
+    app.includes("control.value = control.dataset.defaultTimezone"),
+  "auto-derived timezone must seed a trip/device fallback and restore it when a location is cleared",
+);
+// A drop-off/arrival location on transport routes derives into endTimezone.
+assert(
+  app.includes('form.elements.arrivalTimezone ? "arrivalTimezone" : "endTimezone"'),
+  "arrival location must derive into endTimezone when the form has no arrivalTimezone control",
+);
 
 const manualRouteCard = section(app, "function manualRouteCard(", "function manualAttachmentRows(");
 assert(

@@ -68,7 +68,11 @@
   // One locally bundled Phosphor sprite provides the same geometry and optical
   // weight everywhere. Regular is the default; Fill is reserved for the active
   // bottom-navigation state. No external icon request is made.
-  const ICON_SPRITE = "/icons/tripto-system.svg?v=phosphor-v4";
+  // Same-document sprite: the <symbol> set is inlined into index.html so every
+  // <use href="#id"> resolves in-document. External sprite refs
+  // (<use href="/icons/…svg#id">) force iOS Safari to re-resolve the file per
+  // instance on each full render — the cause of icon pop-in and scroll lag.
+  const ICON_SPRITE = "";
   const FILLED_ICON_IDS = new Set(["flight", "map", "route", "notifications", "checklist", "traveler"]);
   const state = {
     token: localStorage.getItem("tripto_token") || "",
@@ -172,7 +176,7 @@
     bus: { label: "Bus / Coach", shortLabel: "Bus", hint: "Intercity journey", group: "Getting there", tone: "flight", icon: "bus", base: "transport", subtype: "bus", cta: "Add Bus", documentType: "ticket" },
     cruise: { label: "Cruise", hint: "Sailing itinerary", group: "Getting there", tone: "flight", icon: "cruise", base: "activity", subtype: "cruise", cta: "Add Cruise", documentType: "ticket" },
     "car-rental": { label: "Car Rental", hint: "Pickup and return", group: "Getting around", tone: "transfer", icon: "car", base: "transport", subtype: "car", cta: "Add Car Rental", documentType: "reservation" },
-    transfer: { label: "Transfer", hint: "Booked transport", group: "Getting around", tone: "transfer", icon: "directions", base: "transport", subtype: "transfer", cta: "Add Transfer", documentType: "reservation" },
+    transfer: { label: "Transfer", hint: "Booked transport", group: "Getting around", tone: "transfer", icon: "taxi", base: "transport", subtype: "transfer", cta: "Add Transfer", documentType: "reservation" },
     taxi: { label: "Taxi / Ride", shortLabel: "Taxi", hint: "Pickup and drop-off", group: "Getting around", tone: "transfer", icon: "taxi", base: "transport", subtype: "taxi", cta: "Add Taxi", documentType: "reservation" },
     parking: { label: "Parking", hint: "Reserved parking", group: "Getting around", tone: "transfer", icon: "parking", base: "reservation", subtype: "parking", cta: "Add Parking", documentType: "reservation" },
     hotel: { label: "Hotel / Stay", shortLabel: "Stay", hint: "Hotel or apartment", group: "Stay & plans", tone: "stay", icon: "hotel", base: "hotel", cta: "Add Stay", documentType: "hotel_confirmation" },
@@ -180,7 +184,7 @@
     tour: { label: "Tour / Excursion", shortLabel: "Tour", hint: "Guided experience", group: "Stay & plans", tone: "activity", icon: "tour", base: "activity", subtype: "tour", cta: "Add Tour", documentType: "ticket" },
     activity: { label: "Activity / Event", shortLabel: "Activity", hint: "Class or free-time plan", group: "Stay & plans", tone: "activity", icon: "activity", base: "activity", subtype: "activity", cta: "Add Activity", documentType: "ticket" },
     attraction: { label: "Museum / Attraction", shortLabel: "Attraction", hint: "Timed entry or visit", group: "Stay & plans", tone: "activity", icon: "landmark", base: "activity", subtype: "attraction", cta: "Add Attraction", documentType: "ticket" },
-    event: { label: "Event / Show", shortLabel: "Event", hint: "Concert or performance", group: "Stay & plans", tone: "activity", icon: "ticket", base: "activity", subtype: "event", cta: "Add Event", documentType: "ticket" },
+    event: { label: "Event / Show", shortLabel: "Event", hint: "Concert or performance", group: "Stay & plans", tone: "activity", icon: "event", base: "activity", subtype: "event", cta: "Add Event", documentType: "ticket" },
     insurance: { label: "Travel Insurance", shortLabel: "Insurance", hint: "Policy details", group: "Travel essentials", tone: "essential", icon: "shield", base: "reservation", subtype: "insurance", cta: "Add Insurance", documentType: "other" },
     other: { label: "Other", hint: "Any confirmed plan", group: "Travel essentials", tone: "essential", icon: "calendar", base: "reservation", subtype: "other", cta: "Add to Trip", documentType: "other" },
   });
@@ -2846,14 +2850,19 @@
       } catch (_error) {}
       return;
     }
-    state.loading = true;
-    render();
+    // No cache: route to the destination immediately so the shell (header, trip
+    // name, bottom nav) stays on screen, then show a contained in-place loader
+    // instead of replacing the whole app with the full-screen grey skeleton.
+    // Clear the previous trip's detail arrays first so nothing stale flashes.
+    Object.assign(state, { timeline: [], transport: [], stays: [], locations: [], travelers: [], checklist: [], brain: null, impacts: [], changes: [], health: null, bookingDetails: [], contacts: [] });
+    state.tripDetailsLoading = true;
+    routeAfter();
     try {
       await loadTripDetails();
     } finally {
-      state.loading = false;
+      state.tripDetailsLoading = false;
     }
-    routeAfter();
+    render();
   }
 
   function previewData() {
@@ -3835,7 +3844,9 @@
             .join("")}${icon("chevron", 18, "timeline-days__more")}</nav>`
         : "";
     const pagedGroups = groups.length > 1 ? [groups[activeDayIdx]] : groups;
-    const content = groups.length
+    const content = state.tripDetailsLoading && !groups.length
+      ? `<div class="loading-skeleton loading-skeleton--timeline timeline-inline-loading" role="status" aria-label="Loading trip">${skeletonRows(4)}<span class="sr-only">Opening your trip…</span></div>`
+      : groups.length
       ? `${dayTabs}<div class="timeline-ribbon${groups.length > 1 ? " timeline-ribbon--paged" : ""}">${pagedGroups
           .map(
             (group) =>
@@ -4084,8 +4095,14 @@
         accommodation: "hotel",
         activity: "activity",
         attraction: "landmark",
+        museum: "museum",
+        gallery: "museum",
         tour: "tour",
         event: "event",
+        concert: "event",
+        show: "event",
+        theatre: "event",
+        theater: "event",
         reservation: "reservation",
         restaurant: "restaurant",
         dining: "restaurant",
@@ -4110,7 +4127,7 @@
     coffee: "Coffee", camera: "Photography", shopping: "Shopping",
     restaurant: "Restaurant", reservation: "Reservation", activity: "Activity",
     cooking: "Cooking",
-    landmark: "Landmark", tour: "Tour", event: "Event", ticket: "Ticket",
+    landmark: "Landmark", museum: "Museum", tour: "Tour", event: "Event", ticket: "Ticket",
   };
   // Pick the most specific approved glyph for an item. Transport uses its
   // transport_type; everything else is classified from the subtype + title so
@@ -4129,7 +4146,8 @@
     if (has("wine", "cocktail", "brewery", "distillery", "pub", "aperitivo", "bar ", " bar")) return "bar";
     if (has("cooking", "cook ", "culinary", "kitchen class", "food workshop")) return "cooking";
     if (has("restaurant", "dining", "dinner", "lunch", "brunch", "breakfast", "tasting menu", "osteria", "trattoria", "bistro", "cafe", "café", "eatery", "supper")) return "restaurant";
-    if (has("museum", "gallery", "monument", "cathedral", "palace", "castle", "ruins", "basilica", "landmark", "sightseeing")) return "landmark";
+    if (has("museum", "gallery")) return "museum";
+    if (has("monument", "cathedral", "palace", "castle", "ruins", "basilica", "landmark", "sightseeing")) return "landmark";
     if (has("tour", "excursion", "guided", "hike", "trek", "safari", "cruise ", "boat trip")) return "tour";
     if (has("concert", "show", "theatre", "theater", "opera", "festival", "match", "game", "gig")) return "event";
     if (has("ticket", "admission", "entry", "pass ")) return "ticket";
@@ -4397,12 +4415,12 @@
   function tripListScreen() {
     // Trips list is the app home: instead of the bottom tab bar it carries two
     // header actions — a rose "+" (add booking) and an account shortcut.
-    const headerActions = `<button class="icon-button trips-header-add" data-action="open-add" aria-label="Add">${icon("plus", 24)}</button><button class="icon-button" data-screen="account" aria-label="Account">${icon("user", 24)}</button>`;
-    const page = (title, body) => `<div class="phone-app"><section class="screen mobile-v1-screen trips-bg-screen trips-bg-screen--nonav">${appBar(title, "", false, headerActions)}${mobileAlert()}<main class="mobile-page">${body}</main></section></div>`;
+    const headerActions = `<button class="icon-button" data-screen="account" aria-label="Account">${icon("user", 24)}</button>`;
+    const page = (title, body) => `<div class="phone-app"><section class="screen mobile-v1-screen trips-bg-screen trips-bg-screen--nonav">${appBar(title, "", false, headerActions)}${mobileAlert()}<main class="mobile-page">${body}</main><button class="trips-fab" data-action="open-add" aria-label="Create trip">${icon("plus", 40)}</button></section></div>`;
     if (!state.trips.length) return page("Trips", `<section class="mobile-empty"><span class="mobile-empty__icon">${icon("luggage", 30)}</span><h1>No trips yet</h1><p>Create your first trip and keep everything in one place.</p>${primaryCta("Create trip", "create-trip", "plus")}</section>`);
     const filter = state.tripFilter || null,
       pageTitle = filter === "upcoming" ? "Upcoming trips" : filter === "past" ? "Past trips" : "Trips",
-      visibleGroups = filter === "upcoming" ? ["Current", "Upcoming"] : filter === "past" ? ["Past"] : null;
+      visibleGroups = filter === "upcoming" ? ["Current", "Upcoming"] : filter === "past" ? ["Past", "Cancelled"] : null;
     const order = ["Current", "Upcoming", "Past", "Cancelled"];
     const content = order.filter((label) => !visibleGroups || visibleGroups.includes(label)).map((label) => {
       const trips = state.trips
@@ -4943,8 +4961,9 @@
     const row = (ic,title,sub,screen,action="") => `<button class="simple-row" ${screen?`data-screen="${screen}"`:`data-action="${action}"`}><span class="row-icon">${icon(ic,22)}</span><span class="row-copy"><strong>${title}</strong><span>${esc(sub)}</span></span>${icon("chevron",22,"chevron")}</button>`;
     const google=state.account?.providers?.find((provider)=>provider.provider==="google"&&provider.enabled),identity=state.account?.identities?.find((item)=>item.provider==="google");
     const authBlock=mode==="guest"&&google?`<section class="account-signin"><h2>Keep your trips across devices</h2><p>Continue with Google to attach this phone's trips to your verified account.</p><div id="google-signin-button" data-client-id="${esc(google.clientId)}"></div><p class="signin-error" role="alert" hidden></p></section>`:"";
-    const upcoming = state.trips.filter((trip)=>!["completed","archived","cancelled"].includes(String(val(trip,"lifecycle_state","lifecycleState")||"upcoming"))).length,
-      past = state.trips.length - upcoming,
+    const tripBuckets = state.trips.map(tripBucket),
+      upcoming = tripBuckets.filter((bucket) => bucket === "Current" || bucket === "Upcoming").length,
+      past = tripBuckets.filter((bucket) => bucket === "Past" || bucket === "Cancelled").length,
       identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
     const pendingEmails=(state.bookingEmails||[]).filter((item)=>["needs_trip","needs_confirmation"].includes(String(item.status))).length;
     return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div><div class="account-list">${row("plus","Create trip","Start planning a new trip","","create-trip")}${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}</div><div class="section-label">Booking email</div><div class="account-list">${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}</div><div class="section-label">Preferences</div><div class="account-list">${pending?row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync"):""}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")}</div><div class="section-label">Privacy & data</div><div class="account-list">${row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data")}${mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account"):""}</div><div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
@@ -5481,16 +5500,17 @@
         : "";
       return kind === "trip" && type === "date" ? "" : quickField(name,label,{type:type.startsWith("select")?"select":type,required,wide,choices,value:current,placeholder:kind==="trip"?(tripPlaceholders[name]||""):"",optional:kind==="trip"&&!required,attrs});
     });
-    const fields = kind === "trip"
-      ? `<div class="form-fields trip-create-fields">${mappedFields[0]}<input type="hidden" name="destinationPlace" value="">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${mappedFields[3]}</div>`
-      : `<div class="form-fields">${mappedFields.join("")}</div>`;
     const editAttrs=editingTraveler?` data-edit-id="${esc(editingTraveler.id)}" data-edit-version="${esc(editingTraveler.version||1)}"`:editingTrip?` data-edit-id="${esc(editingTrip.id)}" data-edit-version="${esc(val(editingTrip,"version")||1)}"`:"";
     const deleteBar=editingTrip?`<button type="button" class="trip-delete-text" data-action="delete-trip">Delete this trip</button>`:"";
     const submitLabel=kind==="trip"?(editingTrip?"Save changes":"Create trip"):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
     const heading=kind==="trip"?(editingTrip?"Edit trip details":"Where are you going?"):esc(cfg.title);
-    const subhead=kind==="trip"?(editingTrip?"<p>Update the name or dates, or delete the trip.</p>":"<p>Keep it simple. Add the details later.</p>"):"";
+    const subhead=kind==="trip"?(editingTrip?"<p>Update the name or dates, or delete the trip.</p>":"<p>Pick a place, set your dates, and we’ll build the itinerary around it.</p>"):"";
     const headerActions=`${editingTrip?`<button type="button" class="icon-button app-bar-delete" data-action="delete-trip" aria-label="Delete this trip">${icon("trash",22)}</button>`:""}<button type="submit" form="native-form" class="app-bar-save mobile-primary-action">${submitLabel}</button>`;
-    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${heading}</h1>${subhead}</header>${fields}</section></form>`, "form-screen", headerActions);
+    if (kind === "trip") {
+      const tripBody=`<header class="trip-create-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div><div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("globe",18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("flight",23)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("location",20)}</span></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p></section><section class="trip-create-details" aria-label="Trip details">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
+      return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form trip-create-form" id="native-form" data-kind="trip"${editAttrs} novalidate>${tripBody}</form>`, "form-screen trip-create-screen", headerActions);
+    }
+    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);
   }
   function zonedDateTimeParts(ms, timeZone) {
     const value = Number(ms);
@@ -5784,6 +5804,16 @@
     const title = kind === "document" ? "Add Document" : `${editingRecord ? "Edit" : isReturnFlight ? "Add return" : "Add"} ${config?.shortLabel || config?.label || statusText(kind)}`;
     if (!state.trip) return noTripQuickAdd(kind, title);
     const editing = Boolean(editingRecord), dateDefault = editing ? "" : isReturnFlight ? String(val(state.trip, "ends_on", "endsOn") || "") : String(val(state.trip, "starts_on", "startsOn") || ""), tzDefault = editing ? "" : tripDefaultTimezone(), attachmentScope = manualAttachmentScope(kind, editId);
+    // Timezones are derived from the selected location (TripIt-style), never
+    // entered by hand. Each booking still persists a timezone, so we render the
+    // tz control as a hidden input seeded with the best fallback (trip's
+    // dominant zone → this device's zone → UTC) and let syncQuickTimezone()
+    // overwrite it the moment a location resolves a real zone.
+    const tzFallback = tripDefaultTimezone() || (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (_) { return "UTC"; } })();
+    const hiddenTz = (name, role) => {
+      const seed = (formPrefill && formPrefill[name] != null && String(formPrefill[name])) || tzFallback;
+      return `<input type="hidden" name="${esc(name)}"${role ? ` data-timezone-role="${esc(role)}"` : ""} data-default-timezone="${esc(tzFallback)}" value="${esc(seed)}">`;
+    };
     let primary="", moreContent="", note="", list="", dataLists="", extraClass="";
     if (kind === "flight") {
       list = quickLocationList("flight");
@@ -5801,13 +5831,13 @@
       list = quickLocationList("train");
       dataLists = dataListMarkup("suggest-rail",SUGGEST_LISTS.rail)+dataListMarkup("suggest-timezones",timezoneOptions());
       primary = `${manualRouteCard(kind,{label:ferry?"Departure port":"From station",placeholder:ferry?"Departure port":"Station",list:"quick-train-locations"},{label:ferry?"Arrival port":"To station",placeholder:ferry?"Arrival port":"Station",list:"quick-train-locations"})}<div class="form-fields form-fields--date-time">${quickField("departureDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("departureLocalTime","Local time",{type:"time",required:true,wide:false})}</div>`;
-      moreContent = `<div class="form-fields">${quickField("departureTimezone","Departure timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'data-timezone-role="departure" list="suggest-timezones"'})}${quickField("carrierName",ferry?"Ferry operator":"Train operator",{attrs:'list="suggest-rail"',optional:true})}${quickField("serviceNumber",ferry?"Sailing number":"Train / service number",{optional:true})}<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("arrivalTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("platform",ferry?"Pier / berth":"Platform",{wide:false})}${quickField("coach","Coach / cabin",{wide:false})}${quickField("seat","Seat",{wide:false})}${ferry ? quickField("vehicle","Vehicle",{optional:true,placeholder:"Vehicle or registration"}) : ""}${quickField("bookingReference","Booking reference",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      moreContent = `<div class="form-fields">${hiddenTz("departureTimezone","departure")}${hiddenTz("arrivalTimezone","arrival")}${quickField("carrierName",ferry?"Ferry operator":"Train operator",{attrs:'list="suggest-rail"',optional:true})}${quickField("serviceNumber",ferry?"Sailing number":"Train / service number",{optional:true})}<div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("platform",ferry?"Pier / berth":"Platform",{wide:false})}${quickField("coach","Coach / cabin",{wide:false})}${quickField("seat","Seat",{wide:false})}${ferry ? quickField("vehicle","Vehicle",{optional:true,placeholder:"Vehicle or registration"}) : ""}${quickField("bookingReference","Booking reference",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = `${ferry ? "Ports" : "Stations"} remain manual or use saved trip locations; the app does not pretend the city index is a station directory.`;
     } else if (kind === "car-rental") {
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-carrental",SUGGEST_LISTS.carRental)+dataListMarkup("suggest-timezones",timezoneOptions());
       primary = `${quickField("title","Rental company",{required:true,placeholder:"Company",attrs:'list="suggest-carrental"'})}${manualRouteCard(kind,{name:"location",label:"Pickup location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"},{name:"endLocation",label:"Drop-off location",placeholder:"Airport, city, or address",list:"quick-reservation-locations"})}${dateRangeField("reservationDate", "endDate", "Rental dates", "Pickup", "Drop-off", formPrefill?.reservationDate||dateDefault, formPrefill?.endDate||"")}<div class="form-fields form-fields--date-time">${quickField("reservationTime","Pickup time",{type:"time",required:true,wide:false})}${quickField("endTime","Drop-off time",{type:"time",optional:true,wide:false})}</div><input type="hidden" name="transportType" value="car">`;
-      moreContent = `<div class="form-fields">${quickField("timezone","Pickup timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("endTimezone","Drop-off timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("vehicle","Vehicle / class",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("driver","Driver name",{})}${quickField("phone","Rental phone",{type:"tel"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      moreContent = `<div class="form-fields">${hiddenTz("timezone","departure")}${hiddenTz("endTimezone","arrival")}${quickField("vehicle","Vehicle / class",{})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("driver","Driver name",{})}${quickField("phone","Rental phone",{type:"tel"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Pickup and drop-off are kept together as one rental booking.";
     } else if (["transfer","bus","taxi"].includes(kind)) {
       const isBus = kind === "bus", isTaxi = kind === "taxi",
@@ -5819,19 +5849,19 @@
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
       primary = `${quickField("title",providerLabel,{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:fromLabel,placeholder:isBus?"Station or stop":"Pickup location",list:"quick-reservation-locations"},{name:"endLocation",label:toLabel,placeholder:isBus?"Station or stop":"Destination",list:"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",dateLabel,{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",timeLabel,{type:"time",required:true,wide:false})}</div><input type="hidden" name="transportType" value="${esc(manualBookingConfig(kind)?.subtype || "transfer")}">`;
-      moreContent = `<div class="form-fields">${quickField("timezone",isBus?"Departure timezone":"Pickup timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("endTimezone","Arrival timezone",{placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone",isBus?"Operator phone":"Driver / provider phone",{type:"tel"})}${quickField("vehicle",isBus?"Service number / coach":"Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      moreContent = `<div class="form-fields">${hiddenTz("timezone","departure")}${hiddenTz("endTimezone","arrival")}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone",isBus?"Operator phone":"Driver / provider phone",{type:"tel"})}${quickField("vehicle",isBus?"Service number / coach":"Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = isBus ? "Add the confirmed departure details shown on your ticket." : "Only confirmed pickup details are shown in the Timeline.";
     } else if (kind === "cruise") {
       list = quickLocationList("activity");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
       primary = `${quickField("provider","Cruise line",{required:true,placeholder:"Cruise line"})}${manualRouteCard(kind,{name:"location",label:"Departure port",placeholder:"Port",list:"quick-activity-locations"},{name:"endLocation",label:"Arrival / return port",placeholder:"Port",list:"quick-activity-locations"})}<div class="form-fields form-fields--date-time">${quickField("activityDate","Departure date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("activityTime","Departure time",{type:"time",optional:true,wide:false})}</div>${quickField("endDate","Return / arrival date",{type:"date",optional:true})}<input type="hidden" name="timeMode" value="specific"><input type="hidden" name="activityType" value="cruise">`;
-      moreContent = `<div class="form-fields">${quickField("ship","Ship",{optional:true,placeholder:"Ship name"})}${quickField("timezone","Departure timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("title","Cruise name",{optional:true,placeholder:"Optional itinerary name"})}${quickField("endTime","Arrival time",{type:"time",wide:false,optional:true})}${quickField("confirmationNumber","Booking reference",{})}${quickField("cabin","Cabin",{optional:true})}${quickField("deck","Deck",{optional:true})}${quickField("embarkation","Embarkation details",{optional:true,placeholder:"Terminal, pier, or check-in point"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      moreContent = `<div class="form-fields">${hiddenTz("timezone","departure")}${quickField("ship","Ship",{optional:true,placeholder:"Ship name"})}${quickField("title","Cruise name",{optional:true,placeholder:"Optional itinerary name"})}${quickField("endTime","Arrival time",{type:"time",wide:false,optional:true})}${quickField("confirmationNumber","Booking reference",{})}${quickField("cabin","Cabin",{optional:true})}${quickField("deck","Deck",{optional:true})}${quickField("embarkation","Embarkation details",{optional:true,placeholder:"Terminal, pier, or check-in point"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Port names stay manual until a dedicated port directory is available.";
     } else if (kind === "restaurant") {
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
       primary = `${quickField("title","Restaurant name",{required:true,placeholder:"Restaurant"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate","Reservation date",{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime","Local time",{type:"time",optional:true,wide:false})}</div>${quickField("guests","Guests",{type:"number",optional:true,wide:false,attrs:'min="1" max="99" inputmode="numeric"'})}<input type="hidden" name="reservationType" value="restaurant">`;
-      moreContent = `<div class="form-fields">${quickField("location","City / location",{optional:true,placeholder:"City or saved trip location",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}${quickField("streetAddress","Street address",{optional:true,placeholder:"Restaurant address"})}${quickField("phone","Restaurant phone",{type:"tel",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      moreContent = `<div class="form-fields">${quickField("location","City / location",{optional:true,placeholder:"City or saved trip location",attrs:'list="quick-reservation-locations" data-location-role="location"'})}${hiddenTz("timezone")}${quickField("streetAddress","Street address",{optional:true,placeholder:"Restaurant address"})}${quickField("phone","Restaurant phone",{type:"tel",optional:true})}${quickField("confirmationNumber","Confirmation number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Guest count and confirmation stay with this reservation.";
     } else if (["activity","tour","attraction","event"].includes(kind)) {
       const activitySubtype = manualBookingConfig(kind)?.subtype || "activity",
@@ -5840,7 +5870,7 @@
         typeControl = kind === "activity" ? quickField("activityType","Type",{type:"select",optional:true,choices:'<option value="activity">Activity</option><option value="tour">Tour</option><option value="concert">Concert</option><option value="theatre">Theatre</option><option value="museum">Museum</option><option value="attraction">Attraction</option><option value="sports">Sports</option><option value="meeting">Meeting</option><option value="show">Show</option><option value="other">Other</option>'}) : `<input type="hidden" name="activityType" value="${esc(activitySubtype)}">`;
       list = quickLocationList("activity");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title",activityLabel,{required:true,placeholder:activityPlaceholder})}${typeControl}${quickField("activityDate","Date",{type:"date",required:true,value:dateDefault})}<input type="hidden" name="timeMode" value="specific"><div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",optional:true,wide:false})}${quickField("timezone","Timezone",{optional:true,wide:false,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}</div>${quickField("location","Venue",{optional:true,placeholder:"Venue or saved trip location",attrs:'list="quick-activity-locations"'})}`;
+      primary = `${quickField("title",activityLabel,{required:true,placeholder:activityPlaceholder})}${typeControl}${quickField("activityDate","Date",{type:"date",required:true,value:dateDefault})}<input type="hidden" name="timeMode" value="specific">${hiddenTz("timezone")}<div class="form-fields form-fields--activity-time">${quickField("activityTime","Local time",{type:"time",optional:true,wide:false})}</div>${quickField("location","Venue",{optional:true,placeholder:"Venue or saved trip location",attrs:'list="quick-activity-locations" data-location-role="location"'})}`;
       moreContent = `<div class="form-fields">${quickField("endTime","End time",{type:"time",wide:false})}${quickField("confirmationNumber","Confirmation number",{})}${quickField("provider","Provider or contact",{})}${quickField("seatSection","Seat / section",{optional:true})}${quickField("streetAddress","Address",{optional:true,placeholder:"Venue address"})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Use the venue's local time. Nothing is presented as live.";
     } else if (["other","reservation","parking","insurance"].includes(kind)) {
@@ -5851,7 +5881,7 @@
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
       primary = `${quickField("title",titleLabel,{required:true,placeholder:titlePlaceholder})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",dateLabel,{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",isParking?"Entry time":"Local time",{type:"time",optional:true,wide:false})}</div><input type="hidden" name="reservationType" value="${esc(config?.subtype || "other")}">`;
-      moreContent = `<div class="form-fields">${quickField("location","Location",{optional:true,placeholder:"Optional",attrs:'list="quick-reservation-locations"'})}${quickField("timezone","Timezone",{optional:true,value:tzDefault,placeholder:"Europe/Rome",attrs:'list="suggest-timezones"'})}<div class="form-fields--date-time">${quickField("endDate","End date",{type:"date",wide:false})}${quickField("endTime","End time",{type:"time",wide:false})}</div>${quickField("confirmationNumber","Confirmation number",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
+      moreContent = `<div class="form-fields">${quickField("location","Location",{optional:true,placeholder:"Optional",attrs:'list="quick-reservation-locations" data-location-role="location"'})}${hiddenTz("timezone")}<div class="form-fields--date-time">${quickField("endDate","End date",{type:"date",wide:false})}${quickField("endTime","End time",{type:"time",wide:false})}</div>${quickField("confirmationNumber","Confirmation number",{})}${quickField("contact","Contact",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = isInsurance ? "Keep the policy reference with your trip; private documents remain on this device." : "Add only the details you know; nothing is guessed.";
     } else {
       const bookingOptions = bookingRows().map(({item}) => `<option value="${esc(itemId(item))}">${esc(val(item,"title","property_name")||"Booking")}</option>`).join(""),
@@ -6445,9 +6475,7 @@
             `<li class="wx-day${i === 0 ? " is-today" : ""}"><span class="wx-day__label">${esc(i === 0 ? "Today" : day.weekday || "")}</span><span class="wx-day__meta">${icon("wx-drop", 14)}${day.precip != null ? esc(day.precip) : 0}%</span><span class="wx-day__meta">${icon("wx-wind", 14)}${day.wind != null ? esc(day.wind) : 0} m/s</span><span class="wx-day__ico">${icon(day.iconName, 26)}</span><span class="wx-day__hi">${esc(day.hi)}°</span><span class="wx-day__lo">${day.lo != null ? esc(day.lo) + "°" : "—"}</span></li>`,
         )
         .join("");
-      const country = place.country ? `<span class="wx-hero__country">${esc(place.country)}</span>` : "";
-      const moment = formatWeatherMoment(wx.observedAt);
-      body = `<section class="wx-hero">${icon(wx.iconName, 42)}<strong class="wx-hero__temp">${esc(Math.round(wx.tempC))}°</strong><span class="wx-hero__cond">${esc(wx.label)}</span><span class="wx-hero__hilo">H:${wx.hi != null ? esc(wx.hi) + "°" : "—"} L:${wx.lo != null ? esc(wx.lo) + "°" : "—"}</span></section>${hourItems ? `<section class="wx-block" aria-label="Hourly forecast"><h2 class="wx-block__title">Hourly</h2><ul class="wx-hours">${hourItems}</ul></section>` : ""}${dayItems ? `<section class="wx-block wx-block--days" aria-label="Daily forecast"><h2 class="wx-block__title">7-day forecast</h2><ul class="wx-days">${dayItems}</ul></section>` : ""}<p class="weather-note">Forecast for your destination. tripto.to never uses your location.</p>`;
+      body = `${hourItems ? `<section class="wx-block" aria-label="Hourly forecast"><h2 class="wx-block__title">Hourly</h2><ul class="wx-hours">${hourItems}</ul></section>` : ""}${dayItems ? `<section class="wx-block wx-block--days" aria-label="Daily forecast"><h2 class="wx-block__title">7-day forecast</h2><ul class="wx-days">${dayItems}</ul></section>` : ""}<p class="weather-note">Forecast for your destination. tripto.to never uses your location.</p>`;
     } else if (state.offline) {
       body = `<section class="weather-empty"><span>${icon("info", 30)}</span><h1>Weather needs a connection</h1><p>Connect to load the forecast for your destination.</p></section>`;
     } else {
@@ -6486,15 +6514,15 @@
       (state.trip && state.trip.title) ||
       "your destination";
     const features = [
-      ["bolt", "Ready in minutes", "Buy online and scan a QR — you're connected before you land."],
-      ["globe", "200+ destinations", "One provider covers your whole trip, country to country."],
-      ["phone", "Keep your number", "Your physical SIM stays active for calls and texts."],
-      ["shield", "No roaming bills", "Pay local data rates, not surprise carrier surcharges."],
+      ["bolt", "Ready in minutes"],
+      ["globe", "200+ destinations"],
+      ["phone", "Keep your number"],
+      ["shield", "No roaming bills"],
     ];
     const featureRows = features
       .map(
-        ([ic, t, d]) =>
-          `<div class="esim-feature"><span class="esim-feature__icon">${icon(ic, 22)}</span><div><strong>${esc(t)}</strong><small>${esc(d)}</small></div></div>`,
+        ([ic, t]) =>
+          `<div class="esim-feature"><span class="esim-feature__icon">${icon(ic, 18)}</span><strong>${esc(t)}</strong></div>`,
       )
       .join("");
     return `<div class="phone-app"><section class="screen esim-screen">${appBar("Travel eSIM", "Partner offer", true)}<main class="esim-page"><section class="esim-hero"><span class="esim-hero__icon">${icon("sim", 40)}</span><h1>Land in ${esc(dest)} with data already on</h1><p>Skip the SIM-card queue and roaming bills — a travel eSIM works the moment you arrive.</p><div class="esim-offer"><strong>15% off</strong><span>your first plan with code</span><button type="button" class="esim-code" data-action="copy-esim-code" aria-label="Copy code FKWQX6ES">FKWQX6ES ${icon("copy", 16)}</button></div></section><section class="esim-features">${featureRows}</section><section class="esim-steps"><h2>How it works</h2><ol><li><span>1</span><p>Tap <strong>Get my eSIM</strong> below to open 7g.</p></li><li><span>2</span><p>Pick your destination and plan — enter code <strong>FKWQX6ES</strong> for 15% off.</p></li><li><span>3</span><p>Scan the QR to install it, then land connected.</p></li></ol></section><button type="button" class="mobile-primary-action esim-cta" data-action="esim-signup">${icon("external", 18)} Get my eSIM — 15% off</button><p class="esim-note">tripto.to partners with 7g. This opens 7g in a new tab and we may earn a commission — it never changes your price. tripto.to never uses your location.</p></main></section></div>`;
@@ -6541,7 +6569,7 @@
       `<div class="sheet-options-group sheet-options-group--v2">${shown
         .map(
           (trip) =>
-            `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${String(trip.id) === String(state.trip?.id) ? checkDot("status-dot-check--selected") : icon("chevron", 22, "chevron")}</button>`,
+            `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span></button>`,
         )
         .join("")}</div>`,
     );
@@ -6599,7 +6627,11 @@
     return `<div class="loading-skeleton loading-skeleton--${esc(screen)}" role="status" aria-label="Opening your trip">${common}${body}<span class="sr-only">Opening your trip…</span></div>`;
   }
   function loadingScreen() {
-    return `<div class="phone-app"><div class="app-loading">${loadingSkeleton()}</div></div>`;
+    // Cold boot with no local cache (first visit, or iOS Safari evicted
+    // localStorage after ~7 days of inactivity) used to flash a full-screen
+    // grey skeleton, which users read as a broken page. Show a branded splash
+    // instead so the brief pre-data moment always looks intentional.
+    return `<div class="phone-app"><section class="loading-screen" role="status" aria-live="polite" aria-label="Loading tripto.to"><div class="loading-mark">tripto<span>.</span>to</div><div class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></div><span class="sr-only">Loading your trips…</span></section></div>`;
   }
   function errorScreen() {
     const rejected = state.sessionRejected;
@@ -6724,6 +6756,15 @@
         default:
           html = state.trip ? timelineScreen() : firstRunScreen();
       }
+    // Any screen that carries the bottom nav pins the whole frame to the small
+    // viewport so the document can never scroll under the browser toolbar — that
+    // scroll is what makes a fixed bottom bar appear to drift. With the frame
+    // locked, the screen's own <main> is the single internal scroller and the
+    // nav stays stuck in place on every screen, every time.
+    document.documentElement.classList.toggle(
+      "nav-frame",
+      typeof html === "string" && html.includes('class="bottom-nav'),
+    );
     html = decorateScreen(html);
     if (state.sheet === "add") html += addSheet();
     if (state.sheet === "document") html += documentSheet();
@@ -7229,7 +7270,7 @@
       locationKind = kind === "flight" ? "flight" : ["train","ferry"].includes(kind) ? "train" : "activity",
       selectedPlace = selectedPlaceForInput(input),
       timezone = String(selectedPlace?.timezone || timezoneForLocationInput(input.value, locationKind) || ""),
-      timezoneName = role === "arrival" ? "arrivalTimezone" : ["activity","reservation","transport"].includes(baseKind) ? "timezone" : "departureTimezone",
+      timezoneName = role === "arrival" ? (form.elements.arrivalTimezone ? "arrivalTimezone" : "endTimezone") : ["activity","reservation","transport"].includes(baseKind) ? "timezone" : "departureTimezone",
       control = form.elements[timezoneName],
       field = input.closest(".form-field");
     if (!control) return;
@@ -7246,7 +7287,10 @@
         );
       }
     } else {
-      if (control.dataset.derived === "true") control.value = "";
+      // Location cleared or unrecognized: fall back to the trip's default zone
+      // (seeded on the hidden control) rather than leaving it empty, so
+      // resolveEventLocalDateTime always has a valid zone to work with.
+      if (control.dataset.derived === "true") control.value = control.dataset.defaultTimezone || "";
       delete control.dataset.derived;
       field?.classList.remove("is-derived-timezone");
     }
@@ -9236,6 +9280,10 @@
     const target = event.target.closest("[data-screen],[data-action]");
     if (!target) return;
     if (target.dataset.screen) {
+      // Generic navigation to the trips list shows every trip. Only the explicit
+      // "Upcoming trips" / "Past trips" rows (data-action) set a filter, right
+      // before they route — so clear any stale filter here.
+      if (target.dataset.screen === "trips") state.tripFilter = null;
       route(
         target.dataset.screen,
         target.dataset.id || null,
