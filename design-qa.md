@@ -103,6 +103,38 @@ final result: passed
 
 ---
 
+# Design QA — post-dates trip setup
+
+- References: `/Users/arthurberlin/Downloads/IMG_1979 3.jpg` and `/Users/arthurberlin/Downloads/IMG_1980 2.jpg`
+- Implementation: Tripto Create Trip flow, immediately after confirming a destination date range
+- Browser: Codex in-app browser, local Worker preview
+- Test state: Rome, Italy · Sep 7–14, 2026
+
+## Visual and product comparison
+
+- Preserved the references' useful structure: trip context first, then preparation actions for flights, stays, and eSIM.
+- Reframed the dark third-party layout into Tripto's current light travel system using only existing green, blue, mint, lavender, navy, paper, and card tokens.
+- Did not reproduce unsupported countdown, weather, price, availability, AI, or partner claims.
+- Aviasales and Booking.com are explicitly described as future integrations; neither card opens a dead or fabricated affiliate link.
+- Replaced Airalo with the existing Tripto Travel eSIM product and verified that its CTA creates the trip before routing to `/esim`.
+
+## Responsive and interaction evidence
+
+- Full destination search, Rome selection, date-range selection, preparation screen, trip creation, and Travel eSIM navigation were exercised through the in-app browser.
+- The page uses an internal scroll region on short screens while keeping the primary Create trip action fixed and reachable.
+- All interactive controls retain 44px minimum touch targets and visible keyboard focus.
+- Destination and date values are carried into the preparation summary; no horizontal overflow was observed.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
+
+---
+
 # Design QA — elegant destination and date pickers
 
 - Product direction: replace the sparse, mostly white full-screen destination and date selectors with a coherent travel-focused system using the existing warm ivory, violet, lavender, white, and navy theme tokens.

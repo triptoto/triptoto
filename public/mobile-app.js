@@ -81,6 +81,8 @@
     screen: parseRoute().screen,
     selectedId: parseRoute().id,
     sheet: null,
+    tripSetupPreview: null,
+    afterTripCreateScreen: null,
     toast: "",
     toastKind: "status",
     toastAction: null,
@@ -5393,13 +5395,6 @@
         else { close(); input.focus(); }
       }
     });
-    fullScreenPanel?.querySelector(".trip-create-search-guide__examples")?.addEventListener("click", (event) => {
-      const example = event.target.closest("[data-place-example]");
-      if (!example) return;
-      input.value = example.dataset.placeExample || "";
-      input.dispatchEvent(new Event("input", { bubbles:true }));
-      input.focus({ preventScroll:true });
-    });
     clearSearchButton?.addEventListener("click", () => {
       input.value = "";
       input.dispatchEvent(new Event("input", { bubbles:true }));
@@ -5413,7 +5408,7 @@
         return;
       }
       if (event.key !== "Tab") return;
-      const focusable = [closeSearchButton, input, clearSearchButton, ...fullScreenPanel.querySelectorAll(".trip-create-search-guide__examples button:not([disabled])"), ...popup.querySelectorAll("button:not([disabled])")]
+      const focusable = [closeSearchButton, input, clearSearchButton, ...popup.querySelectorAll("button:not([disabled])")]
         .filter((element) => element && !element.hidden && !element.closest("[hidden]") && element.tabIndex >= 0);
       if (!focusable.length) return;
       const first = focusable[0], last = focusable[focusable.length - 1];
@@ -5632,7 +5627,7 @@
       const tripNameField = editingTrip
         ? `<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}`
         : "";
-      const tripBody=`<header class="trip-create-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div><div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("globe",18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("flight",23)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("location",20)}</span></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p><div class="trip-create-search-guide"><span class="trip-create-search-guide__icon">${icon("globe",28)}</span><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><div class="trip-create-search-guide__examples" aria-label="Popular destination searches"><button type="button" data-place-example="Paris">Paris</button><button type="button" data-place-example="London">London</button><button type="button" data-place-example="Tokyo">Tokyo</button><button type="button" data-place-example="CDG">CDG</button></div><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
+      const tripBody=`<header class="trip-create-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div><div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("globe",18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("flight",23)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("location",20)}</span></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
       return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form trip-create-form" id="native-form" data-kind="trip"${editAttrs} novalidate>${tripBody}</form>`, "form-screen trip-create-screen", headerActions);
     }
     return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);
@@ -6080,7 +6075,17 @@
             : `Choose your ${range.startLabel.toLowerCase()} first.`,
       startValue = range.start ? formatDateOnly(range.start) : "Select",
       endValue = range.end ? formatDateOnly(range.end) : range.allowSingle ? "Optional" : "Select";
-    return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><p class="range-picker__instruction">${icon("calendar",19)}<span>${esc(instruction)}</span></p><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back",20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p></main><footer class="full-screen-picker__footer"><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Confirm date" : "Confirm dates"}</button></footer></section>`;
+    return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><p class="range-picker__instruction">${icon("calendar",19)}<span>${esc(instruction)}</span></p><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back",20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Confirm date" : "Confirm dates"}</button></main></section>`;
+  }
+  function tripSetupReadyScreen() {
+    const preview = state.tripSetupPreview || {},
+      destination = preview.destination || "Your destination",
+      dates = preview.startsOn && preview.endsOn
+        ? formatDateRange(preview.startsOn, preview.endsOn)
+        : "Dates selected";
+    const tool = (className, iconName, title, copy, note, action = "") => `<article class="trip-setup-tool ${className}"><span class="trip-setup-tool__icon">${icon(iconName,23)}</span><div><h2>${esc(title)}</h2><p>${esc(copy)}</p><small>${esc(note)}</small>${action}</div></article>`;
+    const esimAction = `<button type="button" class="trip-setup-tool__action" data-action="complete-trip-setup" data-after-create="esim">Create trip &amp; open Travel eSIM ${icon("chevron",16)}</button>`;
+    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Plan your trip</strong></div><span aria-hidden="true"></span></header><main class="trip-setup-ready__main"><section class="trip-setup-ready__hero"><span class="trip-setup-ready__eyebrow">Next steps</span><h1 id="trip-setup-ready-title">Your trip is taking shape.</h1><p>Start with the essentials. You can add or change everything later.</p><div class="trip-setup-ready__summary"><span>${icon("location",18)}<strong>${esc(destination)}</strong></span><span>${icon("calendar",18)}<strong>${esc(dates)}</strong></span></div></section><section class="trip-setup-ready__tools" aria-label="Trip essentials">${tool("trip-setup-tool--flight","flight","Find a flight","Compare useful routes for your exact trip dates.","Flight search will connect to Aviasales when partner links are enabled.")}${tool("trip-setup-tool--stay","bed","Find a stay","Keep accommodation dates aligned with your trip.","Stay search will connect to Booking.com when partner links are enabled.")}${tool("trip-setup-tool--esim","sim","Travel eSIM","Get mobile data ready before you arrive.","Provided by Tripto from the Travel eSIM page.",esimAction)}</section><p class="trip-setup-ready__disclosure">No booking is made on this screen. Partner links are not active yet.</p></main><footer class="trip-setup-ready__footer"><button type="button" class="mobile-primary-action" data-action="complete-trip-setup">Create trip</button><button type="button" class="trip-setup-ready__secondary" data-action="return-trip-setup">Back to trip details</button></footer></section>`;
   }
   function addSheet() {
     return bottomSheet(
@@ -6912,6 +6917,7 @@
     if (state.sheet === "manage-booking") html += manageBookingSheet();
     if (state.sheet === "move-booking") html += moveBookingSheet();
     if (state.sheet === "date-range") html += dateRangeSheet();
+    if (state.sheet === "trip-setup-ready") html += tripSetupReadyScreen();
     if (state.sheet === "booking-email-trip") html += bookingEmailTripSheet();
     if (state.sheet === "share") html += shareSheet();
     if (state.sheet === "currency-picker") html += currencyPickerSheet();
@@ -6958,6 +6964,7 @@
       finish = () => {
         state.sheet = null;
         state.dateRange = null;
+        state.tripSetupPreview = null;
         state.moveBooking = null;
         state.currencyPickerField = null;
         render();
@@ -7928,7 +7935,9 @@
           const trip={id:"preview-created-trip",title:values.title,destination:fd.get("destination"),lifecycle_state:"upcoming",starts_on:values.startsOn,ends_on:values.endsOn};
           Object.assign(state,{trips:[trip],trip,timeline:[],checklist:[],brain:null,impacts:[],transport:[],stays:[],locations:[],travelers:[],connections:[],health:null,bookingDetails:[],contacts:[],syncStatus:null,localDocs:[],tripsLoaded:true});
         }
-        clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true); return;
+        const previewNext = kind === "trip" && state.afterTripCreateScreen ? state.afterTripCreateScreen : null;
+        state.afterTripCreateScreen = null;
+        clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(previewNext || (kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline"),null,true); return;
       }
       if (kind === "trip") {
         const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
@@ -8068,7 +8077,9 @@
       }
       clearQuickDraft(kind); formHasMeaningfulChanges=false; state.manualLabel=null; state.editingEntity=null; formPrefill=null;
       const roundTripSaved = kind==="flight" && !editId && String(fd.get("roundTrip")||"")==="1" && String(fd.get("returnDepartureDate")||"") && savedBookingId;
-      showToast(saveWarning||(roundTripSaved?"Round trip saved — outbound and return flights added.":(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`)),saveWarning?"alert":"status"); route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+      const nextAfterTrip = kind === "trip" && state.afterTripCreateScreen ? state.afterTripCreateScreen : null;
+      state.afterTripCreateScreen = null;
+      showToast(saveWarning||(roundTripSaved?"Round trip saved — outbound and return flights added.":(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`)),saveWarning?"alert":"status"); route(nextAfterTrip || (kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline"),null,true);
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
@@ -8785,9 +8796,30 @@
         syncDateRangeField(rangeForm, range.startName, range.endName);
         saveQuickDraft(rangeForm);
         formHasMeaningfulChanges = true;
-        closeSheet();
+        if (rangeForm.dataset.kind === "trip" && !rangeForm.dataset.editId && String(rangeForm.elements.destination?.value || "").trim()) {
+          state.tripSetupPreview = {
+            destination:String(rangeForm.elements.destination.value).trim(),
+            startsOn:range.start,
+            endsOn:range.end,
+          };
+          state.dateRange = null;
+          state.sheet = "trip-setup-ready";
+          render();
+        } else closeSheet();
         break;
       }
+      case "return-trip-setup":
+        state.sheet = null;
+        state.tripSetupPreview = null;
+        render();
+        break;
+      case "complete-trip-setup":
+        state.afterTripCreateScreen = target.dataset.afterCreate === "esim" ? "esim" : null;
+        state.sheet = null;
+        state.tripSetupPreview = null;
+        render();
+        requestAnimationFrame(() => document.getElementById("native-form")?.requestSubmit());
+        break;
       case "preview-google":
         showToast("Google sign-in is disabled in the isolated visual preview.");
         break;
