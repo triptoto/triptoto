@@ -6,6 +6,9 @@
   const LOCAL_DOC_DB = "tripto-local-docs-v1";
   const PENDING_KEY = "tripto_pending_mutations_v1";
   const POST_AUTH_DESTINATION_KEY = "tripto_post_auth_destination_v1";
+  const AVIASALES_AFFILIATE_URL = "https://tp.media/r?campaign_id=100&marker=465464&p=4114&trs=252129&u=https%3A%2F%2Faviasales.com";
+  const STAY22_SCRIPT_URL = "https://scripts.stay22.com/letmeallez.js";
+  const STAY22_LMA_ID = "6a9af4cdf80ccf1a0115f703";
   const PREVIEW_MODE =
     new URLSearchParams(location.search).get("preview") === "1";
   const LOCAL_QA_MODE =
@@ -49,6 +52,11 @@
     );
   const ensureSmartImport = () =>
     loadModule("/smart-import.js?v=product-v2-conf6", "TriptoSmartImport");
+  const ensureStay22 = () => {
+    globalThis.Stay22 = globalThis.Stay22 || {};
+    globalThis.Stay22.params = { lmaID: STAY22_LMA_ID };
+    return loadModule(STAY22_SCRIPT_URL, "TriptoStay22Loaded");
+  };
   // Keep the airport-timezone table fully on demand. Loading and parsing it in
   // the first idle window can collide with a user's first Timeline scroll on
   // mobile Safari. The relevant forms call ensureAirportTimezones() when they
@@ -83,6 +91,7 @@
     sheet: null,
     tripSetupPreview: null,
     afterTripCreateScreen: null,
+    afterTripCreatePartner: null,
     toast: "",
     toastKind: "status",
     toastAction: null,
@@ -6083,9 +6092,12 @@
       dates = preview.startsOn && preview.endsOn
         ? formatDateRange(preview.startsOn, preview.endsOn)
         : "Dates selected";
+    const bookingUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(destination)}${preview.startsOn ? `&checkin=${encodeURIComponent(preview.startsOn)}` : ""}${preview.endsOn ? `&checkout=${encodeURIComponent(preview.endsOn)}` : ""}`;
     const tool = (className, iconName, title, copy, note, action = "") => `<article class="trip-setup-tool ${className}"><span class="trip-setup-tool__icon">${icon(iconName,23)}</span><div><h2>${esc(title)}</h2><p>${esc(copy)}</p><small>${esc(note)}</small>${action}</div></article>`;
+    const flightAction = `<button type="button" class="trip-setup-tool__action" data-action="complete-trip-setup-partner" data-partner="aviasales">Search flights ${icon("external",16)}</button>`;
+    const stayAction = `<button type="button" class="trip-setup-tool__action" data-action="complete-trip-setup-partner" data-partner="stay">Search stays ${icon("external",16)}</button><a id="trip-setup-stay-link" class="trip-setup-partner-link" href="${esc(bookingUrl)}" rel="sponsored noopener noreferrer" aria-hidden="true" tabindex="-1">Booking.com stay search</a>`;
     const esimAction = `<button type="button" class="trip-setup-tool__action" data-action="complete-trip-setup" data-after-create="esim">Create trip &amp; open Travel eSIM ${icon("chevron",16)}</button>`;
-    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Plan your trip</strong></div><span aria-hidden="true"></span></header><main class="trip-setup-ready__main"><section class="trip-setup-ready__hero"><span class="trip-setup-ready__eyebrow">Next steps</span><h1 id="trip-setup-ready-title">Your trip is taking shape.</h1><p>Start with the essentials. You can add or change everything later.</p><div class="trip-setup-ready__summary"><span>${icon("location",18)}<strong>${esc(destination)}</strong></span><span>${icon("calendar",18)}<strong>${esc(dates)}</strong></span></div></section><section class="trip-setup-ready__tools" aria-label="Trip essentials">${tool("trip-setup-tool--flight","flight","Find a flight","Compare useful routes for your exact trip dates.","Flight search will connect to Aviasales when partner links are enabled.")}${tool("trip-setup-tool--stay","bed","Find a stay","Keep accommodation dates aligned with your trip.","Stay search will connect to Booking.com when partner links are enabled.")}${tool("trip-setup-tool--esim","sim","Travel eSIM","Get mobile data ready before you arrive.","Provided by Tripto from the Travel eSIM page.",esimAction)}</section><p class="trip-setup-ready__disclosure">No booking is made on this screen. Partner links are not active yet.</p></main><footer class="trip-setup-ready__footer"><button type="button" class="mobile-primary-action" data-action="complete-trip-setup">Create trip</button><button type="button" class="trip-setup-ready__secondary" data-action="return-trip-setup">Back to trip details</button></footer></section>`;
+    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Plan your trip</strong></div><span aria-hidden="true"></span></header><main class="trip-setup-ready__main"><section class="trip-setup-ready__hero"><span class="trip-setup-ready__eyebrow">Next steps</span><h1 id="trip-setup-ready-title">Your trip is taking shape.</h1><p>Start with the essentials. You can add or change everything later.</p><div class="trip-setup-ready__summary"><span>${icon("location",18)}<strong>${esc(destination)}</strong></span><span>${icon("calendar",18)}<strong>${esc(dates)}</strong></span></div></section><section class="trip-setup-ready__tools" aria-label="Trip essentials">${tool("trip-setup-tool--flight","flight","Find a flight","Compare useful routes for your exact trip dates.","Search with Aviasales.",flightAction)}${tool("trip-setup-tool--stay","bed","Find a stay","Keep accommodation dates aligned with your trip.","Search Booking.com with Stay22.",stayAction)}${tool("trip-setup-tool--esim","sim","Travel eSIM","Get mobile data ready before you arrive.","Provided by Tripto from the Travel eSIM page.",esimAction)}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost to you. No booking is made on this screen.</p></main><footer class="trip-setup-ready__footer"><button type="button" class="mobile-primary-action" data-action="complete-trip-setup">Create trip</button><button type="button" class="trip-setup-ready__secondary" data-action="return-trip-setup">Back to trip details</button></footer></section>`;
   }
   function addSheet() {
     return bottomSheet(
@@ -7936,8 +7948,12 @@
           Object.assign(state,{trips:[trip],trip,timeline:[],checklist:[],brain:null,impacts:[],transport:[],stays:[],locations:[],travelers:[],connections:[],health:null,bookingDetails:[],contacts:[],syncStatus:null,localDocs:[],tripsLoaded:true});
         }
         const previewNext = kind === "trip" && state.afterTripCreateScreen ? state.afterTripCreateScreen : null;
+        const previewPartner = kind === "trip" ? state.afterTripCreatePartner : null;
         state.afterTripCreateScreen = null;
-        clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`); route(previewNext || (kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline"),null,true); return;
+        state.afterTripCreatePartner = null;
+        clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`);
+        if (previewPartner) { location.assign(previewPartner); return; }
+        route(previewNext || (kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline"),null,true); return;
       }
       if (kind === "trip") {
         const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
@@ -8078,8 +8094,12 @@
       clearQuickDraft(kind); formHasMeaningfulChanges=false; state.manualLabel=null; state.editingEntity=null; formPrefill=null;
       const roundTripSaved = kind==="flight" && !editId && String(fd.get("roundTrip")||"")==="1" && String(fd.get("returnDepartureDate")||"") && savedBookingId;
       const nextAfterTrip = kind === "trip" && state.afterTripCreateScreen ? state.afterTripCreateScreen : null;
+      const partnerAfterTrip = kind === "trip" ? state.afterTripCreatePartner : null;
       state.afterTripCreateScreen = null;
-      showToast(saveWarning||(roundTripSaved?"Round trip saved — outbound and return flights added.":(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`)),saveWarning?"alert":"status"); route(nextAfterTrip || (kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline"),null,true);
+      state.afterTripCreatePartner = null;
+      showToast(saveWarning||(roundTripSaved?"Round trip saved — outbound and return flights added.":(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`)),saveWarning?"alert":"status");
+      if (partnerAfterTrip) { location.assign(partnerAfterTrip); return; }
+      route(nextAfterTrip || (kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline"),null,true);
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
@@ -8811,10 +8831,39 @@
       case "return-trip-setup":
         state.sheet = null;
         state.tripSetupPreview = null;
+        state.afterTripCreatePartner = null;
         render();
         break;
+      case "complete-trip-setup-partner": {
+        const partner = target.dataset.partner;
+        let partnerUrl = AVIASALES_AFFILIATE_URL;
+        if (partner === "stay") {
+          const stayLink = document.getElementById("trip-setup-stay-link");
+          partnerUrl = stayLink?.href || "https://www.booking.com/";
+          target.disabled = true;
+          target.setAttribute("aria-busy", "true");
+          try {
+            await ensureStay22();
+            await new Promise((resolve) => setTimeout(resolve, 80));
+            partnerUrl = stayLink?.href || partnerUrl;
+          } catch (_) {
+            showToast("Stay22 is unavailable. Opening the prepared Booking.com search.", "alert");
+          } finally {
+            target.disabled = false;
+            target.removeAttribute("aria-busy");
+          }
+        }
+        state.afterTripCreatePartner = partnerUrl;
+        state.afterTripCreateScreen = null;
+        state.sheet = null;
+        state.tripSetupPreview = null;
+        render();
+        requestAnimationFrame(() => document.getElementById("native-form")?.requestSubmit());
+        break;
+      }
       case "complete-trip-setup":
         state.afterTripCreateScreen = target.dataset.afterCreate === "esim" ? "esim" : null;
+        state.afterTripCreatePartner = null;
         state.sheet = null;
         state.tripSetupPreview = null;
         render();
