@@ -103,6 +103,37 @@ final result: passed
 
 ---
 
+# Design QA — elegant destination and date pickers
+
+- Product direction: replace the sparse, mostly white full-screen destination and date selectors with a coherent travel-focused system using the existing warm ivory, violet, lavender, white, and navy theme tokens.
+- Local preview: `http://127.0.0.1:8820/trips/new?preview=1&qaState=timeline-normal&release=elegant-pickers-v88`
+- Browser viewport: 1280 × 720 with the application constrained to its production 430px mobile canvas.
+
+## Destination picker
+
+- Added a soft lavender header band, floating white search field, clearer editorial hierarchy, and compact popular-search actions.
+- Verified the Paris example action populates the input and returns ranked city and airport results without changing the offline provider behavior.
+- Verified the empty state, populated results, clear action, and complete 100svh surface; no underlying date card is exposed.
+- Example actions measure 44px high, the search field measures 62px high, and the layout has no horizontal overflow.
+- Privacy and offline capability remain visible without exposing provider or dataset terminology.
+
+## Date picker
+
+- Added the matching lavender header band, separate start/end date tiles, a grouped calendar surface, and a violet confirmation action.
+- Removed the redundant visible `TRAVEL DATES` label and simplified the title to `Select dates`.
+- Verified the guidance advances from start-date selection to end-date selection and finishes with `Your travel window is ready.`
+- Verified Sep 3–9 selection, between-day highlighting, `Confirm dates` enablement, 44px day targets, 52px CTA, and no horizontal overflow.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
+
+---
+
 # Design QA — clean full-screen trip pickers
 
 - Scope: `Choose your destination` and `Choose your dates` only.
