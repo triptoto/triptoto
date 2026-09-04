@@ -25,14 +25,32 @@
   // fetched once, on first use, then cached on its global for the session.
   const moduleLoaders = {};
   function loadModule(src, globalName) {
-    if (globalThis[globalName]) return Promise.resolve(globalThis[globalName]);
+    if (globalName && globalThis[globalName]) {
+      return Promise.resolve(globalThis[globalName]);
+    }
     if (moduleLoaders[src]) return moduleLoaders[src];
     moduleLoaders[src] = new Promise((resolve, reject) => {
       const el = document.createElement("script");
       el.src = src;
       el.async = true;
-      el.onload = () => resolve(globalThis[globalName]);
+      const releaseHandlers = () => {
+        el.onload = null;
+        el.onerror = null;
+      };
+      el.onload = () => {
+        const loadedModule = globalName ? globalThis[globalName] : true;
+        releaseHandlers();
+        if (globalName && !loadedModule) {
+          el.remove();
+          delete moduleLoaders[src];
+          reject(new Error(`Loaded ${src} without ${globalName}`));
+          return;
+        }
+        resolve(loadedModule);
+      };
       el.onerror = () => {
+        releaseHandlers();
+        el.remove();
         delete moduleLoaders[src];
         reject(new Error(`Failed to load ${src}`));
       };
@@ -55,7 +73,7 @@
   const ensureStay22 = () => {
     globalThis.Stay22 = globalThis.Stay22 || {};
     globalThis.Stay22.params = { lmaID: STAY22_LMA_ID };
-    return loadModule(STAY22_SCRIPT_URL, "TriptoStay22Loaded");
+    return loadModule(STAY22_SCRIPT_URL, null);
   };
   // Keep the airport-timezone table fully on demand. Loading and parsing it in
   // the first idle window can collide with a user's first Timeline scroll on
