@@ -1406,7 +1406,7 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-setup-tool--stay .trip-setup-tool__icon{background:var(--stay-soft)}
 .trip-setup-tool--esim .trip-setup-tool__icon{background:var(--activity-soft)}
 .trip-setup-tool__copy{display:grid;gap:2px;min-width:0}
-.trip-setup-tool__copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;line-height:1.2;letter-spacing:-.015em}
+.trip-setup-tool__copy strong{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:15px;line-height:1.2;letter-spacing:-.015em}
 .trip-setup-tool__copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px;line-height:1.35}
 .trip-setup-tool__external{display:grid;place-items:center;color:var(--accent)}
 .trip-setup-tool:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
