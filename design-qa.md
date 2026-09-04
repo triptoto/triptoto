@@ -103,6 +103,40 @@ final result: passed
 
 ---
 
+# Design QA — clean full-screen trip pickers
+
+- Scope: `Choose your destination` and `Choose your dates` only.
+- Palette: white canvas, deep navy content, and Tripto violet accent; muted text, borders, disabled states, and selection fills are derived tints of those three colors.
+- Before captures: `artifacts/picker-clean-v86/01-destination-before.png`, `artifacts/picker-clean-v86/02-dates-before.png`
+- After captures: `artifacts/picker-clean-v86/03-destination-after-360.png`, `artifacts/picker-clean-v86/04-dates-after-360.png`, `artifacts/picker-clean-v86/05-destination-after-430.png`, `artifacts/picker-clean-v86/06-dates-after-430.png`
+
+## Destination results and interaction
+
+- Offline provider ranking is preserved: `Rome, Italy` is first, followed by disambiguated Rome results and major Rome airports.
+- Saved and offline semantic duplicates are collapsed without merging genuinely different cities such as Rome, Georgia and Rome, New York.
+- Search requests are cancelled at input time so an older response cannot replace the newest query.
+- Clear, retry, manual entry, Escape, arrow/Enter selection, and dialog focus containment remain available.
+- Results use flat hairline rows instead of individually colored cards; airport codes remain visible.
+
+## Date range interaction
+
+- Removed the duplicated page introduction and separate peach/green date cards.
+- Start and end now share one compact selection control above a single calendar.
+- Opening and closing motion remains fully opaque, so the underlying Create Trip screen never shows through.
+- Selecting September 10–13 correctly marks both endpoints, two days between, and enables `Use these dates`.
+
+## Responsive evidence
+
+| Viewport | Horizontal overflow | Destination row | Clear target | Calendar day | Date content scroll |
+|---|---:|---:|---:|---:|---:|
+| `360 × 800` | 0px | 66px | 44 × 44px | 44px | none |
+| `390 × 844` | 0px | 66px | 44 × 44px | 44px | none |
+| `430 × 932` | 0px | 66px | 44 × 44px | 44px | none |
+
+P0: none. P1: none. P2: none. Final result: passed.
+
+---
+
 # Design QA — full-screen destination and date selection
 
 ## Source and implementation evidence

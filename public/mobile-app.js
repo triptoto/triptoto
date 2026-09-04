@@ -5131,6 +5131,25 @@
     if (place.type === "airport" && place.iata) return `${place.iata} — ${place.name}`;
     return place.displayName || place.name;
   }
+  function samePlaceResult(left, right) {
+    if (!left || !right || left.type !== right.type) return false;
+    if (String(left.id || "") === String(right.id || "")) return true;
+    if (left.type === "airport") {
+      const leftCode = String(left.iata || left.icao || "").toUpperCase(),
+        rightCode = String(right.iata || right.icao || "").toUpperCase();
+      return Boolean(leftCode && rightCode && leftCode === rightCode);
+    }
+    const leftName = normalizedLocationInput(left.name || left.displayName),
+      rightName = normalizedLocationInput(right.name || right.displayName);
+    if (!leftName || leftName !== rightName) return false;
+    const leftCountry = normalizedLocationInput(left.countryCode || left.countryName),
+      rightCountry = normalizedLocationInput(right.countryCode || right.countryName),
+      leftRegion = normalizedLocationInput(left.region),
+      rightRegion = normalizedLocationInput(right.region);
+    if (leftCountry && rightCountry && leftCountry !== rightCountry) return false;
+    if (leftRegion && rightRegion && leftRegion !== rightRegion) return false;
+    return true;
+  }
   function savedPlaceResults(query, types) {
     const wanted = normalizedLocationInput(query);
     if (!wanted) return [];
@@ -5183,7 +5202,8 @@
     popup.hidden = true;
     input.insertAdjacentElement("afterend", popup);
     if (fullScreenPanel)
-      input.insertAdjacentHTML("afterend", `<span class="trip-create-destination__search-icon" aria-hidden="true">${icon("search",19)}</span>`);
+      input.insertAdjacentHTML("afterend", `<span class="trip-create-destination__search-icon" aria-hidden="true">${icon("search",19)}</span><button type="button" class="trip-create-destination__clear" data-place-search-clear aria-label="Clear destination search" hidden>${icon("close",18)}</button>`);
+    const clearSearchButton = fullScreenPanel?.querySelector("[data-place-search-clear]");
     input.setAttribute("role", "combobox");
     input.setAttribute("aria-autocomplete", "list");
     input.setAttribute("aria-haspopup", "listbox");
@@ -5192,6 +5212,10 @@
     let results = [], active = -1, request = 0, timer = 0;
     const snapshot = selectedPlaceForInput(input);
     if (snapshot) input.dataset.selectedValue = input.value;
+    const syncClearButton = () => {
+      if (clearSearchButton) clearSearchButton.hidden = !input.value;
+    };
+    syncClearButton();
     const setFullScreen = (open, restoreFocus = false) => {
       if (!fullScreenPanel) return;
       fullScreenPanel.classList.toggle("is-fullscreen", open);
@@ -5264,12 +5288,12 @@
       if (!hidden) return;
       const value = placeInputValue(place);
       input.value = value;
+      syncClearButton();
       input.dataset.selectedValue = value;
       input.dataset.placeId = place.id;
       const serializedPlace = JSON.stringify(place);
       hidden.value = serializedPlace;
       hidden.setAttribute("value", serializedPlace);
-      hidden.dispatchEvent(new Event("input", { bubbles:true }));
       setManualTimezoneFallback(form, input, false);
       syncQuickTimezone(form, input);
       input.dispatchEvent(new Event("change", { bubbles:true }));
@@ -5299,14 +5323,14 @@
       }).join("");
       open();
     };
-    const search = async () => {
-      const query = input.value.trim(), ownRequest = ++request;
+    const search = async (ownRequest = ++request) => {
+      const query = input.value.trim();
       if (query.length < 2) { close(); return; }
-      popup.innerHTML = `<div class="place-loading" role="status"><span class="button-spinner" aria-hidden="true"></span>Searching saved places…</div>`;
+      popup.innerHTML = `<div class="place-loading" role="status"><span class="button-spinner" aria-hidden="true"></span>Searching places…</div>`;
       open();
       try {
         const places = await ensurePlacesProvider(), offlineRows = await places.provider.searchPlaces(query, { types, preferredType, limit:8 }),
-          rows = [...savedPlaceResults(query, types), ...offlineRows].filter((place, index, all) => all.findIndex((row) => row.id === place.id || (row.iata && row.iata === place.iata)) === index).slice(0, 8);
+          rows = [...offlineRows, ...savedPlaceResults(query, types)].filter((place, index, all) => all.findIndex((row) => samePlaceResult(row, place)) === index).slice(0, 8);
         if (ownRequest === request) renderResults(rows);
       } catch (_) {
         if (ownRequest !== request) return;
@@ -5316,9 +5340,11 @@
     };
     const queueSearch = () => {
       window.clearTimeout(timer);
-      timer = window.setTimeout(search, 70);
+      const ownRequest = ++request;
+      timer = window.setTimeout(() => search(ownRequest), 70);
     };
     input.addEventListener("input", () => {
+      syncClearButton();
       if (input.dataset.selectedValue !== input.value) {
         const hidden = form.elements[`${input.name}Place`];
         if (hidden) {
@@ -5335,11 +5361,6 @@
       queueSearch();
     });
     input.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        if (fullScreenPanel?.classList.contains("is-fullscreen")) closeFullScreen();
-        else close();
-        return;
-      }
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         if (popup.hidden) queueSearch();
         else setActive(active + (event.key === "ArrowDown" ? 1 : -1));
@@ -5370,6 +5391,31 @@
         setManualTimezoneFallback(form, input, true);
         if (fullScreenPanel) closeFullScreen();
         else { close(); input.focus(); }
+      }
+    });
+    clearSearchButton?.addEventListener("click", () => {
+      input.value = "";
+      input.dispatchEvent(new Event("input", { bubbles:true }));
+      input.focus({ preventScroll:true });
+    });
+    fullScreenPanel?.addEventListener("keydown", (event) => {
+      if (!fullScreenPanel.classList.contains("is-fullscreen")) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeFullScreen();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [closeSearchButton, input, clearSearchButton, ...popup.querySelectorAll("button:not([disabled])")]
+        .filter((element) => element && !element.hidden && !element.closest("[hidden]") && element.tabIndex >= 0);
+      if (!focusable.length) return;
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     });
     closeSearchButton?.addEventListener("click", () => closeFullScreen());
@@ -6023,7 +6069,7 @@
         : `Tap ${range.startLabel.toLowerCase()} first, then ${range.endLabel.toLowerCase()}.`,
       startValue = range.start ? formatDateOnly(range.start) : "Select",
       endValue = range.end ? formatDateOnly(range.end) : range.allowSingle ? "Optional" : "Select";
-    return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><small>${esc(range.title)}</small><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><header class="range-picker__intro"><span>${icon("calendar",25)}</span><div><span>PLAN YOUR TRIP</span><h1>${esc(heading)}</h1><p>${esc(instruction)}</p></div></header><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<span class="range-picker__arrow" aria-hidden="true">${icon("chevron",18)}</span><section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back",20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p></main><footer class="full-screen-picker__footer"><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Use this date" : "Use these dates"}</button></footer></section>`;
+    return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><small>${esc(range.title)}</small><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><p class="range-picker__instruction">${icon("calendar",19)}<span>${esc(instruction)}</span></p><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back",20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p></main><footer class="full-screen-picker__footer"><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Use this date" : "Use these dates"}</button></footer></section>`;
   }
   function addSheet() {
     return bottomSheet(
