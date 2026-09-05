@@ -3672,18 +3672,7 @@
     if (theme) theme.setAttribute("content", "#fbf8f7");
   }
   function firstRunProductPreview() {
-    const steps = [
-      ["01", "Flight", "Times + route", ""],
-      ["02", "Stay", "Check-in", ""],
-      ["03", "Docs", "Ready offline", ""],
-      ["Next", "Know what matters", "At a glance", " welcome-route-cell--next"],
-    ];
-    return `<ol class="welcome-route-matrix" aria-label="How tripto keeps a journey clear">${steps
-      .map(
-        ([index, title, sub, modifier]) =>
-          `<li class="welcome-route-cell${modifier}"><span class="welcome-route-cell__index">${index}</span><strong>${title}</strong><span class="welcome-route-cell__sub">${sub}</span></li>`,
-      )
-      .join("")}</ol>`;
+    return `<div class="welcome-pattern" aria-hidden="true"><i class="welcome-arc welcome-arc--one"></i><i class="welcome-arc welcome-arc--two"></i><i class="welcome-arc welcome-arc--three"></i><i class="welcome-arc welcome-arc--four"></i><i class="welcome-arc welcome-arc--five"></i><i class="welcome-orbit-dot"></i></div>`;
   }
   function firstRunScreen() {
     const offline = state.offline
@@ -3693,9 +3682,9 @@
       ? `<button class="first-run-google-preview" data-action="preview-google" aria-label="Continue with Google"><img src="/assets/google-g.svg" alt=""><span>Continue with Google</span></button>`
       : `<div id="google-signin-button" aria-label="Continue with Google"></div>`;
     const entryAction = state.account?.mode === "account"
-      ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span></button>`
+      ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span>${icon("chevron", 20)}</button>`
       : googleAction;
-    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div>${offline}</header><main class="first-run-main"><section class="first-run-hero"><p class="first-run-eyebrow">One clear travel system</p><h1 id="first-run-title" aria-label="Add it once. Follow the trip."><span class="first-run-title__line">Add it once.</span><span class="first-run-title__line">Follow the trip.</span></h1><p class="first-run-lede">The essential details stay close from departure to arrival.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span>${icon("chevron", 18)}</button></div><footer class="welcome-v2__footer"><a href="/privacy">Privacy</a><span aria-hidden="true"></span><a href="/terms">Terms</a></footer></main></section></div>`;
+    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div><span class="welcome-brand-caption">Your travel companion</span>${offline}</header><main class="first-run-main">${firstRunProductPreview()}<section class="first-run-hero"><p class="first-run-eyebrow">A little less to think about</p><h1 id="first-run-title" aria-label="Your trip. In good order."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">In good order.</span></h1><p class="first-run-lede">Flights, stays, and everything between.<br>Together, wherever you go.</p></section><div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span></button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Your plans stay private.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
   }
   // --- Trip change notifications (header bell) ---------------------------
   // Sourced from the existing /changes feed (change_events), so booking
