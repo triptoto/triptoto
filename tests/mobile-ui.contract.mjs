@@ -33,7 +33,7 @@ assert(navFn.includes('navBtn("trips", "plane", "Trip")')&&navFn.includes('navBt
 const nav=navFn.slice(navFn.indexOf('return `<nav'));
 assert(nav.indexOf('navBtn("trips"')<nav.indexOf('navBtn("trip-options"')&&nav.indexOf('navBtn("trip-options"')<nav.indexOf('${addBtn}')&&nav.indexOf('${addBtn}')<nav.indexOf('navBtn("checklist"')&&nav.indexOf('navBtn("checklist"')<nav.indexOf('navBtn("account"'),'V2 navigation order (Trip, Trip options, Add, To-do, Account) is wrong');
 assert(!navFn.includes('"Home"')&&!navFn.includes('"Bookings"')&&!navFn.includes('navBtn("help"'),'V1 navigation leaked');
-assert(app.includes('function selectRelevantTrip(')&&app.includes('state.account?.mode === "account"')&&app.includes('history.replaceState(null, "", routeUrl("form", "trip"))'),'authenticated relevant-trip routing missing');
+assert(app.includes('function selectRelevantTrip(')&&app.includes('selectRelevantTrip(state.trips)'),'relevant-trip selection missing');
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;
 assert(router&&typeof router.parsePath==='function'&&typeof router.pathFor==='function','clean route module missing');
 const routeCases=[
@@ -60,7 +60,7 @@ const retiredLocalGuide=router.parsePath('/local-guide');
 assert(retiredLocalGuide.screen==='trip-options'&&retiredLocalGuide.redirect===true,'retired Local Guide route must redirect to Trip Options');
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('startupRoute.redirect || location.hash')&&app.includes('routeUrl(startupRoute.screen, startupRoute.id)'),'legacy hash and retired-route canonicalization missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v121-welcome-flow'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v122-welcome-trips'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-pattern')&&app.includes('welcome-arc--five')&&app.includes('welcome-orbit-dot')&&!app.includes('welcome-route-matrix'),'Approved abstract welcome pattern missing');

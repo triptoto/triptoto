@@ -2693,15 +2693,8 @@
         localStorage.setItem("tripto_selected_trip", state.trip.id);
       await loadTripDetails();
       state.tripsLoaded = true;
-      if (state.account?.mode === "account") {
-        // Don't hijack a deep link (e.g. an invitation link) into the
-        // create-trip form just because the account has no trips yet.
-        if (!state.trip && !["join", "collaboration"].includes(state.screen)) {
-          state.screen = "form";
-          state.selectedId = "trip";
-          history.replaceState(null, "", routeUrl("form", "trip"));
-        }
-      }
+      // Keep the requested screen even when there are no trips. The Trips
+      // empty state offers creation without redirecting into a form.
     } catch (error) {
       const authFailed = error?.status === 401 || error?.code === "AUTH_REQUIRED";
       // If we already painted cached data, keep it on screen for transient
@@ -3680,7 +3673,7 @@
       : "";
     const googleAction = PREVIEW_MODE
       ? `<button class="first-run-google-preview" data-action="preview-google" aria-label="Continue with Google"><img src="/assets/google-g.svg" alt=""><span>Continue with Google</span></button>`
-      : `<div id="google-signin-button" aria-label="Continue with Google"></div>`;
+      : `<div id="google-signin-button" data-post-auth-screen="trips" aria-label="Continue with Google"></div>`;
     const entryAction = state.account?.mode === "account"
       ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span>${icon("chevron", 20)}</button>`
       : googleAction;
@@ -5002,19 +4995,23 @@
       );
     } catch (_) {}
     const valid =
-      destination?.screen === "collaboration" &&
+      ["trips", "collaboration"].includes(destination?.screen) &&
       Number.isFinite(Number(destination.savedAt)) &&
       Date.now() - Number(destination.savedAt) <= 30 * 60 * 1000;
     if (!valid) {
       try { sessionStorage.removeItem(POST_AUTH_DESTINATION_KEY); } catch (_) {}
       return false;
     }
+    try { sessionStorage.removeItem(POST_AUTH_DESTINATION_KEY); } catch (_) {}
+    if (destination.screen === "trips") {
+      route("trips", null, true);
+      return true;
+    }
     const intendedTrip = destination.tripId
       ? state.trips.find(
           (trip) => String(trip.id) === String(destination.tripId),
         )
       : state.trip;
-    try { sessionStorage.removeItem(POST_AUTH_DESTINATION_KEY); } catch (_) {}
     if (!intendedTrip) return false;
     if (String(state.trip?.id || "") !== String(intendedTrip.id)) {
       state.trip = intendedTrip;
@@ -5025,9 +5022,21 @@
     await loadCollaboration();
     return true;
   }
+  function rememberGoogleSignInDestination(container) {
+    if (container.dataset.postAuthScreen === "trips") {
+      rememberPostAuthDestination("trips");
+      try { sessionStorage.removeItem("tripto_join_token"); } catch (_) {}
+      return;
+    }
+    // A new sign-in elsewhere supersedes an abandoned welcome sign-in.
+    try {
+      const destination = JSON.parse(sessionStorage.getItem(POST_AUTH_DESTINATION_KEY) || "null");
+      if (destination?.screen === "trips") sessionStorage.removeItem(POST_AUTH_DESTINATION_KEY);
+    } catch (_) {}
+  }
   let googleScriptPromise=null,googleRedirectExchangePromise=null,googleSignInChallenge=null,googleInitializedChallengeId="";
   function loadGoogleIdentityScript(){if(globalThis.google?.accounts?.id)return Promise.resolve();if(googleScriptPromise)return googleScriptPromise;googleScriptPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client?hl=en";script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error("Google sign-in could not load."));document.head.appendChild(script);});return googleScriptPromise;}
-  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{if(!googleAuth)throw new Error("Google sign-in could not load.");const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(!googleSignInChallenge||Number(googleSignInChallenge.expiresAt||0)<Date.now()+60000)googleSignInChallenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});const challenge=googleSignInChallenge;await loadGoogleIdentityScript();if(googleInitializedChallengeId!==challenge.challengeId){const initializeOptions=googleAuth.buildInitializeOptions(challenge,navigator,location.origin);if(initializeOptions.ux_mode==="popup")initializeOptions.callback=async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});googleSignInChallenge=null;googleInitializedChallengeId="";state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();await resumePostAuthDestination();showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}};globalThis.google.accounts.id.initialize(initializeOptions);googleInitializedChallengeId=challenge.challengeId;}const buttonOptions=googleAuth.buildButtonOptions(challenge,navigator,location.origin),availableWidth=Math.floor(container.getBoundingClientRect().width||Number(buttonOptions.width)||320);buttonOptions.width=String(Math.max(200,Math.min(Number(buttonOptions.width)||320,availableWidth)));globalThis.google.accounts.id.renderButton(container,buttonOptions);container.dataset.rendered="1";}catch(error){container.dataset.ready="";const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
+  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{if(!googleAuth)throw new Error("Google sign-in could not load.");const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(!googleSignInChallenge||Number(googleSignInChallenge.expiresAt||0)<Date.now()+60000)googleSignInChallenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});const challenge=googleSignInChallenge;await loadGoogleIdentityScript();if(googleInitializedChallengeId!==challenge.challengeId){const initializeOptions=googleAuth.buildInitializeOptions(challenge,navigator,location.origin);if(initializeOptions.ux_mode==="popup")initializeOptions.callback=async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});googleSignInChallenge=null;googleInitializedChallengeId="";state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();if(!await resumePostAuthDestination()&&state.screen==="home")route("trips",null,true);showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}};globalThis.google.accounts.id.initialize(initializeOptions);googleInitializedChallengeId=challenge.challengeId;}const buttonOptions=googleAuth.buildButtonOptions(challenge,navigator,location.origin),availableWidth=Math.floor(container.getBoundingClientRect().width||Number(buttonOptions.width)||320);buttonOptions.width=String(Math.max(200,Math.min(Number(buttonOptions.width)||320,availableWidth)));buttonOptions.click_listener=()=>rememberGoogleSignInDestination(container);globalThis.google.accounts.id.renderButton(container,buttonOptions);container.dataset.rendered="1";}catch(error){container.dataset.ready="";const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
   function clearGoogleRedirectMarker(){googleAuth?.clearRedirectMarker(location,history);googleRedirectMarker=null;}
   async function acknowledgeGoogleRedirectSession(token){
     try{
@@ -5098,7 +5107,9 @@
           state.joinPreview=null;
           route("join",pendingJoin,true);
           void loadJoinPreview(pendingJoin);
-        } else await resumePostAuthDestination();
+        } else if(!await resumePostAuthDestination()&&state.screen==="home") {
+          route("trips",null,true);
+        }
         showToast("Signed in with Google.");
       }
       else if(result?.error)showToast(result.error,"alert");
