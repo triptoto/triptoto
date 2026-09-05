@@ -1,4 +1,4 @@
-const CACHE='tripto-shell-product-v115-account-all-trips';
+const CACHE='tripto-shell-product-v116-journey-copy';
 const PLACES_CACHE='tripto-places-2026-08-26';
 const PLACES_PATHS=new Set(['/places-provider.js','/places-search-worker.js','/data/places-2026-08-26.json']);
 const ASSETS=['/','/app','/index.html','/shell-update.js','/canonical-host.js','/mobile-routes.js','/mobile-trip-rules.js','/mobile-app.min.css','/google-auth-client.js','/manual-booking-attachments.js','/mobile-app.min.js','/icons/tripto-system.svg','/manifest.webmanifest','/assets/google-g.svg','/assets/trips-bg.jpg','/favicon.svg','/favicon-32.png','/favicon-16.png','/apple-touch-icon.png','/icon-192.png','/icon-512.png'];

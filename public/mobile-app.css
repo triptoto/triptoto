@@ -1421,6 +1421,7 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-setup-ready__summary>span{display:flex;align-items:center;gap:7px;min-width:0;min-height:44px;padding:9px 11px;border-radius:14px;background:var(--card);color:var(--green)}
 .trip-setup-ready__summary strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-size:13px;font-weight:600}
 .trip-setup-ready__tools{display:grid;gap:8px;margin:11px 18px 0}
+.trip-setup-ready__extras-title{margin:8px 0 3px;color:var(--muted);font-size:14px;font-weight:500;line-height:1.4}
 .trip-setup-tool{display:grid;grid-template-columns:42px minmax(0,1fr) 20px;align-items:center;gap:11px;min-height:70px;padding:10px 13px;border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--ink);text-decoration:none}
 .trip-setup-tool__icon{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;color:var(--icon)}
 .trip-setup-tool--flight .trip-setup-tool__icon{background:var(--flight-soft)}
