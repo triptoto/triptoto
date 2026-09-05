@@ -6,7 +6,7 @@
   const LOCAL_DOC_DB = "tripto-local-docs-v1";
   const PENDING_KEY = "tripto_pending_mutations_v1";
   const POST_AUTH_DESTINATION_KEY = "tripto_post_auth_destination_v1";
-  const AVIASALES_AFFILIATE_URL = "https://tp.media/r?campaign_id=100&marker=465464&p=4114&trs=252129&u=https%3A%2F%2Faviasales.com";
+  const AVIASALES_AFFILIATE_URL = "https://tp.media/r?campaign_id=100&marker=465464&p=4114&trs=570553&u=https%3A%2F%2Faviasales.com";
   const STAY22_SCRIPT_URL = "https://scripts.stay22.com/letmeallez.js";
   const STAY22_LMA_ID = "6a9af4cdf80ccf1a0115f703";
   const PREVIEW_MODE =
