@@ -7719,6 +7719,18 @@
       bindMeaningfulChanges(nativeForm);
       nativeForm.addEventListener("submit", (event) => {
         event.preventDefault();
+        if (nativeForm.dataset.kind === "trip" && !nativeForm.dataset.editId) {
+          saveQuickDraft(nativeForm);
+          state.tripSetupPreview = {
+            destination:String(nativeForm.elements.destination?.value || "").trim(),
+            startsOn:nativeForm.elements.startsOn?.value || "",
+            endsOn:nativeForm.elements.endsOn?.value || "",
+          };
+          state.dateRange = null;
+          state.sheet = "trip-setup-ready";
+          render();
+          return;
+        }
         if (!validateFocusedForm(nativeForm)) return;
         saveNativeForm(nativeForm);
       });
@@ -8875,7 +8887,10 @@
         state.sheet = null;
         state.tripSetupPreview = null;
         render();
-        requestAnimationFrame(() => document.getElementById("native-form")?.requestSubmit());
+        requestAnimationFrame(() => {
+          const form = document.getElementById("native-form");
+          if (form && validateFocusedForm(form)) saveNativeForm(form);
+        });
         break;
       case "preview-google":
         showToast("Google sign-in is disabled in the isolated visual preview.");
