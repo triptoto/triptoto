@@ -32,7 +32,7 @@ test ! -f public/app.js
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/8 PWA and disabled integrations'
-grep -q "tripto-shell-product-v110-green-calendar" public/sw.js
+grep -q "tripto-shell-product-v111-summary-row" public/sw.js
 grep -q "/icons/tripto-system.svg" public/sw.js
 grep -q "/canonical-host.js" public/sw.js
 grep -q "/google-auth-client.js" public/sw.js
