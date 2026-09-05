@@ -2250,7 +2250,7 @@ html .app-header,html .app-bar,html .trip-v2-header,html .timeline-day__header,h
 /* ============================================================================
    Trips list — supplied pastel travel artwork, with readable paper surfaces.
    ========================================================================== */
-html .trips-bg-screen{background:var(--paper) url('/assets/trips-bg.jpg?v=117') center top / 100% auto repeat-y;color:var(--ink)}
+html .trips-bg-screen{background:linear-gradient(rgb(255 255 255 / .8),rgb(255 255 255 / .8)),var(--paper) url('/assets/trips-bg.jpg?v=117') center top / 100% auto repeat-y;color:var(--ink)}
 html:has(.trips-bg-screen),
 html:has(.trips-bg-screen) body,
 html:has(.trips-bg-screen) #app,
