@@ -2248,10 +2248,9 @@ html .app-header,html .app-bar,html .trip-v2-header,html .timeline-day__header,h
 }
 
 /* ============================================================================
-   Trips list — the same warm passport canvas used across the application.
-   Rows remain flat and quiet; pastel markers carry category and state color.
+   Trips list — supplied pastel travel artwork, with readable paper surfaces.
    ========================================================================== */
-html .trips-bg-screen{background:var(--paper);background-image:none;color:var(--ink)}
+html .trips-bg-screen{background:var(--paper) url('/assets/trips-bg.jpg?v=117') center top / 100% auto repeat-y;color:var(--ink)}
 html:has(.trips-bg-screen),
 html:has(.trips-bg-screen) body,
 html:has(.trips-bg-screen) #app,
@@ -2263,14 +2262,15 @@ html .trips-bg-screen .app-bar .icon-button,
 html .trips-bg-screen .app-bar-actions .icon-button,
 html .trips-bg-screen .icon-button.trips-header-add{color:var(--ink)}
 html .trips-bg-screen .trip-group>h2{
-  margin:0 4px 6px;color:var(--next);opacity:1;text-shadow:none;
+  margin:0 4px 6px;padding:6px 10px;width:fit-content;border-radius:10px;background:var(--card);color:var(--next);opacity:1;text-shadow:none;
   font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase
 }
 html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:16px}
 html .trips-bg-screen .trip-group .mobile-list{
-  background:transparent;border:0;border-radius:0;box-shadow:none;
-  overflow:visible;padding:0;gap:2px;margin-top:2px
+  background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:none;
+  overflow:hidden;padding:4px 10px;gap:2px;margin-top:2px
 }
+html .trips-bg-screen .mobile-empty{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 18px}
 html .trips-bg-screen .trip-group .trip-row{
   content-visibility:visible;contain-intrinsic-size:auto;
   grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:12px;
