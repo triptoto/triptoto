@@ -4440,14 +4440,14 @@
     return `Starts in ${days} days`;
   }
   function tripListScreen() {
-    // Trips list is the app home: instead of the bottom tab bar it carries two
-    // header actions — a rose "+" (add booking) and an account shortcut.
+    // Filters use the same exclusive date/status buckets as the trip list.
+    const filters = [["all","All"],["current","Current"],["upcoming","Upcoming"],["past","Past"]];
+    const filter = filters.some(([key]) => key === state.tripFilter) ? state.tripFilter : "all";
+    const filterBar = `<div class="trip-filters" role="group" aria-label="Filter trips">${filters.map(([key,label]) => `<button type="button" data-action="filter-trips" data-filter="${key}" aria-pressed="${filter === key}" class="trip-filter${filter === key ? " is-active" : ""}">${label}</button>`).join("")}</div>`;
     const headerActions = `<button class="icon-button" data-screen="account" aria-label="Account">${icon("user", 24)}</button>`;
-    const page = (title, body) => `<div class="phone-app"><section class="screen mobile-v1-screen trips-bg-screen trips-bg-screen--nonav">${appBar(title, "", false, headerActions)}${mobileAlert()}<main class="mobile-page">${body}</main><button class="trips-fab" data-action="open-add" aria-label="Create trip">${icon("plus", 40)}</button></section></div>`;
+    const page = (title, body) => `<div class="phone-app"><section class="screen mobile-v1-screen trips-bg-screen trips-bg-screen--nonav">${appBar(title, "", false, headerActions)}${mobileAlert()}<main class="mobile-page">${filterBar}<div class="trip-filter-results" aria-live="polite">${body}</div></main><button class="trips-fab" data-action="open-add" aria-label="Create trip">${icon("plus", 40)}</button></section></div>`;
     if (!state.trips.length) return page("Trips", `<section class="mobile-empty"><span class="mobile-empty__icon">${icon("luggage", 30)}</span><h1>No trips yet</h1><p>Create your first trip and keep everything in one place.</p>${primaryCta("Create trip", "create-trip", "plus")}</section>`);
-    const filter = state.tripFilter || null,
-      pageTitle = filter === "upcoming" ? "Upcoming trips" : filter === "past" ? "Past trips" : "Trips",
-      visibleGroups = filter === "upcoming" ? ["Current", "Upcoming"] : filter === "past" ? ["Past", "Cancelled"] : null;
+    const visibleGroups = filter === "all" ? null : [filters.find(([key]) => key === filter)[1]];
     const order = ["Current", "Upcoming", "Past", "Cancelled"];
     const content = order.filter((label) => !visibleGroups || visibleGroups.includes(label)).map((label) => {
       const trips = state.trips
@@ -4460,8 +4460,9 @@
       if (!trips.length) return "";
       return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="trip-card-list">${trips.map((trip) => { const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : ""; return `<button class="trip-card trip-card--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-card__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-card__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(countdown || formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
     }).join("");
-    const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "past" ? "past" : "upcoming"} trips</h1><p>${filter === "past" ? "Completed trips will appear here." : "Trips you have coming up will appear here."}</p></section>`;
-    return page(pageTitle, body);
+    const emptyCopy = {current:"Trips happening now will appear here.",upcoming:"Your next adventures will appear here.",past:"Completed trips will appear here.",all:"Create your first trip and keep everything in one place."};
+    const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "all" ? "" : filter + " "}trips</h1><p>${emptyCopy[filter]}</p></section>`;
+    return page("Trips", body);
   }
   function meaningfulBookingStatus(item) {
     const raw = String(val(item, "booking_status", "status") || "").toLowerCase();
@@ -4989,8 +4990,8 @@
     const google=state.account?.providers?.find((provider)=>provider.provider==="google"&&provider.enabled),identity=state.account?.identities?.find((item)=>item.provider==="google");
     const authBlock=mode==="guest"&&google?`<section class="account-signin"><h2>Keep your trips across devices</h2><p>Continue with Google to attach this phone's trips to your verified account.</p><div id="google-signin-button" data-client-id="${esc(google.clientId)}"></div><p class="signin-error" role="alert" hidden></p></section>`:"";
     const tripBuckets = state.trips.map(tripBucket),
-      upcoming = tripBuckets.filter((bucket) => bucket === "Current" || bucket === "Upcoming").length,
-      past = tripBuckets.filter((bucket) => bucket === "Past" || bucket === "Cancelled").length,
+      upcoming = tripBuckets.filter((bucket) => bucket === "Upcoming").length,
+      past = tripBuckets.filter((bucket) => bucket === "Past").length,
       identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
     const pendingEmails=(state.bookingEmails||[]).filter((item)=>["needs_trip","needs_confirmation"].includes(String(item.status))).length;
     return `<div class="phone-app"><section class="screen mobile-v1-screen account-v2">${appBar("Account")}<main class="account-section mobile-page"><div class="account-card"><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><strong>${esc(name)}</strong><div class="account-meta">${mode === "account" ? esc(identityEmail) : "Sign in to keep your trips"}</div></div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div></div>${authBlock}<div class="section-label">My trips</div><div class="account-list">${row("plus","Create trip","Start planning a new trip","","create-trip")}${row("trips","Upcoming trips",`${upcoming} trip${upcoming===1?"":"s"}`,"","open-upcoming-trips")}${row("clock","Past trips",`${past} trip${past===1?"":"s"}`,"","open-past-trips")}${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}</div><div class="section-label">Booking email</div><div class="account-list">${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}</div><div class="section-label">Preferences</div><div class="account-list">${pending?row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync"):""}${row("info","Take the tour","How tripto.to works","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")}</div><div class="section-label">Privacy & data</div><div class="account-list">${row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data")}${mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account"):""}</div><div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
@@ -9087,6 +9088,14 @@
       case "open-trip": {
         const trip=state.trips.find((row)=>String(row.id)===String(target.dataset.id));
         if(!trip)return; state.trip=trip; localStorage.setItem("tripto_selected_trip",trip.id); await enterTripWithDetails(()=>route("timeline")); break;
+      }
+      case "filter-trips": {
+        const filter = target.dataset.filter;
+        if (!["all","current","upcoming","past"].includes(filter)) break;
+        state.tripFilter = filter;
+        render();
+        document.querySelector(`.trip-filter[data-filter="${filter}"]`)?.focus({preventScroll:true});
+        break;
       }
       case "filter-bookings": state.bookingFilter=target.dataset.filter||"all"; render(); break;
       case "document-sheet":
