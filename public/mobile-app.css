@@ -1950,10 +1950,10 @@ html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 /* Approved welcome: abstract arcs, production palette and extra-bold headline. */
 html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:var(--paper);background-image:none}
 .first-run-screen.welcome-thread{
-  --welcome-x:28px;--welcome-title:clamp(40px,min(11.6vw,6svh),52px);--welcome-weight:800;--welcome-cta-height:54px;
+  --welcome-x:28px;--welcome-title:clamp(40px,11.6vw,52px);--welcome-weight:800;--welcome-cta-height:54px;
   display:flex;flex-direction:column;height:100svh;min-height:0;overflow:hidden;
   padding:max(24px,env(safe-area-inset-top)) var(--welcome-x) max(18px,env(safe-area-inset-bottom));
-  background:var(--paper);color:var(--ink);font-family:var(--font)
+  background:var(--paper);color:var(--ink);font-family:var(--font);line-height:1.5
 }
 .first-run-screen.welcome-thread::before,.first-run-screen.welcome-thread::after{display:none}
 .welcome-thread .first-run-brand-row{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;flex:0 0 auto;min-height:30px}
@@ -1964,7 +1964,7 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
 .welcome-thread .welcome-brand-caption{color:var(--muted);font-size:9px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
 .welcome-thread .first-run-offline{position:absolute;right:0;top:32px;color:var(--green);font-size:12px}
 .welcome-thread .first-run-main{display:flex;flex:1;flex-direction:column;align-items:stretch;justify-content:center;min-height:0;padding:0}
-.welcome-thread .welcome-pattern{position:relative;isolation:isolate;flex:1;min-height:0;max-height:300px;margin:24px -20px 16px;overflow:hidden;mask-image:linear-gradient(to bottom,transparent 0%,black 9%,black 85%,transparent 100%)}
+.welcome-thread .welcome-pattern{position:relative;isolation:isolate;flex:1;min-height:120px;max-height:300px;margin:24px -20px 16px;overflow:hidden;mask-image:linear-gradient(to bottom,transparent 0%,black 9%,black 85%,transparent 100%)}
 .welcome-thread .welcome-arc{position:absolute;display:block;border-radius:50%;left:50%;transform:translateX(-50%);border-style:solid;aspect-ratio:1}
 .welcome-thread .welcome-arc--one{width:440px;height:440px;top:5%;border-width:34px;border-color:var(--flight-soft)}
 .welcome-thread .welcome-arc--two{width:360px;height:360px;top:21%;border-width:34px;border-color:var(--stay-soft)}
@@ -1987,14 +1987,14 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
 .welcome-thread #google-signin-button{display:flex;align-items:center;justify-content:center;width:100%;max-width:400px;min-height:var(--welcome-cta-height);margin:0 auto;padding:0}
 .welcome-thread #google-signin-button>div{max-width:100%!important}
 .welcome-thread .signin-error{margin:0;color:var(--accent);font-size:12px;text-align:center}
-.welcome-thread .first-run-secondary{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin:0;padding:8px 16px;border:0;background:transparent;color:var(--accent);font-family:var(--font);font-size:14px;font-weight:400}
+.welcome-thread .first-run-secondary{display:flex;align-items:center;justify-content:center;width:100%;min-height:40px;margin:0;padding:8px 16px;border:0;background:transparent;color:var(--accent);font-family:var(--font);font-size:14px;font-weight:400}
 .welcome-thread .welcome-v2__footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;padding-top:18px;background:transparent;color:var(--muted);font-size:11px}
-.welcome-thread .welcome-v2__footer nav{display:flex;align-items:center;gap:8px}
-.welcome-thread .welcome-v2__footer a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:inherit;text-decoration:none}
+.welcome-thread .welcome-v2__footer nav{display:flex;align-items:center;gap:12px}
+.welcome-thread .welcome-v2__footer a{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:0;min-height:0;color:inherit;text-decoration:none}.welcome-thread .welcome-v2__footer a::before{content:"";position:absolute;inset:-14px -3px}
 .welcome-thread :is(button,a):focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-@media(max-height:720px){
+@media(max-width:700px) and (max-height:720px){
  .first-run-screen.welcome-thread{--welcome-title:40px;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))}
- .welcome-thread .welcome-pattern{margin-top:12px;margin-bottom:10px;max-height:190px}
+ .welcome-thread .welcome-pattern{margin-top:12px;margin-bottom:10px;min-height:110px;max-height:190px}
  .welcome-thread .first-run-eyebrow{margin-bottom:10px}
  .welcome-thread .first-run-hero h1{margin-bottom:14px}
  .welcome-thread .first-run-hero .first-run-lede{font-size:14px}
@@ -2010,6 +2010,20 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
  .welcome-thread .welcome-v2__footer{padding-top:0}
 }
 @media(max-height:450px){.welcome-thread .first-run-main{overflow-y:auto;justify-content:flex-start}.welcome-thread .welcome-pattern{flex:0 0 70px}}
+/* Match the approved Sites composition at the same viewport width. */
+.phone-app:has(> .welcome-thread){max-width:520px;box-shadow:none;min-height:100svh}
+@media(min-width:701px){
+ .first-run-screen.welcome-thread{--welcome-x:40px;--welcome-title:56px;--welcome-cta-height:56px;padding-top:48px;padding-bottom:32px}
+ .welcome-thread .welcome-brand-caption{font-size:10px;letter-spacing:1.2px}
+ .welcome-thread .welcome-pattern{flex:0 1 300px;height:300px;margin-top:36px;margin-bottom:28px}
+ .welcome-thread .first-run-eyebrow{margin-bottom:18px}
+ .welcome-thread .first-run-hero h1{margin-bottom:22px;letter-spacing:-2.5px}
+ .welcome-thread .first-run-hero .first-run-lede{line-height:1.65}
+ .welcome-thread .first-run-actions{margin-top:36px}
+ .welcome-thread .first-run-secondary{min-height:42px}
+ .welcome-thread .welcome-v2__footer{font-size:12px;padding-top:30px}
+}
+@media(max-height:620px){.welcome-thread .welcome-pattern{min-height:0}}
 /* Notifications sheet: trip change feed (imports, stops, time markers, docs) + forwarded-booking reviews */
 .notif-list{display:flex;flex-direction:column;gap:4px;padding:0}
 .notif-item{display:flex;align-items:flex-start;gap:11px;width:100%;padding:11px 4px;border:0;border-radius:12px;background:transparent;color:var(--ink);text-align:left;font:inherit}
@@ -2282,7 +2296,7 @@ html .trips-bg-screen .mobile-empty__icon{background:var(--blue-soft);color:var(
 html body{font-size:var(--type-body);font-weight:var(--weight-regular);line-height:1.45}
 
 html .welcome-thread .first-run-hero h1{
-  font-weight:var(--weight-bold)
+  font-weight:var(--welcome-weight)
 }
 
 html .flight-pass__airport-code,
