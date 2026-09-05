@@ -76,20 +76,27 @@ const registry = JSON.parse(
 );
 const expectedCategories = [
   ["flight", "Flight", "flight", null, "Add Flight"],
-  ["hotel", "Hotel / Stay", "hotel", null, "Add Stay"],
   ["train", "Train", "train", null, "Add Train"],
+  ["ferry", "Ferry", "train", "ferry", "Add Ferry"],
+  ["bus", "Bus / Coach", "transport", "bus", "Add Bus"],
+  ["cruise", "Cruise", "activity", "cruise", "Add Cruise"],
   ["car-rental", "Car Rental", "transport", "car", "Add Car Rental"],
   ["transfer", "Transfer", "transport", "transfer", "Add Transfer"],
-  ["cruise", "Cruise", "activity", "cruise", "Add Cruise"],
-  ["ferry", "Ferry", "train", "ferry", "Add Ferry"],
+  ["taxi", "Taxi / Ride", "transport", "taxi", "Add Taxi"],
+  ["parking", "Parking", "reservation", "parking", "Add Parking"],
+  ["hotel", "Hotel / Stay", "hotel", null, "Add Stay"],
   ["restaurant", "Restaurant", "reservation", "restaurant", "Add Restaurant"],
+  ["tour", "Tour / Excursion", "activity", "tour", "Add Tour"],
   ["activity", "Activity / Event", "activity", "activity", "Add Activity"],
+  ["attraction", "Museum / Attraction", "activity", "attraction", "Add Attraction"],
+  ["event", "Event / Show", "activity", "event", "Add Event"],
+  ["insurance", "Travel Insurance", "reservation", "insurance", "Add Insurance"],
   ["other", "Other", "reservation", "other", "Add to Trip"],
 ];
 assert.deepEqual(
   Object.keys(registry),
   expectedCategories.map(([key]) => key),
-  "Add Manually must expose exactly the approved ten categories in order",
+  "ADD NEW BOOKING must expose the approved expanded categories in order",
 );
 for (const [key, label, base, subtype, cta] of expectedCategories) {
   assert.equal(registry[key]?.label, label, `${key} label changed`);
@@ -97,6 +104,9 @@ for (const [key, label, base, subtype, cta] of expectedCategories) {
   assert.equal(registry[key]?.subtype || null, subtype, `${key} subtype changed`);
   assert.equal(registry[key]?.cta, cta, `${key} primary CTA changed`);
   assert(registry[key]?.icon, `${key} needs a category icon`);
+  assert(registry[key]?.hint, `${key} needs concise traveler-facing helper copy`);
+  assert(registry[key]?.group, `${key} needs a clear category group`);
+  assert(registry[key]?.tone, `${key} needs a theme-token tone`);
   assert(registry[key]?.documentType, `${key} needs a contextual document type`);
 }
 
@@ -108,7 +118,7 @@ const manualSheet = section(
 assert(
   manualSheet.includes("MANUAL_BOOKING_TYPES") &&
     manualSheet.includes("Object.entries"),
-  "category sheet must render from the shared ten-category registry",
+  "category sheet must render from the shared category registry",
 );
 for (const token of [
   "<button",
@@ -125,7 +135,7 @@ assert(
   "a category must close the temporary sheet and open its purpose-built form",
 );
 
-// All ten traveler concepts have clean, shareable routes even when several use
+// All traveler concepts have clean, shareable routes even when several use
 // the same existing backend entity kind.
 const routeContext = Object.create(null);
 runInNewContext(routesSource, routeContext);
@@ -146,6 +156,7 @@ const formScreen = section(
   "function mobileFormScreen()",
   "function driverScreen()",
 );
+for(const copy of ['Show to Driver','Please drive to','Destination','Show this screen to your driver.','Open directions'])assert(app.includes(copy),`driver handoff UX missing: ${copy}`);
 assert(
   formScreen.includes("manualBookingConfig(kind)") &&
     formScreen.includes("bookingBaseKind(kind)"),
@@ -156,11 +167,11 @@ for (const branch of [
   'kind === "hotel"',
   '["train","ferry"].includes(kind)',
   'kind === "car-rental"',
-  'kind === "transfer"',
+  '["transfer","bus","taxi"].includes(kind)',
   'kind === "cruise"',
   'kind === "restaurant"',
-  'kind === "activity"',
-  '["other","reservation"].includes(kind)',
+  '["activity","tour","attraction","event"].includes(kind)',
+  '["other","reservation","parking","insurance"].includes(kind)',
 ]) {
   assert(formScreen.includes(branch), `purpose-built form branch missing: ${branch}`);
 }
@@ -168,12 +179,12 @@ const formBranches = {
   flight: section(formScreen, 'if (kind === "flight") {', '} else if (kind === "hotel") {'),
   hotel: section(formScreen, '} else if (kind === "hotel") {', '} else if (["train","ferry"].includes(kind)) {'),
   rail: section(formScreen, '} else if (["train","ferry"].includes(kind)) {', '} else if (kind === "car-rental") {'),
-  car: section(formScreen, '} else if (kind === "car-rental") {', '} else if (kind === "transfer") {'),
-  transfer: section(formScreen, '} else if (kind === "transfer") {', '} else if (kind === "cruise") {'),
+  car: section(formScreen, '} else if (kind === "car-rental") {', '} else if (["transfer","bus","taxi"].includes(kind)) {'),
+  transfer: section(formScreen, '} else if (["transfer","bus","taxi"].includes(kind)) {', '} else if (kind === "cruise") {'),
   cruise: section(formScreen, '} else if (kind === "cruise") {', '} else if (kind === "restaurant") {'),
-  restaurant: section(formScreen, '} else if (kind === "restaurant") {', '} else if (kind === "activity") {'),
-  activity: section(formScreen, '} else if (kind === "activity") {', '} else if (["other","reservation"].includes(kind)) {'),
-  other: section(formScreen, '} else if (["other","reservation"].includes(kind)) {', '} else {'),
+  restaurant: section(formScreen, '} else if (kind === "restaurant") {', '} else if (["activity","tour","attraction","event"].includes(kind)) {'),
+  activity: section(formScreen, '} else if (["activity","tour","attraction","event"].includes(kind)) {', '} else if (["other","reservation","parking","insurance"].includes(kind)) {'),
+  other: section(formScreen, '} else if (["other","reservation","parking","insurance"].includes(kind)) {', '} else {'),
 };
 
 // Required/optional semantics are an acceptance boundary, not merely copy. A
@@ -182,7 +193,6 @@ const formBranches = {
 assertFormFields(formBranches.flight, {
   carrierName: { required: true },
   flightNumber: { required: true },
-  departureDate: { required: true },
   departureLocalTime: { required: true },
   arrivalDate: {},
   arrivalLocalTime: {},
@@ -199,10 +209,18 @@ assertFormFields(formBranches.flight, {
   notes: {},
 }, "flight form");
 assert(formBranches.flight.includes("manualRouteCard(kind"), "flight must require a from/to route");
+assert(
+  formBranches.flight.includes('dateRangeField("departureDate", "returnDepartureDate"'),
+  "flight must choose departure and optional return dates from one calendar",
+);
+assert(
+  formBranches.flight.includes("{allowSingle:true}"),
+  "the shared flight calendar must support one-way travel without requiring a return date",
+);
 
 assertFormFields(formBranches.hotel, {
   propertyName: { required: true },
-  location: { required: true },
+  location: { optional: true },
   streetAddress: {},
   confirmationNumber: {},
   checkInFrom: {},
@@ -237,8 +255,7 @@ assert(formBranches.rail.includes("manualRouteCard(kind"), "train and ferry must
 assertFormFields(formBranches.car, {
   title: { required: true },
   reservationTime: { required: true },
-  endTime: { required: true },
-  endTimezone: {},
+  endTime: { optional: true },
   vehicle: {},
   confirmationNumber: {},
   driver: {},
@@ -268,7 +285,7 @@ assertFormFields(formBranches.cruise, {
   ship: { optional: true },
   activityDate: { required: true },
   activityTime: { optional: true },
-  endDate: { required: true },
+  endDate: { optional: true },
   endTime: {},
   title: { optional: true },
   confirmationNumber: {},
@@ -282,8 +299,8 @@ assert(formBranches.cruise.includes("manualRouteCard(kind"), "cruise must requir
 assertFormFields(formBranches.restaurant, {
   title: { required: true },
   reservationDate: { required: true },
-  reservationTime: { required: true },
-  guests: { required: true },
+  reservationTime: { optional: true },
+  guests: { optional: true },
   location: { optional: true },
   streetAddress: {},
   confirmationNumber: {},
@@ -293,10 +310,10 @@ assertFormFields(formBranches.restaurant, {
 
 assertFormFields(formBranches.activity, {
   title: { required: true },
-  activityType: { required: true },
+  activityType: { optional: true },
   activityDate: { required: true },
-  activityTime: { required: true },
-  location: { required: true },
+  activityTime: { optional: true },
+  location: { optional: true },
   endTime: {},
   confirmationNumber: {},
   provider: {},
@@ -310,12 +327,57 @@ assertFormFields(formBranches.other, {
   reservationDate: { required: true },
   reservationTime: { optional: true },
   location: { optional: true },
-  timezone: { optional: true },
   endDate: {},
   endTime: {},
   confirmationNumber: {},
   notes: {},
 }, "other-booking form");
+
+// Timezones are auto-derived from the selected location (TripIt-style), never
+// typed. Every non-flight booking still persists its zone, now through a hidden
+// input that syncQuickTimezone() fills from the chosen place — no
+// traveler-facing timezone field may reappear.
+for (const [key, names] of [
+  ["rail", ["departureTimezone", "arrivalTimezone"]],
+  ["car", ["timezone", "endTimezone"]],
+  ["transfer", ["timezone", "endTimezone"]],
+  ["cruise", ["timezone"]],
+  ["restaurant", ["timezone"]],
+  ["activity", ["timezone"]],
+  ["other", ["timezone"]],
+]) {
+  for (const name of names) {
+    assert(
+      !new RegExp(`quickField\\("${name}"`).test(formBranches[key]),
+      `${key} form must not expose a traveler-facing ${name} field`,
+    );
+    assert(
+      new RegExp(`hiddenTz\\("${name}"`).test(formBranches[key]),
+      `${key} form must persist ${name} through a hidden auto-derived input`,
+    );
+  }
+}
+// Single-location forms wire the location field so the zone can be derived.
+for (const key of ["restaurant", "activity", "other"]) {
+  assert(
+    formBranches[key].includes('data-location-role="location"'),
+    `${key} form must derive its timezone from the chosen location`,
+  );
+}
+// The hidden control seeds a safe fallback (trip → device → UTC) and
+// syncQuickTimezone restores it when a location is cleared, so
+// resolveEventLocalDateTime always receives a valid zone.
+assert(
+  app.includes("const hiddenTz = (name, role) =>") &&
+    app.includes("data-default-timezone=") &&
+    app.includes("control.value = control.dataset.defaultTimezone"),
+  "auto-derived timezone must seed a trip/device fallback and restore it when a location is cleared",
+);
+// A drop-off/arrival location on transport routes derives into endTimezone.
+assert(
+  app.includes('form.elements.arrivalTimezone ? "arrivalTimezone" : "endTimezone"'),
+  "arrival location must derive into endTimezone when the form has no arrivalTimezone control",
+);
 
 const manualRouteCard = section(app, "function manualRouteCard(", "function manualAttachmentRows(");
 assert(
@@ -335,7 +397,7 @@ assert(
 const attachmentScriptIndex = index.indexOf("/manual-booking-attachments.js");
 assert(attachmentScriptIndex >= 0, "local attachment helper is not loaded");
 assert(
-  attachmentScriptIndex < index.indexOf("/mobile-app.js"),
+  attachmentScriptIndex < index.indexOf("/mobile-app.min.js"),
   "local attachment helper must load before the app",
 );
 assert(
@@ -419,16 +481,17 @@ for (const token of [
   );
 }
 
-const attachmentPopup = section(
+const attachmentViewer = section(
   app,
-  "function reserveManualAttachmentWindow()",
+  "function openDocumentViewer(",
   "async function commitManualAttachments(",
 );
 assert(
-  attachmentPopup.includes('window.open("about:blank", "_blank")') &&
-    attachmentPopup.includes("popup.opener = null") &&
-    attachmentPopup.includes("reservedWindow.location.replace(url)"),
-  "Open must reserve a safe browser window during the original tap before IndexedDB work",
+  attachmentViewer.includes('overlay.className = "doc-viewer"') &&
+    attachmentViewer.includes('data-action="close-doc-viewer"') &&
+    attachmentViewer.includes("document.body.appendChild(overlay)") &&
+    attachmentViewer.includes("URL.createObjectURL(blob)"),
+  "Open must render an in-app document viewer with a Back-to-app control instead of leaving the PWA",
 );
 const attachmentOpenAction = section(
   app,
@@ -436,11 +499,9 @@ const attachmentOpenAction = section(
   'case "manual-attachment-retry": {',
 );
 assert(
-  attachmentOpenAction.indexOf("reserveManualAttachmentWindow()") >= 0 &&
-    attachmentOpenAction.indexOf("reserveManualAttachmentWindow()") <
-      attachmentOpenAction.indexOf("await openManualAttachment(") &&
-    /openManualAttachment\([^;]*reservedWindow\)/.test(attachmentOpenAction),
-  "the attachment popup must be created synchronously and passed through the async Blob lookup",
+  attachmentOpenAction.includes("await openManualAttachment(target.dataset.scope, target.dataset.id)") &&
+    !attachmentOpenAction.includes("reserveManualAttachmentWindow"),
+  "the attachment Open handler must delegate to the in-app viewer",
 );
 
 const attachmentContext = Object.create(null);
@@ -642,17 +703,21 @@ assert(
 );
 assert.equal(
   (saveForm.match(/headers\s*:\s*manualCreateHeaders/g) || []).length,
-  3,
-  "stay, transport, and activity/reservation create POSTs must all reuse the stable idempotency headers",
+  2,
+  "stay and activity/reservation create POSTs must reuse the stable idempotency headers; transport uses its key-aware helper",
 );
 assert.equal(
   (saveForm.match(/manualTransportCreateOptions\(/g) || []).length,
-  2,
-  "both specialized transport and flight/train creates must use the idempotent transport-create helper",
+  3,
+  "specialized transport, outbound flight/train, and return-flight creates must use the idempotent transport-create helper",
 );
 assert(
-  /manualTransportCreateOptions\s*=\s*\([^)]*\)\s*=>\s*\(\{[^}]*headers\s*:\s*manualCreateHeaders/.test(saveForm),
-  "the shared transport-create helper must carry the stable idempotency headers",
+  /manualTransportCreateOptions\s*=\s*\(body,key=clientRequestId\)\s*=>\s*\(\{[^}]*["']Idempotency-Key["']\s*:\s*key/.test(saveForm),
+  "the transport-create helper must default to the stable request id while allowing a distinct child key",
+);
+assert(
+  saveForm.includes('`${clientRequestId}:return`'),
+  "a round-trip return leg must use a distinct stable idempotency key",
 );
 
 // Every More Details fact must either reach a first-class API field or the

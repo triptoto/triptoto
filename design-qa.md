@@ -37,3 +37,371 @@ The comparison normalizes both images to the dialog region. The reference is a c
 ## Result
 
 **Passed.** The dialog actions are visually equal and the shared mobile button system is consistent without redesigning the approved interface.
+
+---
+
+# Welcome design QA
+
+**Comparison target**
+
+- Source visual truth: `/Users/arthurberlin/.codex/generated_images/01a02032-728d-7ce2-b111-775c80ec1cf0/exec-a318cd91-7aa8-41b6-9bcc-86a7c954356d.png`
+- Implementation screenshot: `/private/tmp/tripto-welcome-flat-390x844.png`
+- Combined comparison: `/private/tmp/tripto-welcome-flat-comparison.png`
+- Responsive browser checks: 360 × 800 and 430 × 932
+- Source pixels: 853 × 1844
+- Implementation pixels and CSS viewport: 390 × 844 at device scale factor 1
+- Normalization: source scaled to 390 × 844; app capture remained at native CSS size
+- State: local preview, guest account, no trips, online
+
+**Findings**
+
+- No actionable P0, P1, or P2 differences remain.
+- Fonts and typography: Apple system stack, hierarchy, two-line wrapping, weights, and colored emphasis match the approved target closely.
+- Spacing and layout rhythm: brand, headline, journey, compact Google action, tour action, and legal footer align with the source composition. The screen remains intentionally fixed and no-scroll.
+- Colors and visual tokens: implementation uses the approved Slate palette (`#212c36`, `#354655`, `#f6f1e9`, `#b7c2cb`, `#d9b99b`, `#b84a62`). The document, body, app shell, Welcome screen, preview frame, and journey artwork now share the exact flat `#212c36` canvas.
+- Image quality and asset fidelity: the journey artwork is a dedicated local PNG asset with its former backdrop variation normalized to the exact Welcome canvas color. Foreground route geometry, icons, labels, crop, and color accents remain unchanged.
+- Copy and content: visible copy matches the approved design. The example is explicitly labeled `EXAMPLE JOURNEY` and does not enter application state.
+
+**Focused region comparison**
+
+- The compact Google action was checked independently because the user rejected the earlier oversized white treatment. It is now 240 × 52 CSS px, dark Slate, bordered with the approved sand/rose accents, and retains a 52px touch target.
+- The route illustration was checked at full-view size; its icons, line, labels, and crop are clearly readable, so no additional zoomed crop was needed.
+- The source target and implementation were compared together at 390 × 844. The source's subtle dark backdrop variation was intentionally replaced with the requested single flat canvas; the foreground composition remains faithful.
+
+**Interaction and responsive evidence**
+
+- Verified at 360 × 800, 390 × 844, and 430 × 932.
+- No horizontal or vertical document overflow.
+- No bottom navigation appears on Welcome.
+- Google and Tour actions remain visible; Privacy and Terms remain visible above the safe-area padding.
+- Tour opens as an accessible modal sheet, Escape closes it, and focus returns to `Take a tour`.
+- Offline state remains labeled `Offline` and does not overflow.
+- Browser console: no errors or warnings in the verified preview state.
+
+**Comparison history**
+
+1. Initial implementation still exposed the former photographic backdrop, used brighter off-palette accents, and retained an oversized light Google action.
+2. Fixed by isolating Welcome under `.welcome-thread`, using the Slate tokens, restoring the compact dark Google treatment, and preventing the shared Account Google renderer from changing.
+3. Second comparison found scale and vertical-rhythm drift. Brand, hero type, CTA width, section spacing, and bottom safe-area spacing were adjusted.
+4. Final side-by-side comparison shows no remaining P0/P1/P2 mismatch.
+5. The uniform-background pass removed the remaining raster backdrop variation and a higher-specificity preview decoration. Post-fix evidence confirms every Welcome canvas surface resolves to `rgb(33, 44, 54)` with no seams.
+
+**Implementation Checklist**
+
+- [x] Welcome-only markup and scoped styling
+- [x] Local journey asset and service-worker cache entry
+- [x] Compact Google action without changing Account
+- [x] Tour, Privacy, Terms, offline, and auth wiring preserved
+- [x] 360/390/430 responsive verification
+- [x] Console and overflow checks
+
+**Follow-up Polish**
+
+- The production Google control is rendered by Google Identity Services, so its internal typography remains provider-owned while its Welcome-only width and placement match the approved composition.
+
+final result: passed
+
+---
+
+# Design QA — post-dates trip setup
+
+- References: `/Users/arthurberlin/Downloads/IMG_1979 3.jpg` and `/Users/arthurberlin/Downloads/IMG_1980 2.jpg`
+- Implementation: Tripto Create Trip flow, immediately after confirming a destination date range
+- Browser: Codex in-app browser, local Worker preview
+- Test state: Rome, Italy · Sep 7–14, 2026
+
+## Visual and product comparison
+
+- Preserved the references' useful structure: trip context first, then preparation actions for flights, stays, and eSIM.
+- Reframed the dark third-party layout into Tripto's current light travel system using only existing green, blue, mint, lavender, navy, paper, and card tokens.
+- Did not reproduce unsupported countdown, weather, price, availability, AI, or partner claims.
+- Aviasales and Booking.com are explicitly described as future integrations; neither card opens a dead or fabricated affiliate link.
+- Replaced Airalo with the existing Tripto Travel eSIM product and verified that its CTA creates the trip before routing to `/esim`.
+
+## Responsive and interaction evidence
+
+- Full destination search, Rome selection, date-range selection, preparation screen, trip creation, and Travel eSIM navigation were exercised through the in-app browser.
+- The page uses an internal scroll region on short screens while keeping the primary Create trip action fixed and reachable.
+- All interactive controls retain 44px minimum touch targets and visible keyboard focus.
+- Destination and date values are carried into the preparation summary; no horizontal overflow was observed.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
+
+---
+
+# Design QA — elegant destination and date pickers
+
+- Product direction: replace the sparse, mostly white full-screen destination and date selectors with a coherent travel-focused system using the existing warm ivory, violet, lavender, white, and navy theme tokens.
+- Local preview: `http://127.0.0.1:8820/trips/new?preview=1&qaState=timeline-normal&release=elegant-pickers-v88`
+- Browser viewport: 1280 × 720 with the application constrained to its production 430px mobile canvas.
+
+## Destination picker
+
+- Added a soft lavender header band, floating white search field, clearer editorial hierarchy, and compact popular-search actions.
+- Verified the Paris example action populates the input and returns ranked city and airport results without changing the offline provider behavior.
+- Verified the empty state, populated results, clear action, and complete 100svh surface; no underlying date card is exposed.
+- Example actions measure 44px high, the search field measures 62px high, and the layout has no horizontal overflow.
+- Privacy and offline capability remain visible without exposing provider or dataset terminology.
+
+## Date picker
+
+- Added the matching lavender header band, separate start/end date tiles, a grouped calendar surface, and a violet confirmation action.
+- Removed the redundant visible `TRAVEL DATES` label and simplified the title to `Select dates`.
+- Verified the guidance advances from start-date selection to end-date selection and finishes with `Your travel window is ready.`
+- Verified Sep 3–9 selection, between-day highlighting, `Confirm dates` enablement, 44px day targets, 52px CTA, and no horizontal overflow.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
+
+---
+
+# Design QA — clean full-screen trip pickers
+
+- Scope: `Choose your destination` and `Choose your dates` only.
+- Palette: white canvas, deep navy content, and Tripto violet accent; muted text, borders, disabled states, and selection fills are derived tints of those three colors.
+- Before captures: `artifacts/picker-clean-v86/01-destination-before.png`, `artifacts/picker-clean-v86/02-dates-before.png`
+- After captures: `artifacts/picker-clean-v86/03-destination-after-360.png`, `artifacts/picker-clean-v86/04-dates-after-360.png`, `artifacts/picker-clean-v86/05-destination-after-430.png`, `artifacts/picker-clean-v86/06-dates-after-430.png`
+
+## Destination results and interaction
+
+- Offline provider ranking is preserved: `Rome, Italy` is first, followed by disambiguated Rome results and major Rome airports.
+- Saved and offline semantic duplicates are collapsed without merging genuinely different cities such as Rome, Georgia and Rome, New York.
+- Search requests are cancelled at input time so an older response cannot replace the newest query.
+- Clear, retry, manual entry, Escape, arrow/Enter selection, and dialog focus containment remain available.
+- Results use flat hairline rows instead of individually colored cards; airport codes remain visible.
+
+## Date range interaction
+
+- Removed the duplicated page introduction and separate peach/green date cards.
+- Start and end now share one compact selection control above a single calendar.
+- Opening and closing motion remains fully opaque, so the underlying Create Trip screen never shows through.
+- Selecting September 10–13 correctly marks both endpoints, two days between, and enables `Use these dates`.
+
+## Responsive evidence
+
+| Viewport | Horizontal overflow | Destination row | Clear target | Calendar day | Date content scroll |
+|---|---:|---:|---:|---:|---:|
+| `360 × 800` | 0px | 66px | 44 × 44px | 44px | none |
+| `390 × 844` | 0px | 66px | 44 × 44px | 44px | none |
+| `430 × 932` | 0px | 66px | 44 × 44px | 44px | none |
+
+P0: none. P1: none. P2: none. Final result: passed.
+
+---
+
+# Design QA — full-screen destination and date selection
+
+## Source and implementation evidence
+
+- Reported popup defect: `/Users/arthurberlin/Downloads/tripto.to 41.png`
+- Source pixels: `1260 × 1810`
+- Destination screen: `artifacts/fullscreen-trip-pickers-v84/destination-430x720.png`
+- Date-range screen: `artifacts/fullscreen-trip-pickers-v84/dates-430x720.png`
+- Direct before/after comparison: `artifacts/fullscreen-trip-pickers-v84/comparison-popup-vs-fullscreen.png`
+- Browser state: local deterministic preview, Create Trip, `430 × 720` application viewport
+
+The source is treated as defect evidence: search results were constrained inside the Create Trip card and competed with the mobile keyboard. The implementation target is a dedicated, calm, full-screen task rather than a pixel match to that popup.
+
+## Visual and interaction findings
+
+- **P1 fixed:** Destination search now owns the complete application viewport, with its own back control, centered title, prominent search field, scrollable results, and clear city/airport labels.
+- **P1 fixed:** Date selection now opens as a full-screen single-calendar task, with explicit start/end states and one bottom confirmation action.
+- **P2 fixed:** The destination result list has an independent scroll region, zero horizontal overflow, and keyboard-aware available height.
+- **P2 fixed:** Calendar day targets remain `44px` high even on a `720px`-tall viewport. Header controls and the clear action also meet the `44px` touch target.
+- **P2 fixed:** Both screens use the existing production palette, Apple system typography, Phosphor icon family, surface radii, and spacing system.
+
+## Measured browser evidence
+
+- Destination dialog: `430 × 720`; search field: `394 × 58`; 8 ranked results; result viewport `531px` tall and scrollable; horizontal overflow `0`.
+- Date dialog: `430 × 720`; no `.bottom-sheet` remains; day target height `44px`; horizontal overflow `0`.
+- Destination selection closes the screen and updates the visible destination.
+- Back from destination preserves the typed text, dismisses the keyboard, removes the document scroll lock, and cancels any in-flight search so delayed results cannot reopen the panel.
+- Date start/end selection enables `Use these dates`; applying closes the screen and updates the date-range summary.
+- Back from dates closes without applying an incomplete range.
+- Dialog, listbox, combobox, grid, labels, and modal semantics are present in the accessibility tree.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
+---
+
+# Design QA — Welcome responsive scale correction
+
+## Comparison evidence
+
+- Reported production defect: `/Users/arthurberlin/Downloads/tripto.to 164.png`
+- Corrected `390 × 650` browser-height capture: `artifacts/welcome-passport-v4/welcome-390x650.png`
+- Corrected `390 × 844` full-viewport capture: `artifacts/welcome-passport-v4/welcome-390x844.png`
+- Normalized before/after comparison: `artifacts/welcome-passport-v4/comparison-reference-vs-compact.png`
+
+The reported screenshot was treated as defect evidence, not as a new visual target. The selected Passport Cover structure, color, route artwork, Google action, Tour action and legal footer remain unchanged.
+
+## Corrections
+
+- **P1 fixed:** removed the forced four-line hero treatment. The headline now uses two deliberate, readable lines at every supported phone width.
+- **P1 fixed:** replaced width-dominated scaling with width-and-height-aware type, artwork, marker and action tokens.
+- **P2 fixed:** reduced route marker optical size while preserving the supplied icon system and editable SVG route.
+- **P2 fixed:** normalized both Welcome actions to a guaranteed `48–52px` touch height.
+- **P2 fixed:** advanced the stylesheet, script and service-worker cache identifiers so Safari does not retain the oversized version.
+
+## Responsive evidence
+
+| Viewport | Overflow | Headline | Artwork | Google | Tour |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `360 × 540` | none | 58px / 2 lines | 94px | 48px | 48px |
+| `390 × 600` | none | 62px / 2 lines | 102px | 48px | 48px |
+| `430 × 700` | none | 73px / 2 lines | 147px | 48px | 48px |
+| `360 × 800` | none | 65px / 2 lines | 162px | 48px | 48px |
+| `375 × 812` | none | 68px / 2 lines | 169px | 48px | 48px |
+| `390 × 844` | none | 70px / 2 lines | 176px | 48px | 48px |
+| `393 × 852` | none | 71px / 2 lines | 177px | 48px | 48px |
+| `430 × 932` | none | 78px / 2 lines | 190px | 52px | 52px |
+
+- The first-run screen remains fixed and no-scroll.
+- No bottom navigation appears on Welcome.
+- Tour opens, closes, and restores focus to `Take a tour`.
+- Google Identity Services remains provider-rendered in production; its container is not cropped or restyled internally.
+
+final result: passed
+
+---
+
+# Design QA — V3 Journey Ribbon with V1 colors
+
+- Structure source: `/Users/arthurberlin/.codex/generated_images/01a02032-728d-7ce2-b111-775c80ec1cf0/exec-993696c8-6e69-4756-8c4d-c8dce2680aee.png`
+- Palette source: `/Users/arthurberlin/.codex/generated_images/01a02032-728d-7ce2-b111-775c80ec1cf0/exec-84d3aea8-22b3-44cd-924a-75a51e2ee436.png`
+- Implementation screenshot: `artifacts/ui-v3-colors-v1/timeline-390x844.png`
+- Welcome screenshot: `artifacts/ui-v3-colors-v1/welcome-390x844.png`
+- Small-phone screenshot: `artifacts/ui-v3-colors-v1/timeline-360x800.png`
+- Direct comparison: `artifacts/ui-v3-colors-v1/comparison-option3-vs-implementation.png`
+- Primary comparison viewport: `390 × 844`
+
+## Visible comparison
+
+The implementation preserves option 3's date capsules, circular journey nodes, emphasized current event, compact next summary, and light floating five-item dock. Option 1's slate, warm sand, off-white, cool-grey and restrained coral tokens intentionally replace option 3's original colors. Real application typography, data truth, clean routes and existing icon library remain intact.
+
+## Responsive and interaction checks
+
+- `360 × 800`: no horizontal overflow; dock visible above the safe area.
+- `390 × 844`: no horizontal overflow; Timeline and Welcome fit their intended mobile states.
+- `430 × 932`: app remains centered at the 430px maximum; dock remains visible.
+- Welcome: one background color, no bottom navigation, no vertical or horizontal scrolling.
+- Alerts opens and closes; Add opens the existing Add Booking flow; To-do routes to `/before-you-go`.
+- Browser console: no errors in the tested flows.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+Final result: passed
+
+---
+
+# Design QA — Coral Journey Ribbon visual lock
+
+## Visual source and normalized comparison
+
+- Source of truth: `/var/folders/9q/f2w2qrrd1ddg3gb4vczcfzmc0000gn/T/codex-clipboard-ec470206-6752-440a-b83c-b3f57d77f647.png`
+- Source dimensions: `862 × 1840`; normalized to `430 × 920` for direct comparison
+- Populated Timeline capture: `artifacts/coral-journey-v2/timeline-430x920.png`
+- Standard phone capture: `artifacts/coral-journey-v2/timeline-390x844.png`
+- Narrow phone capture: `artifacts/coral-journey-v2/timeline-360x800.png`
+- Welcome capture: `artifacts/coral-journey-v2/welcome-390x844.png`
+- Side-by-side source and implementation: `artifacts/coral-journey-v2/comparison-reference-vs-implementation.png`
+- State: isolated populated preview with real application rendering and deterministic synthetic travel data
+
+## Findings and corrections
+
+- **Color fidelity fixed:** replaced the muted blue-grey treatment with the reference's ink-black canvas, saturated coral emphasis, warm sand journey rail and icons, off-white primary text, and restrained grey metadata.
+- **Timeline hierarchy fixed:** the next event now carries the coral plane and `NEXT` label while ordinary events retain warm sand icons. Day labels, rail dots, chevrons, and separators match the reference hierarchy.
+- **Navigation fidelity fixed:** the floating dock is dark and outlined, inactive items use sand, the active Trip item and center Add control use coral, and Trip uses the approved suitcase icon.
+- **Welcome cohesion fixed:** Welcome uses the same ink, coral, sand, off-white, and grey family without changing authentication or tour behavior.
+- **Surface fidelity fixed:** removed the Timeline header divider so header and journey read as one continuous dark surface.
+
+## Responsive, interaction, and accessibility evidence
+
+- Verified at `360 × 800`, `390 × 844`, and `430 × 920` with no horizontal overflow.
+- Timeline content scrolls inside its page region; the fixed dock remains visible and bottom padding keeps the final event reachable.
+- Touch targets remain at least 44 px; focus-visible and reduced-motion rules remain intact.
+- Trip, Alerts, Add, To-do, and Account retain their existing routes/actions and accessible labels.
+- Browser console in the checked Timeline and Welcome states: no errors or warnings.
+- Welcome remains no-scroll and has no bottom navigation.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed
+
+---
+
+# Design QA — pastel travel system
+
+- Reference: `/Users/arthurberlin/Library/Messages/Attachments/de/14/58D71E70-9153-491D-81F9-3CCC2C34C0D6/IMG_4494.png`
+- Reference pixels: 853 × 1844
+- Implementation screenshot: `artifacts/pastel-travel-v33/timeline-390x844.png`
+- Implementation pixels: 390 × 844 at 1× capture density
+- Browser viewport: 390 × 844
+- Application state: local preview, populated Rome 2026 Timeline, first trip day selected
+- Comparison artifact: `artifacts/pastel-travel-v33/timeline-comparison.png`
+
+## Interaction tested
+
+- Timeline rendered with the populated deterministic preview state.
+- The Friday day tab was selected and the visible day changed to Friday without navigation or console failure.
+- Bottom navigation touch targets measured at 44px minimum; the central Add action measured 54px.
+- Document width matched the viewport with no horizontal overflow.
+
+## Visual comparison
+
+- Warm ivory canvas, dark navy typography, violet navigation/action emphasis, orange `NEXT`, green confirmation copy, and yellow Add action match the supplied direction.
+- Flight, transfer, and stay markers use distinct pale blue, peach, and mint circles with consistent navy outline icons.
+- The Timeline remains flat and readable, with the same editorial titles and compact hierarchy as the reference.
+- Welcome, Add Flight, and Account were spot-checked at phone size to confirm the shared palette reaches onboarding, forms, content, and navigation.
+
+## Runtime audit
+
+- JavaScript console errors: none observed.
+- Browser warnings: none observed.
+- Horizontal overflow: none at 390 × 844.
+
+final result: passed
+
+---
+
+# Design QA — destination viewport coverage
+
+- Reference: `/tmp/codex-remote-attachments/01a02032-728d-7ce2-b111-775c80ec1cf0/03426886-5E4D-450B-BBCF-730DA00C158F/1-Фото-1.jpg`
+- Reported defect: the full-screen destination search ended above the viewport bottom while the keyboard offset was active, exposing the underlying `Choose dates` card.
+- Root cause: the keyboard height was subtracted from the overlay height instead of being reserved inside its layout.
+- Correction: the destination surface remains `100svh` tall and applies the keyboard offset to its internal bottom padding, preserving a continuous opaque screen while keeping results reachable above the keyboard.
+- Regression contract: rejects viewport-height subtraction and requires the keyboard offset inside the full-screen surface padding.
+- Local in-app-browser measurement: viewport `1280 × 720`; destination surface top `0`, bottom `720`, height `720`; the bottom viewport pixel resolves inside the destination surface.
+- Paris result state: city and airport suggestions remain readable and vertically scrollable with no horizontal overflow; the underlying trip-date card is not visible.
+
+## Severity gate
+
+- P0: none
+- P1: none
+- P2: none
+
+final result: passed

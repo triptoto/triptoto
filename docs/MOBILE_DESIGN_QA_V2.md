@@ -65,7 +65,9 @@ The protected runtime was checked with iPhone-style status/home-indicator geomet
 ## Design system observations
 
 - Product surfaces use white `#FFFFFF`, cool concrete `#F1F3F5`, silver slate borders `#CED4DA`, asphalt grey icons and secondary text `#495057`, and jet black `#111215`.
-- App content uses the Apple system stack. Android device chrome intentionally uses the protected runtime’s Roboto treatment.
+- Trip and booking titles and all interface text use the native Apple system
+  stack with standard fallbacks. Provider-rendered Google Identity controls,
+  icons, and protected device chrome retain their provider/runtime typography.
 - Jet black is reserved for primary actions and primary text; grey hierarchy carries secondary states.
 - White surfaces are the default, with cool-concrete card fill and silver separators.
 - The component language is consistent: 14–20px radii, subtle 1px borders, restrained shadows, and flat Timeline rows.
@@ -81,15 +83,16 @@ The protected runtime was checked with iPhone-style status/home-indicator geomet
 
 ## Icon inventory and consistency
 
-The prototype uses one Radix outline icon family for Flight, Hotel, Train, Car, Transfer, Cruise, Ferry, Restaurant, Activity, Ticket, Document, Calendar, Location, User, Back, Close, Chevron, Warning, Check, Upload, Email, Edit, Delete, Offline, and Plus concepts. Icon containers, optical sizes, and label gaps are consistent.
+The application uses the locally bundled Phosphor family for Flight, Hotel, Train, Car, Restaurant, Ticket, Document, Calendar, Location, User, Back, Close, Chevron, Warning, Check, Edit, Delete, Alerts, and Plus concepts. Regular weight is the normal state and Fill is the selected/current state. Custom SVG remains limited to weather and destination/branded illustration work.
 
-Remaining P3 note: a few transport categories use the closest available Radix metaphor rather than a dedicated travel-specific glyph. Production should adopt a small, approved travel icon subset without mixing families.
+No second general-purpose icon family is loaded. Icon containers, optical sizes, label gaps, and selected-state treatment remain consistent.
 
 ## Spacing and typography
 
 - The app follows a disciplined 4/8/12/16/20/24/32 spacing rhythm.
 - Headers use consistent 20px side margins and 44px action zones.
-- Major headings, body copy, labels, and metadata form a compact four-level hierarchy.
+- Display, route, screen, section, body, metadata, and label roles use the shared
+  52 / 40 / 28 / 20 / 16 / 13 / 11px hierarchy.
 - Form text remains 16px or larger, preventing iOS input zoom.
 - Two-column booking fields collapse on narrow viewports to prevent cramped labels and controls.
 - Long-content review found no critical clipping; raw document filenames are deliberately subordinate to document type.

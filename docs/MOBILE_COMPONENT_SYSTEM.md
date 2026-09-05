@@ -10,7 +10,7 @@ Rules:
 - Spacing uses the approved compact 12–16px rhythm; fixed navigation is protected by safe-area-aware page padding.
 - Primary actions use jet black; attention states use text and icon labels rather than extra colors.
 - Every actionable control is at least 44px, has a visible focus indicator, and carries text or an accessible label.
-- The locally bundled Phosphor icon font uses consistent optical weight. No emoji or external icon request is used.
+- Phosphor is the official UI icon system: a deterministic local SVG sprite supplies Regular for normal controls and travel categories, and Fill for selected/current states. Custom SVGs are limited to separately approved weather, destination, and branded illustrations. No emoji or external icon request is used.
 - Bottom sheets share one renderer, focus trap, focus restoration, body scroll lock, safe-area padding, and thresholded handle drag.
 - Traveler-facing add and edit entry points stay inside the Product V2 mobile shell.
 - Desktop browsers show the same centered application at a maximum width of 430px.

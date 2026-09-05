@@ -1,0 +1,1725 @@
+{
+  "outDir": "/Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/work/production-main-release/artifacts/geist-typography-v20",
+  "report": [
+    {
+      "label": "welcome",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/?preview=1&qaState=empty&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 800,
+      "clientHeight": 800,
+      "fontViolations": [
+        {
+          "tag": "SPAN",
+          "className": "",
+          "text": "Continue with Google",
+          "font": "Arial, sans-serif"
+        }
+      ],
+      "navLabels": [],
+      "clippedText": [],
+      "noScroll": true,
+      "hero": {
+        "size": "48px",
+        "weight": "700",
+        "lineHeight": "45.12px"
+      }
+    },
+    {
+      "label": "timeline",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/timeline?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 800,
+      "clientHeight": 800,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "",
+          "text": "Rome 2026"
+        }
+      ],
+      "roles": {
+        "screen": {
+          "size": "28px",
+          "weight": "700"
+        },
+        "section": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "item": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "meta": {
+          "size": "13px",
+          "weight": "500"
+        },
+        "label": {
+          "size": "11px",
+          "weight": "600"
+        }
+      }
+    },
+    {
+      "label": "flight-detail",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/flights/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 908,
+      "clientHeight": 800,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "fd-route__code",
+          "text": "TLV"
+        },
+        {
+          "className": "fd-route__code",
+          "text": "FCO"
+        }
+      ],
+      "roles": {
+        "origin": {
+          "size": "40px",
+          "weight": "700",
+          "text": "TLV"
+        },
+        "status": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Confirmed"
+        },
+        "metadata": {
+          "size": "13px",
+          "weight": "500",
+          "text": "Scheduled data"
+        },
+        "action": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Directions"
+        }
+      }
+    },
+    {
+      "label": "trips",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/trips?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 800,
+      "clientHeight": 800,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "account",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/account?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 962,
+      "clientHeight": 800,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [],
+      "profileRole": {
+        "size": "20px",
+        "weight": "600"
+      }
+    },
+    {
+      "label": "to-do",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/before-you-go?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 800,
+      "clientHeight": 800,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": []
+    },
+    {
+      "label": "add-booking",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/bookings/add?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 800,
+      "clientHeight": 800,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "flight-form",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "path": "/bookings/new/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "scrollHeight": 1352,
+      "clientHeight": 800,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": [
+        {
+          "className": "sr-only",
+          "text": "Selected date: Sep 2, 2026."
+        }
+      ]
+    },
+    {
+      "label": "runtime",
+      "size": {
+        "width": 360,
+        "height": 800
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "label": "welcome",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/?preview=1&qaState=empty&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 812,
+      "clientHeight": 812,
+      "fontViolations": [
+        {
+          "tag": "SPAN",
+          "className": "",
+          "text": "Continue with Google",
+          "font": "Arial, sans-serif"
+        }
+      ],
+      "navLabels": [],
+      "clippedText": [],
+      "noScroll": true,
+      "hero": {
+        "size": "48px",
+        "weight": "700",
+        "lineHeight": "45.12px"
+      }
+    },
+    {
+      "label": "timeline",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/timeline?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 812,
+      "clientHeight": 812,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "",
+          "text": "Rome 2026"
+        }
+      ],
+      "roles": {
+        "screen": {
+          "size": "28px",
+          "weight": "700"
+        },
+        "section": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "item": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "meta": {
+          "size": "13px",
+          "weight": "500"
+        },
+        "label": {
+          "size": "11px",
+          "weight": "600"
+        }
+      }
+    },
+    {
+      "label": "flight-detail",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/flights/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 908,
+      "clientHeight": 812,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "fd-route__code",
+          "text": "TLV"
+        },
+        {
+          "className": "fd-route__code",
+          "text": "FCO"
+        }
+      ],
+      "roles": {
+        "origin": {
+          "size": "40px",
+          "weight": "700",
+          "text": "TLV"
+        },
+        "status": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Confirmed"
+        },
+        "metadata": {
+          "size": "13px",
+          "weight": "500",
+          "text": "Scheduled data"
+        },
+        "action": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Directions"
+        }
+      }
+    },
+    {
+      "label": "trips",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/trips?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 812,
+      "clientHeight": 812,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "account",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/account?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 962,
+      "clientHeight": 812,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [],
+      "profileRole": {
+        "size": "20px",
+        "weight": "600"
+      }
+    },
+    {
+      "label": "to-do",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/before-you-go?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 812,
+      "clientHeight": 812,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": []
+    },
+    {
+      "label": "add-booking",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/bookings/add?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 812,
+      "clientHeight": 812,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "flight-form",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "path": "/bookings/new/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "scrollHeight": 1354,
+      "clientHeight": 812,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": [
+        {
+          "className": "sr-only",
+          "text": "Selected date: Sep 2, 2026."
+        }
+      ]
+    },
+    {
+      "label": "runtime",
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "label": "welcome",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/?preview=1&qaState=empty&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fontViolations": [
+        {
+          "tag": "SPAN",
+          "className": "",
+          "text": "Continue with Google",
+          "font": "Arial, sans-serif"
+        }
+      ],
+      "navLabels": [],
+      "clippedText": [],
+      "noScroll": true,
+      "hero": {
+        "size": "48px",
+        "weight": "700",
+        "lineHeight": "45.12px"
+      }
+    },
+    {
+      "label": "timeline",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/timeline?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "",
+          "text": "Rome 2026"
+        }
+      ],
+      "roles": {
+        "screen": {
+          "size": "28px",
+          "weight": "700"
+        },
+        "section": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "item": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "meta": {
+          "size": "13px",
+          "weight": "500"
+        },
+        "label": {
+          "size": "11px",
+          "weight": "600"
+        }
+      }
+    },
+    {
+      "label": "flight-detail",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/flights/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 908,
+      "clientHeight": 844,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "fd-route__code",
+          "text": "TLV"
+        },
+        {
+          "className": "fd-route__code",
+          "text": "FCO"
+        }
+      ],
+      "roles": {
+        "origin": {
+          "size": "40px",
+          "weight": "700",
+          "text": "TLV"
+        },
+        "status": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Confirmed"
+        },
+        "metadata": {
+          "size": "13px",
+          "weight": "500",
+          "text": "Scheduled data"
+        },
+        "action": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Directions"
+        }
+      }
+    },
+    {
+      "label": "trips",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/trips?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "account",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/account?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 962,
+      "clientHeight": 844,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [],
+      "profileRole": {
+        "size": "20px",
+        "weight": "600"
+      }
+    },
+    {
+      "label": "to-do",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/before-you-go?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": []
+    },
+    {
+      "label": "add-booking",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/bookings/add?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 844,
+      "clientHeight": 844,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "flight-form",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/bookings/new/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "scrollHeight": 1336,
+      "clientHeight": 844,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": [
+        {
+          "className": "sr-only",
+          "text": "Selected date: Sep 2, 2026."
+        }
+      ]
+    },
+    {
+      "label": "runtime",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "label": "welcome",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/?preview=1&qaState=empty&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 852,
+      "clientHeight": 852,
+      "fontViolations": [
+        {
+          "tag": "SPAN",
+          "className": "",
+          "text": "Continue with Google",
+          "font": "Arial, sans-serif"
+        }
+      ],
+      "navLabels": [],
+      "clippedText": [],
+      "noScroll": true,
+      "hero": {
+        "size": "48px",
+        "weight": "700",
+        "lineHeight": "45.12px"
+      }
+    },
+    {
+      "label": "timeline",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/timeline?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 852,
+      "clientHeight": 852,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "",
+          "text": "Rome 2026"
+        }
+      ],
+      "roles": {
+        "screen": {
+          "size": "28px",
+          "weight": "700"
+        },
+        "section": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "item": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "meta": {
+          "size": "13px",
+          "weight": "500"
+        },
+        "label": {
+          "size": "11px",
+          "weight": "600"
+        }
+      }
+    },
+    {
+      "label": "flight-detail",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/flights/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 908,
+      "clientHeight": 852,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "fd-route__code",
+          "text": "TLV"
+        },
+        {
+          "className": "fd-route__code",
+          "text": "FCO"
+        }
+      ],
+      "roles": {
+        "origin": {
+          "size": "40px",
+          "weight": "700",
+          "text": "TLV"
+        },
+        "status": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Confirmed"
+        },
+        "metadata": {
+          "size": "13px",
+          "weight": "500",
+          "text": "Scheduled data"
+        },
+        "action": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Directions"
+        }
+      }
+    },
+    {
+      "label": "trips",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/trips?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 852,
+      "clientHeight": 852,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "account",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/account?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 962,
+      "clientHeight": 852,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [],
+      "profileRole": {
+        "size": "20px",
+        "weight": "600"
+      }
+    },
+    {
+      "label": "to-do",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/before-you-go?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 852,
+      "clientHeight": 852,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": []
+    },
+    {
+      "label": "add-booking",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/bookings/add?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 852,
+      "clientHeight": 852,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "flight-form",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "path": "/bookings/new/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 393,
+      "clientWidth": 393,
+      "scrollHeight": 1336,
+      "clientHeight": 852,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": [
+        {
+          "className": "sr-only",
+          "text": "Selected date: Sep 2, 2026."
+        }
+      ]
+    },
+    {
+      "label": "runtime",
+      "size": {
+        "width": 393,
+        "height": 852
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "label": "welcome",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/?preview=1&qaState=empty&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 932,
+      "clientHeight": 932,
+      "fontViolations": [
+        {
+          "tag": "SPAN",
+          "className": "",
+          "text": "Continue with Google",
+          "font": "Arial, sans-serif"
+        }
+      ],
+      "navLabels": [],
+      "clippedText": [],
+      "noScroll": true,
+      "hero": {
+        "size": "51.6px",
+        "weight": "700",
+        "lineHeight": "48.504px"
+      }
+    },
+    {
+      "label": "timeline",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/timeline?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 932,
+      "clientHeight": 932,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "",
+          "text": "Rome 2026"
+        }
+      ],
+      "roles": {
+        "screen": {
+          "size": "28px",
+          "weight": "700"
+        },
+        "section": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "item": {
+          "size": "20px",
+          "weight": "600"
+        },
+        "meta": {
+          "size": "13px",
+          "weight": "500"
+        },
+        "label": {
+          "size": "11px",
+          "weight": "600"
+        }
+      }
+    },
+    {
+      "label": "flight-detail",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/flights/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 932,
+      "clientHeight": 932,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [
+        {
+          "className": "fd-route__code",
+          "text": "TLV"
+        },
+        {
+          "className": "fd-route__code",
+          "text": "FCO"
+        }
+      ],
+      "roles": {
+        "origin": {
+          "size": "40px",
+          "weight": "700",
+          "text": "TLV"
+        },
+        "status": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Confirmed"
+        },
+        "metadata": {
+          "size": "13px",
+          "weight": "500",
+          "text": "Scheduled data"
+        },
+        "action": {
+          "size": "14px",
+          "weight": "600",
+          "text": "Directions"
+        }
+      }
+    },
+    {
+      "label": "trips",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/trips?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 932,
+      "clientHeight": 932,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "account",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/account?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 962,
+      "clientHeight": 932,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": [],
+      "profileRole": {
+        "size": "20px",
+        "weight": "600"
+      }
+    },
+    {
+      "label": "to-do",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/before-you-go?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 932,
+      "clientHeight": 932,
+      "fontViolations": [],
+      "navLabels": [
+        {
+          "text": "Trip",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Alerts",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "To-do",
+          "size": "11px",
+          "weight": "600"
+        },
+        {
+          "text": "Account",
+          "size": "11px",
+          "weight": "600"
+        }
+      ],
+      "clippedText": []
+    },
+    {
+      "label": "add-booking",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/bookings/add?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 932,
+      "clientHeight": 932,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": []
+    },
+    {
+      "label": "flight-form",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/bookings/new/flight?preview=1&geist=v20",
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "scrollHeight": 1319,
+      "clientHeight": 932,
+      "fontViolations": [],
+      "navLabels": [],
+      "clippedText": [
+        {
+          "className": "sr-only",
+          "text": "Selected date: Sep 2, 2026."
+        }
+      ]
+    },
+    {
+      "label": "runtime",
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "label": "/privacy.html",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "roles": {
+        "screen": "28px",
+        "section": "20px",
+        "body": "13px"
+      }
+    },
+    {
+      "label": "/terms.html",
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "geistLoaded": true,
+      "bodyFont": "Geist, -apple-system, \"system-ui\", \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "overflowX": false,
+      "roles": {
+        "screen": "28px",
+        "section": "20px",
+        "body": "13px"
+      }
+    }
+  ]
+}

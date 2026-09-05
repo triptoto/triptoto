@@ -12,17 +12,29 @@
   ],
   "vars": {
     "LIVE_FLIGHTS_ENABLED": "false",
+    "LIVE_FLIGHT_PROVIDER": "aerodatabox",
+    "LIVE_FLIGHT_DAILY_REQUEST_BUDGET": "8",
+    "LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET": "240",
+    "LIVE_FLIGHT_MIN_REFRESH_MINUTES": "60",
+    "LIVE_FLIGHT_MAX_BATCH_SIZE": "2",
+    "LIVE_FLIGHT_BETA_ONLY": "true",
+    "LIVE_FLIGHT_BETA_USER_IDS": "",
+    "AERODATABOX_RAPIDAPI_HOST": "aerodatabox.p.rapidapi.com",
+    "AERODATABOX_API_TIMEOUT_MS": "7000",
     "AI_ENABLED": "false",
     "GMAIL_SYNC_ENABLED": "false",
     "R2_DOCUMENTS_ENABLED": "false",
     "ACCOUNT_AUTH_ENABLED": "true",
     "GOOGLE_CLIENT_ID": "832895442630-6enisft24gupqct0igg1uldv9hnqsjsh.apps.googleusercontent.com",
     "APP_BASE_URL": "https://tripto.to",
-    "SHARING_ENABLED": "false",
+    "SHARING_ENABLED": "true",
     "DEMO_TOOLS_ENABLED": "false",
     "BETA_RELEASE": "product-v2-production",
     "BETA_METRICS_ENABLED": "true",
     "OPS_ENABLED": "false"
+  },
+  "triggers": {
+    "crons": ["*/30 * * * *"]
   },
   "assets": {
     "directory": "./public",
@@ -31,5 +43,39 @@
       "/api/*",
       "/health"
     ]
+  },
+  "env": {
+    "preview": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "tripto-db-preview",
+          "database_id": "3fa14a5d-9ea5-40bc-a683-3fd802e2d13e"
+        }
+      ],
+      "vars": {
+        "LIVE_FLIGHTS_ENABLED": "false",
+        "LIVE_FLIGHT_PROVIDER": "aerodatabox",
+        "LIVE_FLIGHT_DAILY_REQUEST_BUDGET": "8",
+        "LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET": "240",
+        "LIVE_FLIGHT_MIN_REFRESH_MINUTES": "60",
+        "LIVE_FLIGHT_MAX_BATCH_SIZE": "2",
+        "LIVE_FLIGHT_BETA_ONLY": "true",
+        "LIVE_FLIGHT_BETA_USER_IDS": "",
+        "AERODATABOX_RAPIDAPI_HOST": "aerodatabox.p.rapidapi.com",
+        "AERODATABOX_API_TIMEOUT_MS": "7000",
+        "AI_ENABLED": "false",
+        "GMAIL_SYNC_ENABLED": "false",
+        "R2_DOCUMENTS_ENABLED": "false",
+        "ACCOUNT_AUTH_ENABLED": "true",
+        "GOOGLE_CLIENT_ID": "832895442630-6enisft24gupqct0igg1uldv9hnqsjsh.apps.googleusercontent.com",
+        "APP_BASE_URL": "https://tripto.to",
+        "SHARING_ENABLED": "true",
+        "DEMO_TOOLS_ENABLED": "false",
+        "BETA_RELEASE": "product-v2-preview",
+        "BETA_METRICS_ENABLED": "true",
+        "OPS_ENABLED": "false"
+      }
+    }
   }
 }

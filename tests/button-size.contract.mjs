@@ -46,5 +46,47 @@ assert(
   css.includes(".traveler-pill span{display:inline-flex;align-items:center;min-height:var(--button-compact-height)"),
   "traveler chips must meet the compact touch target",
 );
+assert(
+  css.includes(".collab-chip{display:inline-flex;align-items:center;gap:5px;min-height:var(--button-compact-height)"),
+  "collaboration actions must meet the compact touch target",
+);
+
+assert(
+  css.includes("html .bottom-nav .nav-item{color:var(--muted);font-size:12px;font-weight:600;min-height:var(--button-compact-height);height:auto"),
+  "production bottom navigation items must preserve the 44px touch target",
+);
+
+function channel(value) {
+  const normalized = value / 255;
+  return normalized <= 0.03928
+    ? normalized / 12.92
+    : ((normalized + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(hex) {
+  const value = hex.replace("#", "");
+  const channels = [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16));
+  return channels.reduce(
+    (total, value, index) => total + channel(value) * [0.2126, 0.7152, 0.0722][index],
+    0,
+  );
+}
+
+function contrast(foreground, background) {
+  const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+
+const productionTokens = css.slice(css.indexOf(":root{"), css.indexOf("}", css.indexOf(":root{")) + 1);
+const productionGreen = productionTokens.match(/--green:(#[0-9a-f]{6})/i)?.[1];
+const productionPaper = productionTokens.match(/--paper:(#[0-9a-f]{6})/i)?.[1];
+const productionAccent = productionTokens.match(/--accent:(#[0-9a-f]{6})/i)?.[1];
+
+assert(productionGreen, "production Ready Offline status color is missing");
+assert(productionPaper, "production page color is missing");
+assert(productionAccent, "production notification accent is missing");
+assert(contrast(productionGreen, productionPaper) >= 4.5, "Ready Offline text must meet WCAG AA on the production page");
+assert(contrast("#ffffff", productionAccent) >= 4.5, "header notification badge must meet WCAG AA");
+assert(contrast("#ffffff", productionAccent) >= 4.5, "bottom-nav notification badge must meet WCAG AA");
 
 console.log("Button sizing contract passed.");

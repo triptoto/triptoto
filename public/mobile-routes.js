@@ -11,11 +11,19 @@
     ready: "/ready-offline",
     health: "/trip-health",
     account: "/account",
+    "trip-map": "/trip-map",
+    weather: "/weather",
+    currency: "/currency",
+    "trip-options": "/trip-options",
+    esim: "/esim",
     checklist: "/before-you-go",
+    help: "/help",
     travelers: "/travelers",
     import: "/bookings/import",
     "import-history": "/bookings/import/history",
+    "booking-email-inbox": "/bookings/email-inbox",
     sync: "/pending-changes",
+    collaboration: "/collaboration",
   });
 
   const DETAIL_PATHS = Object.freeze({
@@ -25,6 +33,7 @@
     plan: "/plans",
     traveler: "/travelers",
     "import-review": "/bookings/import/review",
+    join: "/join",
   });
 
   const EXACT_ROUTES = new Map(
@@ -60,6 +69,12 @@
     const path = normalizePath(pathname);
     if (["/", "/app", "/index.html"].includes(path))
       return { screen: "home", id: null };
+
+    // Local Guide was retired from the product. Keep old bookmarks useful by
+    // taking travelers to the current Trip Options page and canonicalizing the
+    // URL in the app shell.
+    if (path === "/local-guide")
+      return { screen: "trip-options", id: null, redirect: true };
 
     if (path === "/trips/new") return { screen: "form", id: "trip" };
     if (path === "/travelers/new")

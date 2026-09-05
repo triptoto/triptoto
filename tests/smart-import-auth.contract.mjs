@@ -5,11 +5,12 @@ for(const value of ['.pdf','.heic','.eml','.docx','.ics','.pkpass'])assert(app.i
 for(const value of ['TriptoSmartImport.recognizeFile','saveLocalDocument(file','duplicateDisposition:"add_anyway"','resolveImport'])assert(app.includes(value),`missing Smart Import contract ${value}`);
 assert(imports.includes('rawBytesReceived:false')&&imports.includes('extractedTextReceived:false'),'upload privacy response missing');
 assert(!html.includes('/smart-import.js')&&app.includes('ensureSmartImport'),'recognizer must remain flow-lazy');
-assert(sw.includes("const CACHE='tripto-shell-product-v2-manual-booking-v2'")&&sw.includes('/manual-booking-attachments.js')&&sw.includes('await cache.put(request,response.clone())'),'service worker runtime cache updated');
+assert(sw.includes("const CACHE='tripto-shell-product-v118-soft-trips-background'")&&sw.includes('/canonical-host.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&!sw.includes('/vendor/phosphor/')&&!sw.includes('/vendor/dm-serif-display/')&&sw.includes('await cache.put(request,response.clone())'),'service worker runtime cache updated');
 assert(headers.includes("script-src 'self' https://accounts.google.com")&&headers.includes('frame-src https://accounts.google.com'),'Google CSP is narrow');
+assert(headers.includes('https://scripts.stay22.com')&&headers.includes('https://id.h2.stay22.com')&&!html.includes('letmeallez.js'),'Stay22 must be permitted by CSP but remain lazy-loaded outside the partner action');
 assert(worker.includes("'/api/v1/auth/google/challenge'")&&worker.includes("'/api/v1/auth/google'")&&worker.includes("'/api/v1/auth/signout'"),'auth endpoints wired');
 assert(worker.includes('imports\\/upload\\/preview')&&worker.includes('previewUploadedDocument'),'upload preview endpoint wired');
-for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','SHARING_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`${flag} must remain disabled`);
+for(const flag of ['LIVE_FLIGHTS_ENABLED','AI_ENABLED','GMAIL_SYNC_ENABLED','R2_DOCUMENTS_ENABLED','DEMO_TOOLS_ENABLED','OPS_ENABLED'])assert(wrangler.includes(`"${flag}": "false"`),`${flag} must remain disabled`);
 assert(wrangler.includes('"ACCOUNT_AUTH_ENABLED": "true"'),'Google account authentication must be enabled');
 assert(/"GOOGLE_CLIENT_ID": "[^"]+\.apps\.googleusercontent\.com"/.test(wrangler),'Google OAuth client ID must be configured');
 assert(migration.includes('auth_challenges')&&migration.includes('avatar_url')&&!/DROP\s+TABLE|DELETE\s+FROM/i.test(migration),'migration is additive');

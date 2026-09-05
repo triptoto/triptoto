@@ -52,3 +52,14 @@ export async function updateChecklistItem(request: Request, env: Env, auth: Auth
   await env.DB.prepare(`UPDATE trip_checklist_items SET title=?,priority=?,due_at_utc=?,completed_at=?,completion_source=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=?`).bind(title,priority,due,completedAt,source,now,itemId,tripId,body.version).run();
   return json({item:await env.DB.prepare('SELECT * FROM trip_checklist_items WHERE id=?').bind(itemId).first()},{},request,env);
 }
+
+export async function deleteChecklistItem(request: Request, env: Env, auth: AuthContext, tripId: string, itemId: string): Promise<Response> {
+  await requireTripAccess(env, auth, tripId, true);
+  const body=await readJson<{version?:unknown}>(request);
+  if(!Number.isSafeInteger(body.version)) throw new HttpError(400,'VERSION_REQUIRED','Current entity version is required.');
+  const now=nowMs();
+  await env.DB.prepare(`UPDATE trip_checklist_items SET deleted_at=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`).bind(now,now,itemId,tripId,body.version).run();
+  const row=await env.DB.prepare('SELECT version,deleted_at FROM trip_checklist_items WHERE id=? AND trip_id=?').bind(itemId,tripId).first<{version:number;deleted_at:number|null}>();
+  if(!row?.deleted_at) throw new HttpError(409,'VERSION_CONFLICT','Checklist item changed on another client.');
+  return new Response(null,{status:204});
+}

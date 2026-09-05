@@ -10,11 +10,13 @@ const { accountStatus, accountMigrationPreview }=await load('apps/worker/src/rou
 const { createDemoTrip }=await load('apps/worker/src/routes/demo.js');
 const { exportTripJson, exportTripCalendar }=await load('apps/worker/src/routes/export.js');
 const { tripSupportBundle }=await load('apps/worker/src/routes/support.js');
-const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, updateMemberRole, removeMember, revokeInvite }=await load('apps/worker/src/routes/sharing.js');
+const { sharingStatus, previewInvite, createInvite, acceptInvite, listMembers, updateMemberRole, removeMember, revokeInvite, leaveTrip, transferOwnership }=await load('apps/worker/src/routes/sharing.js');
 const { completeVerifiedIdentityLogin }=await load('apps/worker/src/verified-auth.js');
 const { recalculateImpacts }=await load('apps/worker/src/routes/impacts.js');
 const { refreshSession }=await load('apps/worker/src/routes/session.js');
-const { previewForwardedEmail, previewUploadedDocument, listImports, resolveImportCandidate }=await load('apps/worker/src/routes/imports.js');
+const { previewForwardedEmail, previewUploadedDocument, listImports, resolveImportCandidate, listInboundEmails }=await load('apps/worker/src/routes/imports.js');
+const { receiveBookingEmail }=await load('apps/worker/src/inbound-email.js');
+const { assignBookingEmail, listBookingEmails }=await load('apps/worker/src/routes/booking-emails.js');
 const { acknowledgeGoogleHandoff, createGoogleChallenge, exchangeGoogleHandoff, googleSignInRedirect, signOut }=await load('apps/worker/src/routes/google-auth.js');
 const { requireAuth }=await load('apps/worker/src/auth.js');
 const { betaStatus, recordClientBetaEvent }=await load('apps/worker/src/routes/beta.js');
@@ -26,6 +28,8 @@ const { createStay }=await load('apps/worker/src/routes/stays.js');
 const { createTransport }=await load('apps/worker/src/routes/transport.js');
 const { createActivity }=await load('apps/worker/src/routes/activities.js');
 const { createContact }=await load('apps/worker/src/routes/contacts.js');
+const { liveFlightUsageSummary, refreshLiveFlightById, runScheduledLiveFlightRefresh, scheduleLiveFlightMonitoring }=await load('apps/worker/src/live-flights.js');
+const { createTrip, updateTrip, deleteTrip }=await load('apps/worker/src/routes/trips.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -150,6 +154,56 @@ const idempotencyColumns=db.prepare(`PRAGMA table_info(manual_booking_idempotenc
 assert(!idempotencyColumns.some(name=>/body|payload|response|confirmation/i.test(name)),'manual idempotency table stores no request or booking payload');
 assert(!db.prepare(`SELECT request_fingerprint FROM manual_booking_idempotency WHERE client_request_id=?`).get(stayKey).request_fingerprint.includes('PRIVATE-STAY-123'),'manual idempotency fingerprint does not expose confirmation data');
 
+// Live flights are zero-call while disabled. When explicitly enabled for a
+// beta environment, cache reuse does not consume quota or count as a second
+// cancellation observation; only a later provider response can confirm it.
+let providerCalls=0;
+const disabledSchedule=await runScheduledLiveFlightRefresh(env,{provider:{name:'test',health:async()=>'healthy',getStatus:async()=>{providerCalls+=1;throw new Error('disabled provider called');}}});
+assert(disabledSchedule.enabled===false&&providerCalls===0,'disabled live-flight cron makes zero provider calls');
+Object.assign(env,{LIVE_FLIGHTS_ENABLED:'true',LIVE_FLIGHT_PROVIDER:'aerodatabox',LIVE_FLIGHT_BETA_ONLY:'false',LIVE_FLIGHT_DAILY_REQUEST_BUDGET:'2',LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET:'2',LIVE_FLIGHT_MIN_REFRESH_MINUTES:'60',AERODATABOX_RAPIDAPI_KEY:'integration-server-only-key'});
+const monitoredFlightId=successfulTransport.item.id,scheduledDeparture=Number(successfulTransport.item.scheduled_departure_utc),firstLiveNow=scheduledDeparture-4*60*60*1000;
+await scheduleLiveFlightMonitoring(env,guest,tripId,monitoredFlightId,true,firstLiveNow);
+let providerNow=firstLiveNow;
+const cancellationProvider={name:'aerodatabox',health:async()=>'healthy',getStatus:async()=>{providerCalls+=1;return{available:true,provider:'aerodatabox',providerFlightId:'aerodatabox:LY991',matchStatus:'matched',confidence:100,operationalPhase:'scheduled',disruptionState:'cancelled',scheduledDepartureUtc:scheduledDeparture,departureTerminal:'3',departureGate:'D7',providerStatus:'Canceled',fetchedAt:providerNow};}};
+let liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+assert(liveResult.outcome==='updated'&&providerCalls===1,'first provider observation stored');
+let liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveRow.cancellation_signals===1&&liveRow.cancellation_confirmed_at==null,'first cancellation remains provisional');
+providerNow=firstLiveNow+61*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveResult.outcome==='cached'&&providerCalls===1,'shared cache avoids a provider request');
+assert(liveRow.cancellation_signals===1&&liveRow.cancellation_confirmed_at==null,'cached observation cannot confirm cancellation');
+providerNow=firstLiveNow+121*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+liveRow=db.prepare(`SELECT cancellation_signals,cancellation_confirmed_at FROM flight_live_status WHERE trip_item_id=?`).get(monitoredFlightId);
+assert(liveResult.providerCalled===true&&providerCalls===2,'expired cache calls provider once');
+assert(liveRow.cancellation_signals===2&&liveRow.cancellation_confirmed_at!=null,'independent provider observation confirms cancellation');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='flight_cancelled_reported'`).get(tripId,monitoredFlightId).c)===1,'first cancellation creates one provisional event');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND entity_id=? AND event_type='flight_cancelled_confirmed'`).get(tripId,monitoredFlightId).c)===1,'second independent signal creates one confirmation event');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM impact_assessments WHERE trip_id=? AND item_id=? AND status='active' AND explanation_code='FLIGHT_CANCELLATION_CONFIRMED'`).get(tripId,monitoredFlightId).c)===1,'confirmed cancellation creates one high-priority deterministic impact');
+providerNow=firstLiveNow+182*60*1000;
+liveResult=await refreshLiveFlightById(env,guest,tripId,monitoredFlightId,{provider:cancellationProvider,now:providerNow});
+assert(liveResult.outcome==='quota_exhausted'&&providerCalls===2,'local quota blocks provider before network');
+const liveUsage=await liveFlightUsageSummary(env,providerNow);
+assert(liveUsage.usedMonth===2&&liveUsage.remainingMonth===0,'monthly usage ledger and guard are accurate');
+
+// Cron selection remains bounded and prioritizes the flight departing soonest.
+Object.assign(env,{LIVE_FLIGHT_DAILY_REQUEST_BUDGET:'20',LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET:'20',LIVE_FLIGHT_MAX_BATCH_SIZE:'2'});
+const cronFlights=[];
+for(const [suffix,offsetHours] of [['A',2/3],['B',24],['C',120]]){
+  const input={...transportInput,title:`Cron priority ${suffix}`,serviceNumber:`LY 99${suffix}`,marketingFlightNumber:`99${suffix}`,scheduledDepartureUtc:firstLiveNow+offsetHours*60*60*1000};
+  const created=await body(await createTransport(req('https://test/api/v1/trips/x/transport','POST',input,{'idempotency-key':`cron-priority-flight-${suffix}`}),env,guest,tripId));
+  cronFlights.push(created.item.id);
+  await scheduleLiveFlightMonitoring(env,guest,tripId,created.item.id,true,firstLiveNow);
+}
+let cronProviderCalls=0;
+const cronProvider={name:'aerodatabox',health:async()=>'healthy',getStatus:async lookup=>{cronProviderCalls+=1;return{available:true,provider:'aerodatabox',providerFlightId:`aerodatabox:${lookup.flightNumber}`,matchStatus:'matched',confidence:100,operationalPhase:'scheduled',disruptionState:'none',scheduledDepartureUtc:firstLiveNow+40*60*1000,providerStatus:'Expected',fetchedAt:firstLiveNow};}};
+const cronRun=await runScheduledLiveFlightRefresh(env,{provider:cronProvider,now:firstLiveNow});
+assert(cronRun.results.length===2&&cronProviderCalls<=2,'cron honors maximum batch size');
+assert(cronRun.results.some(result=>result.itemId===cronFlights[0]),'cron prioritizes the flight departing in 40 minutes');
+env.LIVE_FLIGHTS_ENABLED='false';
+
 // Verified auth bridge: disabled by default, then enabled for an internally verified identity.
 let disabled=false;
 try{await completeVerifiedIdentityLogin(env,'guest-device',{provider:'email',providerSubject:'owner@example.test',email:'owner@example.test',emailVerified:true,displayName:'Owner'});}catch(e){disabled=e.code==='ACCOUNT_AUTH_DISABLED';}
@@ -211,6 +265,152 @@ const revokeCandidate=await body(await createInvite(req('https://test/api/v1/tri
 await revokeInvite(req('https://test/api/v1/trips/x/invites/z','DELETE',{}),env,owner,tripId,revokeCandidate.invite.id);
 assert(db.prepare(`SELECT status FROM trip_invites WHERE id=?`).get(revokeCandidate.invite.id).status==='revoked','invite revoke works');
 
+const restrictedInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer',email:'restricted@example.test'}),env,owner,tripId));
+let restrictedMismatch=false;
+try{await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:restrictedInvite.invite.token}),env,editor);}catch(e){restrictedMismatch=e.code==='INVITE_EMAIL_MISMATCH'&&e.status===403;}
+assert(restrictedMismatch,'email-restricted invite rejects a different verified account');
+const expiredInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,tripId));
+db.prepare(`UPDATE trip_invites SET expires_at=? WHERE id=?`).run(Date.now()-1,expiredInvite.invite.id);
+let expiredBlocked=false;
+try{await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:expiredInvite.invite.token}),env,editor);}catch(e){expiredBlocked=e.code==='INVITE_EXPIRED'&&e.status===410;}
+assert(expiredBlocked,'expired invite cannot be accepted');
+
+// Collaboration authorization matrix (free for all signed-in users; roles enforced
+// at the single access gate). Covers Section 20 release-blocker (editors cannot
+// delete/cancel a trip), viewer read-only, leave-trip, and ownership transfer.
+const collab=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Shared Kyoto',lifecycleState:'upcoming',startsOn:'2026-11-01',endsOn:'2026-11-07'}),env,owner));
+const collabTripId=collab.trip.id;
+const collabInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,collabTripId));
+addDevice(db,'collab-editor-device');
+const collabEditorLogin=await completeVerifiedIdentityLogin(env,'collab-editor-device',{provider:'email',providerSubject:'collab-editor@example.test',email:'collab-editor@example.test',emailVerified:true,displayName:'Collab Editor'});
+const collabEditor={deviceId:'collab-editor-device',userId:collabEditorLogin.userId};
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:collabInvite.invite.token}),env,collabEditor);
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND event_type='member_joined' AND actor_user_id=?`).get(collabTripId,collabEditorLogin.userId).c)===1,'member_joined recorded with actor attribution');
+
+// Editor may add bookings but not delete or cancel/edit the trip shell.
+const editorStay=await body(await createStay(req('https://test/api/v1/trips/x/stays','POST',{propertyName:'Editor Ryokan',checkInDate:'2026-11-02',checkOutDate:'2026-11-04'}),env,collabEditor,collabTripId));
+assert(editorStay.stay.id,'editor can add a booking to a shared trip');
+let collabVersion=Number(db.prepare(`SELECT version FROM trips WHERE id=?`).get(collabTripId).version);
+let editorDeleteBlocked=false;
+try{await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:collabVersion}),env,collabEditor,collabTripId);}catch(e){editorDeleteBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(editorDeleteBlocked,'editor cannot delete a shared trip (Section 20 release-blocker)');
+let editorCancelBlocked=false;
+try{await updateTrip(req('https://test/api/v1/trips/x','PATCH',{lifecycleState:'cancelled',version:collabVersion}),env,collabEditor,collabTripId);}catch(e){editorCancelBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(editorCancelBlocked,'editor cannot cancel or edit trip metadata');
+assert(db.prepare(`SELECT deleted_at,lifecycle_state FROM trips WHERE id=?`).get(collabTripId).deleted_at==null,'shared trip survives editor delete/cancel attempts');
+
+// Viewer is strictly read-only for trip content.
+await updateMemberRole(req('https://test/api/v1/trips/x/members/y','PATCH',{role:'viewer'}),env,owner,collabTripId,collabEditorLogin.userId);
+let viewerWriteBlocked=false;
+try{await createStay(req('https://test/api/v1/trips/x/stays','POST',{propertyName:'Viewer Cannot',checkInDate:'2026-11-03',checkOutDate:'2026-11-05'}),env,collabEditor,collabTripId);}catch(e){viewerWriteBlocked=e.code==='FORBIDDEN'&&e.status===403;}
+assert(viewerWriteBlocked,'viewer cannot write trip content');
+
+// Leaving a trip: owner cannot leave; a member can, idempotently.
+let ownerLeaveBlocked=false;
+try{await leaveTrip(req('https://test/api/v1/trips/x/leave','POST',{}),env,owner,collabTripId);}catch(e){ownerLeaveBlocked=e.code==='OWNER_CANNOT_LEAVE'&&e.status===409;}
+assert(ownerLeaveBlocked,'owner cannot leave the trip');
+const leaveResp=await leaveTrip(req('https://test/api/v1/trips/x/leave','POST',{}),env,collabEditor,collabTripId);
+assert(leaveResp.status===204,'member can leave the trip');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_members WHERE trip_id=? AND user_id=? AND status='active'`).get(collabTripId,collabEditorLogin.userId).c)===0,'left member is no longer active');
+const leaveAgain=await leaveTrip(req('https://test/api/v1/trips/x/leave','POST',{}),env,collabEditor,collabTripId);
+assert(leaveAgain.status===204,'leaving twice is idempotent');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM change_events WHERE trip_id=? AND event_type='member_left' AND actor_user_id=?`).get(collabTripId,collabEditorLogin.userId).c)===1,'member_left recorded once with actor attribution');
+
+// Ownership transfer: atomic promotion, previous owner demoted to editor, never ownerless.
+const transferInvite=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,collabTripId));
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:transferInvite.invite.token}),env,collabEditor);
+let nonOwnerTransferBlocked=false;
+try{await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:login.userId}),env,collabEditor,collabTripId);}catch(e){nonOwnerTransferBlocked=(e.code==='OWNER_REQUIRED'||e.code==='FORBIDDEN')&&e.status===403;}
+assert(nonOwnerTransferBlocked,'non-owner cannot transfer ownership');
+const transfer=await body(await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:collabEditorLogin.userId}),env,owner,collabTripId));
+assert(transfer.ownerUserId===collabEditorLogin.userId,'ownership transfer returns new owner');
+assert(db.prepare(`SELECT owner_user_id FROM trips WHERE id=?`).get(collabTripId).owner_user_id===collabEditorLogin.userId,'trips.owner_user_id updated on transfer');
+assert(db.prepare(`SELECT role FROM trip_members WHERE trip_id=? AND user_id=?`).get(collabTripId,collabEditorLogin.userId).role==='owner','new owner has owner role');
+assert(db.prepare(`SELECT role FROM trip_members WHERE trip_id=? AND user_id=?`).get(collabTripId,login.userId).role==='editor','previous owner demoted to editor');
+// The previous owner (now editor, same creator device) can no longer delete the shared trip.
+collabVersion=Number(db.prepare(`SELECT version FROM trips WHERE id=?`).get(collabTripId).version);
+let demotedOwnerDeleteBlocked=false;
+try{await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:collabVersion}),env,owner,collabTripId);}catch(e){demotedOwnerDeleteBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(demotedOwnerDeleteBlocked,'previous owner (now editor) cannot delete after transfer');
+// The new owner deletes successfully.
+const newOwnerDelete=await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:collabVersion}),env,collabEditor,collabTripId);
+assert(newOwnerDelete.status===204,'new owner can delete the trip');
+assert(db.prepare(`SELECT deleted_at FROM trips WHERE id=?`).get(collabTripId).deleted_at!=null,'owner delete soft-deletes the trip');
+
+// A completed ownership transfer leaves exactly one effective owner. A stale
+// membership row is also treated as editor by the canonical access gate.
+const raceTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Ownership race',lifecycleState:'upcoming'}),env,owner));
+const raceTripId=raceTrip.trip.id;
+const raceInviteA=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,raceTripId));
+const raceInviteB=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,raceTripId));
+const raceAccounts=[];
+for(const suffix of ['a','b']){
+  const deviceId=`race-${suffix}-device`,email=`race-${suffix}@example.test`;
+  addDevice(db,deviceId);
+  const account=await completeVerifiedIdentityLogin(env,deviceId,{provider:'email',providerSubject:email,email,emailVerified:true,displayName:`Race ${suffix.toUpperCase()}`});
+  raceAccounts.push({deviceId,userId:account.userId});
+}
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:raceInviteA.invite.token}),env,raceAccounts[0]);
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:raceInviteB.invite.token}),env,raceAccounts[1]);
+await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:raceAccounts[0].userId}),env,owner,raceTripId);
+let staleTransferBlocked=false;
+try{await transferOwnership(req('https://test/api/v1/trips/x/transfer-ownership','POST',{userId:raceAccounts[1].userId}),env,owner,raceTripId);}catch(e){staleTransferBlocked=e.code==='OWNER_REQUIRED'&&e.status===403;}
+assert(staleTransferBlocked,'previous owner cannot issue a second ownership transfer');
+const canonicalRaceOwner=String(db.prepare(`SELECT owner_user_id FROM trips WHERE id=?`).get(raceTripId).owner_user_id);
+const activeRaceOwners=db.prepare(`SELECT user_id FROM trip_members WHERE trip_id=? AND status='active' AND role='owner'`).all(raceTripId);
+assert(activeRaceOwners.length===1&&String(activeRaceOwners[0].user_id)===canonicalRaceOwner,'ownership transfer leaves one canonical owner role');
+const losingRaceAccount=raceAccounts.find(account=>account.userId!==canonicalRaceOwner);
+db.prepare(`UPDATE trip_members SET role='owner' WHERE trip_id=? AND user_id=?`).run(raceTripId,losingRaceAccount.userId);
+const staleOwnerStatus=await body(await sharingStatus(req('https://test/api/v1/trips/x/sharing'),env,losingRaceAccount,raceTripId));
+assert(staleOwnerStatus.sharing.role==='editor'&&staleOwnerStatus.sharing.canManage===false,'stale membership owner role cannot grant owner authorization');
+db.prepare(`UPDATE trips SET deleted_at=? WHERE id=?`).run(Date.now(),raceTripId);
+
+// Pending-invite capacity is enforced by the INSERT itself. Two requests that
+// start with one slot left can commit only one invitation.
+const inviteLimitTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Invite capacity',lifecycleState:'upcoming'}),env,owner));
+for(let index=0;index<9;index+=1)await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,inviteLimitTrip.trip.id);
+const inviteLimitRace=await Promise.allSettled([
+  createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,inviteLimitTrip.trip.id),
+  createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,inviteLimitTrip.trip.id),
+]);
+assert(inviteLimitRace.filter(result=>result.status==='fulfilled').length===1,'one invite wins when one pending slot remains');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_invites WHERE trip_id=? AND status='invited'`).get(inviteLimitTrip.trip.id).c)===10,'concurrent invite creation cannot exceed pending limit');
+db.prepare(`UPDATE trips SET deleted_at=? WHERE id=?`).run(Date.now(),inviteLimitTrip.trip.id);
+
+// Member capacity is enforced by the guarded invite-accept update as well as
+// the early user-facing check. With one place left, only one invite can join.
+const memberLimitTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Member capacity',lifecycleState:'upcoming'}),env,owner));
+const capacityNow=Date.now();
+for(let index=0;index<8;index+=1){
+  const userId=`capacity-member-${index}`,deviceId=`capacity-member-device-${index}`;
+  db.prepare(`INSERT INTO users(id,display_name,created_at,updated_at,version) VALUES (?,?,?, ?,1)`).run(userId,`Capacity ${index}`,capacityNow,capacityNow);
+  addDevice(db,deviceId,userId);
+  db.prepare(`INSERT INTO trip_members(trip_id,user_id,role,status,joined_at) VALUES (?,?,'viewer','active',?)`).run(memberLimitTrip.trip.id,userId,capacityNow);
+}
+const capacityInviteA=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'viewer'}),env,owner,memberLimitTrip.trip.id));
+const capacityInviteB=await body(await createInvite(req('https://test/api/v1/trips/x/invites','POST',{role:'editor'}),env,owner,memberLimitTrip.trip.id));
+const capacityCandidates=[];
+for(const suffix of ['a','b']){
+  const userId=`capacity-candidate-${suffix}`,deviceId=`capacity-candidate-device-${suffix}`;
+  db.prepare(`INSERT INTO users(id,display_name,created_at,updated_at,version) VALUES (?,?,?, ?,1)`).run(userId,`Candidate ${suffix.toUpperCase()}`,capacityNow,capacityNow);
+  addDevice(db,deviceId,userId);
+  capacityCandidates.push({deviceId,userId});
+}
+await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:capacityInviteA.invite.token}),env,capacityCandidates[0]);
+let memberLimitBlocked=false;
+try{await acceptInvite(req('https://test/api/v1/invites/accept','POST',{token:capacityInviteB.invite.token}),env,capacityCandidates[1]);}catch(e){memberLimitBlocked=e.code==='MEMBER_LIMIT_REACHED'&&e.status===409;}
+assert(memberLimitBlocked,'second acceptance is blocked when the member limit is reached');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_members WHERE trip_id=? AND status='active'`).get(memberLimitTrip.trip.id).c)===10,'concurrent invite acceptance cannot exceed member limit');
+db.prepare(`UPDATE trips SET deleted_at=? WHERE id=?`).run(Date.now(),memberLimitTrip.trip.id);
+
+// A guest owner of an unshared trip can still delete their own trip (no account required).
+addDevice(db,'solo-guest-device');
+const soloGuest={deviceId:'solo-guest-device'};
+const soloTrip=await body(await createDemoTrip(req('https://test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,soloGuest));
+const soloVersion=Number(db.prepare(`SELECT version FROM trips WHERE id=?`).get(soloTrip.demo.tripId).version);
+const soloDelete=await deleteTrip(req('https://test/api/v1/trips/x','DELETE',{version:soloVersion}),env,soloGuest,soloTrip.demo.tripId);
+assert(soloDelete.status===204,'guest owner can delete their own unshared trip');
+
 // QA scenario: airport change should calculate a high-consequence connection problem.
 addDevice(db,'qa-device');
 const qa={deviceId:'qa-device'};
@@ -245,6 +445,119 @@ const importsAfter=await body(await listImports(req('https://test/api/v1/trips/x
 assert(importsAfter.imports.some(x=>x.id===previewImport.import.id&&x.status==='completed'),'import completes after confirmation');
 assert(!Object.keys(db.prepare(`SELECT * FROM import_messages WHERE import_id=?`).get(previewImport.import.id)).some(k=>/body|raw|content/i.test(k)),'import message schema stores no raw body');
 
+// Inbound Email Routing pipeline (end-to-end through the actual email() handler):
+// raw MIME in → safe parse → verified-sender gate → deterministic trip match →
+// review package only (never auto-create) → idempotent dedup.
+function inboundMessage(from,to,rawText){
+  const bytes=new TextEncoder().encode(rawText);
+  const raw=new ReadableStream({start(c){c.enqueue(bytes);c.close();}});
+  const state={rejected:null};
+  const message={from,to,raw,headers:new Headers(),setReject(reason){state.rejected=reason;}};
+  return {message,state};
+}
+async function inboundCount(user){return Number(db.prepare(`SELECT COUNT(*) c FROM inbound_booking_emails WHERE user_id=?`).get(user).c);}
+
+// Seed a verified sender for the owner account.
+db.prepare(`INSERT INTO verified_sender_emails(id,user_id,email,email_normalized,source,verified_at,created_at) VALUES (?,?,?,?,'google_identity',?,?)`).run('vse-owner',login.userId,'traveler@example.test','traveler@example.test',Date.now(),Date.now());
+
+// Unknown recipient is rejected before any processing.
+const wrongRecipient=inboundMessage('traveler@example.test','someone-else@tripto.to','Subject: x\r\n\r\nhi');
+await receiveBookingEmail(wrongRecipient.message,env);
+assert(wrongRecipient.state.rejected==='Unknown recipient','inbound rejects unknown recipient');
+
+// Unverified sender is bounced (recoverable), never silently dropped, and writes no row.
+const beforeUnverified=await inboundCount(login.userId);
+const stranger=inboundMessage('stranger@example.test','go@tripto.to','Subject: Hotel\r\nContent-Type: text/plain\r\n\r\nHotel: Somewhere\r\nConfirmation: ZZZ1');
+await receiveBookingEmail(stranger.message,env);
+assert(stranger.state.rejected==='Sender is not verified','inbound bounces unverified sender');
+assert(await inboundCount(login.userId)===beforeUnverified,'unverified sender writes no inbound row');
+
+// Verified sender, HIGH-confidence hotel via multipart/alternative → review only.
+const hotelMime=[
+  'Subject: Your hotel booking is confirmed',
+  'From: Traveler <traveler@example.test>',
+  'Message-ID: <hotel-1@example.test>',
+  'Content-Type: multipart/alternative; boundary="HB"',
+  '',
+  '--HB',
+  'Content-Type: text/plain; charset=utf-8',
+  '',
+  'Hotel: Grand Test Hotel',
+  'Address: Via Nazionale 22, Roma',
+  'Confirmation number: HB-778899',
+  'Check-in: 1 September 2026',
+  'Check-out: 5 September 2026',
+  '--HB',
+  'Content-Type: text/html; charset=utf-8',
+  '',
+  '<html><body><script>fetch("https://evil.test")</script><p>Grand Test Hotel</p></body></html>',
+  '--HB--',
+].join('\r\n');
+const hotel=inboundMessage('traveler@example.test','go@tripto.to',hotelMime);
+await receiveBookingEmail(hotel.message,env);
+assert(hotel.state.rejected===null,'verified hotel email accepted');
+const hotelRow=db.prepare(`SELECT * FROM inbound_booking_emails WHERE message_fingerprint IS NOT NULL AND subject LIKE 'Your hotel booking%'`).get();
+assert(hotelRow&&hotelRow.status==='needs_confirmation','HIGH-confidence hotel still needs traveler confirmation');
+assert(hotelRow.user_id===login.userId&&hotelRow.trip_id===tripId,'inbound hotel attached to the owner trip');
+const emailStay=db.prepare(`SELECT * FROM trip_items WHERE trip_id=? AND type='stay' AND title='Grand Test Hotel'`).get(tripId);
+assert(!emailStay,'forwarded hotel does not materialize before traveler confirmation');
+assert(db.prepare(`SELECT status FROM imports WHERE id=?`).get(hotelRow.import_id).status==='needs_confirmation','hotel import remains reviewable');
+
+// Forwarding the SAME hotel email again is idempotent: no new inbound row, no duplicate booking.
+const beforeDup=await inboundCount(login.userId);
+const stayCountBefore=Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND type='stay'`).get(tripId).c);
+const hotelDup=inboundMessage('traveler@example.test','go@tripto.to',hotelMime);
+await receiveBookingEmail(hotelDup.message,env);
+assert(await inboundCount(login.userId)===beforeDup,'duplicate forward creates no second inbound row');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND type='stay'`).get(tripId).c)===stayCountBefore,'duplicate forward creates no booking');
+
+// Verified flight email is never auto-scheduled (timezone unknown) → surfaced for review.
+const flightMime=[
+  'Subject: Flight confirmation LY383',
+  'From: traveler@example.test',
+  'Message-ID: <flight-1@example.test>',
+  'Content-Type: text/plain; charset=utf-8',
+  '',
+  'Booking reference: FL-123',
+  'Flight: LY 383',
+  'TLV -> FCO',
+  'Departure: 2026-09-01 10:30',
+  'Arrival: 2026-09-01 13:15',
+].join('\r\n');
+const flight=inboundMessage('traveler@example.test','go@tripto.to',flightMime);
+await receiveBookingEmail(flight.message,env);
+const flightRow=db.prepare(`SELECT * FROM inbound_booking_emails WHERE subject LIKE 'Flight confirmation%'`).get();
+assert(flightRow&&flightRow.status==='needs_confirmation','flight is surfaced for review, never silently scheduled');
+assert(db.prepare(`SELECT candidate_type FROM import_candidates WHERE import_id=?`).get(flightRow.import_id).candidate_type==='flight','flight candidate stored pending review');
+
+// User-facing inbound feed exposes the six-state vocabulary via display_status.
+const inboundFeed=await body(await listInboundEmails(req('https://test/api/v1/inbound-emails'),env,owner));
+assert(inboundFeed.emails.filter(x=>x.display_status==='needs_review').length>=2,'inbound feed reports review states');
+
+// With more than one eligible trip and no decisive booking signal, keep a fully
+// parsed, unassigned import in Email Inbox. Choosing a trip updates only the
+// review package; it still does not materialize a booking.
+const secondTrip=await body(await createTrip(req('https://test/api/v1/trips','POST',{title:'Milan work trip',lifecycleState:'upcoming',startsOn:'2026-10-02',endsOn:'2026-10-05'}),env,owner));
+const ambiguous=inboundMessage('traveler@example.test','go@tripto.to',[
+  'Subject: Hotel confirmation',
+  'Message-ID: <ambiguous-hotel@example.test>',
+  'Content-Type: text/plain; charset=utf-8',
+  '',
+  'Hotel: City Center Hotel',
+  'Confirmation number: CITY44',
+].join('\r\n'));
+await receiveBookingEmail(ambiguous.message,env);
+assert(!ambiguous.state.rejected,'verified ambiguous email accepted');
+const ambiguousRow=db.prepare(`SELECT * FROM inbound_booking_emails WHERE subject='Hotel confirmation' AND message_fingerprint IS NOT NULL ORDER BY received_at DESC LIMIT 1`).get();
+assert(ambiguousRow.status==='needs_trip'&&ambiguousRow.trip_id==null&&ambiguousRow.import_id,'ambiguous email is retained as a reviewable needs-trip item');
+assert(db.prepare(`SELECT trip_id FROM imports WHERE id=?`).get(ambiguousRow.import_id).trip_id==null,'unassigned import never guesses a trip');
+const inbox=await body(await listBookingEmails(req('https://test/api/v1/booking-emails'),env,owner));
+assert(inbox.bookingEmails.some(row=>row.id===ambiguousRow.id&&row.candidate_count===1),'Email Inbox exposes the pending candidate');
+const beforeAssignCount=Number(db.prepare(`SELECT COUNT(*) c FROM trip_items`).get().c);
+const assigned=await body(await assignBookingEmail(req('https://test/api/v1/booking-emails/x/assign','POST',{tripId:secondTrip.trip.id}),env,owner,ambiguousRow.id));
+assert(assigned.tripId===secondTrip.trip.id&&assigned.importId===ambiguousRow.import_id,'traveler can assign email to the selected trip');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items`).get().c)===beforeAssignCount,'assigning a trip does not add a booking before confirmation');
+
 // Smart upload import receives structured fields and checksum only, detects duplicates, and materializes after review.
 const checksum='a'.repeat(64),uploadBody={checksum,filename:'hotel-confirmation.pdf',documentKind:'pdf',candidate:{type:'hotel',confidence:.86,fields:{propertyName:{value:'Hotel Test',confidence:.9,source:'embedded_text'},checkInDate:{value:'2026-09-01',confidence:.8,source:'embedded_text'},checkOutDate:{value:'2026-09-03',confidence:.8,source:'embedded_text'},confirmationNumber:{value:'HOT123',confidence:.8,source:'barcode'}},warnings:[]}};
 const upload=await body(await previewUploadedDocument(req('https://test/api/v1/trips/x/imports/upload/preview','POST',uploadBody),env,owner,tripId));
@@ -255,7 +568,27 @@ assert(uploadDuplicate.duplicate===true&&uploadDuplicate.actions.includes('add_a
 const uploadResolved=await body(await resolveImportCandidate(req('https://test/api/v1/trips/x/imports/y/resolve','POST',{candidateId:upload.candidates[0].id,action:'confirm',payload:{candidateType:'hotel'}}),env,owner,tripId,upload.import.id));
 assert(uploadResolved.candidateType==='hotel','reviewed upload type preserved');
 assert(db.prepare(`SELECT source_type FROM trip_items WHERE id=?`).get(uploadResolved.entityId).source_type==='upload','confirmed upload materializes upload-sourced item');
+// Regression (resolve idempotency): a second confirm of an already-resolved
+// candidate must not create a second booking. The status flip is the atomic
+// claim gate, so the replay is rejected with 409 IMPORT_ALREADY_RESOLVED.
+const tripItemsAfterResolve=Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=?`).get(tripId).c);
+let resolveReplayRejected=false;
+try{await resolveImportCandidate(req('https://test/api/v1/trips/x/imports/y/resolve','POST',{candidateId:upload.candidates[0].id,action:'confirm',payload:{candidateType:'hotel'}}),env,owner,tripId,upload.import.id);}catch(error){resolveReplayRejected=error.code==='IMPORT_ALREADY_RESOLVED'&&error.status===409;}
+assert(resolveReplayRejected,'re-confirming a resolved candidate is rejected with 409');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=?`).get(tripId).c)===tripItemsAfterResolve,'resolve replay creates no duplicate booking');
 assert(db.prepare(`SELECT COUNT(*) c FROM import_messages WHERE import_id=? AND normalized_hash=?`).get(upload.import.id,checksum).c===1,'only checksum metadata is stored');
+// Regression (cross-tenant upload dedup): the dedup domain must be per-trip. The
+// stored fingerprint is namespaced by trip, and the SAME file checksum uploaded
+// to a DIFFERENT trip is NOT flagged as a duplicate of another trip's import
+// (before the fix the global UNIQUE(source_type,source_fingerprint) + untrip-scoped
+// SELECT leaked another owner's import and blocked the upload).
+assert(String(db.prepare(`SELECT source_fingerprint f FROM imports WHERE id=?`).get(upload.import.id).f).startsWith(`${tripId}:`),'upload dedup fingerprint is namespaced by trip');
+const crossTenantTripId='cross-tenant-trip';
+const crossNow=Date.now();
+db.prepare(`INSERT INTO trips(id,owner_user_id,created_by_device_id,title,lifecycle_state,starts_on,ends_on,created_at,updated_at,version) VALUES (?,?,NULL,'Other trip','upcoming','2026-09-01','2026-09-03',?,?,1)`).run(crossTenantTripId,login.userId,crossNow,crossNow);
+const crossTenantUpload=await body(await previewUploadedDocument(req('https://test/api/v1/trips/x/imports/upload/preview','POST',uploadBody),env,owner,crossTenantTripId));
+assert(crossTenantUpload.duplicate!==true&&crossTenantUpload.candidates?.[0]?.candidate_type==='hotel','identical checksum in another trip is not treated as a cross-trip duplicate');
+assert(String(db.prepare(`SELECT source_fingerprint f FROM imports WHERE id=?`).get(crossTenantUpload.import.id).f).startsWith(`${crossTenantTripId}:`),'second trip gets its own trip-scoped fingerprint');
 
 // Google account controls are gated and sign-out rotates to a new guest device without deleting account data.
 env.GOOGLE_CLIENT_ID='test-client.apps.googleusercontent.com';
@@ -391,4 +724,4 @@ assert(db.prepare(`SELECT COUNT(*) c FROM trips WHERE id=?`).get(pa.demo.tripId)
 assert(db.prepare(`SELECT COUNT(*) c FROM usage_counters WHERE scope_id IN (?,?)`).get('user:'+privacyLogin.userId,'device:privacy-account-device').c===0,'account rate-limit identifiers deleted');
 assert(Number(db.prepare(`SELECT COUNT(*) c FROM privacy_deletions`).get().c)>=2,'anonymous privacy deletion counters recorded');
 
-console.log('Local D1 integration suite passed: auth, migration, sharing, imports, beta metrics, rate limits, ops privacy and data deletion.');
+console.log('Local D1 integration suite passed: auth, migration, sharing, collaboration roles, imports, beta metrics, rate limits, ops privacy and data deletion.');

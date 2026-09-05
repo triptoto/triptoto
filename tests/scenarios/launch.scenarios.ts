@@ -9,7 +9,7 @@ assert(PRODUCT_LIMITS.documentsPerTrip===20,'local/cloud beta document count ali
 assert(PRODUCT_LIMITS.maxDocumentBytes===10*1024*1024,'document byte cap');
 assert(PRODUCT_LIMITS.forwardedImportsPerDay===20,'forwarded import daily quota');
 assert(PRODUCT_LIMITS.actorWritesPerHour===300,'actor write rate limit');
-assert(PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint===30,'guest-session abuse guard');
+assert(PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint===60,'guest-session abuse guard');
 assert(FEATURE_FLAGS.betaMetrics===true,'privacy-safe beta metrics enabled');
 assert(FEATURE_FLAGS.liveFlights===false&&FEATURE_FLAGS.generativeAI===false,'paid/live integrations remain disabled');
 assert(betaEventNames.every(name=>!/(email|address|location|confirmation|document_bytes)/i.test(name)),'beta event names contain no payload fields');

@@ -13,11 +13,13 @@
 
     if (!title)
       return { valid: false, field: "title", message: "Enter a trip name." };
+    if (!startsOn && !endsOn)
+      return { valid: true, values: { title, startsOn: null, endsOn: null } };
     if (!startsOn)
       return {
         valid: false,
         field: "startsOn",
-        message: "Select a start date.",
+        message: "Select a start date or remove the end date.",
       };
     if (!DATE_PATTERN.test(startsOn))
       return {
@@ -29,7 +31,7 @@
       return {
         valid: false,
         field: "endsOn",
-        message: "Select an end date.",
+        message: "Select an end date or skip both dates.",
       };
     if (!DATE_PATTERN.test(endsOn))
       return {

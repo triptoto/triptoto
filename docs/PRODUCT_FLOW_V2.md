@@ -315,3 +315,18 @@ OFFLINE / REQUEST FAILURE
 ├─ Label stale/unavailable data
 └─ Reconnect → sync → expose unresolved conflicts
 ```
+
+## Contextual Trip Map
+
+```
+TRIP OPTIONS
+└─ Trip Map             (opens when canShowTripMap(): 2+ distinct mappable places)
+    ├─ Back → Trip options
+    ├─ Day filter (All Trip + per-day)
+    ├─ Ordered place cards + NEXT (soonest future booking)
+    ├─ Place card → single-destination directions (Google Maps URL)
+    ├─ No bulk "open all points" action
+    └─ Offline → places remain readable; directions show recovery guidance
+```
+
+No GPS is ever requested. Address-only places resolve via the same-origin, keyless /api/v1/geocode proxy; offline falls back to the address list. See TRIP_MAP_V2.md.

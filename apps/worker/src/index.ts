@@ -5,7 +5,7 @@ import { health } from './routes/health.ts';
 import { createGuestSession, refreshSession } from './routes/session.ts';
 import { createTrip, deleteTrip, getTrip, listTrips, updateTrip } from './routes/trips.ts';
 import { createTimelineItem, deleteTimelineItem, listTimeline, updateTimelineItem } from './routes/timeline.ts';
-import { createChecklistItem, listChecklist, seedTripChecklist, updateChecklistItem } from './routes/checklist.ts';
+import { createChecklistItem, deleteChecklistItem, listChecklist, seedTripChecklist, updateChecklistItem } from './routes/checklist.ts';
 import { tripBrain } from './routes/brain.ts';
 import { listTravelers, createTraveler, updateTraveler, deleteTraveler } from './routes/travelers.ts';
 import { listLocations, createLocation } from './routes/locations.ts';
@@ -17,9 +17,9 @@ import { accountStatus, accountMigrationPreview } from './routes/account.ts';
 import { diagnostics } from './routes/diagnostics.ts';
 import { exportTripJson, exportTripCalendar } from './routes/export.ts';
 import { tripSupportBundle } from './routes/support.ts';
-import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember } from './routes/sharing.ts';
+import { sharingStatus, previewInvite, listMembers, listInvites, createInvite, revokeInvite, acceptInvite, updateMemberRole, removeMember, leaveTrip, transferOwnership } from './routes/sharing.ts';
 import { createDemoTrip } from './routes/demo.ts';
-import { previewForwardedEmail, previewUploadedDocument, listImports, getImport, resolveImportCandidate } from './routes/imports.ts';
+import { previewForwardedEmail, previewUploadedDocument, listImports, getImport, resolveImportCandidate, listInboundEmails, deleteImport } from './routes/imports.ts';
 import { acknowledgeGoogleHandoff, createGoogleChallenge, exchangeGoogleHandoff, googleSignIn, googleSignInRedirect, signOut } from './routes/google-auth.ts';
 import { betaStatus, recordClientBetaEvent } from './routes/beta.ts';
 import { opsSummary } from './routes/ops.ts';
@@ -34,8 +34,12 @@ import { listTimeMarkers, createTimeMarker, updateTimeMarker, deleteTimeMarker }
 import { expandedTripHealth } from './routes/intelligence.ts';
 import { syncStatus, syncChanges, acknowledgeSync, queueSyncOperation, listSyncConflicts } from './routes/sync-v2.ts';
 import { readiness } from './routes/readiness.ts';
-import { currentWeather } from './routes/weather.ts';
+import { currentWeather, geocodePlace } from './routes/weather.ts';
+import { currencyRates } from './routes/currency.ts';
 import { receiveBookingEmail, type InboundEmailMessage } from './inbound-email.ts';
+import { assignBookingEmail, dismissBookingEmail, listBookingEmails } from './routes/booking-emails.ts';
+import { refreshLiveFlight, updateLiveFlightMonitoring } from './routes/live-flights.ts';
+import { runScheduledLiveFlightRefresh } from './live-flights.ts';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -49,11 +53,25 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
-      if (request.method === 'GET' && path === '/health') return health(request, env);
-      if (request.method === 'GET' && path === '/api/v1/readiness') return readiness(request, env);
+      if ((request.method === 'GET' || request.method === 'HEAD') && path === '/health') {
+        const response = await health(request, env);
+        return request.method === 'HEAD' ? new Response(null, response) : response;
+      }
+      if ((request.method === 'GET' || request.method === 'HEAD') && path === '/api/v1/readiness') {
+        const response = await readiness(request, env);
+        return request.method === 'HEAD' ? new Response(null, response) : response;
+      }
       if (request.method === 'GET' && path === '/api/v1/weather') {
         await enforcePublicRateLimit(request,env,{action:'weather',limit:120,windowMs:60*60*1000});
         return currentWeather(request, env);
+      }
+      if (request.method === 'GET' && path === '/api/v1/geocode') {
+        await enforcePublicRateLimit(request,env,{action:'geocode',limit:120,windowMs:60*60*1000});
+        return geocodePlace(request, env);
+      }
+      if (request.method === 'GET' && path === '/api/v1/currency') {
+        await enforcePublicRateLimit(request,env,{action:'currency',limit:120,windowMs:60*60*1000});
+        return currencyRates(request, env);
       }
       if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-candidate-1' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {
@@ -89,6 +107,12 @@ export default {
       if (request.method === 'POST' && path === '/api/v1/invites/preview') return previewInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/invites/accept') return acceptInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/internal/demo-trips') return createDemoTrip(request, env, auth);
+      if (request.method === 'GET' && path === '/api/v1/booking-emails') return listBookingEmails(request,env,auth);
+      let bookingEmailMatch = path.match(/^\/api\/v1\/booking-emails\/([^/]+)\/(assign|dismiss)$/);
+      if (bookingEmailMatch && request.method === 'POST') {
+        const emailId=decodeURIComponent(bookingEmailMatch[1]);
+        return bookingEmailMatch[2] === 'assign' ? assignBookingEmail(request,env,auth,emailId) : dismissBookingEmail(request,env,auth,emailId);
+      }
       if (path === '/api/v1/trips') {
         if (request.method === 'GET') return listTrips(request, env, auth);
         if (request.method === 'POST') return createTrip(request, env, auth);
@@ -126,6 +150,7 @@ export default {
       if (match && request.method === 'POST') return seedTripChecklist(request, env, auth, decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/checklist\/([^/]+)$/);
       if (match && request.method === 'PATCH') return updateChecklistItem(request, env, auth, decodeURIComponent(match[1]), decodeURIComponent(match[2]));
+      if (match && request.method === 'DELETE') return deleteChecklistItem(request, env, auth, decodeURIComponent(match[1]), decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/brain$/);
       if (match && request.method === 'GET') return tripBrain(request, env, auth, decodeURIComponent(match[1]));
 
@@ -140,6 +165,10 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listTransport(request,env,auth,tripId); if(request.method==='POST') return createTransport(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport\/([^/]+)$/);
       if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateTransport(request,env,auth,tripId,itemId); if(request.method==='DELETE') return deleteTransport(request,env,auth,tripId,itemId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport\/([^/]+)\/live$/);
+      if (match && request.method==='PATCH') return updateLiveFlightMonitoring(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transport\/([^/]+)\/live\/refresh$/);
+      if (match && request.method==='POST') return refreshLiveFlight(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/stays$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listStays(request,env,auth,tripId); if(request.method==='POST') return createStay(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/stays\/([^/]+)$/);
@@ -160,18 +189,24 @@ export default {
       if (match && request.method==='GET') return listMembers(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/members\/([^/]+)$/);
       if (match) { const tripId=decodeURIComponent(match[1]), userId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateMemberRole(request,env,auth,tripId,userId); if(request.method==='DELETE') return removeMember(request,env,auth,tripId,userId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/leave$/);
+      if (match && request.method==='POST') return leaveTrip(request,env,auth,decodeURIComponent(match[1]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/transfer-ownership$/);
+      if (match && request.method==='POST') return transferOwnership(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/invites$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listInvites(request,env,auth,tripId); if(request.method==='POST') return createInvite(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/invites\/([^/]+)$/);
       if (match && request.method==='DELETE') return revokeInvite(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listImports(request,env,auth,tripId); }
+      if (path==='/api/v1/inbound-emails' && request.method==='GET') return listInboundEmails(request,env,auth);
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/forwarded-email\/preview$/);
       if (match && request.method==='POST') return previewForwardedEmail(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/upload\/preview$/);
       if (match && request.method==='POST') return previewUploadedDocument(request,env,auth,decodeURIComponent(match[1]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/([^/]+)$/);
       if (match && request.method==='GET') return getImport(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      if (match && request.method==='DELETE') return deleteImport(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/imports\/([^/]+)\/resolve$/);
       if (match && request.method==='POST') return resolveImportCandidate(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
 
@@ -227,5 +262,8 @@ export default {
   },
   async email(message: InboundEmailMessage, env: Env): Promise<void> {
     await receiveBookingEmail(message, env);
+  },
+  async scheduled(_controller: unknown, env: Env): Promise<void> {
+    await runScheduledLiveFlightRefresh(env);
   },
 };

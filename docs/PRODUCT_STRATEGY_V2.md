@@ -18,7 +18,7 @@ The first successful journey is:
 
 The repeat-use loop is:
 
-`Trip Timeline ↔ + ↔ Account`
+`Trip Timeline ↔ Alerts ↔ + ↔ To-do ↔ Account`
 
 ## Primary traveler
 
@@ -208,13 +208,15 @@ Automatic initial selection uses active, nearest upcoming, then relevant recent 
 
 ## Primary navigation
 
-Only three concepts are primary:
+Five controls are primary:
 
 - **Trip** — current trip Timeline;
+- **Trip options** — weather, currency, map, eSIM, alerts, collaboration, imports, documents, and trip management;
 - **+** — Add Booking or Create New Trip;
+- **To-do** — current trip checklist;
 - **Account** — identity, trips, forwarding email, help, privacy, and sign out.
 
-The existing Home / Trip / Add / Bookings / Account bar is not the V2 mental model.
+This exact order is the V2 navigation model: `Trip | Trip options | + | To-do | Account`.
 
 ## Account
 
@@ -331,7 +333,7 @@ Unify entry around Upload, Forward Email, and Add Manually. Preserve determinist
 
 ### Phase E — Timeline as primary experience
 
-Introduce the V2 Timeline shell, compact booking rows, booking details, contextual documents, trip selector, and Trip / + / Account navigation. Keep the old UI as a fallback during parity validation.
+Introduce the V2 Timeline shell, compact booking rows, booking details, contextual documents, trip selector, and `Trip | Trip options | + | To-do | Account` navigation. Rollback uses immutable Git/Worker history rather than a second runtime theme.
 
 ### Phase F — contextual guidance
 
@@ -394,3 +396,9 @@ If OAuth nonce/replay state cannot be safely held in a signed short-lived cookie
 ## Recommended challenge to the brief
 
 The product should require authentication before creating new V2 data, as specified, but previously cached guest trips should remain readable on their original device during a temporary auth outage. Forcing a hard login wall over already available offline travel data would violate the product's safety and offline promise. The Welcome/auth layer should therefore gate new cloud use while an explicit recovery path protects previously cached trips.
+
+## Contextual Trip Map
+
+The map is a lens, not a home. It surfaces as a contextual + menu action only when a trip has 2+ distinct mappable places, keeping the Timeline the single primary surface. This avoids a low-value permanent Map tab while still answering "where is everything on this trip?" when the data supports it.
+
+Constraints that shape the strategy: tripto.to never requests GPS (no current-location permission, no location history), so the map never claims proximity or live position. The default basemap is a keyless, CSP-safe schematic; embedded Google Maps is gated behind explicit owner setup and is never enabled implicitly, so the product incurs no silent paid-API dependency. Navigation is delegated to Google Maps via URL and works independently of which basemap renders. See TRIP_MAP_V2.md.

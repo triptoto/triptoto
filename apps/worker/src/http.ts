@@ -46,8 +46,24 @@ export async function readJson<T>(request: Request, maxBytes = 64 * 1024): Promi
   if (!contentType.includes('application/json')) throw new HttpError(415, 'JSON_REQUIRED', 'Expected application/json request body.');
   const declared = Number(request.headers.get('content-length') ?? '0');
   if (Number.isFinite(declared) && declared > maxBytes) throw new HttpError(413, 'REQUEST_TOO_LARGE', `Request body exceeds the ${maxBytes} byte limit.`);
-  const raw = await request.text();
-  if (new TextEncoder().encode(raw).byteLength > maxBytes) throw new HttpError(413, 'REQUEST_TOO_LARGE', `Request body exceeds the ${maxBytes} byte limit.`);
+  const reader = request.body?.getReader();
+  if (!reader) throw new HttpError(400, 'INVALID_JSON', 'Request body is not valid JSON.');
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    received += value.byteLength;
+    if (received > maxBytes) {
+      await reader.cancel().catch(() => undefined);
+      throw new HttpError(413, 'REQUEST_TOO_LARGE', `Request body exceeds the ${maxBytes} byte limit.`);
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(received);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  const raw = new TextDecoder().decode(bytes);
   try {
     return JSON.parse(raw) as T;
   } catch {

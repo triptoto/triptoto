@@ -32,19 +32,22 @@ test ! -f public/app.js
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/8 PWA and disabled integrations'
-grep -q "tripto-shell-product-v2-manual-booking-v2" public/sw.js
+grep -q "tripto-shell-product-v118-soft-trips-background" public/sw.js
+grep -q "/icons/tripto-system.svg" public/sw.js
+grep -q "/canonical-host.js" public/sw.js
 grep -q "/google-auth-client.js" public/sw.js
 grep -q "tripto-places-2026-08-26" public/sw.js
 grep -q "/places-search-worker.js" public/sw.js
 grep -q "/data/places-2026-08-26.json" public/sw.js
 grep -q 'ensureAirportTimezones' public/mobile-app.js
-grep -q "/vendor/phosphor/Phosphor.woff2" public/sw.js
+! grep -q "/vendor/dm-serif-display/" public/sw.js
 grep -q "/assets/google-g.svg" public/sw.js
 ! grep -q "/legacy.html" public/sw.js
 grep -q "key.startsWith('tripto-shell-')" public/sw.js
-for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED SHARING_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
+for flag in LIVE_FLIGHTS_ENABLED AI_ENABLED GMAIL_SYNC_ENABLED R2_DOCUMENTS_ENABLED DEMO_TOOLS_ENABLED OPS_ENABLED; do
   grep -q "\"$flag\": \"false\"" wrangler.jsonc
 done
+grep -q '"SHARING_ENABLED": "true"' wrangler.jsonc
 grep -Eq '"ACCOUNT_AUTH_ENABLED": "(false|true)"' wrangler.jsonc
 
 echo '6/8 Offline places validation'

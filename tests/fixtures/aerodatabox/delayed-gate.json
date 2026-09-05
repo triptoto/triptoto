@@ -1,0 +1,11 @@
+[
+  {
+    "number": "LY 383",
+    "status": "Delayed",
+    "codeshareStatus": "IsOperator",
+    "lastUpdatedUtc": "2026-08-20T06:05:00Z",
+    "airline": { "iata": "LY" },
+    "departure": { "airport": { "iata": "TLV" }, "scheduledTime": { "utc": "2026-08-20T06:20:00Z", "local": "2026-08-20 09:20+03:00" }, "revisedTime": { "utc": "2026-08-20T07:05:00Z", "local": "2026-08-20 10:05+03:00" }, "terminal": "3", "gate": "C4" },
+    "arrival": { "airport": { "iata": "FCO" }, "scheduledTime": { "utc": "2026-08-20T10:20:00Z", "local": "2026-08-20 12:20+02:00" }, "predictedTime": { "utc": "2026-08-20T11:05:00Z", "local": "2026-08-20 13:05+02:00" }, "baggageBelt": "8" }
+  }
+]

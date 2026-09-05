@@ -4,6 +4,7 @@ import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
 import { recordBookingMilestones } from '../beta-events.ts';
 import { claimManualBookingCreate, completeManualBookingCreate, manualBookingLocationFingerprint, recoverManualBookingCreate } from '../manual-booking-idempotency.ts';
+import { liveFlightFeatureStatus } from '../live-flights.ts';
 
 const transportTypes=['flight','train','bus','ferry','car','transfer','other'] as const;
 const statuses=['planned','confirmed','completed','cancelled','skipped','unknown'] as const;
@@ -11,8 +12,19 @@ interface Body { transportType?:unknown; title?:unknown; status?:unknown; carrie
 
 export async function listTransport(request:Request,env:Env,auth:AuthContext,tripId:string):Promise<Response>{
  await requireTripAccess(env,auth,tripId);
- const result=await env.DB.prepare(`SELECT ti.*,ts.transport_type,ts.carrier_name,ts.service_number,ts.departure_location_id,ts.arrival_location_id,ts.scheduled_departure_utc,ts.scheduled_arrival_utc,ts.departure_timezone,ts.arrival_timezone,ts.booking_reference,ts.booking_status,f.marketing_airline_code,f.marketing_flight_number,f.operating_airline_code,f.operating_flight_number,f.departure_terminal,f.departure_gate,f.arrival_terminal,f.arrival_gate,f.boarding_time_utc,f.gate_close_time_utc,f.operational_phase,f.disruption_state,(SELECT GROUP_CONCAT(tit.traveler_id, ',') FROM trip_item_travelers tit WHERE tit.trip_item_id=ti.id) traveler_ids FROM trip_items ti JOIN transport_segments ts ON ts.trip_item_id=ti.id LEFT JOIN flights f ON f.trip_item_id=ti.id WHERE ti.trip_id=? AND ti.deleted_at IS NULL ORDER BY ti.starts_at_utc`).bind(tripId).all();
- return json({transport:result.results??[]},{},request,env);
+ const result=await env.DB.prepare(`SELECT ti.*,ts.transport_type,ts.carrier_name,ts.service_number,ts.departure_location_id,ts.arrival_location_id,ts.scheduled_departure_utc,ts.scheduled_arrival_utc,ts.departure_timezone,ts.arrival_timezone,ts.booking_reference,ts.booking_status,f.marketing_airline_code,f.marketing_flight_number,f.operating_airline_code,f.operating_flight_number,f.departure_terminal,f.departure_gate,f.arrival_terminal,f.arrival_gate,f.boarding_time_utc,f.gate_close_time_utc,f.estimated_departure_utc,f.estimated_arrival_utc,f.actual_departure_utc,f.actual_arrival_utc,f.operational_phase,f.disruption_state,f.live_data_enabled,
+ fls.provider live_provider,fls.provider_flight_id,fls.match_status live_match_status,fls.match_confidence live_confidence,fls.provider_status,
+ fls.provider_scheduled_departure_utc,fls.provider_scheduled_arrival_utc,fls.live_departure_terminal,fls.live_departure_gate,
+ fls.live_arrival_terminal,fls.live_arrival_gate,fls.baggage_belt,fls.marketing_airline_code live_marketing_airline_code,
+ fls.marketing_flight_number live_marketing_flight_number,fls.operating_airline_code live_operating_airline_code,
+ fls.operating_flight_number live_operating_flight_number,fls.delay_minutes,fls.provider_updated_at,fls.fetched_at live_fetched_at,
+ fls.last_checked_at live_last_checked_at,fls.last_success_at live_last_success_at,fls.freshness_expires_at,
+ fls.next_refresh_at live_next_refresh_at,fls.last_error_code live_error_code,fls.cancellation_first_reported_at,
+ fls.cancellation_confirmed_at,
+ (SELECT GROUP_CONCAT(tit.traveler_id, ',') FROM trip_item_travelers tit WHERE tit.trip_item_id=ti.id) traveler_ids
+ FROM trip_items ti JOIN transport_segments ts ON ts.trip_item_id=ti.id LEFT JOIN flights f ON f.trip_item_id=ti.id
+ LEFT JOIN flight_live_status fls ON fls.trip_item_id=ti.id WHERE ti.trip_id=? AND ti.deleted_at IS NULL ORDER BY ti.starts_at_utc`).bind(tripId).all();
+ return json({transport:result.results??[],liveFlights:liveFlightFeatureStatus(env,auth)},{},request,env);
 }
 
 export async function createTransport(request:Request,env:Env,auth:AuthContext,tripId:string):Promise<Response>{

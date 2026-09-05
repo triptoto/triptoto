@@ -1,8 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="tripto.to">
-  <rect width="512" height="512" fill="#111215"/>
-  <g fill="#ffffff">
-    <rect x="152" y="170" width="172" height="48" rx="24"/>
-    <rect x="212" y="126" width="52" height="250" rx="26"/>
-    <circle cx="344" cy="348" r="30"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Tripto compass">
+  <rect width="512" height="512" fill="#e7e1fb"/>
+  <path d="M124 282 376 132 282 388 232 278Z" fill="#05152d"/>
+  <path d="M124 282 376 132 232 278Z" fill="#5547b7"/>
+  <circle cx="370" cy="366" r="30" fill="#fbc840"/>
 </svg>

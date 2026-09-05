@@ -1,0 +1,23 @@
+import { readFileSync } from 'node:fs';
+const read = (path) => readFileSync(path, 'utf8');
+const assert = (value, message) => { if (!value) throw new Error(`Live flights contract failed: ${message}`); };
+const worker = read('apps/worker/src/live-flights.ts'), index = read('apps/worker/src/index.ts'), route = read('apps/worker/src/routes/live-flights.ts');
+const provider = read('packages/providers/src/aerodatabox.ts'), model = read('packages/providers/src/index.ts'), policy = read('packages/live-flights/src/index.ts');
+const migration = read('migrations/0021_live_flights.sql'), config = read('wrangler.jsonc'), app = read('public/mobile-app.js'), css = read('public/mobile-app.css');
+
+assert(model.includes('interface FlightProvider') && model.includes('interface FlightStatus') && model.includes('matchStatus'), 'normalized provider abstraction missing');
+assert(provider.includes('x-rapidapi-key') && provider.includes('dateLocalRole') && provider.includes('matchAeroDataBoxCandidates'), 'AeroDataBox adapter incomplete');
+assert(!config.includes('AERODATABOX_RAPIDAPI_KEY') && !/rapidapi-key\s*[=:]\s*["'][^"']+/i.test(config), 'provider secret leaked into source config');
+assert(config.includes('"LIVE_FLIGHTS_ENABLED": "false"') && config.includes('"LIVE_FLIGHT_BETA_ONLY": "true"'), 'safe feature defaults changed');
+for (const table of ['flight_live_status','flight_provider_cache','flight_provider_usage']) assert(migration.includes(`CREATE TABLE ${table}`), `missing ${table}`);
+assert(migration.includes('cancellation_signals') && migration.includes('cancellation_confirmed_at'), 'two-stage cancellation persistence missing');
+assert(worker.includes('INSERT INTO flight_provider_usage') && worker.includes('SELECT COUNT(*)') && worker.includes('monthlyBudget'), 'atomic quota reservation missing');
+assert(worker.includes('readProviderCache') && worker.includes('normalizedStatusFingerprint') && worker.includes('meaningfulLiveEvents'), 'cache/idempotent events missing');
+assert(policy.includes("reason: 'too_early'") && policy.includes("reason: 'cancellation_verification'") && policy.includes("reason: 'finished'"), 'refresh lifecycle incomplete');
+assert(index.includes('scheduled(') && index.includes('runScheduledLiveFlightRefresh'), 'scheduled refresh handler missing');
+assert(route.includes('requireTripAccess') && route.includes("result.outcome === 'not_due' ? 429"), 'manual refresh access/cooldown missing');
+for (const copy of ['Saved update · may be out of date','Scheduled data','Live update','Cancellation reported']) assert(app.includes(copy), `truthful UI missing: ${copy}`);
+assert(app.includes('liveFlightPresentation(') && app.includes('refresh-live-flight') && app.includes('toggle-live-flight'), 'Timeline/Flight Detail UI wiring missing');
+assert(css.includes('.live-flight-strip') && css.includes('.live-flight-controls'), 'live status styles missing');
+assert(!app.includes('aerodatabox.p.rapidapi.com') && !app.toLowerCase().includes('x-rapidapi-key'), 'provider implementation leaked to browser');
+console.log('Live flights contract passed: safe defaults, provider boundary, quota/cache/cancellation policy, scheduled handler and truthful UI.');
