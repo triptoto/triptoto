@@ -5647,7 +5647,7 @@
     });
     const editAttrs=editingTraveler?` data-edit-id="${esc(editingTraveler.id)}" data-edit-version="${esc(editingTraveler.version||1)}"`:editingTrip?` data-edit-id="${esc(editingTrip.id)}" data-edit-version="${esc(val(editingTrip,"version")||1)}"`:"";
     const deleteBar=editingTrip?`<button type="button" class="trip-delete-text" data-action="delete-trip">Delete this trip</button>`:"";
-    const submitLabel=kind==="trip"?(editingTrip?"Save changes":"Create trip"):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
+    const submitLabel=kind==="trip"?(editingTrip?"Save changes":`Next ${icon("chevron",18)}`):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
     const heading=kind==="trip"?(editingTrip?"Edit trip details":"Where are you going?"):esc(cfg.title);
     const subhead=kind==="trip"?(editingTrip?"<p>Update the name or dates, or delete the trip.</p>":"<p>Pick a place, set your dates, and we’ll build the itinerary around it.</p>"):"";
     const headerActions=`${editingTrip?`<button type="button" class="icon-button app-bar-delete" data-action="delete-trip" aria-label="Delete this trip">${icon("trash",22)}</button>`:""}<button type="submit" form="native-form" class="app-bar-save mobile-primary-action">${submitLabel}</button>`;
