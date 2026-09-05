@@ -8845,16 +8845,7 @@
         syncDateRangeField(rangeForm, range.startName, range.endName);
         saveQuickDraft(rangeForm);
         formHasMeaningfulChanges = true;
-        if (!rangeForm.dataset.editId && String(rangeForm.elements.destination?.value || "").trim()) {
-          state.tripSetupPreview = {
-            destination:String(rangeForm.elements.destination.value).trim(),
-            startsOn:"",
-            endsOn:"",
-          };
-          state.dateRange = null;
-          state.sheet = "trip-setup-ready";
-          render();
-        } else closeSheet();
+        closeSheet();
         break;
       }
       case "apply-date-range": {
@@ -8868,16 +8859,7 @@
         syncDateRangeField(rangeForm, range.startName, range.endName);
         saveQuickDraft(rangeForm);
         formHasMeaningfulChanges = true;
-        if (rangeForm.dataset.kind === "trip" && !rangeForm.dataset.editId && String(rangeForm.elements.destination?.value || "").trim()) {
-          state.tripSetupPreview = {
-            destination:String(rangeForm.elements.destination.value).trim(),
-            startsOn:range.start,
-            endsOn:range.end,
-          };
-          state.dateRange = null;
-          state.sheet = "trip-setup-ready";
-          render();
-        } else closeSheet();
+        closeSheet();
         break;
       }
       case "return-trip-setup":
