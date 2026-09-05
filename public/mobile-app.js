@@ -2552,6 +2552,16 @@
       if (QA_STATE === "loading") return;
       applyPreviewData();
       if (["offline", "empty-offline"].includes(QA_STATE)) state.offline = true;
+      if (QA_STATE === "trips-journal") {
+        const iso = (offset) => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
+        state.trips = [
+          { id: "qa-current", title: "A journey along the coast", starts_on: iso(-4), ends_on: iso(7), lifecycle_state: "active", is_shared: true, role: "viewer" },
+          { id: "qa-long", title: "A longer journey", starts_on: iso(-45), ends_on: iso(45), lifecycle_state: "active" },
+          ...state.trips,
+          { id: "qa-undated", title: "A trip to plan", lifecycle_state: "draft" },
+          { id: "qa-cancelled", title: "Cancelled journey", starts_on: iso(-20), ends_on: iso(-10), lifecycle_state: "cancelled" },
+        ];
+      }
       if (QA_STATE === "timeline-empty") {
         state.timeline = [];
         state.brain = { ...state.brain, nextItem: null };
@@ -4421,30 +4431,63 @@
     if (days === 1) return "Starts tomorrow";
     return `Starts in ${days} days`;
   }
+  // Magic Patterns travel journal, backed by the existing trip list and actions.
+  function journalDate(iso) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso || ""))) return null;
+    const date = new Date(`${iso}T12:00:00Z`);
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === iso ? date : null;
+  }
+  function journalDays(trip) {
+    const start = journalDate(val(trip, "starts_on", "startsOn")),
+      end = journalDate(val(trip, "ends_on", "endsOn"));
+    if (!start || !end || end < start) return null;
+    const total = Math.round((end - start) / 86400000) + 1;
+    const today = journalDate(new Date().toISOString().slice(0, 10));
+    return { total, day: Math.min(total, Math.max(1, Math.round((today - start) / 86400000) + 1)) };
+  }
+  function journalDayRail(trip) {
+    const days = journalDays(trip);
+    if (!days) return "";
+    // Keep long trips bounded without hiding today, the start, or the end.
+    const visible = days.total <= 12 ? Array.from({ length: days.total }, (_, i) => i + 1)
+      : [...new Set([1, days.day - 2, days.day - 1, days.day, days.day + 1, days.day + 2, days.total].filter((n) => n >= 1 && n <= days.total))].sort((a, b) => a - b);
+    const marks = visible.map((n, i) => `${i && n - visible[i - 1] > 1 ? '<span class="journal-day-gap">…</span>' : ""}<span class="${n === days.day ? "is-today" : n < days.day ? "is-elapsed" : ""}">${n}</span>`).join("");
+    return `<div class="journal-days"><p>Day ${days.day} of ${days.total}</p><div class="journal-days__rail" aria-hidden="true">${marks}</div></div>`;
+  }
+  function journalCurrentTrip(trip) {
+    const start = journalDate(val(trip, "starts_on", "startsOn")),
+      end = journalDate(val(trip, "ends_on", "endsOn"));
+    const dateLine = (date) => new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short", timeZone: "UTC" }).format(date);
+    const dates = start && end ? `<span>${esc(dateLine(start))}${start.getUTCFullYear() !== end.getUTCFullYear() ? ` ${start.getUTCFullYear()}` : ""}</span><span>${esc(dateLine(end))}</span><small>${end.getUTCFullYear()}</small>` : `<span>${esc(formatTripDates(trip))}</span>`;
+    const days = journalDays(trip);
+    return `<section class="journal-current"><p class="journal-eyebrow">In progress</p><h2>${esc(trip.title || "Untitled trip")}</h2><div class="journal-current__details"><div class="journal-date-range">${dates}</div><p>${days ? `${days.total} day${days.total === 1 ? "" : "s"} of travel` : "Your current journey"}</p></div>${journalDayRail(trip)}<div class="journal-current__actions"><button type="button" class="journal-open" data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">Open trip</button>${tripSharedBadge(trip)}</div></section>`;
+  }
+  function journalTripRow(trip, label) {
+    const archived = label === "Past" || label === "Cancelled";
+    const date = journalDate(val(trip, "starts_on", "startsOn"));
+    const month = date ? new Intl.DateTimeFormat(undefined, { month: "short", timeZone: "UTC" }).format(date) : "";
+    const stamp = date ? archived ? `<small>${esc(month)}<br>${date.getUTCFullYear()}</small>` : `<strong>${date.getUTCDate()}</strong><small>${esc(month)}</small>` : '<small>To plan</small>';
+    const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : "";
+    return `<li><button type="button" class="journal-row${archived ? " journal-row--archive" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="journal-row__date" aria-hidden="true">${stamp}</span><span class="journal-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${countdown || label === "Cancelled" ? `<span class="journal-row__status">${esc(countdown || "Cancelled")}</span>` : ""}</button></li>`;
+  }
   function tripListScreen() {
-    // Filters use the same exclusive date/status buckets as the trip list.
     const filters = [["all","All"],["current","Current"],["upcoming","Upcoming"],["past","Past"]];
     const filter = filters.some(([key]) => key === state.tripFilter) ? state.tripFilter : "all";
-    const filterBar = `<div class="trip-filters" role="group" aria-label="Filter trips">${filters.map(([key,label]) => `<button type="button" data-action="filter-trips" data-filter="${key}" aria-pressed="${filter === key}" class="trip-filter${filter === key ? " is-active" : ""}">${label}</button>`).join("")}</div>`;
-    const headerActions = `<button class="icon-button" data-screen="account" aria-label="Account">${icon("user", 24)}</button>`;
-    const page = (title, body) => `<div class="phone-app"><section class="screen mobile-v1-screen trips-bg-screen trips-bg-screen--nonav">${appBar(title, "", false, headerActions)}${mobileAlert()}<main class="mobile-page">${filterBar}<div class="trip-filter-results" aria-live="polite">${body}</div></main><button class="trips-fab" data-action="open-add" aria-label="Create trip">${icon("plus", 40)}</button></section></div>`;
-    if (!state.trips.length) return page("Trips", `<section class="mobile-empty"><span class="mobile-empty__icon">${icon("luggage", 30)}</span><h1>No trips yet</h1><p>Create your first trip and keep everything in one place.</p>${primaryCta("Create trip", "create-trip", "plus")}</section>`);
-    const visibleGroups = filter === "all" ? null : [filters.find(([key]) => key === filter)[1]];
     const order = ["Current", "Upcoming", "Past", "Cancelled"];
-    const content = order.filter((label) => !visibleGroups || visibleGroups.includes(label)).map((label) => {
-      const trips = state.trips
-        .filter((t) => tripBucket(t) === label)
-        .sort((a, b) => {
-          const sa = String(val(a, "starts_on", "startsOn") || ""),
-            sb = String(val(b, "starts_on", "startsOn") || "");
-          return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
-        });
+    const groups = Object.fromEntries(order.map((label) => [label, state.trips.filter((trip) => tripBucket(trip) === label).sort((a, b) => {
+      const sa = String(val(a, "starts_on", "startsOn") || "9999-12-31"), sb = String(val(b, "starts_on", "startsOn") || "9999-12-31");
+      return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
+    })]));
+    const filterBar = `<div class="trip-filters journal-filters" role="group" aria-label="Filter trips">${filters.map(([key,label]) => `<button type="button" data-action="filter-trips" data-filter="${key}" aria-pressed="${filter === key}" class="trip-filter${filter === key ? " is-active" : ""}">${label}<span>${key === "all" ? state.trips.length : groups[label].length}</span></button>`).join("")}</div>`;
+    const content = order.filter((label) => filter === "all" || label.toLowerCase() === filter).map((label) => {
+      const trips = groups[label];
       if (!trips.length) return "";
-      return `<section class="mobile-group trip-group"><h2>${label}</h2><div class="trip-card-list">${trips.map((trip) => { const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : ""; return `<button class="trip-card trip-card--${label.toLowerCase()} ${label === "Current" ? "is-current" : ""}" data-action="open-trip" data-id="${esc(trip.id)}"><span class="trip-card__mark">${icon(bucketMarkIcon(label), 22)}</span><span class="trip-card__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(countdown || formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${icon("chevron", 18, "chevron")}</button>`; }).join("")}</div></section>`;
+      if (label === "Current") return trips.map(journalCurrentTrip).join("");
+      return `<section class="journal-group"><header><h2>${label === "Past" ? "Past journeys" : label}</h2><span>${trips.length}</span></header><ul>${trips.map((trip) => journalTripRow(trip, label)).join("")}</ul></section>`;
     }).join("");
     const emptyCopy = {current:"Trips happening now will appear here.",upcoming:"Your next adventures will appear here.",past:"Completed trips will appear here.",all:"Create your first trip and keep everything in one place."};
-    const body = content || `<section class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon(filter === "past" ? "clock" : "trips", 30)}</span><h1>No ${filter === "all" ? "" : filter + " "}trips</h1><p>${emptyCopy[filter]}</p></section>`;
-    return page("Trips", body);
+    const body = content || `<section class="journal-empty"><h2>${!state.trips.length ? "No journeys yet." : `No ${filter === "all" ? "" : filter + " "}trips.`}</h2><p>${emptyCopy[filter]}</p><button type="button" class="journal-open" data-action="${state.trips.length ? "filter-trips" : "create-trip"}"${state.trips.length ? ' data-filter="all"' : ""}>${state.trips.length ? "Show all trips" : "Create trip"}</button></section>`;
+    return `<div class="phone-app"><section class="screen journal-screen"><header class="journal-header"><div class="journal-brand-row"><span>Tripto</span><button type="button" data-screen="account">Account</button></div><div class="journal-title-row"><h1>Trips</h1><button type="button" class="journal-new" data-action="create-trip">New trip</button></div>${filterBar}</header>${mobileAlert()}<main class="journal-main"><div class="trip-filter-results" aria-live="polite">${body}</div></main></section></div>`;
   }
   function meaningfulBookingStatus(item) {
     const raw = String(val(item, "booking_status", "status") || "").toLowerCase();
