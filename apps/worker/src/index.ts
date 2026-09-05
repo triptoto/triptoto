@@ -80,7 +80,7 @@ export default {
       }
       // Await the public redirect handler so HttpError rejections are converted
       // by this fetch handler's catch block instead of escaping as Worker 1101.
-      if (request.method === 'POST' && path === '/api/v1/auth/google/callback') return await googleSignInRedirect(request,env);
+      if (['GET','POST'].includes(request.method) && path === '/api/v1/auth/google/callback') return await googleSignInRedirect(request,env);
       if (request.method === 'POST' && path === '/api/v1/auth/google/exchange') return exchangeGoogleHandoff(request,env);
 
       const auth = await requireAuth(request, env);

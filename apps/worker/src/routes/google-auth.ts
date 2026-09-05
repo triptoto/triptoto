@@ -24,7 +24,7 @@ interface GoogleChallenge {
 interface RedirectForm {
   credential: string;
   csrfToken: string;
-  challengeId: string;
+  challengeId: string | null;
 }
 
 export async function createGoogleChallenge(request:Request,env:Env,auth:AuthContext):Promise<Response>{
@@ -64,15 +64,23 @@ export async function googleSignIn(request:Request,env:Env,auth:AuthContext):Pro
  */
 export async function googleSignInRedirect(request:Request,env:Env):Promise<Response>{
   const origin=redirectOrigin(request,env);
-  requireEnabled(env);
-  await enforcePublicRateLimit(request,env,{action:'google_auth_callback',limit:PRODUCT_LIMITS.googleAuthAttemptsPerHour,windowMs:60*60*1000});
-  if(new URL(request.url).origin!==origin)throw redirectInvalid();
-  const form=await readRedirectForm(request);
-  validateGoogleCsrf(request,form.csrfToken);
   try{
-    const challenge=await findChallengeById(env,form.challengeId);
-    const nonce=googleCredentialNonce(form.credential),now=nowMs();
-    if(!validChallenge(challenge,now,await digest(nonce)))throw generic();
+    requireEnabled(env);
+    if(new URL(request.url).origin!==origin)throw redirectInvalid();
+    // A refresh/back navigation must return to the app without replaying login.
+    if(request.method!=='POST')throw redirectInvalid();
+    await enforcePublicRateLimit(request,env,{action:'google_auth_callback',limit:PRODUCT_LIMITS.googleAuthAttemptsPerHour,windowMs:60*60*1000});
+    const form=await readRedirectForm(request);
+    validateGoogleCsrf(request,form.csrfToken);
+    const nonce=googleCredentialNonce(form.credential),now=nowMs(),nonceHash=await digest(nonce);
+    // GIS state identifies the clicked button and is optional. When omitted,
+    // locate the initiating challenge by its random nonce. This is lookup only:
+    // CSRF, expiry and Google's signed nonce are still verified before mutation.
+    // Never fall back from a supplied but incorrect state.
+    const challenge=form.challengeId
+      ?await findChallengeById(env,form.challengeId)
+      :await findChallengeByNonce(env,nonceHash,now);
+    if(!validChallenge(challenge,now,nonceHash))throw generic();
     const identity=await verifyGoogleCredential(env,form.credential,nonce);
     const transferSecret=randomToken(32),transferHash=await digest(transferSecret);
     // Atomically replace the nonce challenge with the recoverable handoff
@@ -155,6 +163,10 @@ async function findChallenge(env:Env,id:string,deviceId:string):Promise<GoogleCh
 async function findChallengeById(env:Env,id:string):Promise<GoogleChallenge|null>{
   return env.DB.prepare(`SELECT id,device_id,nonce_hash,expires_at,used_at FROM auth_challenges WHERE id=? AND provider='google'`).bind(id).first<GoogleChallenge>();
 }
+async function findChallengeByNonce(env:Env,hash:string,now:number):Promise<GoogleChallenge|null>{
+  const matches=await env.DB.prepare(`SELECT id,device_id,nonce_hash,expires_at,used_at FROM auth_challenges WHERE provider='google' AND nonce_hash=? AND used_at IS NULL AND expires_at>? LIMIT 2`).bind(hash,now).all<GoogleChallenge>();
+  return matches.results?.length===1?matches.results[0]:null;
+}
 function validChallenge(challenge:GoogleChallenge|null,now:number,nonceHash:string):challenge is GoogleChallenge{
   return !!challenge&&challenge.used_at==null&&challenge.expires_at>now&&constantTimeEqual(challenge.nonce_hash,nonceHash);
 }
@@ -180,7 +192,7 @@ async function readRedirectForm(request:Request):Promise<RedirectForm>{
   return {
     credential:singleFormValue(params,'credential',16000),
     csrfToken:singleFormValue(params,'g_csrf_token',512),
-    challengeId:singleFormValue(params,'state',80),
+    challengeId:params.has('state')?singleFormValue(params,'state',80):null,
   };
 }
 async function readBoundedText(request:Request,maxBytes:number):Promise<string>{
