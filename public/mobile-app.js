@@ -5298,6 +5298,7 @@
       close();
       setFullScreen(false, restoreFocus);
       saveQuickDraft(form);
+      resumeTripPlan(form);
     };
     const setActive = (next) => {
       const options = [...popup.querySelectorAll('[role="option"]')];
@@ -5328,6 +5329,8 @@
       if (fullScreenPanel) {
         setFullScreen(false);
         input.blur();
+        saveQuickDraft(form);
+        resumeTripPlan(form);
       } else input.focus({ preventScroll:true });
     };
     const renderResults = (rows) => {
@@ -6108,7 +6111,22 @@
       : "";
     return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><p class="range-picker__instruction">${icon("calendar",19)}<span>${esc(instruction)}</span></p><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back",20)}</button><strong>${esc(new Intl.DateTimeFormat(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p><div class="range-picker__actions"><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Confirm date" : "Confirm dates"}</button>${skipAction}</div></main></section>`;
   }
+  function resumeTripPlan(form) {
+    if (!state.tripSetupEditing || !form) return false;
+    state.tripSetupEditing = null;
+    saveQuickDraft(form);
+    state.tripSetupPreview = {
+      destination:String(form.elements.destination?.value || "").trim(),
+      startsOn:form.elements.startsOn?.value || "",
+      endsOn:form.elements.endsOn?.value || "",
+    };
+    state.dateRange = null;
+    state.sheet = "trip-setup-ready";
+    render();
+    return true;
+  }
   function tripSetupReadyScreen() {
+    state.tripSetupEditing = null;
     const preview = state.tripSetupPreview || {},
       destination = preview.destination || "Your destination",
       dates = preview.startsOn && preview.endsOn
@@ -6117,7 +6135,7 @@
       hasDates = Boolean(preview.startsOn && preview.endsOn);
     const bookingUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(destination)}${preview.startsOn ? `&checkin=${encodeURIComponent(preview.startsOn)}` : ""}${preview.endsOn ? `&checkout=${encodeURIComponent(preview.endsOn)}` : ""}`;
     const tool = (className, iconName, title, copy, href, sponsored = false, id = "") => `<a${id ? ` id="${id}"` : ""} class="trip-setup-tool ${className}" href="${esc(href)}" target="_blank" rel="${sponsored ? "sponsored " : ""}noopener noreferrer"><span class="trip-setup-tool__icon">${icon(iconName,22)}</span><span class="trip-setup-tool__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span><span class="trip-setup-tool__external" aria-hidden="true">${icon("external",17)}</span></a>`;
-    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Plan your trip</strong></div><button type="button" class="trip-setup-ready__create" data-action="complete-trip-setup">Create trip</button></header><main class="trip-setup-ready__main"><section class="trip-create-head trip-setup-ready__hero"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">Next steps</span><h1 id="trip-setup-ready-title">Plan your trip</h1><div class="trip-create-head__sub"><p>Start with the essentials. You can add or change everything later.</p></div></div><div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("globe",18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("flight",23)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("location",20)}</span></div></section><div class="trip-setup-ready__summary"><span>${icon("location",18)}<strong>${esc(destination)}</strong></span><span>${icon("calendar",18)}<strong>${esc(dates)}</strong></span></div><section class="trip-setup-ready__tools" aria-label="Trip essentials">${tool("trip-setup-tool--flight","flight","Still haven't booked the flights?","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${tool("trip-setup-tool--stay","bed","Still looking for a place to stay?","Browse stays on Booking.com",bookingUrl,true,"trip-setup-stay-link")}${tool("trip-setup-tool--esim","sim","Need an eSIM?","Get connected before you land",routeUrl("esim"))}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost.</p></main></section>`;
+    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Plan your trip</strong></div><button type="button" class="trip-setup-ready__create" data-action="complete-trip-setup">Create trip</button></header><main class="trip-setup-ready__main"><section class="trip-create-head trip-setup-ready__hero"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">Next steps</span><h1 id="trip-setup-ready-title">Plan your trip</h1><div class="trip-create-head__sub"><p>Start with the essentials. You can add or change everything later.</p></div></div><div class="trip-plan-fields"><button type="button" class="trip-plan-field" data-action="edit-plan-destination">${icon("location",22)}<span><small>Destination</small><strong>${esc(destination === "Your destination" ? "Choose destination" : destination)}</strong></span>${icon("chevron",18)}</button><button type="button" class="trip-plan-field" data-action="edit-plan-dates">${icon("calendar",22)}<span><small>Travel dates</small><strong>${esc(dates === "Dates not set" ? "Choose dates · optional" : dates)}</strong></span>${icon("chevron",18)}</button></div></section><section class="trip-setup-ready__tools" aria-label="Trip essentials">${tool("trip-setup-tool--flight","flight","Still haven't booked the flights?","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${tool("trip-setup-tool--stay","bed","Still looking for a place to stay?","Browse stays on Booking.com",bookingUrl,true,"trip-setup-stay-link")}${tool("trip-setup-tool--esim","sim","Need an eSIM?","Get connected before you land",routeUrl("esim"))}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost.</p></main></section>`;
   }
   function addSheet() {
     return bottomSheet(
@@ -6997,6 +7015,7 @@
     const sheet = document.querySelector(".bottom-sheet,.full-screen-picker"),
       backdrop = document.querySelector(".sheet-backdrop"),
       finish = () => {
+        if (resumeTripPlan(document.getElementById("native-form"))) return;
         state.sheet = null;
         state.dateRange = null;
         state.tripSetupPreview = null;
@@ -8878,7 +8897,20 @@
         } else closeSheet();
         break;
       }
+      case "edit-plan-destination":
+      case "edit-plan-dates": {
+        state.tripSetupEditing = action === "edit-plan-destination" ? "destination" : "dates";
+        state.sheet = null;
+        render();
+        requestAnimationFrame(() => {
+          const form = document.getElementById("native-form");
+          if (state.tripSetupEditing === "destination") form?.elements.destination?.focus();
+          else form?.querySelector('[data-action="open-date-range"]')?.click();
+        });
+        break;
+      }
       case "return-trip-setup":
+        state.tripSetupEditing = null;
         state.sheet = null;
         state.tripSetupPreview = null;
         render();
