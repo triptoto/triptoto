@@ -1753,9 +1753,14 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
    border, radius and halo from icon badges app-wide. Deliberately excludes the
    welcome/first-run icons (.first-run-*), initials avatars, the map pin, the
    nav FAB and status dots — those stay as designed. */
-.row-icon,.travel-row__icon,.document-row__icon,.trip-row__mark,.info-icon,.detail-row>span:first-child,.hotel-info-row__icon,.hotel-address-row__icon,.journey-marker,.timeline-empty__icon,.empty-mobile-icon,.mobile-empty__icon,.plan-hero__icon,.screen-intro__icon,.offline-summary-icon,.health-shield,.essentials-summary>span,.sync-summary>span,.v2-choice>span:first-child,.date-range-trigger__icon,.quick-trip-context__icon,.review-summary>span,.forward-booking-address>span,.smart-import-intro>span,.health-good,.health-warning,.health-info,.info-icon.green,.info-icon.purple{
-  background:transparent !important;border:0 !important;border-radius:0 !important;box-shadow:none !important
+/* Icon tiles: soft rounded-square (squircle) tiles everywhere, matching the
+   ribbon timeline and the "Where are you going?" hero. Colour comes from each
+   selector's own background rule above; here we only unify shape + flatten. */
+.row-icon,.travel-row__icon,.document-row__icon,.trip-row__mark,.info-icon,.detail-row>span:first-child,.hotel-info-row__icon,.hotel-address-row__icon,.timeline-empty__icon,.empty-mobile-icon,.mobile-empty__icon,.plan-hero__icon,.screen-intro__icon,.offline-summary-icon,.health-shield,.essentials-summary>span,.sync-summary>span,.v2-choice>span:first-child,.date-range-trigger__icon,.quick-trip-context__icon,.review-summary>span,.forward-booking-address>span,.smart-import-intro>span,.health-good,.health-warning,.health-info,.info-icon.green,.info-icon.purple,.currency-hero__icon,.trip-card__mark,.hotel-map-panel__marker,.manual-add-card__icon,.manual-add-secondary>span:first-child,.trip-option-card__icon,.first-run-how-list__icon,.manual-attachments__picker-icon,.add-intent-row__icon,.day-plan-row__icon,.trip-map__row-icon{
+  border-radius:30% !important;box-shadow:none !important
 }
+/* Keep the main-timeline node markers circular like the journey stepper dots. */
+.journey-marker{background:transparent !important;border:0 !important;border-radius:0 !important;box-shadow:none !important}
 /* Restore a visible glyph colour where the icon previously relied on sitting
    on a filled circle (dark ink/white glyphs would vanish once the fill is gone). */
 .trip-group .trip-row.is-current .trip-row__mark,.journey-event--next .journey-marker,.journey-event--active .journey-marker{color:var(--accent) !important}
