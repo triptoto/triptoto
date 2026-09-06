@@ -112,3 +112,12 @@ free-for-all frontend copy + role labels. All disabled flags (incl.
    and viewer read-only enforcement.
 3. Only after QA passes, flip `SHARING_ENABLED` to `"true"` and redeploy.
 4. Do **not** merge to `main` or flip the flag without explicit approval.
+
+## Planning collections
+
+Collection and stop mutations follow the same rules as every other entity:
+`requireTripAccess(env,auth,tripId,write=true)` gates create/edit/delete
+server-side (owner/editor only; viewers read-only and cannot bypass via a
+tampered client), optimistic `version` checks return 409 on conflict, and every
+mutation calls `recordChangeEvent(..., auth)` with actor attribution. Deleting a
+collection emits a `trip_item` tombstone. See TRIP_PLANNING_COLLECTIONS.md.

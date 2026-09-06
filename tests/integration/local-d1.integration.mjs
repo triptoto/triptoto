@@ -650,18 +650,42 @@ assert(replayExchange.status===401,'transfer cannot be exchanged after acknowled
 
 addDevice(db,'google-csrf-device');
 const csrfChallenge=await body(await createGoogleChallenge(new Request('https://app.tripto.test/api/v1/auth/google/challenge',{method:'POST'}),env,{deviceId:'google-csrf-device'}));
-let csrfRejected=false;
-try{await googleSignInRedirect(formReq(callbackUrl,{credential:await googleToken(csrfChallenge.nonce,'csrf-subject'),g_csrf_token:'body-token',state:csrfChallenge.redirect.state},'g_csrf_token=cookie-token'),env);}catch(error){csrfRejected=error.code==='GOOGLE_REDIRECT_INVALID';}
-assert(csrfRejected,'Google redirect rejects mismatched double-submit CSRF tokens');
+function assertCallbackRecovery(response,label){
+  const target=new URL(response.headers.get('location'));
+  assert(response.status===303&&target.origin==='https://app.tripto.test'&&target.pathname==='/account'&&target.searchParams.get('google_auth')==='error',label);
+  assert(!response.headers.has('set-cookie')&&response.headers.get('cache-control')==='no-store','failed callback never issues a handoff or caches its response');
+}
+const csrfCredential=await googleToken(csrfChallenge.nonce,'csrf-subject');
+for(const cookie of ['g_csrf_token=cookie-token','', 'g_csrf_token=body-token; g_csrf_token=body-token']){
+  assertCallbackRecovery(await googleSignInRedirect(formReq(callbackUrl,{credential:csrfCredential,g_csrf_token:'body-token',state:csrfChallenge.redirect.state},cookie),env),'CSRF mismatch, missing or duplicate cookies safely return to app');
+}
 assert(db.prepare(`SELECT used_at FROM auth_challenges WHERE id=?`).get(csrfChallenge.challengeId).used_at==null,'CSRF failure does not consume challenge');
+assert(db.prepare(`SELECT user_id FROM devices WHERE id=?`).get('google-csrf-device').user_id==null,'CSRF failure does not sign in device');
+assertCallbackRecovery(await googleSignInRedirect(req(callbackUrl,'POST',{credential:'x',g_csrf_token:'x',state:csrfChallenge.redirect.state}),env),'wrong callback content type safely returns to app');
+assertCallbackRecovery(await googleSignInRedirect(new Request(callbackUrl,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded','cookie':'g_csrf_token=x'},body:'x'.repeat(25*1024)}),env),'oversized callback safely returns to app');
+assertCallbackRecovery(await googleSignInRedirect(new Request(callbackUrl),env),'refreshing callback safely returns to app');
+assertCallbackRecovery(await googleSignInRedirect(formReq(callbackUrl,{g_csrf_token:'body-token'},'g_csrf_token=body-token'),env),'missing credential safely returns to app');
 
-let contentTypeRejected=false;
-try{await googleSignInRedirect(req(callbackUrl,'POST',{credential:'x',g_csrf_token:'x',state:csrfChallenge.redirect.state}),env);}catch(error){contentTypeRejected=error.code==='FORM_REQUIRED';}
-assert(contentTypeRejected,'Google redirect strictly requires form-urlencoded input');
-
-let oversizedCallbackRejected=false;
-try{await googleSignInRedirect(new Request(callbackUrl,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded','cookie':'g_csrf_token=x'},body:'x'.repeat(25*1024)}),env);}catch(error){oversizedCallbackRejected=error.code==='REQUEST_TOO_LARGE'&&error.status===413;}
-assert(oversizedCallbackRejected,'Google redirect preserves a 413 response for oversized form bodies');
+// GIS may omit its optional button state. The signed nonce still identifies
+// exactly one live initiating challenge; a supplied incorrect state never falls back.
+const nonceForm={credential:csrfCredential,g_csrf_token:'body-token'};
+assertCallbackRecovery(await googleSignInRedirect(formReq(callbackUrl,{...nonceForm,state:'wrong-state'},'g_csrf_token=body-token'),env),'incorrect explicit state cannot use nonce fallback');
+assertCallbackRecovery(await googleSignInRedirect(formReq(callbackUrl,{...nonceForm,state:''},'g_csrf_token=body-token'),env),'empty explicit state is rejected');
+const duplicateState=new URLSearchParams({...nonceForm,state:csrfChallenge.challengeId});duplicateState.append('state',csrfChallenge.challengeId);
+assertCallbackRecovery(await googleSignInRedirect(new Request(callbackUrl,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded',cookie:'g_csrf_token=body-token'},body:duplicateState.toString()}),env),'duplicate state is rejected');
+const forgedCredential=csrfCredential.slice(0,csrfCredential.lastIndexOf('.')+1)+'AAAA';
+assertCallbackRecovery(await googleSignInRedirect(formReq(callbackUrl,{...nonceForm,credential:forgedCredential},'g_csrf_token=body-token'),env),'nonce fallback never accepts an invalid signature');
+assert(db.prepare(`SELECT user_id FROM devices WHERE id=?`).get('google-csrf-device').user_id==null,'invalid state/signature never mutates identity');
+globalThis.fetch=async()=>new Response(JSON.stringify({keys:[googleJwk]}),{status:200,headers:{'cache-control':'public,max-age=300'}});
+const nonceCallback=await googleSignInRedirect(formReq(callbackUrl,nonceForm,'g_csrf_token=body-token'),env);
+assert(nonceCallback.status===303&&new URL(nonceCallback.headers.get('location')).searchParams.get('google_auth')==='complete','valid signed callback without button state completes login');
+assert(db.prepare(`SELECT user_id FROM devices WHERE id=?`).get('google-csrf-device').user_id!=null,'nonce fallback signs in only initiating device');
+assertCallbackRecovery(await googleSignInRedirect(formReq(callbackUrl,nonceForm,'g_csrf_token=body-token'),env),'state-less callback cannot replay after nonce is rotated');
+addDevice(db,'google-expired-device');
+const expiredChallenge=await body(await createGoogleChallenge(new Request(callbackUrl,{method:'POST'}),env,{deviceId:'google-expired-device'}));
+db.prepare(`UPDATE auth_challenges SET expires_at=? WHERE id=?`).run(Date.now()-1,expiredChallenge.challengeId);
+assertCallbackRecovery(await googleSignInRedirect(formReq(callbackUrl,{credential:await googleToken(expiredChallenge.nonce),g_csrf_token:'body-token'},'g_csrf_token=body-token'),env),'nonce fallback rejects expired challenge');
+globalThis.fetch=originalGoogleFetch;
 
 const signedOut=await body(await signOut(req('https://test/api/v1/auth/signout','POST',{}),env,owner));
 assert(signedOut.localDataPreserved===true&&signedOut.accountMode==='guest','sign-out preserves local-data contract');

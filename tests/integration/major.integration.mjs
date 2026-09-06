@@ -61,4 +61,51 @@ const queued=await body(await queueSyncOperation(req('https://test/api/v1/trips/
 const duplicate=await body(await queueSyncOperation(req('https://test/api/v1/trips/x/sync/operations','POST',{idempotencyKey:'major-op-1',entityType:'trip_item',entityId:transportItem.id,operationType:'update',baseVersion:1,payload:{title:'Offline edit'}}),env,auth,tripId));assert(duplicate.operation.id===queued.operation.id,'sync idempotency');
 
 const ready=await body(await readiness(req('https://test/api/v1/readiness'),env));assert(ready.ready===true,'major readiness passes');
+
+// --- Planning collections: full CRUD lifecycle over the real handlers ---
+const {listCollections,createCollection,updateCollection,deleteCollection,addStop,updateStop,deleteStop,reorderStops}=await load('apps/worker/src/routes/planning-collections.js');
+const expectStatus=async(promise,status,label)=>{try{await promise;assert(false,`${label} (expected ${status}, got success)`)}catch(e){assert(e&&e.status===status,`${label} (expected ${status}, got ${e&&e.status})`)}};
+const timelineBefore=db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND deleted_at IS NULL`).get(tripId).c;
+// A scheduled Neighborhood: one parent trip_items row, timeline-visible.
+const hood=await body(await createCollection(req('https://test/api/v1/trips/x/collections','POST',{collectionType:'neighborhood',title:'Trastevere',city:'Rome',notes:'Evening wander',startsAtUtc:Date.now()+86400000,startLocalDatetime:'2026-10-01T18:00',timezone:'Europe/Rome'}),env,auth,tripId));
+assert(hood.collection.id&&hood.collection.collection_type==='neighborhood'&&hood.collection.type==='custom','neighborhood created as a custom trip_item subtype');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND deleted_at IS NULL`).get(tripId).c===timelineBefore+1,'scheduled collection adds exactly one timeline row');
+// A wishlist: not timeline-scheduled.
+const wishlist=await body(await createCollection(req('https://test/api/v1/trips/x/collections','POST',{collectionType:'food_and_drink',title:'Coffee list'}),env,auth,tripId));
+assert(wishlist.collection.starts_at_utc==null,'wishlist collection is unscheduled');
+// collection_type is immutable.
+await expectStatus(updateCollection(req('https://test/api/v1/trips/x/collections/y','PATCH',{version:1,collectionType:'day_trip'}),env,auth,tripId,hood.collection.id),400,'collection_type must be immutable');
+// Stops: added, ordered by position, never trip_items.
+const s1=await body(await addStop(req('https://test/api/v1/trips/x/collections/y/stops','POST',{title:'Piazza',scheduledTime:'18:00',placeType:'monument',status:'planned'}),env,auth,tripId,hood.collection.id));
+const s2=await body(await addStop(req('https://test/api/v1/trips/x/collections/y/stops','POST',{title:'Osteria',scheduledTime:'19:30',placeType:'restaurant'}),env,auth,tripId,hood.collection.id));
+const s3=await body(await addStop(req('https://test/api/v1/trips/x/collections/y/stops','POST',{title:'Gelato',placeType:'cafe'}),env,auth,tripId,hood.collection.id));
+assert([s1,s2,s3].every(s=>s.stop.id)&&db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE id IN (?,?,?)`).get(s1.stop.id,s2.stop.id,s3.stop.id).c===0,'stops must never be trip_items (no top-level rows)');
+let loaded=await body(await listCollections(req('https://test/api/v1/trips/x/collections'),env,auth,tripId));
+assert(loaded.collections.length===2&&loaded.stops.filter(s=>s.collection_item_id===hood.collection.id).length===3,'collections + child stops listed');
+assert(loaded.stops.filter(s=>s.collection_item_id===hood.collection.id).map(s=>s.title).join(',')==='Piazza,Osteria,Gelato','stops returned in insertion/position order');
+// Reorder persists (reorder bumps every stop's version).
+await reorderStops(req('https://test/api/v1/trips/x/collections/y/stops/order','PUT',{order:[s3.stop.id,s1.stop.id,s2.stop.id]}),env,auth,tripId,hood.collection.id);
+loaded=await body(await listCollections(req('https://test/api/v1/trips/x/collections'),env,auth,tripId));
+assert(loaded.stops.filter(s=>s.collection_item_id===hood.collection.id).map(s=>s.title).join(',')==='Gelato,Piazza,Osteria','reorder persisted by position');
+const vOf=id=>loaded.stops.find(s=>s.id===id).version;
+// Optimistic concurrency on stop update: a stale version is rejected.
+await expectStatus(updateStop(req('https://test/api/v1/trips/x/collections/y/stops/z','PATCH',{version:99,title:'Nope'}),env,auth,tripId,hood.collection.id,s1.stop.id),409,'stale stop update must 409');
+await updateStop(req('https://test/api/v1/trips/x/collections/y/stops/z','PATCH',{version:vOf(s1.stop.id),title:'Piazza',status:'visited'}),env,auth,tripId,hood.collection.id,s1.stop.id);
+// Link an existing booking without duplicating it.
+const linked=await body(await updateStop(req('https://test/api/v1/trips/x/collections/y/stops/z','PATCH',{version:vOf(s2.stop.id),title:'Osteria',linkedTripItemId:transportItem.id}),env,auth,tripId,hood.collection.id,s2.stop.id));
+assert(linked.stop.linked_trip_item_id===transportItem.id,'stop can link an existing booking');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE id=? AND deleted_at IS NULL`).get(transportItem.id).c===1,'linking must not duplicate or delete the booking');
+// Delete a stop.
+await deleteStop(req('https://test/api/v1/trips/x/collections/y/stops/z','DELETE',{version:vOf(s3.stop.id)}),env,auth,tripId,hood.collection.id,s3.stop.id);
+loaded=await body(await listCollections(req('https://test/api/v1/trips/x/collections'),env,auth,tripId));
+assert(loaded.stops.filter(s=>s.collection_item_id===hood.collection.id).length===2,'stop soft-deleted');
+// Delete the collection: parent soft-deleted, stops soft-deleted, linked booking untouched, tombstone emitted.
+await deleteCollection(req('https://test/api/v1/trips/x/collections/y','DELETE',{version:1}),env,auth,tripId,hood.collection.id);
+assert(db.prepare(`SELECT deleted_at FROM trip_items WHERE id=?`).get(hood.collection.id).deleted_at!=null,'collection parent soft-deleted');
+assert(db.prepare(`SELECT COUNT(*) c FROM planning_stops WHERE collection_item_id=? AND deleted_at IS NULL`).get(hood.collection.id).c===0,'child stops soft-deleted with the collection');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE id=? AND deleted_at IS NULL`).get(transportItem.id).c===1,'deleting a collection never touches linked bookings');
+assert(db.prepare(`SELECT COUNT(*) c FROM tombstones WHERE entity_type='trip_item' AND entity_id=?`).get(hood.collection.id).c===1,'collection delete emits a sync tombstone');
+loaded=await body(await listCollections(req('https://test/api/v1/trips/x/collections'),env,auth,tripId));assert(loaded.collections.length===1,'deleted collection no longer listed');
+console.log('Planning-collections integration passed: create, stops, reorder, version conflict, linked booking, soft-delete and tombstone.');
+
 console.log('Major local D1 integration passed: journeys, activities, booking details, contacts, markers, intelligence, sync and readiness.');

@@ -1,0 +1,15 @@
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const source=readFileSync('public/mobile-app.js','utf8');
+const properties=new Map();
+let focused=0;
+const viewport={height:664,offsetTop:0,scale:1};
+const context=vm.createContext({window:{innerHeight:664,visualViewport:viewport},document:{documentElement:{style:{setProperty:(k,v)=>properties.set(k,v)}}},keepFocusedFieldVisible:()=>focused++,applyKeyboardState:()=>{}});
+vm.runInContext('let lastObscured=-1,keyboardOpen=false;'+source.slice(source.indexOf('  function syncVisualViewport()'),source.indexOf('  function bindDynamic()')),context);
+context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'664px');
+viewport.height=350;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'350px');assert.equal(focused,1);
+viewport.height=175;viewport.scale=2;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'350px','Pinch zoom must not resize the app layout');
+viewport.height=664;viewport.scale=1;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'664px');
+context.window.visualViewport=null;context.window.innerHeight=568;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'568px');
+console.log('App viewport: visible height, keyboard reduction, restoration, pinch zoom preservation and fallback passed.');

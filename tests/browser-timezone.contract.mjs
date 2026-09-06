@@ -7,6 +7,7 @@ const end=source.indexOf('async function createMobileLocation',start);
 if(start<0||end<0)throw new Error('Product V2 timezone converter was not found.');
 const context={Intl,Date,Error};
 vm.createContext(context);
+vm.runInContext(source.slice(source.indexOf("  const dateFormatters"), source.indexOf("  const API =")),context);
 vm.runInContext(source.slice(start,end),context);
 
 const exact=context.resolveEventLocalDateTime('2027-06-01T10:00','Europe/Rome');
