@@ -4947,7 +4947,7 @@
     const linkable = (state.timeline || []).filter((it) => !isCollectionItem(it) && String(itemId(it)) !== String(collectionId));
     const linkChoices = `<option value="">Not linked</option>` + linkable.map((it) => `<option value="${esc(itemId(it))}"${String(s.linked_trip_item_id || "") === String(itemId(it)) ? " selected" : ""}>${esc(it.title || "Booking")}</option>`).join("");
     const statusField = editingStop ? field("status", "Status", "", { type: "select", choices: statusChoices, wide: false }) : "";
-    const form = `<form class="mobile-form premium-form stop-form" id="stop-form" data-collection="${esc(collectionId)}"${editingStop ? ` data-edit-id="${esc(s.id)}"` : ""} novalidate><header class="manual-form-heading"><span>${esc(editingStop ? "Edit " + cfg.stop : "Add " + cfg.stop)}</span><h1>${esc(editingStop ? s.title || "Place" : "New " + cfg.stop)}</h1></header><section class="form-section"><div class="quick-primary-fields">${field("title", "Name", s.title, { required: true, placeholder: "Place name" })}<div class="form-fields form-fields--date-time">${field("scheduledTime", "Time", s.scheduled_time, { type: "time", wide: false })}${field("placeType", "Type", "", { type: "select", choices: placeChoices, wide: false })}</div>${field("streetAddress", "Address", s.address_snapshot, { placeholder: "Street address or area" })}${statusField}${linkable.length ? field("linkedTripItemId", "Link a booking", "", { type: "select", choices: linkChoices }) : ""}${field("notes", "Notes", s.notes, { type: "textarea" })}</div><input type="hidden" name="timezone" value="${esc(s.timezone || val(c, "start_timezone") || tripDefaultTimezone() || "UTC")}"></section></form>`;
+    const form = `<form class="mobile-form premium-form stop-form" id="stop-form" data-collection="${esc(collectionId)}"${editingStop ? ` data-edit-id="${esc(s.id)}"` : ""} novalidate><header class="manual-form-heading"><span>${esc(editingStop ? "Edit " + cfg.stop : "Add " + cfg.stop)}</span><h1>${esc(editingStop ? s.title || "Place" : "New " + cfg.stop)}</h1></header><section class="form-section"><div class="quick-primary-fields">${field("title", "Name", s.title, { required: true, placeholder: "Place name" })}<div class="form-fields form-fields--date-time">${field("scheduledTime", "Time", s.scheduled_time, { type: "time", wide: false })}${field("placeType", "Type", "", { type: "select", choices: placeChoices, wide: false })}</div>${field("streetAddress", "Address", s.address_snapshot, { placeholder: "Street address or area" })}${statusField}${field("notes", "Notes", s.notes, { type: "textarea" })}</div><input type="hidden" name="timezone" value="${esc(s.timezone || val(c, "start_timezone") || tripDefaultTimezone() || "UTC")}"></section></form>`;
     return focusedTaskPage(editingStop ? `Edit ${cfg.stop}` : `Add ${cfg.stop}`, form, "form-screen stop-form-screen", formHeaderSave("stop-form", "Save"));
   }
 
@@ -4957,8 +4957,37 @@
     if (!stop) return bottomSheet("collection-stop", "Place", `<p class="sheet-empty">This place is no longer available.</p>`);
     const stops = collectionStopsFor(ctx.collectionId), idx = stops.findIndex((s) => String(s.id) === String(stop.id));
     const canUp = idx > 0, canDown = idx >= 0 && idx < stops.length - 1, status = String(stop.status || "planned");
-    const opt = (action, label, sub, extra = "", danger = false) => `<button type="button" class="sheet-option${danger ? " sheet-option--danger" : ""}" data-action="${action}" data-collection="${esc(ctx.collectionId)}" data-id="${esc(stop.id)}"${extra}><span><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span></button>`;
-    return bottomSheet("collection-stop", stop.title || "Place", `<div class="sheet-options-group">${opt("edit-stop", "Edit place", "Name, time, address and notes")}${canUp ? opt("stop-move", "Move earlier", "", ` data-dir="up"`) : ""}${canDown ? opt("stop-move", "Move later", "", ` data-dir="down"`) : ""}${status !== "visited" ? opt("stop-status", "Mark visited", "", ` data-status="visited"`) : opt("stop-status", "Mark planned", "", ` data-status="planned"`)}${status !== "skipped" ? opt("stop-status", "Skip this place", "", ` data-status="skipped"`) : opt("stop-status", "Un-skip", "", ` data-status="planned"`)}${opt("delete-stop", "Delete place", "Remove from this plan", "", true)}</div>`);
+    // Self-contained icon-led rows (not `.sheet-option`, whose cascade hides
+    // leading icons and forces a rigid 3-column grid). Data-attributes are
+    // unchanged so the existing delegated action handlers still fire.
+    const opt = (action, ic, label, sub, extra = "", danger = false) => `<button type="button" class="stop-action${danger ? " stop-action--danger" : ""}" data-action="${action}" data-collection="${esc(ctx.collectionId)}" data-id="${esc(stop.id)}"${extra}><span class="stop-action__icon">${icon(ic, 20)}</span><span class="stop-action__body"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="stop-action__chev" aria-hidden="true">${icon("chevron-right", 18)}</span></button>`;
+    const moveRows = `${canUp ? opt("stop-move", "chevron-up", "Move earlier", "", ` data-dir="up"`) : ""}${canDown ? opt("stop-move", "chevron-down", "Move later", "", ` data-dir="down"`) : ""}`;
+    const visitedRow = status !== "visited"
+      ? opt("stop-status", "check", "Mark visited", "Tick off once you've been", ` data-status="visited"`)
+      : opt("stop-status", "refresh", "Mark planned", "Put it back on the plan", ` data-status="planned"`);
+    const skipRow = status !== "skipped"
+      ? opt("stop-status", "eye-off", "Skip this place", "Keep it, but grey it out", ` data-status="skipped"`)
+      : opt("stop-status", "eye", "Un-skip", "Bring it back into the plan", ` data-status="planned"`);
+    const meta = stopSheetMeta(stop);
+    const body = `${meta}<div class="stop-actions"><div class="stop-actions__group">${opt("edit-stop", "edit", "Edit place", "Name, time, address and notes")}${moveRows}${visitedRow}${skipRow}</div><div class="stop-actions__group stop-actions__group--danger">${opt("delete-stop", "delete", "Delete place", "Remove from this plan", "", true)}</div></div>`;
+    return bottomSheet("collection-stop", stop.title || "Place", body);
+  }
+
+  // Compact context strip at the top of the stop action sheet: time · type ·
+  // status, so the sheet reads as "this place" not just a bare title.
+  function stopSheetMeta(stop) {
+    const status = String(stop.status || "planned");
+    const bits = [];
+    if (stop.scheduled_time) bits.push(esc(String(stop.scheduled_time)));
+    const typeLabel = (PLACE_TYPE_OPTIONS.find(([v]) => v === String(stop.place_type || ""))?.[1]) || "";
+    if (typeLabel) bits.push(esc(typeLabel));
+    const statusChip = status === "visited"
+      ? `<span class="stop-meta__chip stop-meta__chip--done">${icon("check", 13)}Visited</span>`
+      : status === "skipped"
+        ? `<span class="stop-meta__chip stop-meta__chip--skip">Skipped</span>`
+        : "";
+    if (!bits.length && !statusChip) return "";
+    return `<div class="stop-meta">${bits.length ? `<span class="stop-meta__line">${bits.join(" · ")}</span>` : ""}${statusChip}</div>`;
   }
 
   // Generic confirm dialog (reuses the discard-dialog visual language).
@@ -6141,8 +6170,9 @@
     });
   }
   function quickTripContext() {
-    if (!state.trip) return "";
-    return `<section class="quick-trip-context" aria-label="Selected trip"><span class="quick-trip-context__icon">${icon("trips", 20)}</span><span><small>Adding to</small><strong>${esc(state.trip.title || "Current trip")}</strong><em>${esc(formatTripDates(state.trip))}</em></span><button type="button" data-action="switch-trip" aria-label="Choose another trip">Change</button></section>`;
+    // Removed per user request: the "Adding to <trip> … Change" banner is not
+    // wanted on any form. Kept as a no-op so existing call sites stay valid.
+    return "";
   }
   function quickLocationList(kind) {
     const allowed = kind === "flight" ? ["airport"] : kind === "train" ? ["station"] : ["venue", "hotel", "city", "address"],
@@ -7208,7 +7238,7 @@
       const dayItems = daily
         .map(
           (day, i) =>
-            `<li class="wx-day${i === 0 ? " is-today" : ""}"><span class="wx-day__label">${esc(i === 0 ? "Today" : day.weekday || "")}</span><span class="wx-day__meta">${icon("wx-drop", 14)}${day.precip != null ? esc(day.precip) : 0}%</span><span class="wx-day__meta">${icon("wx-wind", 14)}${day.wind != null ? esc(day.wind) : 0} m/s</span><span class="wx-day__ico">${icon(day.iconName, 26)}</span><span class="wx-day__hi">${esc(day.hi)}°</span><span class="wx-day__lo">${day.lo != null ? esc(day.lo) + "°" : "—"}</span></li>`,
+            `<li class="wx-day${i === 0 ? " is-today" : ""}"><span class="wx-day__label">${esc(i === 0 ? "Today" : day.weekday || "")}</span><span class="wx-day__ico">${icon(day.iconName, 28)}</span><span class="wx-day__temps"><span class="wx-day__hi">${esc(day.hi)}°</span><span class="wx-day__lo">${day.lo != null ? esc(day.lo) + "°" : "—"}</span></span><span class="wx-day__meta">${icon("wx-drop", 14)}${day.precip != null ? esc(day.precip) : 0}%</span><span class="wx-day__meta">${icon("wx-wind", 14)}${day.wind != null ? esc(day.wind) : 0}</span></li>`,
         )
         .join("");
       body = `${state.offline ? '<small class="wx-offline-note">Saved forecast · offline</small>' : ""}${hourItems ? `<section class="wx-block" aria-label="Hourly forecast"><h2 class="wx-block__title">Hourly</h2><ul class="wx-hours">${hourItems}</ul></section>` : ""}${dayItems ? `<section class="wx-block wx-block--days" aria-label="Daily forecast"><h2 class="wx-block__title">7-day forecast</h2><ul class="wx-days">${dayItems}</ul></section>` : ""}<p class="weather-note">Forecast for your destination. tripto.to never uses your location.</p>`;

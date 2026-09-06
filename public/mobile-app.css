@@ -1094,6 +1094,31 @@ html.keyboard-open .form-save-bar{display:none}
 .bottom-sheet{position:fixed;left:50%;bottom:0;z-index:71;width:min(100%,var(--app-width));max-height:min(82dvh,760px);padding:8px 20px calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);border-radius:26px 26px 0 0;background:var(--card);box-shadow:0 -18px 42px rgba(5,21,45,.16);overflow:hidden}
 .sheet-handle{width:38px;height:4px;margin:0 auto 6px;border-radius:999px;background:var(--line)}.sheet-title-row{display:flex;align-items:center;justify-content:space-between;min-height:var(--button-primary-height)}.sheet-title-row h2{margin:0;font-size:20px;letter-spacing:-.035em}.sheet-scroll{max-height:calc(min(82dvh,760px) - 76px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}.sheet-options-group{display:grid}.sheet-option{grid-template-columns:44px minmax(0,1fr) 24px}.sheet-option>span:nth-child(2){display:grid;gap:3px}.sheet-option small{color:var(--muted);font-size:12px}.sheet-option>span:nth-child(2) strong,.sheet-option>span:nth-child(2) small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.manual-v2-options{grid-template-columns:1fr 1fr;gap:0 16px}.first-run-how-list{display:grid;gap:0;margin:0;padding:0;list-style:none}.first-run-how-list li{display:grid;grid-template-columns:28px 40px 1fr;align-items:center;gap:10px;min-height:var(--button-row-height);border-bottom:1px solid var(--line)}.first-run-how-list__number{color:var(--muted);font-size:12px}.first-run-how-list__icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--blue-soft);color:var(--icon)}.first-run-how-done{margin-top:16px}
 .move-day-list{gap:2px}.sheet-option.move-day-option{grid-template-columns:34px minmax(0,1fr) auto;align-items:center}.move-day-option__index{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--surface);color:var(--muted);font-size:13px;font-weight:700}.move-day-option--current .move-day-option__index{background:var(--accent);color:var(--accent-ink)}.move-day-option__body{display:grid;gap:2px;min-width:0}.move-day-option__body strong{font-size:15px}.move-day-option__body small{color:var(--muted);font-size:12px}.move-day-option__here{color:var(--muted);font-size:12px;font-weight:600}.move-day-option[disabled]{cursor:default}
+/* Neighborhood stop action sheet — self-contained icon-led rows. Deliberately
+   NOT `.sheet-option` (its cascade hides leading icons + forces a 3-col grid,
+   which is what crammed the labels into 44px). Grouped cards, destructive tail. */
+.bottom-sheet--collection-stop .sheet-scroll{padding-top:2px}
+.stop-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 2px 12px;color:var(--muted);font-size:13px}
+.stop-meta__line{font-weight:600;color:var(--ink)}
+.stop-meta__chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;line-height:1}
+.stop-meta__chip .app-icon{width:13px;height:13px}
+.stop-meta__chip--done{background:var(--blue-soft);color:var(--accent)}
+.stop-meta__chip--skip{background:var(--surface);color:var(--muted)}
+.stop-actions{display:grid;gap:14px}
+.stop-actions__group{display:grid;gap:2px;padding:6px;border-radius:var(--radius-md);background:var(--surface)}
+.stop-action{display:grid;grid-template-columns:40px minmax(0,1fr) 20px;align-items:center;gap:12px;width:100%;min-height:56px;padding:9px 12px 9px 8px;border:0;border-radius:14px;background:transparent;color:var(--ink);text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s var(--ease,ease)}
+.stop-action:active{background:var(--card)}
+.stop-action__icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--card);color:var(--accent)}
+.stop-action__icon .app-icon{width:20px;height:20px}
+.stop-action__body{display:grid;gap:2px;min-width:0}
+.stop-action__body strong{font-size:16px;font-weight:var(--weight-semibold,600);line-height:1.25;letter-spacing:-.01em}
+.stop-action__body small{color:var(--muted);font-size:13px;line-height:1.3}
+.stop-action__chev{display:grid;place-items:center;color:var(--muted-soft,var(--muted));opacity:.6}
+.stop-action__chev .app-icon{width:18px;height:18px}
+.stop-actions__group--danger{background:color-mix(in srgb,var(--red) 8%,var(--surface))}
+.stop-action--danger .stop-action__body strong{color:var(--red)}
+.stop-action--danger .stop-action__icon{background:color-mix(in srgb,var(--red) 12%,var(--card));color:var(--red)}
+.stop-action--danger:active{background:color-mix(in srgb,var(--red) 6%,var(--card))}
 .full-screen-picker,.trip-create-destination.is-fullscreen{--picker-bg:var(--paper);--picker-surface:var(--card);--picker-ink:var(--ink);--picker-accent:var(--accent);--picker-muted:var(--muted);--picker-line:var(--line);--picker-tint:var(--activity-soft)}
 .full-screen-picker{position:fixed;z-index:120;top:0;bottom:0;left:50%;display:grid;width:min(100%,var(--app-width));height:100svh;transform:translateX(-50%);background:var(--paper);--picker-accent:#1f5fd6;--picker-tint:color-mix(in srgb,#1f5fd6 12%,var(--paper));color:var(--picker-ink);overflow:hidden;animation:full-screen-picker-in .22s var(--ease) both}
 .full-screen-picker.is-closing{animation:full-screen-picker-out .18s var(--ease) both}
@@ -2177,7 +2202,7 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .timeline-screen--ribbon .journey-content{
   grid-template-columns:minmax(0,1fr);gap:8px;padding:13px 0 13px 12px
 }
-.timeline-screen--ribbon .journey-copy{gap:4px}
+.timeline-screen--ribbon .journey-copy{gap:1px}
 .timeline-screen--ribbon .journey-copy strong{
   color:var(--ink);font-size:19px;font-weight:500;letter-spacing:-.01em;line-height:1.14;
   white-space:normal;overflow:visible;text-overflow:clip
@@ -2637,7 +2662,7 @@ html .timeline-screen--ribbon .trip-v2-selector small,
 html .timeline-screen--ribbon .timeline-context--next p,
 html .timeline-screen--ribbon .journey-copy small{
   font-family:var(--font-ui);font-size:var(--timeline-metadata-size);
-  font-weight:400;line-height:1.3
+  font-weight:400;line-height:1.2
 }
 html .timeline-screen--ribbon .timeline-context--next>span,
 html .timeline-screen--ribbon .timeline-flag{
@@ -3264,24 +3289,24 @@ html .weather-refresh .wx-hour{flex:1 0 56px;min-width:56px;gap:4px;padding:8px 
 html .weather-refresh .wx-hour.is-now{background:var(--activity-soft)}
 html .weather-refresh .wx-hour__t{font-size:14px;font-weight:400}
 html .weather-refresh .wx-hour__temp{font-size:20px;font-weight:500}
-html .weather-refresh .wx-days{padding:0;gap:0}
-html .weather-refresh .wx-day{grid-template-columns:44px 24px minmax(40px,1fr) minmax(58px,1fr) 34px 34px;align-items:center;gap:8px;min-height:34px;padding:4px 0;border-bottom:0;color:var(--ink)}
-html .weather-refresh .wx-day__label{grid-column:1;grid-row:1}
-html .weather-refresh .wx-day__ico{grid-column:2;grid-row:1;justify-self:center}
-html .weather-refresh .wx-day__meta:nth-child(2){grid-column:3;grid-row:1;justify-self:center}
-html .weather-refresh .wx-day__meta:nth-child(3){grid-column:4;grid-row:1;justify-self:center}
-html .weather-refresh .wx-day__hi{grid-column:5;grid-row:1;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-html .weather-refresh .wx-day__lo{grid-column:6;grid-row:1;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-html .weather-refresh .wx-day:last-child{border-bottom:0}
-html .weather-refresh .wx-day__label{font-size:14px;font-weight:500}
-html .weather-refresh .wx-day__hi{font-size:16px;font-weight:500}
-html .weather-refresh .wx-day__lo{font-size:16px;font-weight:400}
+/* 7-day forecast as a horizontal card scroller, matching the Hourly cards. */
+html .weather-refresh .wx-block--days .wx-block__title{margin-bottom:10px}
+html .weather-refresh .wx-days{display:flex;flex-direction:row;gap:8px;padding:0 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html .weather-refresh .wx-days::-webkit-scrollbar{display:none}
+html .weather-refresh .wx-day{display:flex;flex-direction:column;align-items:center;gap:7px;flex:1 0 66px;min-width:66px;min-height:auto;padding:12px 8px;border:0;border-bottom:0;border-radius:16px;background:var(--surface);color:var(--ink)}
+html .weather-refresh .wx-day.is-today{background:var(--activity-soft)}
+html .weather-refresh .wx-day__label{font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}
+html .weather-refresh .wx-day__ico{display:inline-flex;align-items:center;justify-content:center}
+html .weather-refresh .wx-day__temps{display:flex;flex-direction:column;align-items:center;gap:1px}
+html .weather-refresh .wx-day__hi{font-size:19px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;text-align:center}
+html .weather-refresh .wx-day__lo{font-size:13px;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums;text-align:center}
+html .weather-refresh .wx-day__meta{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--muted);white-space:nowrap}
 html .weather-refresh .weather-note{padding:0;border:0;font-size:12px;line-height:1.5;text-align:left;color:var(--muted)}
 html .weather-refresh .weather-empty{flex:0 0 auto;align-items:flex-start;gap:12px;padding:20px 18px;border-radius:18px;background:var(--flight-soft);text-align:left}
 html .weather-refresh .weather-empty h1{font-size:24px;font-weight:500;line-height:1.2}
 html .weather-refresh .weather-empty p{font-size:14px;line-height:1.5}
 html .weather-refresh button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media(max-width:374px){html .weather-refresh .weather-page{padding-inline:16px}html .weather-refresh .wx-day{grid-template-columns:42px 24px minmax(36px,1fr) minmax(54px,1fr) 32px 32px;gap:5px}html .weather-refresh .wx-day__hi,html .weather-refresh .wx-day__lo{font-size:14px}}
+@media(max-width:374px){html .weather-refresh .weather-page{padding-inline:16px}html .weather-refresh .wx-day{flex:1 0 60px;min-width:60px;padding:10px 6px}}
 
 
 /* Shared loading pattern: no images, timers or layout-heavy animation. */
