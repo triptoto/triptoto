@@ -1034,6 +1034,13 @@ button:active{transform:scale(.985)}
 .add-intent-row--booking:active{border-color:#1f5fd6}
 .add-intent-row--plan:active{border-color:#1f8a53}
 .add-intent-row--later:active{border-color:#c0405f}
+/* Add-to-trip hub adopts the create-trip hero: flush gradient header + dashed
+   journey stepper up top, tinted intention cards below. */
+.add-intent-page .focused-page{padding:0;background:var(--paper)}
+.add-intent-head{margin-top:0}
+.add-intent-head .trip-create-head__sub{max-width:300px}
+.add-intent-head .trip-create-route__origin{background:var(--flight-soft);color:#1f5fd6;border-color:color-mix(in srgb,var(--flight-soft) 70%,var(--line))}
+.add-intent-fields{display:grid;gap:12px;padding:18px 16px calc(28px + var(--keyboard-offset))}
 .day-plan-form__intro{margin:0 0 16px;color:var(--muted);font-size:var(--type-meta);line-height:1.45}
 /* Save for Later: unscheduled ideas by bucket. Nothing here is on the timeline. */
 .save-later-page .mobile-page,.save-later-page main{display:grid;gap:22px}

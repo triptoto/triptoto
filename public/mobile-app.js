@@ -7308,7 +7308,11 @@
     if (!state.trip) return noTripQuickAdd("booking", "Add to your trip");
     const tripName = state.trip.title || "your trip";
     const row = (action, ic, title, copy, tone) => `<button type="button" class="add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="add-intent-row__icon">${icon(ic, 24)}</span><span class="add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
-    const body = `<section class="add-intent-intro"><span>ADD TO TRIP</span><h1>What would you like to add?</h1></section><div class="add-intent-list">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
+    // Gradient hero + dashed journey stepper, matching the "Where are you going?"
+    // new-journey screen (reuses the .trip-create-head / .trip-create-route look).
+    const stepper = `<div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("ticket", 18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("map", 22)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("favorite", 20)}</span></div>`;
+    const hero = `<header class="trip-create-head add-intent-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">ADD TO TRIP</span><h1>What would you like to add?</h1><div class="trip-create-head__sub"><p>Book it, plan your days, or save an idea for ${esc(tripName)}.</p></div></div>${stepper}</header>`;
+    const body = `${hero}<div class="add-intent-fields">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
     return focusedTaskPage(`Add to ${tripName}`, body, "add-intent-page");
   }
 
