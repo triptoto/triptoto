@@ -1799,7 +1799,7 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 .manual-form-heading p{max-width:34ch;margin:2px 0 0;color:var(--muted);font-size:14px;line-height:1.4}
 .manual-essentials{display:grid;gap:14px;padding:0 0 20px}
 .manual-essentials>h2{color:var(--muted)}
-.manual-booking-form .quick-primary-fields{gap:16px 12px}
+.manual-essentials .quick-primary-fields{gap:16px 12px}
 .manual-booking-form input,.manual-booking-form select,.manual-booking-form textarea{font-size:16px}
 .manual-booking-form :is(input,select,textarea,button):focus-visible,.manual-category-search:focus-within{outline:3px solid color-mix(in srgb,var(--accent) 62%,transparent);outline-offset:2px}
 .manual-route-card{grid-column:1/-1;position:relative;display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr);align-items:start;gap:6px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
