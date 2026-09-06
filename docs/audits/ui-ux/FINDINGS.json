@@ -1,0 +1,253 @@
+{
+  "audit": {
+    "app": "tripto.to",
+    "version": "0.9.0-beta.1",
+    "git_head": "7c8453893b00a2fc24120a29cfaa7c00f85424cc",
+    "date": "2026-09-05",
+    "mode": "AUDIT_ONLY",
+    "method": "static code + design-system analysis",
+    "runtime_verification_available": false,
+    "runtime_limitation": "Sandbox has no browser and no network. No live rendering, computed-box measurement, real screenshots, or keyboard/screen-reader passes were possible. All runtime-dependent items are marked NEEDS_VERIFICATION.",
+    "primary_files": [
+      "public/mobile-app.css",
+      "public/mobile-app.js",
+      "public/mobile-routes.js",
+      "public/index.html"
+    ],
+    "executed_tests": [
+      {"cmd": "node tests/button-size.contract.mjs", "result": "PASS", "exit": 0},
+      {"cmd": "node tests/mobile-ui.contract.mjs", "result": "PASS", "exit": 0}
+    ]
+  },
+  "counts": {
+    "screens_render_functions_found": 39,
+    "static_routes": 22,
+    "dynamic_detail_routes": 7,
+    "overlay_surfaces": 14,
+    "findings_confirmed": 6,
+    "findings_needs_verification": 11,
+    "design_suggestions": 3
+  },
+  "findings": [
+    {
+      "id": "C1",
+      "status": "CONFIRMED",
+      "priority": "P2",
+      "category": "typography / iOS input-zoom",
+      "title": "Currency zone <select> at 14px triggers iOS Safari focus-zoom",
+      "location": "public/mobile-app.css:554",
+      "detail": "`.currency-zone__head select` uses font 600 14px/1. Viewport (index.html:5) is width=device-width, initial-scale=1, viewport-fit=cover with NO maximum-scale/user-scalable=no, so iOS Safari auto-zooms on focus of any form control < 16px.",
+      "proposed_fix": "Raise the select font-size to >=16px (or set 16px on focus). Do not disable user zoom.",
+      "modified": false
+    },
+    {
+      "id": "C2",
+      "status": "CONFIRMED",
+      "priority": "P2",
+      "category": "typography / iOS input-zoom",
+      "title": "Booking-note <textarea> at 15px triggers iOS Safari focus-zoom",
+      "location": "public/mobile-app.css:886 (textarea at mobile-app.js:2174)",
+      "detail": "`.fd-note-edit__field` is a textarea (rows=3, maxlength=2000) at font-size 15px. Focusing to edit a booking note triggers iOS zoom for the same viewport reason as C1.",
+      "proposed_fix": "Raise textarea font-size to >=16px.",
+      "modified": false
+    },
+    {
+      "id": "C3",
+      "status": "CONFIRMED",
+      "priority": "P2",
+      "category": "accessibility / heading hierarchy",
+      "title": "Flight/Hotel/Train(Ferry) detail screens expose zero headings",
+      "location": "public/mobile-app.js:4343 (flight), 4387 (hotel), 4661 (train/ferry)",
+      "detail": "appBar() renders the visible screen title as <strong> not a heading (mobile-app.js:3339), and these detail bodies emit no h1/h2. Verified 0 h1 / 0 h2 in those screens. The generic Plan detail DOES include an <h1 class=fd-title> (mobile-app.js:4724), so the omission is inconsistent, not intentional.",
+      "proposed_fix": "Add a body-level <h1> to the three detail screens, or promote appBar()'s <strong> to <h1> app-wide.",
+      "modified": false
+    },
+    {
+      "id": "C4",
+      "status": "CONFIRMED",
+      "priority": "P3",
+      "category": "accessibility / heading hierarchy",
+      "title": "Notifications empty-state uses <h3> with no h1/h2 above it (skipped level)",
+      "location": "public/mobile-app.js:3894",
+      "detail": "The only <h3> in the app ('You're all caught up') sits inside the notifications sheet with no higher heading level above it.",
+      "proposed_fix": "Normalize to <h2> to match the sheet's heading level.",
+      "modified": false
+    },
+    {
+      "id": "C5",
+      "status": "CONFIRMED",
+      "priority": "P3",
+      "category": "maintainability / layout tokens",
+      "title": "Dead --app-width override and hardcoded 600 literal",
+      "location": "public/mobile-app.css:3270 (dead override), 3306 (hardcoded 600)",
+      "detail": "The per-screen `--app-width:600px` override at 3270 is identical to :root (line 37) and is a no-op. Line 3306 hardcodes `width:min(100%,600px)` for .bottom-sheet instead of `var(--app-width)`; same value today, will drift if the token changes.",
+      "proposed_fix": "Remove the redundant override; replace the 600 literal with var(--app-width).",
+      "modified": false
+    },
+    {
+      "id": "C6",
+      "status": "CONFIRMED",
+      "priority": "P3",
+      "category": "touch targets (usability, not AA failure)",
+      "title": "Welcome 'Take a tour' and legal links below 44px usability target",
+      "location": "public/mobile-app.css:1981 (Take a tour 40px), 1984 (footer legal ~28-42px)",
+      "detail": "Both are >=24px (meet WCAG 2.2 AA 24px floor) but below the 44px comfortable-touch target.",
+      "proposed_fix": "Raise min-height to 44px.",
+      "modified": false
+    },
+    {
+      "id": "NV1",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P2",
+      "category": "z-index / stacking",
+      "title": "Discard/confirm dialog (z100) can render behind full-screen picker/doc-viewer (z120)",
+      "location": "public/mobile-app.css:1106 (dialog z100) vs 1055/1355/1791 (pickers z120)",
+      "detail": "If a discard/confirm dialog is raised while a full-screen picker, place-search, or doc-viewer is open (e.g. abandoning an unsaved place search), the dialog would sit behind the z120 layer and be invisible/unclickable. Needs runtime check of the abandon-unsaved-search flow.",
+      "proposed_fix": "Raise the discard-dialog backdrop above 120, or ensure full-screen layers close before a dialog opens.",
+      "modified": false
+    },
+    {
+      "id": "NV2",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P2",
+      "category": "safe areas",
+      "title": "google-auth-recovery header lacks env(safe-area-inset-top)",
+      "location": "public/mobile-app.js:6932, public/mobile-app.css:1102 (+ frame >header at 3282)",
+      "detail": "This framed header is not .app-header, so it misses the top-inset rule at css:280; the frame >header rule (3282) only sets padding-inline. On a notched device the brand line may sit under the status bar/notch.",
+      "proposed_fix": "Add padding-top:env(safe-area-inset-top) to the recovery header.",
+      "modified": false
+    },
+    {
+      "id": "NV3",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P3",
+      "category": "frame / layout",
+      "title": "Loading screen fills only 55svh, empty paper below",
+      "location": "public/mobile-app.css:3246 (.thinking-stage min-height:55svh), public/mobile-app.js:6924",
+      "detail": ".thinking-stage has min-height:55svh while .phone-app base is min-height:100dvh, so the branded splash may leave ~45% empty paper below. Needs visual check.",
+      "proposed_fix": "Center the splash within full viewport height.",
+      "modified": false
+    },
+    {
+      "id": "NV4",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P3",
+      "category": "frame consistency",
+      "title": "Empty-booking and error screens bypass the flex frame (no <main>)",
+      "location": "public/mobile-app.js:4352 (missingDetailScreen/empty-mobile), 6928 (errorScreen)",
+      "detail": "Both are `.screen` without a direct `main`, so the html:has(.phone-app>.screen>main) frame does not activate; they fall back to the legacy fixed-nav scrolling-document model. Internally consistent but a different layout model than framed screens.",
+      "proposed_fix": "Wrap their content in <main> so they use the unified frame, or confirm the legacy model is acceptable.",
+      "modified": false
+    },
+    {
+      "id": "NV5",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P2",
+      "category": "color / contrast",
+      "title": "muted-soft text on --surface computes 4.34:1 (below AA 4.5)",
+      "location": "public/mobile-app.css (--muted-soft #667180 vs --surface #f3eff0)",
+      "detail": "muted-soft passes on --paper (4.69:1) and --card (4.95:1) but only 4.34:1 on --surface. No confirmed placement of muted-soft text directly on a --surface fill was found; any small note (e.g. currency-disclaimer/esim-note) rendered inside a --surface card would fail. Verify no such combination ships.",
+      "proposed_fix": "Use --muted (5.68:1 on paper) for any small text on --surface, or darken --muted-soft.",
+      "modified": false
+    },
+    {
+      "id": "NV6",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P3",
+      "category": "color / borders",
+      "title": "Past timeline marker border is near-invisible on pastel fill",
+      "location": "public/mobile-app.css:2154",
+      "detail": ".timeline-screen--ribbon .journey-event--past .journey-marker border-color rgba(255,255,255,.6) on light pastel fills (flight-soft etc.) is effectively invisible. Appears to be intentional de-emphasis (marker fill still visible). Flagging as an invisible-border instance.",
+      "proposed_fix": "If the border is meant to read, use a visible tone; otherwise document as intentional.",
+      "modified": false
+    },
+    {
+      "id": "NV7",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P3",
+      "category": "maintainability / theming",
+      "title": "Latent 'designed-for-dark' base rules shadowed only by html-prefixed overrides",
+      "location": "public/mobile-app.css:308-309,327,367-369,287-290,639-640,939,1763,336-340 (base) vs 1467-1519,2617+ (overrides)",
+      "detail": "Multiple base rules declare white/near-white text on what are actually light backgrounds; effective styles are safe ONLY because of the html-prefixed re-theme block and .welcome-thread ancestor overrides. If any override selector is renamed or a wrapper class dropped, white-on-white/paper resurfaces. No active invisible-text bug found today.",
+      "proposed_fix": "Remove the dead dark base declarations rather than shadowing them.",
+      "modified": false
+    },
+    {
+      "id": "NV8",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P2",
+      "category": "typography / truncation",
+      "title": "Many important titles use single-line nowrap-ellipsis with no touch reveal",
+      "location": "public/mobile-app.css:326,368,431-432,482-483,546,609,674,717-718,761-762,811-812,855-856,921,939,1040,1052,1059-1060,1075,1175,1413,1430,1736,1760,1773,1794,2073,2916-2922,2952-2959",
+      "detail": "Trip name, journey headline, place names, airport names, booking-detail rows, trip-card titles, currency names, date-range summary, attachment/document/email titles, etc. all clip with ellipsis. On a touch PWA there is no hover, so overflow is permanently hidden. The clip mechanism is CONFIRMED; whether real content overflows depends on content length/locale (hence NEEDS_VERIFICATION).",
+      "proposed_fix": "Allow 2-line wrap on the most content-variable titles (trip name, place names, booking titles), or verify representative long strings.",
+      "modified": false
+    },
+    {
+      "id": "NV9",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P3",
+      "category": "responsive / breakpoints",
+      "title": "Welcome uses 700/701px breakpoints on a 520px-capped column",
+      "location": "public/mobile-app.css:1986 (max-width:700), 2006 (min-width:701), 2005 (welcome max-width:520)",
+      "detail": "Viewport-driven type bumps at 700/701 apply to a .phone-app welcome element capped at 520px. Harmless but semantically stale.",
+      "proposed_fix": "Align welcome breakpoints to its actual 520 column or to viewport intent.",
+      "modified": false
+    },
+    {
+      "id": "NV10",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P3",
+      "category": "frame / layout",
+      "title": "bookings .intro-block direct .screen child not targeted by frame rules",
+      "location": "public/mobile-app.js:4423",
+      "detail": "The frame styles only >header/>main/>.mobile-alert/>.bottom-nav/>.app-bar direct children. bookings places an .intro-block div directly under .screen; it becomes a default flex item above the scroll area and could steal height on short screens.",
+      "proposed_fix": "Move .intro-block inside <main> or give it flex:0 0 auto explicitly.",
+      "modified": false
+    },
+    {
+      "id": "NV11",
+      "status": "NEEDS_VERIFICATION",
+      "priority": "P2",
+      "category": "accessibility / runtime",
+      "title": "Modal focus order, role=switch and combobox announcements need AT verification",
+      "location": "public/mobile-app.js:6102 (role=switch), 5555-5640 (combobox), 620-650/7136-7169/9885-9903 (modal traps)",
+      "detail": "Static code shows correct patterns (aria-modal, inert background, Tab traps, Escape, focus return, aria-activedescendant). Actual focus order, trap behavior, and screen-reader announcements cannot be verified without a browser/AT.",
+      "proposed_fix": "Run VoiceOver/keyboard passes on modals, the round-trip switch, and the destination combobox.",
+      "modified": false
+    },
+    {
+      "id": "DS1",
+      "status": "DESIGN_SUGGESTION",
+      "priority": "P3",
+      "category": "typography / legibility",
+      "title": "Sub-13px secondary body text on descriptive copy",
+      "location": "public/mobile-app.css:997,1003,1031 (12px descriptions), 2031 (notif desc 12.5px), 2146 (timeline meta 12.5px)",
+      "detail": "Secondary/description copy at 12-12.5px is borderline for sustained reading (labels/badges at 12px are fine). Non-integer 12.5px is also unusual.",
+      "proposed_fix": "Consider 13-14px for descriptive body copy; use integer px.",
+      "modified": false
+    },
+    {
+      "id": "DS2",
+      "status": "DESIGN_SUGGESTION",
+      "priority": "P3",
+      "category": "accessibility / semantics",
+      "title": "Promote appBar() title to a real <h1> app-wide",
+      "location": "public/mobile-app.js:3339",
+      "detail": "The app-bar title is <strong> on every screen. Making it a semantic heading fixes C3 uniformly and improves screen-reader navigation everywhere.",
+      "proposed_fix": "Render the app-bar title as <h1>.",
+      "modified": false
+    },
+    {
+      "id": "DS3",
+      "status": "DESIGN_SUGGESTION",
+      "priority": "P3",
+      "category": "maintainability",
+      "title": "Use var(--app-width) consistently instead of literal widths",
+      "location": "public/mobile-app.css:3306 and any future width literal",
+      "detail": "Keeps the single-column width authoritative in one token.",
+      "proposed_fix": "Replace literals with the token.",
+      "modified": false
+    }
+  ]
+}

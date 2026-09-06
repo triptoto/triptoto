@@ -161,3 +161,17 @@ The contact sheet must show the complete core and document state inventory toget
 ## Contextual Trip Map
 
 28. Trip Map (contextual) — reachable through Trip options when the current trip has 2+ distinct mappable places. It is a full-screen state, not a tab. Sub-states: day-filtered destination cards, NEXT destination, individual Directions, offline-readable place list, and insufficient-place recovery. The complete itinerary is never sent to Google Maps. See TRIP_MAP_V2.md.
+
+## Trip Planning Collections
+
+29. Planning overview — one navigable state (not new tabs) grouping a trip's
+    planning collections into on-timeline, planning, and start-a-plan. Reached
+    from Add to your trip → Plan your days.
+30. Collection — a scheduled Neighborhood/Day Trip/Walking Route also appears as
+    a single Timeline row; opening it shows the secondary mini timeline
+    (time · dot · name only). Wishlist collections (Places to Visit, Food &
+    Drink, Shopping) are reached only from the Planning overview.
+    Sheets/forms: collection form (create/edit), stop form (add/edit place).
+    Routes: `/planning`, `/collections/:id`, `/collections/new/:type`,
+    `/collections/:id/edit`, `/collections/:id/add-place`. See
+    TRIP_PLANNING_COLLECTIONS.md.

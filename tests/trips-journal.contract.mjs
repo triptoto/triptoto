@@ -2,11 +2,12 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import assert from 'node:assert/strict';
 const app = readFileSync('public/mobile-app.js', 'utf8');
-const context = { state: { trips: [], tripFilter: 'all' },
+const context = { icon: () => '', state: { trips: [], tripFilter: 'all' },
   val: (row, ...keys) => keys.map(k => row?.[k]).find(v => v != null),
   esc: value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])),
   formatTripDates: trip => trip.starts_on || 'Dates not set',
   tripSharedBadge: trip => trip.is_shared ? 'Shared · View only' : '', mobileAlert: () => '' };
+runInNewContext(app.slice(app.indexOf("  const dateFormatters"), app.indexOf("  const API =")),context);
 runInNewContext(app.slice(app.indexOf('  function tripBucket('), app.indexOf('  function meaningfulBookingStatus(')), context);
 const today = new Date().toISOString().slice(0,10);
 const iso = offset => new Date(Date.parse(today) + offset * 86400000).toISOString().slice(0,10);
@@ -31,3 +32,10 @@ assert(longRail.includes('Day 46 of 91') && longRail.includes('is-today">46'),'L
 assert((longRail.match(/<span/g)||[]).length<=9,'Long trips use a bounded day strip');
 assert.equal(context.journalDayRail(trip('reversed',2,-1)),'','Invalid ranges must not render progress');
 console.log('Trips journal: grouping, ordering, escaping, undated/empty states and bounded progress passed.');
+
+context.state.tripFilter = 'upcoming'; context.state.trips = [trip('later',20,25),trip('next',2,5),{id:'undated',title:'Someday'}];
+html = context.tripListScreen();
+assert(html.includes('journal-next'), 'Upcoming dated trip is featured');
+assert.equal((html.match(/data-id="next"/g)||[]).length,1,'Featured trip is not duplicated in list');
+assert(html.includes('data-id="later"') && html.includes('data-id="undated"'),'Remaining and undated trips stay reachable');
+context.state.tripFilter='past'; assert(!context.tripListScreen().includes('data-id="next"'),'Feature respects active filter');

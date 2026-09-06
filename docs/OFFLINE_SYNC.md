@@ -18,3 +18,12 @@ Fetch cloud deltas -> compare versions -> apply safe operations -> resolve confl
 
 ## Data-loss protection
 Show pending-sync state; warn before logout/local-data removal when unsynced edits exist.
+
+## Planning collections
+
+`/api/v1/trips/:id/collections` is fetched as one of the parallel trip-detail
+endpoints and cached for offline rehydration. Collection/stop mutations made
+offline are queued via `queuePendingMutation({kind:"collection", ...})` and
+replayed by `flushCollectionsQueue()` on reconnect (create / add-stop / reorder /
+status), followed by a fresh load. Version conflicts surface on replay like any
+other entity. See TRIP_PLANNING_COLLECTIONS.md.

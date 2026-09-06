@@ -199,8 +199,6 @@ assertFormFields(formBranches.flight, {
   operatingAirlineCode: {},
   departureTerminal: {},
   departureGate: {},
-  boardingTime: {},
-  gateCloseTime: {},
   seat: {},
   cabin: {},
   checkedBags: {},

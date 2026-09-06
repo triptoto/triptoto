@@ -330,3 +330,14 @@ TRIP OPTIONS
 ```
 
 No GPS is ever requested. Address-only places resolve via the same-origin, keyless /api/v1/geocode proxy; offline falls back to the address list. See TRIP_MAP_V2.md.
+
+## Planning collections
+
+From Add to your trip, "Plan your days" offers six additive options:
+Neighborhood, Day Trip, Walking Route (timeline-capable), and Places to Visit,
+Food & Drink, Shopping (wishlists). A collection groups ordered places; a
+scheduled timeline-capable collection appears once on the Timeline with a
+child-derived summary ("5 places · 10:00–16:00") and opens to a minimal
+secondary timeline (time · dot · name, dot state by shape/tone). No GPS; times
+are event-local. Existing navigation, Timeline, and Add Booking flow are
+unchanged. See TRIP_PLANNING_COLLECTIONS.md.

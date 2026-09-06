@@ -26,8 +26,32 @@
   <link rel="icon" href="/favicon-16.png?v=compass-v120" sizes="16x16" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=compass-v120">
   <link rel="mask-icon" href="/favicon-mask.svg?v=compass-v120" color="#5547b7">
-<link rel="stylesheet" href="/mobile-app.min.css?v=trips-journal-v123">
+<link rel="stylesheet" href="/mobile-app.min.css?v=planning-collections-v148">
   <script src="/shell-update.js?v=shell-refresh-v1"></script>
+<style id="tripto-loading-critical">:root{--paper:#fbf8f7;--ink:#05152d;--card:#fff;--line:#e6e0e5;--muted:#596474;--activity-soft:#e7e1fb;--stay-soft:#d1edde;--flight-soft:#d9e4fb;--transfer-soft:#fee4cf;--accent:#5547b7}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--paper)}.thinking-stage,.thinking-panel,.thinking-pattern{box-sizing:border-box}
+/* Shared loading pattern: no images, timers or layout-heavy animation. */
+.thinking-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;min-height:55svh;padding:28px 20px;background:var(--paper);color:var(--ink)}
+.thinking-stage--startup{min-height:100svh;gap:44px}
+.thinking-stage--inline{min-height:260px;padding:28px 0}
+.thinking-stage .loading-mark{font-size:28px;font-weight:500;letter-spacing:-1px}
+.thinking-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;width:min(100%,340px);margin:0 auto;padding:30px 20px;border:1px solid var(--line);border-radius:24px;background:var(--card);color:var(--ink);text-align:center}
+.thinking-pattern{display:grid;grid-template-columns:repeat(3,22px);grid-template-rows:repeat(3,22px);gap:6px;flex-shrink:0;width:78px;height:78px;transform:rotate(-8deg)}
+.thinking-pattern i{display:block;width:100%;height:100%;border-radius:7px;background:var(--activity-soft);animation:thinking-tile 2.4s ease-in-out infinite both}
+.thinking-pattern i:nth-child(3n+2){background:var(--stay-soft);animation-delay:-.4s}
+.thinking-pattern i:nth-child(3n){background:var(--flight-soft);animation-delay:-.8s}
+.thinking-pattern i:nth-child(4),.thinking-pattern i:nth-child(8){background:var(--transfer-soft);animation-delay:-1.2s}
+.thinking-pattern i:nth-child(5){background:var(--accent);animation-delay:-1.6s}
+.thinking-copy{display:grid;gap:8px;min-width:0}
+.thinking-copy strong{font-size:16px;font-weight:500;line-height:1.4;overflow-wrap:anywhere}
+.thinking-copy>span{font-size:14px;line-height:1.5;color:var(--muted)}
+.thinking-notice{position:fixed;z-index:10000;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(340px,calc(100% - 32px));pointer-events:none}
+.thinking-panel--compact{flex-direction:row;justify-content:flex-start;gap:16px;width:100%;padding:16px 18px;border-radius:18px;text-align:left;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 10%,transparent)}
+.thinking-panel--compact .thinking-pattern,.place-loading .thinking-pattern{grid-template-columns:repeat(3,10px);grid-template-rows:repeat(3,10px);gap:3px;width:36px;height:36px}
+.thinking-panel--compact .thinking-pattern i,.place-loading .thinking-pattern i{border-radius:3px}
+.place-loading{display:flex;align-items:center;gap:14px;min-height:64px}
+@keyframes thinking-tile{0%,100%{transform:scale(.84) rotate(0deg);opacity:.65}50%{transform:scale(1) rotate(90deg);opacity:1}}
+@media(prefers-reduced-motion:reduce){.thinking-pattern i{animation:none;opacity:1}}
+</style>
 </head>
 <body>
   <!-- Inlined icon sprite: same-document <use href="#id"> avoids iOS Safari re-resolving an external sprite per instance on every render. -->
@@ -186,12 +210,12 @@
   <symbol id="wx-drop" viewBox="0 0 256 256"><g fill="currentColor"><path d="M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z"/></g></symbol>
   <symbol id="wx-wind" viewBox="0 0 256 256"><g fill="currentColor"><path d="M184,184a32,32,0,0,1-32,32c-13.7,0-26.95-8.93-31.5-21.22a8,8,0,0,1,15-5.56C137.74,195.27,145,200,152,200a16,16,0,0,0,0-32H40a8,8,0,0,1,0-16H152A32,32,0,0,1,184,184Zm-64-80a32,32,0,0,0,0-64c-13.7,0-26.95,8.93-31.5,21.22a8,8,0,0,0,15,5.56C105.74,60.73,113,56,120,56a16,16,0,0,1,0,32H24a8,8,0,0,0,0,16Zm88-32c-13.7,0-26.95,8.93-31.5,21.22a8,8,0,0,0,15,5.56C193.74,92.73,201,88,208,88a16,16,0,0,1,0,32H32a8,8,0,0,0,0,16H208a32,32,0,0,0,0-64Z"/></g></symbol>
 </svg>
-  <div id="app"></div>
+  <div id="app"><div class="phone-app"><section class="thinking-stage thinking-stage--startup"><div class="loading-mark">tripto<span>.</span>to</div><div class="thinking-panel" role="status" aria-live="polite"><span class="thinking-pattern" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><div class="thinking-copy"><strong>Opening your trips…</strong><span>A little moment for your next adventure.</span></div></div></section></div></div>
   <script src="/canonical-host.js?v=canonical-apex-v1"></script>
   <script src="/mobile-routes.js?v=trip-options-routes-v4" defer></script>
   <script src="/mobile-trip-rules.js?v=optional-trip-dates-v96" defer></script>
   <script src="/google-auth-client.js?v=google-auth-ios-v98" defer></script>
   <script src="/manual-booking-attachments.js?v=manual-booking-v2c3" defer></script>
-  <script src="/mobile-app.min.js?v=trips-journal-v123" defer></script>
+  <script src="/mobile-app.min.js?v=planning-collections-v148" defer></script>
 </body>
 </html>

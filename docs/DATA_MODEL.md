@@ -30,3 +30,13 @@ Travel-specific `checklist_templates`, `checklist_items`, `trip_checklist_items`
 
 ## Sync
 Entity rows use client-generated IDs, `version`, `updated_at`, `deleted_at`. Mutations are expressed as idempotent sync operations with base version. Conflicts are explicit; tombstones prevent resurrection of deleted entities.
+
+## Planning collections (migration 0025)
+
+`0025_trip_planning_collections.sql` adds `planning_collections` — a 1:1 subtype
+of `trip_items` (`type='custom'`, `trip_item_id` PK, immutable `collection_type`
+across six kinds) — and `planning_stops`, ordered child places keyed by
+`collection_item_id` with their own `position` and sync quartet. Stops are never
+`trip_items`, so collection children cannot surface as top-level Timeline rows.
+`planning_stops.linked_trip_item_id` links an existing booking without copying
+it. See TRIP_PLANNING_COLLECTIONS.md.

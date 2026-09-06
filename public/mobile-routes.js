@@ -24,6 +24,7 @@
     "booking-email-inbox": "/bookings/email-inbox",
     sync: "/pending-changes",
     collaboration: "/collaboration",
+    planning: "/planning",
   });
 
   const DETAIL_PATHS = Object.freeze({
@@ -34,6 +35,7 @@
     traveler: "/travelers",
     "import-review": "/bookings/import/review",
     join: "/join",
+    collection: "/collections",
   });
 
   const EXACT_ROUTES = new Map(
@@ -91,6 +93,16 @@
     const exact = EXACT_ROUTES.get(path);
     if (exact) return { screen: exact.screen, id: null };
 
+    // Planning-collection sub-routes must be matched before the generic
+    // DETAIL_PATHS loop, since they also live under "/collections/".
+    let collectionMatch;
+    if ((collectionMatch = path.match(/^\/collections\/new\/([^/]+)$/)))
+      return { screen: "collection-form", id: `new:${safelyDecode(collectionMatch[1])}` };
+    if ((collectionMatch = path.match(/^\/collections\/([^/]+)\/edit$/)))
+      return { screen: "collection-form", id: safelyDecode(collectionMatch[1]) };
+    if ((collectionMatch = path.match(/^\/collections\/([^/]+)\/add-place$/)))
+      return { screen: "stop-form", id: safelyDecode(collectionMatch[1]) };
+
     for (const [screen, base] of Object.entries(DETAIL_PATHS)) {
       if (!path.startsWith(`${base}/`)) continue;
       const id = safelyDecode(path.slice(base.length + 1));
@@ -117,6 +129,14 @@
         ? `/bookings/new/${encodeURIComponent(normalizedId)}`
         : "/bookings/new";
     }
+
+    if (normalizedScreen === "collection-form") {
+      if (normalizedId && normalizedId.startsWith("new:"))
+        return `/collections/new/${encodeURIComponent(normalizedId.slice(4))}`;
+      return normalizedId ? `/collections/${encodeURIComponent(normalizedId)}/edit` : "/planning";
+    }
+    if (normalizedScreen === "stop-form")
+      return normalizedId ? `/collections/${encodeURIComponent(normalizedId)}/add-place` : "/planning";
 
     const detailBase = DETAIL_PATHS[normalizedScreen];
     if (detailBase)

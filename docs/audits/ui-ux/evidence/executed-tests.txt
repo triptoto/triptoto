@@ -1,0 +1,16 @@
+# Executed-test evidence — 2026-09-05T16:15:30Z
+
+## app version
+0.9.0-beta.1
+## git HEAD
+7c8453893b00a2fc24120a29cfaa7c00f85424cc
+## working-copy changes (uncommitted)
+      17
+
+## node tests/button-size.contract.mjs
+Button sizing contract passed.
+exit=0
+
+## node tests/mobile-ui.contract.mjs
+Product V2 mobile UI contract passed.
+exit=0

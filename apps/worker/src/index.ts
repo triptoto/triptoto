@@ -28,6 +28,7 @@ import { enforceActorRateLimit, enforcePublicRateLimit } from './rate-limit.ts';
 import { PRODUCT_LIMITS } from './config.ts';
 import { listJourneys, createJourney, updateJourney, replaceJourneyItems, deleteJourney } from './routes/journeys.ts';
 import { listActivities, createActivity, updateActivity, deleteActivity } from './routes/activities.ts';
+import { listCollections, createCollection, updateCollection, deleteCollection, addStop, updateStop, deleteStop, reorderStops } from './routes/planning-collections.ts';
 import { listBookingDetails, upsertBookingDetail, deleteBookingDetail } from './routes/booking-details.ts';
 import { listContacts, createContact, updateContact, deleteContact } from './routes/contacts.ts';
 import { listTimeMarkers, createTimeMarker, updateTimeMarker, deleteTimeMarker } from './routes/time-markers.ts';
@@ -220,6 +221,16 @@ export default {
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listActivities(request,env,auth,tripId); if(request.method==='POST') return createActivity(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/activities\/([^/]+)$/);
       if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateActivity(request,env,auth,tripId,itemId); if(request.method==='DELETE') return deleteActivity(request,env,auth,tripId,itemId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/collections$/);
+      if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listCollections(request,env,auth,tripId); if(request.method==='POST') return createCollection(request,env,auth,tripId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/collections\/([^/]+)\/stops\/order$/);
+      if (match && request.method==='PUT') return reorderStops(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/collections\/([^/]+)\/stops$/);
+      if (match && request.method==='POST') return addStop(request,env,auth,decodeURIComponent(match[1]),decodeURIComponent(match[2]));
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/collections\/([^/]+)\/stops\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]), stopId=decodeURIComponent(match[3]); if(request.method==='PATCH') return updateStop(request,env,auth,tripId,itemId,stopId); if(request.method==='DELETE') return deleteStop(request,env,auth,tripId,itemId,stopId); }
+      match = path.match(/^\/api\/v1\/trips\/([^/]+)\/collections\/([^/]+)$/);
+      if (match) { const tripId=decodeURIComponent(match[1]), itemId=decodeURIComponent(match[2]); if(request.method==='PATCH') return updateCollection(request,env,auth,tripId,itemId); if(request.method==='DELETE') return deleteCollection(request,env,auth,tripId,itemId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/booking-details$/);
       if (match) { const tripId=decodeURIComponent(match[1]); if(request.method==='GET') return listBookingDetails(request,env,auth,tripId); if(request.method==='PUT'||request.method==='POST') return upsertBookingDetail(request,env,auth,tripId); }
       match = path.match(/^\/api\/v1\/trips\/([^/]+)\/booking-details\/([^/]+)\/([^/]+)$/);
