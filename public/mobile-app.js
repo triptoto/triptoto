@@ -237,6 +237,12 @@
     "reservation",
     "document",
   ]);
+  // "Add a booking" is for confirmed reservations/tickets only (transport &
+  // stays). Sightseeing/experience types live in Day Plan, so they are hidden
+  // from the booking picker — but kept in MANUAL_BOOKING_TYPES because existing
+  // bookings, forwarded emails and edit forms still render through that map.
+  const BOOKING_PICKER_HIDDEN = new Set(["restaurant", "tour", "activity", "attraction", "event"]);
+  const BOOKING_GROUP_DISPLAY = Object.freeze({ "Stay & plans": "Stay" });
   const manualAttachmentMirror = new Map(), manualDraftIds = new Map();
   function manualBookingConfig(kind) {
     return MANUAL_BOOKING_TYPES[String(kind || "")] || null;
@@ -5388,7 +5394,7 @@
     { title: "Bookings", questions: [
       { id: "add-booking", q: "How do I add a booking?", a: "Tap + at the bottom, then choose how to add it: Upload Booking or ADD NEW BOOKING. Everything you add appears in the Timeline.", keywords: "add booking flight hotel reservation upload manual" },
       { id: "upload-booking", q: "How does Upload Booking work?", a: "Tap + then Upload Booking and choose a ticket or confirmation file. tripto.to reads it on this device and fills in what it can. Check the details before saving, because recognition is not always perfect.", keywords: "upload file pdf ticket confirmation ocr read extract" },
-      { id: "manual-booking", q: "How do I add a booking manually?", a: "Tap + then ADD NEW BOOKING and pick a type: Flight, Hotel / Stay, Train, Car Rental, Transfer, Cruise, Ferry, Restaurant, Activity / Event or Other. Only the essential fields are required.", keywords: "manual enter flight hotel stay train car rental transfer cruise ferry restaurant activity other" },
+      { id: "manual-booking", q: "How do I add a booking manually?", a: "Tap + then Add a booking and pick a type: Flight, Hotel / Stay, Train, Ferry, Bus, Cruise, Car Rental, Transfer, Taxi, Parking, Insurance or Other. Only the essential fields are required. To plan restaurants, tours, museums and other things to see and do, use Day Plan instead.", keywords: "manual enter flight hotel stay train ferry bus cruise car rental transfer taxi parking insurance other day plan" },
       { id: "edit-booking", q: "How do I edit a booking?", a: "Open the booking from your Timeline, then choose Edit to update its details.", keywords: "edit change booking details update" },
       { id: "remove-booking", q: "How do I remove a booking?", a: "Open the booking from your Timeline and choose Delete. Delete only when a booking was added by mistake.", keywords: "delete remove cancel booking mistake" },
     ] },
@@ -7461,19 +7467,20 @@
 
   function addBookingScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
-    const groups = [...new Set(Object.values(MANUAL_BOOKING_TYPES).map((config) => config.group))];
+    const bookable = Object.entries(MANUAL_BOOKING_TYPES).filter(([type]) => !BOOKING_PICKER_HIDDEN.has(type));
+    const groups = [...new Set(bookable.map(([, config]) => config.group))];
     // Same row language as the Day Plan screen: full-width list rows with a
     // round icon, title, hint and chevron (not the old tone-coloured 2-col grid).
     const typeRow = ([type, config]) => `<button type="button" class="day-plan-row" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" aria-label="Add ${esc(config.label)}"><span class="day-plan-row__icon">${icon(config.icon,24)}</span><span class="day-plan-row__copy"><strong>${esc(config.label)}</strong><small>${esc(config.hint)}</small></span>${icon("chevron",18)}</button>`;
     const groupedCategories = groups.map((group) => {
       const id = `manual-group-${group.toLowerCase().replace(/[^a-z0-9]+/g,"-")}`;
-      return `<section class="manual-add-group" aria-labelledby="${esc(id)}"><h2 id="${esc(id)}">${esc(group)}</h2><div class="day-plan-list">${Object.entries(MANUAL_BOOKING_TYPES).filter(([,config])=>config.group===group).map(typeRow).join("")}</div></section>`;
+      return `<section class="manual-add-group" aria-labelledby="${esc(id)}"><h2 id="${esc(id)}">${esc(BOOKING_GROUP_DISPLAY[group] || group)}</h2><div class="day-plan-list">${bookable.filter(([,config])=>config.group===group).map(typeRow).join("")}</div></section>`;
     }).join("");
     const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
-    return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>Choose a type and add the confirmed details. You can attach tickets or vouchers inside the booking.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page day-plan-page");
+    return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>For travel you've already reserved. To plan what to see and do, use Day Plan.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page day-plan-page");
   }
   function manualBookingSheet() {
-    const options = Object.entries(MANUAL_BOOKING_TYPES);
+    const options = Object.entries(MANUAL_BOOKING_TYPES).filter(([type]) => !BOOKING_PICKER_HIDDEN.has(type));
     return bottomSheet("manual-booking","ADD NEW BOOKING",`<div class="sheet-options-group manual-v2-options" data-manual-category-list>${options.map(([type,config])=>`<button type="button" class="sheet-option" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}"><span class="info-icon">${icon(config.icon,21)}</span><span><strong>${esc(config.label)}</strong></span>${icon("chevron",20)}</button>`).join("")}</div>`);
   }
   function documentSheet() {
