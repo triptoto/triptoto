@@ -7462,13 +7462,15 @@
   function addBookingScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
     const groups = [...new Set(Object.values(MANUAL_BOOKING_TYPES).map((config) => config.group))];
-    const category = ([type, config]) => `<button type="button" class="manual-add-card manual-add-card--${esc(config.tone)}" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" aria-label="Add ${esc(config.label)}"><span class="manual-add-card__icon">${icon(config.icon,24)}</span><span class="manual-add-card__copy"><strong>${esc(config.label)}</strong><small>${esc(config.hint)}</small></span></button>`;
+    // Same row language as the Day Plan screen: full-width list rows with a
+    // round icon, title, hint and chevron (not the old tone-coloured 2-col grid).
+    const typeRow = ([type, config]) => `<button type="button" class="day-plan-row" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" aria-label="Add ${esc(config.label)}"><span class="day-plan-row__icon">${icon(config.icon,24)}</span><span class="day-plan-row__copy"><strong>${esc(config.label)}</strong><small>${esc(config.hint)}</small></span>${icon("chevron",18)}</button>`;
     const groupedCategories = groups.map((group) => {
       const id = `manual-group-${group.toLowerCase().replace(/[^a-z0-9]+/g,"-")}`;
-      return `<section class="manual-add-group" aria-labelledby="${esc(id)}"><h2 id="${esc(id)}">${esc(group)}</h2><div class="manual-add-grid">${Object.entries(MANUAL_BOOKING_TYPES).filter(([,config])=>config.group===group).map(category).join("")}</div></section>`;
+      return `<section class="manual-add-group" aria-labelledby="${esc(id)}"><h2 id="${esc(id)}">${esc(group)}</h2><div class="day-plan-list">${Object.entries(MANUAL_BOOKING_TYPES).filter(([,config])=>config.group===group).map(typeRow).join("")}</div></section>`;
     }).join("");
     const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
-    return focusedTaskPage(`Add a booking`, `<section class="manual-add-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>Choose a type and add the confirmed details. You can attach tickets or vouchers inside the booking.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page");
+    return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>Choose a type and add the confirmed details. You can attach tickets or vouchers inside the booking.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page day-plan-page");
   }
   function manualBookingSheet() {
     const options = Object.entries(MANUAL_BOOKING_TYPES);
