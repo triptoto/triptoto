@@ -5,7 +5,10 @@
     home: "/home",
     timeline: "/timeline",
     trips: "/trips",
+    "add-trip": "/add",
     "add-booking": "/bookings/add",
+    "day-plan": "/day-plan",
+    "save-later": "/save-later",
     bookings: "/bookings",
     documents: "/documents",
     ready: "/ready-offline",
@@ -103,6 +106,15 @@
     if ((collectionMatch = path.match(/^\/collections\/([^/]+)\/add-place$/)))
       return { screen: "stop-form", id: safelyDecode(collectionMatch[1]) };
 
+    // Day Plan activity form: create (/day-plan/new/<type>) or edit an existing
+    // activity (/day-plan/item/<id>). Matched before the generic loop so the
+    // "/day-plan" overview keeps its own exact route.
+    let dayPlanMatch;
+    if ((dayPlanMatch = path.match(/^\/day-plan\/new\/([^/]+)$/)))
+      return { screen: "day-plan-form", id: `new:${safelyDecode(dayPlanMatch[1])}` };
+    if ((dayPlanMatch = path.match(/^\/day-plan\/item\/([^/]+)$/)))
+      return { screen: "day-plan-form", id: safelyDecode(dayPlanMatch[1]) };
+
     for (const [screen, base] of Object.entries(DETAIL_PATHS)) {
       if (!path.startsWith(`${base}/`)) continue;
       const id = safelyDecode(path.slice(base.length + 1));
@@ -137,6 +149,12 @@
     }
     if (normalizedScreen === "stop-form")
       return normalizedId ? `/collections/${encodeURIComponent(normalizedId)}/add-place` : "/planning";
+
+    if (normalizedScreen === "day-plan-form") {
+      if (normalizedId && normalizedId.startsWith("new:"))
+        return `/day-plan/new/${encodeURIComponent(normalizedId.slice(4))}`;
+      return normalizedId ? `/day-plan/item/${encodeURIComponent(normalizedId)}` : "/day-plan";
+    }
 
     const detailBase = DETAIL_PATHS[normalizedScreen];
     if (detailBase)

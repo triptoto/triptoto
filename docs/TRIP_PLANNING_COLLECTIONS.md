@@ -1,11 +1,24 @@
 # Trip Planning Collections (Neighborhood Plans + Secondary Mini Timeline)
 
+> **Current model (Add to Your Trip redesign).** The "Add to <Trip>" screen is
+> exactly three intentions — **Add a booking**, **Day Plan**, **Save for Later**.
+> Day Plan offers ten activity types; nine are ordinary single activities and
+> the tenth, **Neighborhood**, is the only *grouped* type and the only planning
+> collection a traveller can create. Day Trip, Walking Route, Places to Visit,
+> Food & Drink and Shopping collections are retired: `createCollection` now
+> rejects any `collection_type` other than `neighborhood`
+> (`400 COLLECTION_TYPE_UNSUPPORTED`). The migration `CHECK` still lists the
+> original six values (it is live on production and a superset — a narrower
+> constraint would need a new migration), but only `neighborhood` is reachable.
+> Single activities and Save-for-Later ideas are ordinary `activities` rows, not
+> collections — see `docs/DAY_PLAN_FLOW.md`.
+
 Planning collections let a traveller group several ordered places inside one
-container (a Neighborhood, a Day Trip, a Walking Route) or keep a flat wishlist
-(Places to Visit, Food & Drink, Shopping). A scheduled collection appears **once**
-on the main Timeline; opening it reveals a **secondary mini timeline** that shows
-only *time · dot · place name* — no category icons, no cards, no shadows, no
-colour coding. This document is the source of truth for the feature.
+Neighborhood. A scheduled Neighborhood appears **once** on the main Timeline;
+opening it reveals a **secondary mini timeline** that shows only
+*time · dot · place name* — no category icons, no cards, no shadows, no colour
+coding. This document is the source of truth for the grouped-neighborhood
+feature.
 
 This is a real, implemented feature (backend + D1 migration + SPA screens +
 offline queue + tests), not a mockup. It is additive: it does not redesign the
@@ -13,21 +26,19 @@ existing tripto.to app, navigation, Timeline, or Add Booking flow.
 
 ## Concepts
 
-| Type | `collection_type` | Timeline-capable | Child noun |
-| --- | --- | --- | --- |
-| Neighborhood | `neighborhood` | yes | places |
-| Day Trip | `day_trip` | yes | stops |
-| Walking Route | `walking_route` | yes | stops |
-| Places to Visit | `places_to_visit` | no (wishlist) | places |
-| Food & Drink | `food_and_drink` | no (wishlist) | places |
-| Shopping | `shopping` | no (wishlist) | places |
+| Type | `collection_type` | Creatable | Timeline-capable | Child noun |
+| --- | --- | --- | --- | --- |
+| Neighborhood | `neighborhood` | yes | yes (when it has a day) | places |
+| Day Trip | `day_trip` | no (retired) | — | — |
+| Walking Route | `walking_route` | no (retired) | — | — |
+| Places to Visit | `places_to_visit` | no (retired) | — | — |
+| Food & Drink | `food_and_drink` | no (retired) | — | — |
+| Shopping | `shopping` | no (retired) | — | — |
 
-- **Timeline-capable** types render on the main Timeline **only when scheduled**
-  (`starts_at_utc` is set). Unscheduled ones live in the Planning area.
-- **Wishlist** types never appear on the main Timeline regardless of schedule;
-  they are organised lists reached from the Planning overview.
-- A collection's main-Timeline summary is **computed from its children**, e.g.
-  `5 places · 10:00–16:00`. Children never appear as separate top-level rows.
+- **Neighborhood** renders on the main Timeline **only when scheduled**
+  (`starts_at_utc` is set). Unscheduled neighborhoods live in the Planning area.
+- A neighborhood's main-Timeline summary is **computed from its children**, e.g.
+  `4 places · 15:00–18:00`. Children never appear as separate top-level rows.
 
 ## Data model
 
@@ -96,6 +107,9 @@ route before the collection-by-id route, so specific paths never get shadowed.
   `requireTripAccess(env,auth,tripId,write)` — reads require membership, all
   mutations require write (owner/editor). Viewers are rejected server-side even
   if the client is tampered with.
+- **Only `neighborhood` is creatable.** `createCollection` rejects any other
+  `collection_type` with `400 COLLECTION_TYPE_UNSUPPORTED` before any write, so
+  a tampered client cannot recreate the retired plan/wishlist types.
 - **Optimistic concurrency.** Every update/delete requires the caller's
   `version`: missing → `400 VERSION_REQUIRED`; mismatch → `409 VERSION_CONFLICT`;
   the guarded `UPDATE ... WHERE version=?` bumps `version+1` and re-asserts.
@@ -111,8 +125,11 @@ route before the collection-by-id route, so specific paths never get shadowed.
 
 ## Client — `public/mobile-app.js`
 
-- **Add to your trip** gains a *Plan your days* section with six plan cards
-  (`data-action="add-collection"`) alongside the existing Stay and Plans actions.
+- **Add to your trip** is three intention rows (Add a booking, Day Plan, Save
+  for Later). **Day Plan** lists ten activity types; **Neighborhood**
+  (`data-action="day-plan-type"`, `type="neighborhood"`) opens the collection
+  form (`/collections/new/neighborhood`). The other nine open the shared
+  activity form (`/day-plan/...`). There is no six-card "Plan your days" grid.
 - **Planning overview** (`planningScreen`) groups collections into *On your
   timeline*, *Planning*, and *Start a plan*. This is one overview screen — it is
   **not** six new bottom-nav tabs.

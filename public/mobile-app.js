@@ -212,7 +212,7 @@
     formPrefill = null,
     discardReturnFocus = null;
   const scrollPositions = new Map();
-  const DIRTY_TASK_SCREENS = new Set(["form", "import", "import-review", "collection-form", "stop-form"]);
+  const DIRTY_TASK_SCREENS = new Set(["form", "import", "import-review", "collection-form", "stop-form", "day-plan-form"]);
   const MANUAL_BOOKING_TYPES = Object.freeze({
     flight: { label: "Flight", hint: "Air travel", group: "Getting there", tone: "flight", icon: "flight", base: "flight", cta: "Add Flight", documentType: "ticket" },
     train: { label: "Train", hint: "Rail journey", group: "Getting there", tone: "flight", icon: "train", base: "train", cta: "Add Train", documentType: "ticket" },
@@ -3478,7 +3478,7 @@
   }
   function noUpcomingCard() {
     const view = noUpcomingTripState();
-    return `<section class="next-action-card ${view.setup ? "next-action-card--setup" : ""}"><span class="ticket-chip ${view.setup ? "ticket-chip--setup" : ""}">${icon(view.icon, 18)} ${esc(view.label)}</span><h2>${esc(view.title)}</h2><p>${esc(view.copy)}</p><div class="next-action-actions"><button class="secondary-cta ${view.setup ? "next-action-primary" : ""}" data-action="open-add">${icon("plus", 20)} Add booking</button><button class="secondary-cta" data-screen="trips">${icon("trips", 20)} Timeline</button></div></section>`;
+    return `<section class="next-action-card ${view.setup ? "next-action-card--setup" : ""}"><span class="ticket-chip ${view.setup ? "ticket-chip--setup" : ""}">${icon(view.icon, 18)} ${esc(view.label)}</span><h2>${esc(view.title)}</h2><p>${esc(view.copy)}</p><div class="next-action-actions"><button class="secondary-cta ${view.setup ? "next-action-primary" : ""}" data-action="open-add-booking">${icon("plus", 20)} Add booking</button><button class="secondary-cta" data-screen="trips">${icon("trips", 20)} Timeline</button></div></section>`;
   }
   function nextItem() {
     return (
@@ -4607,7 +4607,7 @@
         status = meaningfulBookingStatus(item);
       return `<button class="travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="travel-row__icon">${icon(transportIcon(kind), 22)}</span><span class="travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? `<em class="travel-state travel-state--attention">${esc(status)}</em>` : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
     }).join("");
-    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add" aria-label="Add booking">${icon("plus", 24)}</button>`);
+    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add-booking" aria-label="Add booking">${icon("plus", 24)}</button>`);
   }
   function selectedTrain() {
     const supported = new Set(["train", "ferry"]),
@@ -4752,15 +4752,46 @@
   // is a single timeline item (type custom) with an ordered list of child
   // "stops" that live ONLY inside the collection's own minimal secondary
   // timeline. Stops are never separate rows in the main timeline.
+  // Neighborhood is the ONE grouped Day Plan type: it shows once on the main
+  // Timeline (when scheduled) and opens its own monochrome mini timeline of
+  // places. It is reached through Day Plan, never as a separate top-level
+  // category. The other nine Day Plan types are single activities (see
+  // DAY_PLAN_TYPES) and reuse the activities model directly.
   const COLLECTION_TYPE_CONFIG = Object.freeze({
     neighborhood: { label: "Neighborhood", hint: "Plan places in one area", icon: "city", timeline: true, stop: "place", stops: "places", intro: "Group several places in one district into one plan. It shows once on your timeline and opens its own list of places." },
-    day_trip: { label: "Day Trip", hint: "A day away from base", icon: "route", timeline: true, stop: "stop", stops: "stops", intro: "Plan an ordered day away. The stops live inside the day trip, never as separate timeline rows." },
-    walking_route: { label: "Walking Route", hint: "An ordered walk", icon: "walking", timeline: true, stop: "stop", stops: "stops", intro: "Line up an ordered walk. Each stop appears only in this route's own list." },
-    places_to_visit: { label: "Places to Visit", hint: "A wishlist of spots", icon: "landmark", timeline: false, stop: "place", stops: "places", intro: "Keep a wishlist of places. Wishlists stay in planning and never clutter your timeline." },
-    food_and_drink: { label: "Food & Drink", hint: "Cafes, bars, restaurants", icon: "restaurant", timeline: false, stop: "place", stops: "places", intro: "Collect cafes, bars, and restaurants to try. It stays in planning." },
-    shopping: { label: "Shopping", hint: "Shops and markets", icon: "shopping", timeline: false, stop: "place", stops: "places", intro: "Save shops and markets to browse. It stays in planning." },
   });
-  const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood", "day_trip", "walking_route"]);
+  const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood"]);
+  // The ten Day Plan activity types (spec §8/§9). Keys are the canonical
+  // activity_type enum values persisted on activities.activity_type (free text,
+  // no migration). Neighborhood is grouped (routes to a collection); the rest
+  // are single activities that land directly on the Timeline once given a day.
+  const DAY_PLAN_TYPES = Object.freeze([
+    { type: "neighborhood", label: "Neighborhood", desc: "Group several nearby places into one area to explore", icon: "city", grouped: true },
+    { type: "attraction", label: "Attraction", desc: "A landmark or must-see sight worth a visit", icon: "landmark" },
+    { type: "museum_culture", label: "Museum & Culture", desc: "Museums, galleries, and cultural spots", icon: "museum" },
+    { type: "food_drink", label: "Food & Drink", desc: "A cafe, bar, or restaurant you want to try", icon: "restaurant" },
+    { type: "shopping", label: "Shopping", desc: "Shops, markets, and places to browse", icon: "shopping" },
+    { type: "tour_experience", label: "Tour & Experience", desc: "A guided tour, class, or booked experience", icon: "tour" },
+    { type: "nature_outdoors", label: "Nature & Outdoors", desc: "Parks, gardens, hikes, and green spaces", icon: "mountain" },
+    { type: "beach_relax", label: "Beach & Relax", desc: "A beach, pool, or somewhere to unwind", icon: "beach" },
+    { type: "entertainment", label: "Entertainment", desc: "A show, concert, game, or night out", icon: "event" },
+    { type: "viewpoint_scenic", label: "Viewpoint & Scenic", desc: "A lookout or scenic spot for the view", icon: "camera" },
+  ]);
+  const DAY_PLAN_TYPE_MAP = Object.freeze(Object.fromEntries(DAY_PLAN_TYPES.map((t) => [t.type, t])));
+  function dayPlanType(type) { return DAY_PLAN_TYPE_MAP[String(type || "")] || null; }
+  // Save for Later buckets (spec §25). Each is an unscheduled activity (null
+  // start) tagged with a canonical activity_type so it never touches the main
+  // Timeline until it is given a day.
+  const SAVE_LATER_TYPES = Object.freeze([
+    { type: "place", label: "Place", desc: "An interesting place to visit", icon: "pin", activityType: "attraction" },
+    { type: "food_drink", label: "Food & Drink", desc: "Somewhere to eat or drink", icon: "restaurant", activityType: "food_drink" },
+    { type: "shopping", label: "Shopping", desc: "A shop or market to browse", icon: "shopping", activityType: "shopping" },
+  ]);
+  const SAVE_LATER_TYPE_MAP = Object.freeze(Object.fromEntries(SAVE_LATER_TYPES.map((t) => [t.type, t])));
+  // An activity is a "save for later" idea when it has no scheduled start. Its
+  // bucket is derived from the activity_type it was tagged with.
+  const SAVE_LATER_BUCKET_FOR = Object.freeze({ food_drink: "food_drink", shopping: "shopping" });
+  function saveLaterBucketForType(activityType) { return SAVE_LATER_BUCKET_FOR[String(activityType || "")] || "place"; }
   const PLACE_TYPE_OPTIONS = [["", "No type"], ["cafe", "Cafe"], ["restaurant", "Restaurant"], ["attraction", "Attraction"], ["museum", "Museum"], ["shop", "Shop"], ["market", "Market"], ["park", "Park"], ["activity", "Activity"], ["viewpoint", "Viewpoint"], ["monument", "Monument"], ["street", "Street"], ["other", "Other"]];
   const STOP_STATE_LABEL = { next: "Next", future: "Upcoming", past: "Visited", skipped: "Skipped" };
   function collectionConfig(type) { return COLLECTION_TYPE_CONFIG[String(type || "")] || null; }
@@ -4772,9 +4803,22 @@
   // unscheduled collection live in the planning area, never the main timeline.
   function isTimelineVisibleItem(item) {
     const c = collectionForItem(itemId(item));
-    if (!c) return true;
+    if (!c) return !isSaveForLaterItem(item);
     const starts = Number(val(item, "starts_at_utc", "startsAtUtc")) || null;
     return TIMELINE_COLLECTION_TYPES.has(String(c.collection_type)) && starts != null;
+  }
+  // A Save for Later idea is an activity/reservation kept without a scheduled
+  // start (spec §12/§25). It lives on the Save for Later screen, never the main
+  // Timeline, until it is given a day. Collections are excluded — their own
+  // scheduling rule is handled in isTimelineVisibleItem.
+  function isSaveForLaterItem(item) {
+    if (!item || isCollectionItem(item)) return false;
+    const type = String(val(item, "type", "kind") || "");
+    if (type !== "activity" && type !== "reservation") return false;
+    return (Number(val(item, "starts_at_utc", "startsAtUtc")) || null) == null;
+  }
+  function saveForLaterItems() {
+    return (state.timeline || []).filter((item) => !val(item, "deleted_at", "deletedAt") && isSaveForLaterItem(item));
   }
   // "5 places · 10:00–16:00" — the parent's main-timeline summary computed from
   // its children, so the parent never needs a stored subtitle.
@@ -4814,7 +4858,7 @@
     const section = (heading, items, emptyCopy) => `<section class="planning-group" aria-label="${esc(heading)}"><h2>${esc(heading)}</h2>${items.length ? `<div class="planning-list">${items.map(row).join("")}</div>` : `<p class="planning-empty">${esc(emptyCopy)}</p>`}</section>`;
     const addTypes = Object.entries(COLLECTION_TYPE_CONFIG).map(([type, cfg]) => `<button type="button" class="planning-add-card" data-action="add-collection" data-collection-type="${esc(type)}" aria-label="Add ${esc(cfg.label)}"><span class="planning-add-card__icon">${icon(cfg.icon, 22)}</span><span class="planning-add-card__copy"><strong>${esc(cfg.label)}</strong><small>${esc(cfg.hint)}</small></span></button>`).join("");
     const addSection = canEdit ? `<section class="planning-group" aria-label="Start a plan"><h2>Start a plan</h2><div class="planning-add-grid">${addTypes}</div></section>` : "";
-    const body = `<section class="planning-intro"><span>PLAN YOUR DAYS</span><h1>Planning</h1><p>Neighborhoods, day trips, walking routes, and wishlists. Scheduled plans appear on your timeline; everything else waits here.</p></section>${section("On your timeline", scheduled, "Nothing scheduled yet.")}${section("Planning", planning, "No wishlists or draft plans yet.")}${addSection}`;
+    const body = `<section class="planning-intro"><span>PLAN YOUR DAYS</span><h1>Planning</h1><p>Your neighborhood plans. A scheduled neighborhood appears on your timeline; unscheduled ones wait here.</p></section>${section("On your timeline", scheduled, "Nothing scheduled yet.")}${section("Planning", planning, "No draft plans yet.")}${addSection}`;
     return focusedTaskPage("Planning", body, "planning-page");
   }
 
@@ -4876,7 +4920,7 @@
       ? `<div class="form-fields form-fields--date-time">${field("scheduleDate", "Date on timeline", dateVal, { type: "date", wide: false })}${field("scheduleTime", "Start time", timeVal, { type: "time", wide: false })}</div><p class="field-helper">Add a date to place this ${esc(cfg.label.toLowerCase())} on your timeline. Leave the date blank to keep it in planning.</p>`
       : `<p class="field-helper">${esc(cfg.label)} lists stay in planning and never appear on the main timeline.</p>`;
     const form = `<form class="mobile-form premium-form collection-form" id="collection-form" data-collection-type="${esc(type)}"${editId ? ` data-edit-id="${esc(editId)}"` : ""} novalidate><header class="manual-form-heading"><span>${esc(editing ? "Edit plan" : "New plan")}</span><h1>${esc(editing ? existing.title || cfg.label : cfg.label)}</h1></header><p class="collection-form__intro">${esc(cfg.intro)}</p><section class="form-section"><div class="quick-primary-fields">${field("title", cfg.label + " name", editing ? existing.title : "", { required: true, placeholder: cfg.label === "Neighborhood" ? "Trastevere" : cfg.label })}${field("city", "City or area", editing ? existing.city : "", { placeholder: "Rome" })}${scheduleFields}${field("notes", "Notes", editing ? existing.collection_notes : "", { type: "textarea" })}</div><input type="hidden" name="timezone" value="${esc(tz)}"></section></form>`;
-    return focusedTaskPage(editing ? `Edit ${cfg.label}` : `Add ${cfg.label}`, form, "form-screen collection-form-screen", formHeaderSave("collection-form", "Save"));
+    return focusedTaskPage(editing ? `Edit ${cfg.label}` : `Add ${cfg.label}`, form, "form-screen collection-form-screen", formHeaderSave("collection-form", editing ? "Save" : `Create ${cfg.label}`));
   }
 
   // Add / edit a stop (place) inside a collection. state.selectedId is the
@@ -5271,7 +5315,7 @@
             )
             .join("")
         : setup
-          ? `<div class="health-card info"><span>${icon("plus", 26)}</span><span><strong>Trip setup</strong><p>Add your first booking to build the itinerary.</p><button class="text-action" data-action="open-add">Add booking</button></span></div>`
+          ? `<div class="health-card info"><span>${icon("plus", 26)}</span><span><strong>Trip setup</strong><p>Add your first booking to build the itinerary.</p><button class="text-action" data-action="open-add-booking">Add booking</button></span></div>`
           : `<div class="health-card ${top.kind === "good" ? "good" : "info"}"><span>${icon(top.kind === "good" ? "check" : "info", 26)}</span><span><strong>${top.kind === "good" ? "No known issues" : "Not enough information"}</strong><p>${esc(top.subtitle)}</p></span></div>`;
     return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 24)}</button>`)}<main class="health-content"><div class="health-summary"><div class="health-shield ${shieldClass} ${setup ? "setup" : ""}">${icon(issues.length ? "warning" : setup ? "plus" : top.kind === "good" ? "check" : "info", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><div class="list-stack">${rows}${setup ? "" : `<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button>`}</div></main>${bottomNav("home")}</section></div>`;
   }
@@ -7221,6 +7265,170 @@
       .join("");
     return `<div class="phone-app"><section class="screen esim-screen esim-refresh">${appBar("Travel eSIM", "Partner offer", true)}<main class="esim-page"><section class="esim-hero"><div class="esim-hero__top"><span>Stay connected</span><span class="esim-hero__icon">${icon("sim", 28)}</span></div><h1>Data for ${esc(dest)}</h1><p>Find a travel data plan before you go.</p><div class="esim-offer"><strong>15% off</strong><span>your first plan · copy code</span><button type="button" class="esim-code" data-action="copy-esim-code" aria-label="Copy code FKWQX6ES">FKWQX6ES ${icon("copy", 16)}</button></div></section><section class="esim-features">${featureRows}</section><section class="esim-steps"><h2>How it works</h2><ol><li><span>1</span><p>Tap <strong>Get my eSIM</strong> below to open 7g.</p></li><li><span>2</span><p>Pick your destination and plan — enter code <strong>FKWQX6ES</strong> for 15% off.</p></li><li><span>3</span><p>Scan the QR to install it, then land connected.</p></li></ol></section><button type="button" class="mobile-primary-action esim-cta" data-action="esim-signup">${icon("external", 18)} Get my eSIM — 15% off</button><p class="esim-note">tripto.to partners with 7g. This opens 7g in a new tab and we may earn a commission — it never changes your price. tripto.to never uses your location.</p></main></section></div>`;
   }
+  // The Add screen (spec §2): exactly three tappable intention rows for the
+  // current trip. Create-trip and other global actions deliberately live
+  // elsewhere. Stay is NOT here — it belongs under Add a booking.
+  function addToTripScreen() {
+    if (!state.trip) return noTripQuickAdd("booking", "Add to your trip");
+    const tripName = state.trip.title || "your trip";
+    const row = (action, ic, title, copy) => `<button type="button" class="add-intent-row" data-action="${esc(action)}"><span class="add-intent-row__icon">${icon(ic, 24)}</span><span class="add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
+    const body = `<section class="add-intent-intro"><span>ADD TO TRIP</span><h1>Add to ${esc(tripName)}</h1><p>What would you like to add?</p></section><div class="add-intent-list">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet")}</div>`;
+    return focusedTaskPage(`Add to ${tripName}`, body, "add-intent-page");
+  }
+
+  // Day Plan (spec §8/§9): pick one of ten activity types. Neighborhood is the
+  // one grouped type (opens a collection); the rest open the shared activity
+  // form and land directly on the Timeline once given a day.
+  function dayPlanScreen() {
+    if (!state.trip) return missingDetailScreen("Day Plan", "Create or select a trip first.");
+    const row = (t) => `<button type="button" class="day-plan-row" data-action="day-plan-type" data-type="${esc(t.type)}" aria-label="${esc(t.label)}"><span class="day-plan-row__icon">${icon(t.icon, 24)}</span><span class="day-plan-row__copy"><strong>${esc(t.label)}</strong><small>${esc(t.desc)}</small></span>${icon("chevron", 18)}</button>`;
+    const body = `<section class="day-plan-intro"><span>DAY PLAN</span><h1>Plan your day</h1><p>What do you want to visit or do? Pick a type, then add the details.</p></section><div class="day-plan-list">${DAY_PLAN_TYPES.map(row).join("")}</div>`;
+    return focusedTaskPage("Day Plan", body, "day-plan-page");
+  }
+
+  // Contextual prefill (spec §7): the ISO date of the day currently shown on the
+  // Timeline, or "" when no day is in context. Never invents a date.
+  function activeTimelineDateISO() {
+    const key = state.timelineDayKey;
+    if (!key) return "";
+    for (const item of state.timeline || []) {
+      const starts = Number(val(item, "starts_at_utc", "startsAtUtc")) || null;
+      if (starts == null) continue;
+      const zone = val(item, "start_timezone", "startTimezone");
+      if (timelineDay(starts, zone).key !== key) continue;
+      try {
+        const parts = dateFormatter("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: zone || undefined }).formatToParts(new Date(starts));
+        const g = (t) => parts.find((p) => p.type === t)?.value || "";
+        return `${g("year")}-${g("month")}-${g("day")}`;
+      } catch (_) { return ""; }
+    }
+    return "";
+  }
+
+  // Shared activity form for the nine single-activity Day Plan types and for
+  // scheduling a Save for Later idea (spec §10). Day and time live INSIDE the
+  // form — there is never a separate "choose day" screen. state.selectedId is
+  // "new:<activityType>" to create, or an activity id to edit.
+  function dayPlanFormScreen() {
+    if (!state.trip) return missingDetailScreen("Day Plan", "Create or select a trip first.");
+    const raw = String(state.selectedId || "");
+    const editing = !raw.startsWith("new:");
+    const existing = editing ? (state.timeline || []).find((it) => itemId(it) === raw) : null;
+    if (editing && !existing) return missingDetailScreen("Plan unavailable", "This activity is not available.");
+    const activityType = editing ? String(val(existing, "activity_type", "activityType") || "") : raw.slice(4);
+    const meta = dayPlanType(activityType);
+    const label = meta ? meta.label : "Activity";
+    const desc = meta ? meta.desc : "Add what you want to do and, when you know it, the day and time.";
+    const fromSaveLater = state.dayPlanContext === "save-later";
+    const tz = (editing ? val(existing, "start_timezone", "startTimezone") : "") || tripDefaultTimezone() || "UTC";
+    // Prefill the day from the day in context, unless we came from Save for
+    // Later (an explicitly unscheduled idea) or are editing an existing item.
+    let dateVal = "", timeVal = "", endTimeVal = "";
+    if (editing) {
+      const starts = Number(val(existing, "starts_at_utc", "startsAtUtc")) || null;
+      if (starts != null) {
+        try {
+          const p = dateFormatter("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz }).formatToParts(new Date(starts));
+          const gp = dateFormatter("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: tz }).formatToParts(new Date(starts));
+          const g = (parts, t) => parts.find((x) => x.type === t)?.value || "";
+          dateVal = `${g(gp, "year")}-${g(gp, "month")}-${g(gp, "day")}`;
+          timeVal = `${g(p, "hour")}:${g(p, "minute")}`;
+        } catch (_) {}
+      }
+      const ends = Number(val(existing, "ends_at_utc", "endsAtUtc")) || null;
+      if (ends != null) {
+        try {
+          const p = dateFormatter("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz }).formatToParts(new Date(ends));
+          const g = (t) => p.find((x) => x.type === t)?.value || "";
+          endTimeVal = `${g("hour")}:${g("minute")}`;
+        } catch (_) {}
+      }
+    } else if (!fromSaveLater) {
+      dateVal = activeTimelineDateISO();
+    }
+    const address = editing ? String(val(locationById(val(existing, "start_location_id", "venue_location_id")) || {}, "local_address", "formatted_address") || "") : "";
+    const notes = editing ? String(val(existing, "activity_notes", "notes") || "") : "";
+    const nameVal = editing ? String(val(existing, "title") || "") : "";
+    const field = (name, lbl, value, opts = {}) => {
+      const req = opts.required ? " required" : "", ph = opts.placeholder ? ` placeholder="${esc(opts.placeholder)}"` : "";
+      if (opts.type === "textarea") return `<label class="form-field form-field--wide" for="dp-${name}"><span>${esc(lbl)}${opts.required ? ' <b aria-hidden="true">*</b>' : ' <em class="field-optional">Optional</em>'}</span><textarea id="dp-${name}" name="${name}" rows="3"${ph} autocapitalize="sentences" spellcheck="true">${esc(value || "")}</textarea></label>`;
+      return `<label class="form-field form-field--${opts.wide === false ? "half" : "wide"}" for="dp-${name}"><span>${esc(lbl)}${opts.required ? ' <b aria-hidden="true">*</b>' : ' <em class="field-optional">Optional</em>'}</span><input type="${opts.type || "text"}" id="dp-${name}" name="${name}"${req}${ph} autocomplete="off" value="${esc(value || "")}"></label>`;
+    };
+    const editAttrs = editing ? ` data-edit-id="${esc(raw)}" data-edit-version="${esc(Number(val(existing, "version")) || 1)}"` : "";
+    const form = `<form class="mobile-form premium-form day-plan-form" id="day-plan-form" data-activity-type="${esc(activityType)}"${editAttrs} novalidate><header class="manual-form-heading"><span>Day plan</span><h1>${esc(editing ? nameVal || label : label)}</h1></header><p class="day-plan-form__intro">${esc(desc)}</p><section class="form-section"><div class="quick-primary-fields">${field("title", "Name or place", nameVal, { required: true, placeholder: label })}<div class="form-fields form-fields--date-time">${field("dpDate", "Day", dateVal, { type: "date", wide: false })}${field("dpTime", "Start time", timeVal, { type: "time", wide: false })}</div>${field("dpEndTime", "End time", endTimeVal, { type: "time", wide: false })}${field("dpAddress", "Address", address, { placeholder: "Street address or area" })}${field("dpNotes", "Notes", notes, { type: "textarea" })}</div><p class="field-helper">Leave the day blank to keep this as an idea in Save for Later. Add a day and it appears on your timeline.</p><input type="hidden" name="timezone" value="${esc(tz)}"><input type="hidden" name="activityType" value="${esc(activityType)}"></section></form>`;
+    return focusedTaskPage(editing ? `Edit ${label.toLowerCase()}` : `Add ${label.toLowerCase()}`, form, "form-screen day-plan-form-screen", formHeaderSave("day-plan-form", "Save"));
+  }
+
+  async function saveDayPlanForm(form) {
+    if (!state.trip) return;
+    const editId = form.dataset.editId || "", activityType = form.dataset.activityType || "";
+    const fd = new FormData(form);
+    const title = String(fd.get("title") || "").trim();
+    if (!title) { showFormSubmissionError(form, "Add a name to continue."); return; }
+    const tz = String(fd.get("timezone") || "").trim() || tripDefaultTimezone() || "UTC";
+    const date = String(fd.get("dpDate") || "").trim(), time = String(fd.get("dpTime") || "").trim(), endTime = String(fd.get("dpEndTime") || "").trim();
+    const addressText = String(fd.get("dpAddress") || "").trim(), notes = String(fd.get("dpNotes") || "").trim();
+    let startsAtUtc = null, endsAtUtc = null;
+    if (date) {
+      try { startsAtUtc = resolveEventLocalDateTime(`${date}T${time || "09:00"}`, tz); }
+      catch (error) { showFormSubmissionError(form, error.message); return; }
+      if (endTime) {
+        try { endsAtUtc = resolveEventLocalDateTime(`${date}T${endTime}`, tz); }
+        catch (_) { endsAtUtc = null; }
+        if (endsAtUtc != null && endsAtUtc < startsAtUtc) { showFormSubmissionError(form, "End time cannot be before the start time."); return; }
+      }
+    }
+    const tripId = state.trip.id;
+    setFormSaving(form, true);
+    try {
+      let location = null;
+      if (addressText) {
+        const existingLocationId = editId ? String(val((state.timeline || []).find((it) => itemId(it) === editId) || {}, "start_location_id", "venue_location_id") || "") : "";
+        location = await createManualVenueLocation("attraction", title, "", addressText, date ? tz : null, "", existingLocationId).catch(() => null);
+      }
+      const body = { kind: "activity", status: date ? "confirmed" : "planned", title, startsAtUtc, endsAtUtc, timezone: date ? tz : null, locationId: location?.id || null, activityType: activityType || null, notes: notes || null, confidence: date ? "confirmed" : "estimated" };
+      if (editId) {
+        const existing = (state.timeline || []).find((it) => itemId(it) === editId);
+        body.version = Number(val(existing || {}, "version")) || 1;
+        await api(`/api/v1/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(editId)}`, { method: "PATCH", body: JSON.stringify(body) });
+      } else {
+        await api(`/api/v1/trips/${encodeURIComponent(tripId)}/activities`, { method: "POST", body: JSON.stringify(body) });
+      }
+      await loadTripDetails();
+      formHasMeaningfulChanges = false; state.editingEntity = null; state.dayPlanContext = null;
+      showToast(date ? `${title} added to your timeline.` : `${title} saved for later.`);
+      if (date) { state.timelineDayKey = timelineDay(startsAtUtc, tz).key; route("timeline", null, true); }
+      else route("save-later", null, true);
+    } catch (error) {
+      showFormSubmissionError(form, error?.message || "Could not save. Try again.");
+      if (document.contains(form)) setFormSaving(form, false);
+      return;
+    }
+    if (document.contains(form)) setFormSaving(form, false);
+  }
+
+  // Save for Later (spec §25/§26): unscheduled ideas grouped into Place, Food &
+  // Drink, Shopping. Nothing here appears on the main Timeline until scheduled.
+  function saveLaterScreen() {
+    if (!state.trip) return missingDetailScreen("Save for Later", "Create or select a trip first.");
+    const canEdit = canEditCurrentTrip();
+    const items = saveForLaterItems();
+    const buckets = { place: [], food_drink: [], shopping: [] };
+    for (const item of items) buckets[saveLaterBucketForType(val(item, "activity_type", "activityType"))].push(item);
+    const itemRow = (item) => {
+      const address = String(val(locationById(val(item, "start_location_id", "venue_location_id")) || {}, "local_address", "formatted_address") || "");
+      const sub = ["Not scheduled", address].filter(Boolean).join(" · ");
+      return `<button type="button" class="save-later-row" data-action="schedule-save-later" data-id="${esc(itemId(item))}"><span class="save-later-row__copy"><strong>${esc(val(item, "title") || "Idea")}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18)}</button>`;
+    };
+    const section = (cfg) => {
+      const rows = buckets[cfg.type] || [];
+      const addBtn = canEdit ? `<button type="button" class="save-later-add" data-action="add-save-later" data-type="${esc(cfg.type)}">${icon("plus", 18)}<span>Add ${esc(cfg.label.toLowerCase())}</span></button>` : "";
+      return `<section class="save-later-group" aria-label="${esc(cfg.label)}"><h2>${icon(cfg.icon, 20)} ${esc(cfg.label)}</h2>${rows.length ? `<div class="save-later-list">${rows.map(itemRow).join("")}</div>` : `<p class="save-later-empty">Nothing saved yet.</p>`}${addBtn}</section>`;
+    };
+    const body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>Save for Later</h1><p>Ideas you haven't scheduled yet. Open one to pick a day and add it to your timeline.</p></section>${SAVE_LATER_TYPES.map(section).join("")}`;
+    return focusedTaskPage("Save for Later", body, "save-later-page");
+  }
+
   function addBookingScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
     const groups = [...new Set(Object.values(MANUAL_BOOKING_TYPES).map((config) => config.group))];
@@ -7230,9 +7438,7 @@
       return `<section class="manual-add-group" aria-labelledby="${esc(id)}"><h2 id="${esc(id)}">${esc(group)}</h2><div class="manual-add-grid">${Object.entries(MANUAL_BOOKING_TYPES).filter(([,config])=>config.group===group).map(category).join("")}</div></section>`;
     }).join("");
     const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
-    const planCard = ([type, config]) => `<button type="button" class="manual-add-card manual-add-card--plan" data-action="add-collection" data-collection-type="${esc(type)}" aria-label="Add ${esc(config.label)}"><span class="manual-add-card__icon">${icon(config.icon,24)}</span><span class="manual-add-card__copy"><strong>${esc(config.label)}</strong><small>${esc(config.hint)}</small></span></button>`;
-    const planSection = `<section class="manual-add-group" aria-labelledby="manual-group-plan"><h2 id="manual-group-plan">Plan your days</h2><p class="manual-add-group__note">Group several places into one plan. Neighborhoods, day trips, and walking routes show once on your timeline; wishlists stay in planning.</p><div class="manual-add-grid">${Object.entries(COLLECTION_TYPE_CONFIG).map(planCard).join("")}</div></section>`;
-    return focusedTaskPage(`Add to ${state.trip.title || "trip"}`, `<section class="manual-add-intro"><span>ADD NEW BOOKING</span><h1>Add to your trip</h1><p>Choose a type and add the confirmed details. You can attach tickets or vouchers inside the booking.</p></section><div class="manual-add-groups">${groupedCategories}${planSection}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page");
+    return focusedTaskPage(`Add a booking`, `<section class="manual-add-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>Choose a type and add the confirmed details. You can attach tickets or vouchers inside the booking.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page");
   }
   function manualBookingSheet() {
     const options = Object.entries(MANUAL_BOOKING_TYPES);
@@ -7415,9 +7621,15 @@
         case "timeline":
           html = timelineScreen();
           break;
+        case "add-trip":
+          html = addToTripScreen();
+          break;
         case "add-booking":
           html = addBookingScreen();
           break;
+        case "day-plan": html = dayPlanScreen(); break;
+        case "day-plan-form": html = dayPlanFormScreen(); break;
+        case "save-later": html = saveLaterScreen(); break;
         case "flight":
           html = flightScreen();
           break;
@@ -8370,6 +8582,16 @@
         saveStopForm(stopForm);
       });
     }
+    const dayPlanForm = document.getElementById("day-plan-form");
+    if (dayPlanForm && !dayPlanForm.dataset.bound) {
+      dayPlanForm.dataset.bound = "1";
+      bindMeaningfulChanges(dayPlanForm);
+      dayPlanForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!validateFocusedForm(dayPlanForm)) return;
+        saveDayPlanForm(dayPlanForm);
+      });
+    }
     setupSheet();
   }
   function resolveEventLocalDateTime(localValue, timeZone) {
@@ -9089,6 +9311,7 @@
     "open-forward-booking", "open-manual-booking", "open-upload-booking",
     "add-collection", "edit-collection", "delete-collection",
     "collection-add-place", "edit-stop", "delete-stop", "stop-move", "stop-status",
+    "open-day-plan", "day-plan-type", "add-save-later", "schedule-save-later",
   ]);
   function canManageTripRecord(trip) {
     if (!trip) return false;
@@ -9154,15 +9377,50 @@
           state.editingEntity = null;
           route("form", "trip");
         } else {
-          // Create-trip lives only on /trips and Account now — the ubiquitous "+"
-          // adds a booking to the current trip.
+          // The ubiquitous "+" opens the Add-to-trip hub (Add a booking, Day
+          // Plan, Save for Later). Create-trip lives only on /trips and Account.
           closeSheet();
-          route("add-booking");
+          route("add-trip");
         }
         break;
       case "open-add-booking":
         closeSheet();
         route("add-booking");
+        break;
+      case "open-day-plan":
+        closeSheet();
+        state.dayPlanContext = null;
+        route("day-plan");
+        break;
+      case "open-save-later":
+        closeSheet();
+        route("save-later");
+        break;
+      case "day-plan-type": {
+        const dpType = target.dataset.type || "";
+        if (dpType === "neighborhood") {
+          state.editingEntity = null;
+          route("collection-form", "new:neighborhood");
+        } else if (dayPlanType(dpType)) {
+          state.editingEntity = null;
+          state.dayPlanContext = null;
+          route("day-plan-form", `new:${dpType}`);
+        }
+        break;
+      }
+      case "add-save-later": {
+        const bucket = SAVE_LATER_TYPE_MAP[target.dataset.type || ""];
+        if (bucket) {
+          state.editingEntity = null;
+          state.dayPlanContext = "save-later";
+          route("day-plan-form", `new:${bucket.activityType}`);
+        }
+        break;
+      }
+      case "schedule-save-later":
+        state.editingEntity = null;
+        state.dayPlanContext = null;
+        route("day-plan-form", target.dataset.id);
         break;
       case "toggle-checklist":
         await toggleChecklistItem(target.dataset.id);

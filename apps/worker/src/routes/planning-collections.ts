@@ -55,6 +55,10 @@ export async function createCollection(request:Request,env:Env,auth:AuthContext,
   const body=await readJson<CollectionBody>(request);
   const title=requireString(body.title,'title',160);
   const collectionType=enumValue(body.collectionType,'collectionType',collectionTypes);
+  // Neighborhood is the only grouped Day Plan type. The other plan/wishlist
+  // types were retired in favour of activities + Save for Later; reject them
+  // server-side so a tampered client cannot recreate them.
+  if(collectionType!=='neighborhood')throw new HttpError(400,'COLLECTION_TYPE_UNSUPPORTED','Only neighborhood plans can be created.');
   const status=enumValue(body.status,'status',itemStatuses,'planned');
   const city=optionalString(body.city,'city',120);
   const centralLocationId=optionalString(body.centralLocationId,'centralLocationId',80);

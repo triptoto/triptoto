@@ -70,9 +70,8 @@ const timelineBefore=db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id
 const hood=await body(await createCollection(req('https://test/api/v1/trips/x/collections','POST',{collectionType:'neighborhood',title:'Trastevere',city:'Rome',notes:'Evening wander',startsAtUtc:Date.now()+86400000,startLocalDatetime:'2026-10-01T18:00',timezone:'Europe/Rome'}),env,auth,tripId));
 assert(hood.collection.id&&hood.collection.collection_type==='neighborhood'&&hood.collection.type==='custom','neighborhood created as a custom trip_item subtype');
 assert(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=? AND deleted_at IS NULL`).get(tripId).c===timelineBefore+1,'scheduled collection adds exactly one timeline row');
-// A wishlist: not timeline-scheduled.
-const wishlist=await body(await createCollection(req('https://test/api/v1/trips/x/collections','POST',{collectionType:'food_and_drink',title:'Coffee list'}),env,auth,tripId));
-assert(wishlist.collection.starts_at_utc==null,'wishlist collection is unscheduled');
+// Non-neighborhood collection types were retired: createCollection rejects them.
+await expectStatus(createCollection(req('https://test/api/v1/trips/x/collections','POST',{collectionType:'food_and_drink',title:'Coffee list'}),env,auth,tripId),400,'non-neighborhood collection types must be rejected');
 // collection_type is immutable.
 await expectStatus(updateCollection(req('https://test/api/v1/trips/x/collections/y','PATCH',{version:1,collectionType:'day_trip'}),env,auth,tripId,hood.collection.id),400,'collection_type must be immutable');
 // Stops: added, ordered by position, never trip_items.
@@ -81,7 +80,7 @@ const s2=await body(await addStop(req('https://test/api/v1/trips/x/collections/y
 const s3=await body(await addStop(req('https://test/api/v1/trips/x/collections/y/stops','POST',{title:'Gelato',placeType:'cafe'}),env,auth,tripId,hood.collection.id));
 assert([s1,s2,s3].every(s=>s.stop.id)&&db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE id IN (?,?,?)`).get(s1.stop.id,s2.stop.id,s3.stop.id).c===0,'stops must never be trip_items (no top-level rows)');
 let loaded=await body(await listCollections(req('https://test/api/v1/trips/x/collections'),env,auth,tripId));
-assert(loaded.collections.length===2&&loaded.stops.filter(s=>s.collection_item_id===hood.collection.id).length===3,'collections + child stops listed');
+assert(loaded.collections.length===1&&loaded.stops.filter(s=>s.collection_item_id===hood.collection.id).length===3,'collection + child stops listed');
 assert(loaded.stops.filter(s=>s.collection_item_id===hood.collection.id).map(s=>s.title).join(',')==='Piazza,Osteria,Gelato','stops returned in insertion/position order');
 // Reorder persists (reorder bumps every stop's version).
 await reorderStops(req('https://test/api/v1/trips/x/collections/y/stops/order','PUT',{order:[s3.stop.id,s1.stop.id,s2.stop.id]}),env,auth,tripId,hood.collection.id);
@@ -105,7 +104,7 @@ assert(db.prepare(`SELECT deleted_at FROM trip_items WHERE id=?`).get(hood.colle
 assert(db.prepare(`SELECT COUNT(*) c FROM planning_stops WHERE collection_item_id=? AND deleted_at IS NULL`).get(hood.collection.id).c===0,'child stops soft-deleted with the collection');
 assert(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE id=? AND deleted_at IS NULL`).get(transportItem.id).c===1,'deleting a collection never touches linked bookings');
 assert(db.prepare(`SELECT COUNT(*) c FROM tombstones WHERE entity_type='trip_item' AND entity_id=?`).get(hood.collection.id).c===1,'collection delete emits a sync tombstone');
-loaded=await body(await listCollections(req('https://test/api/v1/trips/x/collections'),env,auth,tripId));assert(loaded.collections.length===1,'deleted collection no longer listed');
+loaded=await body(await listCollections(req('https://test/api/v1/trips/x/collections'),env,auth,tripId));assert(loaded.collections.length===0,'deleted collection no longer listed');
 console.log('Planning-collections integration passed: create, stops, reorder, version conflict, linked booking, soft-delete and tombstone.');
 
 console.log('Major local D1 integration passed: journeys, activities, booking details, contacts, markers, intelligence, sync and readiness.');

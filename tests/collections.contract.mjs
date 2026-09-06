@@ -33,9 +33,16 @@ assert(routes.includes("'STOP_NOT_IN_COLLECTION'")&&routes.includes('order.lengt
 // Display order is manual position, so reorder persists across reloads.
 assert(routes.includes('ORDER BY position, created_at')&&routes.includes('ORDER BY ps.collection_item_id, ps.position, ps.created_at'),'stops must be returned in manual position order');
 
-// --- Frontend: six add options, timeline integration, dots-only mini-timeline ---
-for(const t of ['neighborhood','day_trip','walking_route','places_to_visit','food_and_drink','shopping'])assert(app.includes(`${t}:`)||app.includes(`"${t}"`),`collection type config missing: ${t}`);
-assert(app.includes('const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood", "day_trip", "walking_route"])'),'only neighborhood/day_trip/walking_route are timeline-capable');
+// --- Neighborhood is now the only supported collection type. The migration
+//     CHECK keeps the original six values (it is live on prod and a superset),
+//     but createCollection rejects anything but neighborhood server-side. ---
+assert(migration.includes("collection_type TEXT NOT NULL CHECK(collection_type IN ('neighborhood','day_trip','walking_route','places_to_visit','food_and_drink','shopping'))"),'original collection-type CHECK must remain (live migration, superset)');
+assert(routes.includes("if(collectionType!=='neighborhood')throw new HttpError(400,'COLLECTION_TYPE_UNSUPPORTED'"),'createCollection must reject non-neighborhood types server-side');
+
+// --- Frontend: neighborhood-only config, timeline integration, dots-only mini-timeline ---
+assert(app.includes('const COLLECTION_TYPE_CONFIG = Object.freeze({')&&/COLLECTION_TYPE_CONFIG = Object\.freeze\(\{\s*neighborhood:/.test(app),'neighborhood must be the only collection type config');
+for(const retired of ['day_trip:','walking_route:','places_to_visit:','food_and_drink:'])assert(!app.includes(retired),`retired collection type must not appear in client config: ${retired}`);
+assert(app.includes('const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood"])'),'only neighborhood is timeline-capable');
 assert(app.includes('function isTimelineVisibleItem')&&app.includes('if (!isTimelineVisibleItem(item)) continue;'),'main timeline must hide wishlists and unscheduled collections');
 assert(app.includes('function collectionSummary')&&app.includes('places')&&app.includes('.join(" · ")'),'parent summary must be computed from children (N places · start–end)');
 // Mini-timeline is dots-only: no category icons, no card class, no shadow.

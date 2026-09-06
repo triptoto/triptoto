@@ -54,6 +54,9 @@ const routeCases=[
   ['collection-form','new:neighborhood','/collections/new/neighborhood'],
   ['collection-form','col-1','/collections/col-1/edit'],
   ['stop-form','col-1','/collections/col-1/add-place'],
+  ['add-trip',null,'/add'],['day-plan',null,'/day-plan'],['save-later',null,'/save-later'],
+  ['day-plan-form','new:attraction','/day-plan/new/attraction'],
+  ['day-plan-form','act-1','/day-plan/item/act-1'],
 ];
 for(const [screen,id,path] of routeCases){
   assert(router.pathFor(screen,id)===path,`clean path mismatch for ${screen}`);
@@ -64,7 +67,7 @@ const retiredLocalGuide=router.parsePath('/local-guide');
 assert(retiredLocalGuide.screen==='trip-options'&&retiredLocalGuide.redirect===true,'retired Local Guide route must redirect to Trip Options');
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('startupRoute.redirect || location.hash')&&app.includes('routeUrl(startupRoute.screen, startupRoute.id)'),'legacy hash and retired-route canonicalization missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v172-planning-collections'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v173-day-plan-flow'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-pattern')&&app.includes('welcome-arc--five')&&app.includes('welcome-orbit-dot')&&!app.includes('welcome-route-matrix'),'Approved abstract welcome pattern missing');
@@ -107,11 +110,36 @@ assert(app.includes('dateRangeField("startsOn", "endsOn"')&&app.includes('dateRa
 assert(!app.includes('tripDateField(')&&!css.includes('.trip-date-control'),'old two-calendar presentation remains');
 assert(app.includes('kind==="trip"?"add-booking"'),'Create Trip does not continue to Add Booking');
 assert(app.includes('sessionStorage.setItem(quickDraftKey(kind)')&&app.includes('Discard changes?'),'form recovery missing');
-const add=app.slice(app.indexOf('function addBookingScreen('),app.indexOf('function documentSheet('));
-for(const copy of ['ADD NEW BOOKING','Add to your trip','Choose a type and add the confirmed details.','Already have a confirmation?','Upload a file','Forward an email'])assert(add.includes(copy),`direct manual-add page missing: ${copy}`);
+const add=app.slice(app.indexOf('function addBookingScreen('),app.indexOf('function manualBookingSheet('));
+for(const copy of ['ADD A BOOKING','Add a booking','Choose a type and add the confirmed details.','Already have a confirmation?','Upload a file','Forward an email'])assert(add.includes(copy),`direct manual-add page missing: ${copy}`);
 for(const category of ['Flight','Train','Ferry','Bus / Coach','Cruise','Car Rental','Transfer','Taxi / Ride','Parking','Hotel / Stay','Restaurant','Tour / Excursion','Activity / Event','Museum / Attraction','Event / Show','Travel Insurance','Other'])assert(app.includes(`label: "${category}"`),`manual category missing: ${category}`);
 for(const selector of ['.manual-add-intro','.manual-add-grid','.manual-add-card','.manual-add-other'])assert(css.includes(selector),`manual-add design missing: ${selector}`);
-const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function addBookingScreen('));
+// Add-to-trip hub: exactly three intention rows (Add a booking, Day Plan, Save
+// for Later) headed by the real trip name. Global actions stay out of here.
+const addTrip=app.slice(app.indexOf('function addToTripScreen('),app.indexOf('function dayPlanScreen('));
+for(const copy of ['ADD TO TRIP','Add to ${esc(tripName)}','open-add-booking','open-day-plan','open-save-later','Add a booking','Day Plan','Save for Later'])assert(addTrip.includes(copy),`Add-to-trip hub missing: ${copy}`);
+assert(!addTrip.includes('create-trip')&&!addTrip.includes('"Stay"'),'Add-to-trip hub must not surface create-trip or a top-level Stay');
+assert(app.includes('route("add-trip")')&&app.includes('case "add-trip":'),'the ubiquitous + must open the Add-to-trip hub');
+// Day Plan: ten activity types with traveler-facing labels, neighborhood the
+// only grouped type; the rest open the shared activity form.
+const dayPlan=app.slice(app.indexOf('const DAY_PLAN_TYPES'),app.indexOf('const DAY_PLAN_TYPE_MAP'));
+for(const label of ['Neighborhood','Attraction','Museum & Culture','Food & Drink','Shopping','Tour & Experience','Nature & Outdoors','Beach & Relax','Entertainment','Viewpoint & Scenic'])assert(dayPlan.includes(`label: "${label}"`),`Day Plan type missing: ${label}`);
+assert(app.includes('type: "neighborhood", label: "Neighborhood"')&&app.includes('grouped: true'),'neighborhood must be the grouped Day Plan type');
+assert(app.includes('case "day-plan-type":')&&app.includes('route("collection-form", "new:neighborhood")')&&app.includes('route("day-plan-form", `new:${dpType}`)'),'Day Plan type selection routing missing');
+// Shared activity form: name required; day/time/end/address/notes optional; day
+// lives inside the form (never a separate choose-day screen).
+const dayPlanForm=app.slice(app.indexOf('function dayPlanFormScreen('),app.indexOf('async function saveDayPlanForm('));
+for(const marker of ['Name or place','"Day"','Start time','End time','Address','Notes','activeTimelineDateISO()','id="day-plan-form"'])assert(dayPlanForm.includes(marker),`Day Plan form missing: ${marker}`);
+assert(app.includes('function activeTimelineDateISO(')&&dayPlanForm.includes('fromSaveLater')&&!app.includes('choose-day'),'contextual day prefill / no separate choose-day screen missing');
+assert(app.includes('async function saveDayPlanForm(')&&app.includes('status: date ? "confirmed" : "planned"')&&app.includes('/activities`, { method: "POST"')&&app.includes('route("save-later", null, true)'),'Day Plan save must reuse activities and drop unscheduled ideas into Save for Later');
+// Save for Later: unscheduled ideas grouped Place / Food & Drink / Shopping,
+// each labelled "Not scheduled", never on the main timeline until scheduled.
+const saveLater=app.slice(app.indexOf('function saveLaterScreen('),app.indexOf('function addBookingScreen('));
+for(const copy of ['SAVE FOR LATER','Save for Later','Not scheduled','schedule-save-later','add-save-later'])assert(saveLater.includes(copy),`Save for Later screen missing: ${copy}`);
+assert(app.includes('function isSaveForLaterItem(')&&app.includes('function saveForLaterItems(')&&app.includes('function isTimelineVisibleItem('),'unscheduled ideas must be filtered out of the main timeline');
+assert(app.includes('const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood"])'),'neighborhood must be the only timeline-capable collection type');
+for(const [alias,target] of [['plane','flight'],['trash','delete'],['bell','notifications'],['user','traveler'],['chevron','chevron-right'],['pin','location'],['qr','qr-code'],['document','documents'],['users','travelers'],['external','external-link'],['check-circle','confirmed'],['dest-mountain','mountain'],['dest-beach','beach'],['dest-monument','landmark']])assert(new RegExp(`["']?${alias}["']?:\\s*"${target}"`).test(app),`approved icon alias mapping missing: ${alias} -> ${target}`);
+const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function tripOptionsScreen('));
 assert(plus.includes('Add Booking')&&plus.includes('Create New Trip')&&!plus.includes('Flight'),'plus menu invalid');
 assert(app.includes('function timelineContextCard('),'Timeline priority context missing');
 assert(app.includes('if (isEmptyTripSetup()) return "";'),'empty trip must not surface premature health warnings');
