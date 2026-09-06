@@ -7307,8 +7307,8 @@
   function addToTripScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add to your trip");
     const tripName = state.trip.title || "your trip";
-    const row = (action, ic, title, copy) => `<button type="button" class="add-intent-row" data-action="${esc(action)}"><span class="add-intent-row__icon">${icon(ic, 24)}</span><span class="add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
-    const body = `<section class="add-intent-intro"><span>ADD TO TRIP</span><h1>Add to ${esc(tripName)}</h1><p>What would you like to add?</p></section><div class="add-intent-list">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet")}</div>`;
+    const row = (action, ic, title, copy, tone) => `<button type="button" class="add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="add-intent-row__icon">${icon(ic, 24)}</span><span class="add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
+    const body = `<section class="add-intent-intro"><span>ADD TO TRIP</span><h1>What would you like to add?</h1></section><div class="add-intent-list">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
     return focusedTaskPage(`Add to ${tripName}`, body, "add-intent-page");
   }
 

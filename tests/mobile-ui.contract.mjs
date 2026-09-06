@@ -67,7 +67,7 @@ const retiredLocalGuide=router.parsePath('/local-guide');
 assert(retiredLocalGuide.screen==='trip-options'&&retiredLocalGuide.redirect===true,'retired Local Guide route must redirect to Trip Options');
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('startupRoute.redirect || location.hash')&&app.includes('routeUrl(startupRoute.screen, startupRoute.id)'),'legacy hash and retired-route canonicalization missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v176-day-plan-flow'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v177-day-plan-flow'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-pattern')&&app.includes('welcome-arc--five')&&app.includes('welcome-orbit-dot')&&!app.includes('welcome-route-matrix'),'Approved abstract welcome pattern missing');
@@ -115,9 +115,10 @@ for(const copy of ['ADD A BOOKING','Add a booking','For travel you\'ve already r
 for(const category of ['Flight','Train','Ferry','Bus / Coach','Cruise','Car Rental','Transfer','Taxi / Ride','Parking','Hotel / Stay','Restaurant','Tour / Excursion','Activity / Event','Museum / Attraction','Event / Show','Travel Insurance','Other'])assert(app.includes(`label: "${category}"`),`manual category missing: ${category}`);
 for(const selector of ['.manual-add-intro','.manual-add-grid','.manual-add-card','.manual-add-other'])assert(css.includes(selector),`manual-add design missing: ${selector}`);
 // Add-to-trip hub: exactly three intention rows (Add a booking, Day Plan, Save
-// for Later) headed by the real trip name. Global actions stay out of here.
+// for Later). The real trip name heads the page via the nav title; the body
+// heading is the neutral prompt (no duplicate big trip-name H1).
 const addTrip=app.slice(app.indexOf('function addToTripScreen('),app.indexOf('function dayPlanScreen('));
-for(const copy of ['ADD TO TRIP','Add to ${esc(tripName)}','open-add-booking','open-day-plan','open-save-later','Add a booking','Day Plan','Save for Later'])assert(addTrip.includes(copy),`Add-to-trip hub missing: ${copy}`);
+for(const copy of ['ADD TO TRIP','Add to ${tripName}','What would you like to add?','open-add-booking','open-day-plan','open-save-later','Add a booking','Day Plan','Save for Later'])assert(addTrip.includes(copy),`Add-to-trip hub missing: ${copy}`);
 assert(!addTrip.includes('create-trip')&&!addTrip.includes('"Stay"'),'Add-to-trip hub must not surface create-trip or a top-level Stay');
 assert(app.includes('route("add-trip")')&&app.includes('case "add-trip":'),'the ubiquitous + must open the Add-to-trip hub');
 // Day Plan: ten activity types with traveler-facing labels, neighborhood the
