@@ -1,0 +1,33 @@
+{
+  "version": "2013e874-bccc-43cc-811d-8cd064e231c2",
+  "commit": "d0dbb9a",
+  "cache": "v220-keyboard-header",
+  "hashes": {
+    "mobile-app.min.js": "9169d02a97e70311e4008c0654444f91ef13790fc1da39c7442f08249a9d3272",
+    "mobile-app.min.css": "7a0a74dbd18cc8e1f06a134b870eef56a507edd615fcbe035eef10d3a9e23704",
+    "sw.js": "29b0ee47e969740dfef619a10774d93d0dab77af0ecd872a4137b4faba0a4884"
+  },
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788794143512
+  },
+  "validation": "validate:v2 and keyboard-header contract PASS",
+  "browser": "Local candidate 390x350: header top 0 height 68; Save top 12 height 44; lower field visible and window scroll 0. Restoration to 844 header top 0. Physical iPhone not tested."
+}
