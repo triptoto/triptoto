@@ -4933,8 +4933,7 @@
     return focusedTaskPage("Planning", body, "planning-page");
   }
 
-  // A single collection: header + the minimal, monochrome secondary timeline of
-  // its stops (time · large dot · name — no icons, no cards, no shadows).
+  // A collection keeps manual stop order, with one rail and optional time inside each row.
   function collectionScreen() {
     const id = String(state.selectedId || "");
     const c = collectionForItem(id);
@@ -4951,17 +4950,19 @@
       const label = `${time ? time + ", " : ""}${s.title || "Place"}. ${STOP_STATE_LABEL[st] || ""}`;
       return canEdit
         ? `<button type="button" class="mini-stop__hit" data-action="stop-menu" data-collection="${esc(id)}" data-id="${esc(s.id)}" aria-label="${esc(label)}">${inner}</button>`
-        : `<div class="mini-stop__hit" role="listitem" aria-label="${esc(label)}">${inner}</div>`;
+        : `<div class="mini-stop__hit" aria-label="${esc(label)}">${inner}</div>`;
     };
     const miniTimeline = stops.length
       ? `<ol class="mini-timeline" aria-label="${esc(cfg.stops)} in ${esc(c.title || cfg.label)}">${stops.map((s, i) => {
           const st = states[i], time = String(s.scheduled_time || "").trim();
-          const inner = `<span class="mini-stop__time">${time ? `${icon("clock", 12)} ${esc(time)}` : ""}</span><span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot"></span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>`;
+          const detail = String(s.address_snapshot || s.notes || "").trim();
+          const inner = `<span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot">${String(i + 1).padStart(2, "0")}</span></span><span class="mini-stop__content"><span class="mini-stop__meta"><span class="mini-stop__time">${time ? esc(time) : "Any time"}</span><span class="mini-stop__status">${esc(STOP_STATE_LABEL[st] || "Upcoming")}</span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>${detail ? `<span class="mini-stop__detail">${esc(detail)}</span>` : ""}</span>${canEdit ? `<span class="mini-stop__more" aria-hidden="true">${icon("chevron", 16)}</span>` : ""}`;
           return `<li class="mini-stop mini-stop--${esc(st)}">${hit(s, st, inner)}</li>`;
         }).join("")}</ol>`
       : `<div class="collection-empty"><span class="collection-empty__badge" aria-hidden="true">${icon("location", 24)}</span><strong>No ${esc(cfg.stops)} yet</strong>${canEdit ? `<p>Add your first ${esc(cfg.stop)} to start this plan.</p>` : ""}</div>`;
     const addBtn = canEdit ? primaryCta(`Add ${cfg.stop}`, "collection-add-place", "plus", `data-id="${esc(id)}"`) : "";
-    const body = `<section class="collection-hero"><span class="collection-hero__eyebrow">${esc(cfg.label)}</span><h1>${esc(c.title || cfg.label)}</h1>${metaBits ? `<p class="collection-hero__meta">${icon("calendar", 15)} ${esc(metaBits)}</p>` : ""}${c.collection_notes ? `<p class="collection-hero__notes">${esc(c.collection_notes)}</p>` : ""}</section><section class="collection-stops" aria-label="Places"><h2>${esc(cfg.stops.charAt(0).toUpperCase() + cfg.stops.slice(1))}${stops.length ? `<span class="collection-count">${stops.length}</span>` : ""}</h2>${miniTimeline}<p class="collection-hint">These ${esc(cfg.stops)} appear only here, on this plan's own timeline.</p>${addBtn}</section>`;
+    const visited = stops.filter((s) => s.status === "visited").length;
+    const body = `<section class="collection-hero"><span class="collection-hero__eyebrow">YOUR LOCAL PLAN</span><h1>${esc(c.title || cfg.label)}</h1>${metaBits ? `<p class="collection-hero__meta">${icon("calendar", 16)}<span>${esc(metaBits)}</span></p>` : `<p class="collection-hero__meta">No date set</p>`}${c.collection_notes ? `<p class="collection-hero__notes">${esc(c.collection_notes)}</p>` : ""}</section><section class="collection-stops" aria-label="Places"><div class="collection-stops__heading"><h2>Your places <span class="collection-count">${stops.length}</span></h2>${stops.length ? `<span class="collection-progress">${visited} of ${stops.length} visited</span>` : ""}</div>${miniTimeline}${addBtn}</section>`;
     return focusedTaskPage(cfg.label, body, "collection-page", actions);
   }
 

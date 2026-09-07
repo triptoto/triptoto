@@ -39,7 +39,7 @@ assert(routes.includes('ORDER BY position, created_at')&&routes.includes('ORDER 
 assert(migration.includes("collection_type TEXT NOT NULL CHECK(collection_type IN ('neighborhood','day_trip','walking_route','places_to_visit','food_and_drink','shopping'))"),'original collection-type CHECK must remain (live migration, superset)');
 assert(routes.includes("if(collectionType!=='neighborhood')throw new HttpError(400,'COLLECTION_TYPE_UNSUPPORTED'"),'createCollection must reject non-neighborhood types server-side');
 
-// --- Frontend: neighborhood-only config, timeline integration, dots-only mini-timeline ---
+// --- Frontend: neighborhood-only config, timeline integration, numbered mini-timeline ---
 assert(app.includes('const COLLECTION_TYPE_CONFIG = Object.freeze({')&&/COLLECTION_TYPE_CONFIG = Object\.freeze\(\{\s*neighborhood:/.test(app),'neighborhood must be the only collection type config');
 for(const retired of ['day_trip:','walking_route:','places_to_visit:','food_and_drink:'])assert(!app.includes(retired),`retired collection type must not appear in client config: ${retired}`);
 assert(app.includes('const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood"])'),'only neighborhood is timeline-capable');
@@ -48,14 +48,14 @@ assert(app.includes('function collectionSummary')&&app.includes('places')&&app.i
 // Mini-timeline is dots-only: no category icons, no card class, no shadow.
 assert(app.includes('class="mini-stop__dot"')&&app.includes('mini-stop__time')&&app.includes('mini-stop__name')&&app.includes('mini-stop__rail'),'mini-timeline must render time · dot · name');
 assert(!app.includes('mini-stop__icon'),'mini-timeline stops must not render category icons');
-assert(/class="mini-timeline"[\s\S]{0,600}?mini-stop__dot/.test(app),'mini-timeline list must contain dots');
+assert(/class="mini-timeline"[\s\S]{0,900}?mini-stop__dot/.test(app),'mini-timeline list must contain dots');
 
 // --- Design contract in CSS: flat, monochrome, dot size 14-18px, no shadow ---
 const dot=css.match(/\.mini-stop__dot\{[^}]*\}/g)?.join(' ')||'';
 const dotSize=Number((dot.match(/width:(\d+)px/)||[])[1]);
-assert(dotSize>=14&&dotSize<=18,`mini-timeline dot must be 14-18px (got ${dotSize||'none'})`);
+assert(dotSize===32,`mini-timeline numbered marker must be 32px (got ${dotSize||'none'})`);
 assert(!/\.mini-(timeline|stop)[^{]*\{[^}]*box-shadow/.test(css)&&!/\.mini-stop__[a-z]+[^{]*\{[^}]*box-shadow/.test(css),'mini-timeline must have no shadow (flat)');
-assert(/\.mini-stop__hit\{[^}]*display:grid[^}]*grid-template-columns:\d+px \d+px minmax/.test(css),'mini-timeline must use the time · rail · content grid');
+assert(/\.mini-stop__hit\{[^}]*display:grid[^}]*grid-template-columns:32px minmax\(0,1fr\) 16px/.test(css),'mini-timeline must use the rail · content · affordance grid');
 // Dot state communicated by shape/tone, plus strikethrough for skipped (never color alone).
 for(const st of ['next','future','past','skipped'])assert(css.includes(`.mini-stop--${st} .mini-stop__dot`),`missing dot state style: ${st}`);
 assert(css.includes('.mini-stop--skipped .mini-stop__name{color:var(--muted);text-decoration:line-through}'),'skipped stop must be struck through, not only recolored');
