@@ -948,6 +948,21 @@
     }
     return keys.sort();
   }
+  // Only the trip's own dates (starts_on..ends_on), no item-derived days. Ideas
+  // can be planned onto these days exclusively — the trip owns its calendar.
+  function tripDateDays() {
+    const start = String(val(state.trip, "starts_on", "startsOn") || ""),
+      end = String(val(state.trip, "ends_on", "endsOn") || "");
+    const keys = [];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(start) && /^\d{4}-\d{2}-\d{2}$/.test(end)) {
+      let cursor = start;
+      for (let guard = 0; cursor <= end && guard < 400; guard++) {
+        keys.push(cursor);
+        cursor = addCalendarDays(cursor, 1);
+      }
+    }
+    return keys;
+  }
   function addCalendarDays(dateStr, delta) {
     const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (!match) return dateStr;
@@ -3912,7 +3927,6 @@
     if (!state.trip)
       return `<div class="phone-app"><section class="screen timeline-screen">${appBar("Trip")}<main class="timeline-page timeline-page--empty"><div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No trip selected</h1><p>Create or select a trip first.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div></main>${bottomNav("trips")}</section></div>`;
     const now = Date.now(),
-      emptySetup = isEmptyTripSetup(),
       highlightedNextId =
         QA_STATE === "timeline-normal" ? "" : itemId(nextItem() || {}),
       groups = [];
@@ -3951,7 +3965,7 @@
         ? `<nav class="timeline-days" aria-label="Trip days">${groups
             .map(
               (group, index) =>
-                `<button type="button" class="timeline-day-tab${index === activeDayIdx ? " timeline-day-tab--active" : ""}" data-action="select-timeline-day" data-key="${esc(group.key)}"${index === activeDayIdx ? ' aria-current="true"' : ""}><span class="timeline-day-tab__label">${esc(group.day.weekday)} ${esc(group.day.dayOfMonth || group.day.date.split(" ").pop())}</span></button>`,
+                `<button type="button" class="timeline-day-tab${index === activeDayIdx ? " timeline-day-tab--active" : ""}" data-action="select-timeline-day" data-key="${esc(group.key)}"${index === activeDayIdx ? ' aria-current="true"' : ""}><span class="timeline-day-tab__dow">${esc(group.day.weekday)}</span><span class="timeline-day-tab__date">${esc(group.day.month ? `${group.day.month} ${group.day.dayNum || group.day.dayOfMonth}` : group.day.dayOfMonth || group.day.date.split(" ").pop())}</span></button>`,
             )
             .join("")}</nav>`
         : "";
@@ -4026,15 +4040,15 @@
                     aria = [eventTime, title, subtitle, meta, exception?.label]
                       .filter(Boolean)
                       .join(". ");
-                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span></span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
+                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-dot"></span></span><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
                 })
                 .join("")}</div></section>`,
           )
           .join("")}</div>`
-      : `<div class="timeline-empty">${emptySetup ? '<span class="timeline-empty__eyebrow">Start building</span>' : ""}<span class="timeline-empty__icon">${icon(emptySetup ? "plus" : "calendar", 30)}</span><h1>No plans yet</h1><p>Add your first flight, stay, train, or activity.</p>${emptySetup ? `<div class="timeline-empty__actions"><button class="primary-cta timeline-empty__add" data-action="open-add-booking"><span>Add booking</span>${icon("plus",18)}</button><button class="text-action timeline-empty__skip" data-screen="trips">Skip for now</button></div>` : primaryCta("Add booking", "open-add", "plus")}</div>`;
+      : `<div class="timeline-empty timeline-empty--intent"><span class="timeline-empty__eyebrow">Start building</span><h1>Add to ${esc(state.trip.title || "your trip")}</h1><p>Book it, plan your days, or save an idea.</p>${addIntentRows()}</div>`;
     const headerAction = `<div class="trip-v2-actions">${notifyAction()}</div>`;
     const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
-    return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}${dayTabs}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${emptySetup ? "" : timelineContextCard()}${content}</main>${bottomNav("timeline")}</section></div>`;
+    return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}${dayTabs}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${groups.length ? timelineContextCard() : ""}${content}</main>${bottomNav("timeline")}</section></div>`;
   }
 
   // Fast path for Day-tab taps: regenerate the timeline screen markup and swap
@@ -4115,11 +4129,11 @@
       const days = Math.ceil((new Date(`${start}T00:00:00`).getTime() - Date.now()) / 86400000);
       if (days >= 0 && days <= 14) {
         const cl = state.checklist || [];
-        const clDone = cl.filter((r) => r.completed).length;
-        const clLine = cl.length
-          ? (clDone === cl.length ? `Packing list ready${icon("check", 15)}` : `${cl.length - clDone} item${cl.length - clDone === 1 ? "" : "s"} left to pack`)
-          : "Start your packing list";
-        return `<section class="timeline-context timeline-context--prepare"><span>${days === 0 ? "Today" : `${days} day${days === 1 ? "" : "s"} to go`}</span><h2>Before you go</h2><p>Keep tickets and confirmations available on this device.</p><div class="timeline-context__actions"><button data-screen="checklist">${clLine}${icon("chevron",16)}</button><button data-screen="documents">Review documents${icon("chevron",16)}</button></div></section>`;
+        // Only surface the pre-trip prompt while the packing list hasn't been started.
+        if (cl.length) return "";
+        const clTitle = "Start your packing list";
+        const clSub = "Passport, chargers and the essentials";
+        return `<section class="timeline-context timeline-context--prepare"><span>${days === 0 ? "Today" : `${days} day${days === 1 ? "" : "s"} to go`}</span><h2>Before you go</h2><p>Keep tickets and confirmations available on this device.</p><div class="timeline-context__actions"><button data-screen="checklist"><span class="tcx-act__icon">${icon("checklist",20)}</span><span class="tcx-act__body"><strong>${esc(clTitle)}</strong><small>${esc(clSub)}</small></span>${icon("chevron",18)}</button><button data-screen="documents"><span class="tcx-act__icon">${icon("document",20)}</span><span class="tcx-act__body"><strong>Review documents</strong><small>Tickets and confirmations</small></span>${icon("chevron",18)}</button></div></section>`;
       }
     }
     return "";
@@ -4141,6 +4155,8 @@
         key: `${get("year")}-${get("month")}-${get("day")}`,
         weekday: get("weekday").toUpperCase(),
         date: `${get("month")} ${get("day")}`.toUpperCase(),
+        month: get("month"),
+        dayNum: String(Number(get("day")) || get("day")),
         dayOfMonth: get("day"),
       };
     } catch (_) {
@@ -4558,7 +4574,7 @@
   }
   function journalNextTrip(trip) {
     const days = journalDays(trip);
-    return `<section class="journal-next" data-longpress-trip data-id="${esc(trip.id)}"><div class="journal-next__top"><p class="journal-eyebrow">Up next</p><span>${icon("plane", 26)}</span></div><h2>${esc(trip.title || "Untitled trip")}</h2><p class="journal-next__dates">${esc(formatTripDates(trip))}${days ? ` <span>· ${days.total} days</span>` : ""}</p><div class="journal-next__bottom"><span class="journal-next__countdown">${icon("day", 20)} ${esc(tripCountdownLabel(trip) || "A new adventure awaits")}</span><button type="button" class="journal-open" data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">Let's go ${icon("arrow-right", 18)}</button></div>${tripSharedBadge(trip)}</section>`;
+    return `<section class="journal-next" data-longpress-trip data-id="${esc(trip.id)}"><div class="journal-next__info"><p class="journal-eyebrow">Up next</p><h2>${esc(trip.title || "Untitled trip")}</h2><p class="journal-next__dates">${esc(formatTripDates(trip))}${days ? ` <span>· ${days.total} days</span>` : ""}</p></div><div class="journal-next__aside"><span class="journal-next__countdown">${icon("sun", 18)} ${esc(tripCountdownLabel(trip) || "A new adventure awaits")}</span><button type="button" class="journal-open" data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">Let's go ${icon("plane", 18)}</button></div>${tripSharedBadge(trip)}</section>`;
   }
   function journalTripRow(trip, label) {
     const archived = label === "Past" || label === "Cancelled";
@@ -4566,7 +4582,7 @@
     const month = date ? dateFormatter(undefined, { month: "short", timeZone: "UTC" }).format(date) : "";
     const stamp = date ? archived ? `<small>${esc(month)}<br>${date.getUTCFullYear()}</small>` : `<strong>${date.getUTCDate()}</strong><small>${esc(month)}</small>` : '<small>To plan</small>';
     const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : "";
-    return `<li class="journal-row-wrap" data-swipe-row><button type="button" class="journal-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="journal-row${archived ? " journal-row--archive" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}"><span class="journal-row__date" aria-hidden="true">${stamp}</span><span class="journal-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${countdown || label === "Cancelled" ? `<span class="journal-row__status">${esc(countdown || "Cancelled")}</span>` : ""}<span class="journal-row__arrow" aria-hidden="true">${icon("chevron", 18)}</span></button></li>`;
+    return `<li class="journal-row-wrap" data-swipe-row><button type="button" class="journal-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="journal-row${archived ? " journal-row--archive" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}"><span class="journal-row__date" aria-hidden="true">${stamp}</span><span class="journal-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${countdown || label === "Cancelled" ? `<span class="journal-row__status">${icon("clock", 16)} ${esc(countdown || "Cancelled")}</span>` : ""}<span class="journal-row__arrow" aria-hidden="true">${icon("chevron", 18)}</span></button></li>`;
   }
   function tripListScreen() {
     const filters = [["all","All"],["current","Current"],["upcoming","Upcoming"],["past","Past"]];
@@ -4740,7 +4756,14 @@
       endLocationName = val(endLocation, "display_name", "formatted_address"),
       whenLabel = startsAt ? formatDateTime(startsAt, timezone) : "Time not scheduled",
       hero = `<section class="fd-card" aria-label="Scheduled plan details"><div class="fd-card__head"><span class="fd-flight">${icon(timelineIcon(timelineType(item)), 17)} ${esc(statusText(kind))}</span><span class="fd-status-wrap" role="status" aria-label="Scheduled booking data is never presented as live."><span class="fd-status"><small>Scheduled data</small></span></span></div><h1 class="fd-title">${esc(title)}</h1><p class="fd-when">${icon("calendar", 16)} ${esc(whenLabel)}</p></section>`;
-    return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen">${appBar(`${statusText(kind)} Detail`, "", true, bookingHeaderActions(transportKind || String(val(item, "type") || "plan"), itemId(item)))}<main class="detail-content">${hero}${fdList([
+    const detailKind = transportKind || String(val(item, "type") || "plan");
+    // Ideas carry share + edit + delete in the header; other detail screens keep
+    // share + the edit/manage menu that bookings use.
+    const isIdea = String(kind).toLowerCase() === "idea";
+    const headerActions = isIdea
+      ? `<button class="icon-button" data-action="share-booking" data-kind="${esc(detailKind)}" data-id="${esc(itemId(item))}" aria-label="Share">${icon("share", 18)}</button><button class="icon-button" data-action="edit-idea" data-id="${esc(itemId(item))}" aria-label="Edit idea">${icon("edit", 18)}</button><button class="icon-button" data-action="delete-idea" data-id="${esc(itemId(item))}" aria-label="Delete idea">${icon("trash", 18)}</button>`
+      : bookingHeaderActions(detailKind, itemId(item));
+    return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen">${appBar(`${statusText(kind)} Detail`, "", true, headerActions)}<main class="detail-content">${hero}${fdList([
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
       locationName ? fdButtonRow("pin", locationName, "directions-item", `data-id="${esc(itemId(item))}"`, endLocationName ? "From" : "Location", "map") : "",
       endLocationName ? fdStaticRow("navigation", endLocationName, "To") : "",
@@ -4782,6 +4805,7 @@
     { type: "beach_relax", label: "Beach & Relax", desc: "A beach, pool, or somewhere to unwind", icon: "beach" },
     { type: "entertainment", label: "Entertainment", desc: "A show, concert, game, or night out", icon: "event" },
     { type: "viewpoint_scenic", label: "Viewpoint & Scenic", desc: "A lookout or scenic spot for the view", icon: "camera" },
+    { type: "other", label: "Other", desc: "Anything else you want to do or remember", icon: "more" },
   ]);
   const DAY_PLAN_TYPE_MAP = Object.freeze(Object.fromEntries(DAY_PLAN_TYPES.map((t) => [t.type, t])));
   function dayPlanType(type) { return DAY_PLAN_TYPE_MAP[String(type || "")] || null; }
@@ -4826,6 +4850,47 @@
   function saveForLaterItems() {
     return (state.timeline || []).filter((item) => !val(item, "deleted_at", "deletedAt") && isSaveForLaterItem(item));
   }
+  // Save for Later ↔ Day Plan / Neighborhood integration (Day Trip = a day's
+  // plan). An idea is a plain activity kept without a start (see
+  // isSaveForLaterItem). It becomes "planned" WITHOUT being duplicated by being
+  // linked into a Neighborhood as a stop (link-not-copy via
+  // planning_stops.linked_trip_item_id). The idea's own row stays undated, so it
+  // never appears twice: it shows once inside the neighborhood (whose scheduled
+  // day carries it) and in the Planned filter here. Scheduling an idea straight
+  // onto a day ("General day plan") instead gives it a start and moves it to the
+  // main Timeline — handled by the shared day-plan form.
+  function stopsLinkingItem(id) {
+    const key = String(id || "");
+    if (!key) return [];
+    return (state.collectionStops || []).filter((s) => !s.deleted_at && String(s.linked_trip_item_id || "") === key);
+  }
+  function ideaIsPlanned(item) { return stopsLinkingItem(itemId(item)).length > 0; }
+  // Neighborhoods an idea has been placed into, paired with the linking stop.
+  function ideaPlacements(item) {
+    return stopsLinkingItem(itemId(item))
+      .map((s) => ({ stop: s, collection: collectionForItem(s.collection_item_id) }))
+      .filter((p) => p.collection && !val(p.collection, "deleted_at", "deletedAt"));
+  }
+  // One-line "In Trastevere · MON APR 07" summary for a planned idea.
+  function ideaPlacementSummary(item) {
+    const placements = ideaPlacements(item);
+    if (!placements.length) return "";
+    const first = placements[0];
+    const cfg = collectionConfig(first.collection.collection_type);
+    const bits = [first.collection.title || (cfg ? cfg.label : "Neighborhood")];
+    const starts = Number(val(first.collection, "starts_at_utc", "startsAtUtc")) || null;
+    if (starts != null) bits.push(timelineDay(starts, val(first.collection, "start_timezone", "startTimezone")).date);
+    else if (String(first.stop.scheduled_time || "").trim()) bits.push(String(first.stop.scheduled_time).trim());
+    const extra = placements.length > 1 ? ` +${placements.length - 1}` : "";
+    return `In ${bits.join(" · ")}${extra}`;
+  }
+  // The neighborhoods a plan panel offers: every live neighborhood collection.
+  function neighborhoodCollections() {
+    return (state.collections || []).filter((c) => String(c.collection_type) === "neighborhood" && !val(c, "deleted_at", "deletedAt"));
+  }
+  // Guard against double-submits (rapid taps / slow network): an idea id is held
+  // here for the duration of an in-flight plan mutation.
+  const planInFlight = new Set();
   // "5 places · 10:00–16:00" — the parent's main-timeline summary computed from
   // its children, so the parent never needs a stored subtitle.
   function collectionSummary(item) {
@@ -4891,12 +4956,12 @@
     const miniTimeline = stops.length
       ? `<ol class="mini-timeline" aria-label="${esc(cfg.stops)} in ${esc(c.title || cfg.label)}">${stops.map((s, i) => {
           const st = states[i], time = String(s.scheduled_time || "").trim();
-          const inner = `<span class="mini-stop__time">${esc(time || "—")}</span><span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot"></span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>`;
+          const inner = `<span class="mini-stop__time">${time ? `${icon("clock", 12)} ${esc(time)}` : ""}</span><span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot"></span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>`;
           return `<li class="mini-stop mini-stop--${esc(st)}">${hit(s, st, inner)}</li>`;
         }).join("")}</ol>`
-      : `<p class="collection-empty">No ${esc(cfg.stops)} yet.${canEdit ? ` Add your first ${esc(cfg.stop)}.` : ""}</p>`;
+      : `<div class="collection-empty"><span class="collection-empty__badge" aria-hidden="true">${icon("location", 24)}</span><strong>No ${esc(cfg.stops)} yet</strong>${canEdit ? `<p>Add your first ${esc(cfg.stop)} to start this plan.</p>` : ""}</div>`;
     const addBtn = canEdit ? primaryCta(`Add ${cfg.stop}`, "collection-add-place", "plus", `data-id="${esc(id)}"`) : "";
-    const body = `<section class="collection-head"><span>${esc(cfg.label)}</span><h1>${esc(c.title || cfg.label)}</h1>${metaBits ? `<p class="collection-meta">${esc(metaBits)}</p>` : ""}${c.collection_notes ? `<p class="collection-notes">${esc(c.collection_notes)}</p>` : ""}</section><section class="collection-stops" aria-label="Places"><h2>${esc(cfg.stops.charAt(0).toUpperCase() + cfg.stops.slice(1))}</h2>${miniTimeline}<p class="collection-hint">These ${esc(cfg.stops)} appear only here, on this plan's own timeline.</p>${addBtn}</section>`;
+    const body = `<section class="collection-hero"><span class="collection-hero__eyebrow">${esc(cfg.label)}</span><h1>${esc(c.title || cfg.label)}</h1>${metaBits ? `<p class="collection-hero__meta">${icon("calendar", 15)} ${esc(metaBits)}</p>` : ""}${c.collection_notes ? `<p class="collection-hero__notes">${esc(c.collection_notes)}</p>` : ""}</section><section class="collection-stops" aria-label="Places"><h2>${esc(cfg.stops.charAt(0).toUpperCase() + cfg.stops.slice(1))}${stops.length ? `<span class="collection-count">${stops.length}</span>` : ""}</h2>${miniTimeline}<p class="collection-hint">These ${esc(cfg.stops)} appear only here, on this plan's own timeline.</p>${addBtn}</section>`;
     return focusedTaskPage(cfg.label, body, "collection-page", actions);
   }
 
@@ -4923,7 +4988,7 @@
       return `<label class="form-field form-field--${opts.wide === false ? "half" : "wide"}" for="cf-${name}"><span>${esc(label)}${opts.required ? ' <b aria-hidden="true">*</b>' : ' <em class="field-optional">Optional</em>'}</span><input type="${opts.type || "text"}" id="cf-${name}" name="${name}"${req}${ph} autocomplete="off" value="${esc(value || "")}"></label>`;
     };
     const scheduleFields = cfg.timeline
-      ? `<div class="form-fields form-fields--date-time">${field("scheduleDate", "Date on timeline", dateVal, { type: "date", wide: false })}${field("scheduleTime", "Start time", timeVal, { type: "time", wide: false })}</div><p class="field-helper">Add a date to place this ${esc(cfg.label.toLowerCase())} on your timeline. Leave the date blank to keep it in planning.</p>`
+      ? `${dateRangeField("scheduleDate", "scheduleDateEnd", "Date on timeline", "Date", "Date", dateVal, "", { allowSingle: true })}${field("scheduleTime", "Start time", timeVal, { type: "time" })}<p class="field-helper">Add a date to place this ${esc(cfg.label.toLowerCase())} on your timeline. Leave the date blank to keep it in planning.</p>`
       : `<p class="field-helper">${esc(cfg.label)} lists stay in planning and never appear on the main timeline.</p>`;
     const form = `<form class="mobile-form premium-form collection-form" id="collection-form" data-collection-type="${esc(type)}"${editId ? ` data-edit-id="${esc(editId)}"` : ""} novalidate><header class="manual-form-heading"><span>${esc(editing ? "Edit plan" : "New plan")}</span><h1>${esc(editing ? existing.title || cfg.label : cfg.label)}</h1></header><p class="collection-form__intro">${esc(cfg.intro)}</p><section class="form-section manual-essentials" aria-labelledby="collection-essentials-title"><h2 id="collection-essentials-title">Details</h2><div class="quick-primary-fields">${field("title", cfg.label + " name", editing ? existing.title : "", { required: true, placeholder: cfg.label === "Neighborhood" ? "Trastevere" : cfg.label })}${field("city", "City or area", editing ? existing.city : "", { placeholder: "Rome" })}${scheduleFields}${field("notes", "Notes", editing ? existing.collection_notes : "", { type: "textarea" })}</div><input type="hidden" name="timezone" value="${esc(tz)}"></section></form>`;
     return focusedTaskPage(editing ? `Edit ${cfg.label}` : `Add ${cfg.label}`, form, "form-screen collection-form-screen", formHeaderSave("collection-form", editing ? "Save" : `Create ${cfg.label}`));
@@ -5052,16 +5117,30 @@
       }
       await loadTripDetails();
       formHasMeaningfulChanges = false; state.editingEntity = null;
+      // If this neighborhood was created from the "Add to plan" panel, drop the
+      // pending idea straight into it (link-not-copy) and land on the collection.
+      const pendingIdea = state.pendingPlanIdea;
+      state.pendingPlanIdea = null;
+      if (!editId && pendingIdea && targetId) {
+        await planIdeaToNeighborhood(pendingIdea, targetId);
+        return;
+      }
       showToast(`${cfg ? cfg.label : "Plan"} ${editId ? "updated" : "added"}.`);
       route(targetId ? "collection" : "planning", targetId || null, true);
     } catch (error) {
       if (!editId && !navigator.onLine) {
+        // Offline: the new neighborhood is queued as a temp collection, but the
+        // idea→neighborhood link can't be made until the collection has a real
+        // server id. Clear the pending idea so it never leaks into the NEXT
+        // neighborhood the user creates. The idea stays safe in Save-for-Later.
+        const hadPendingIdea = !!state.pendingPlanIdea;
+        state.pendingPlanIdea = null;
         const tempId = `local-${crypto.randomUUID()}`;
         state.collections = [...(state.collections || []), { id: tempId, trip_id: tripId, type: "custom", status: "planned", title, city: city || null, collection_notes: notes || null, collection_type: type, starts_at_utc: startsAtUtc, start_local_datetime: startLocal, start_timezone: startsAtUtc ? tz : null, version: 1, __local: true }];
         if (startsAtUtc) state.timeline = [...(state.timeline || []), { id: tempId, type: "custom", title, starts_at_utc: startsAtUtc, start_timezone: tz, status: "planned", version: 1, __local: true }];
         queuePendingMutation({ kind: "collection", op: "create", tripId, tempId, body });
         formHasMeaningfulChanges = false; state.editingEntity = null;
-        showToast("Saved on this phone. It will sync when you reconnect.");
+        showToast(hadPendingIdea ? "Neighborhood saved on this phone. Reconnect, then add your idea to it." : "Saved on this phone. It will sync when you reconnect.");
         route("planning", null, true);
         return;
       }
@@ -6144,7 +6223,8 @@
   }
   function dateRangeField(startName, endName, label, startLabel, endLabel, startValue = "", endValue = "", options = {}) {
     const fieldId = `range-${startName}-${endName}`;
-    return `<fieldset class="date-range-field form-field--wide" id="${fieldId}"${options.allowSingle ? ' data-allow-single="true"' : ""}><legend>${esc(label)}</legend><input class="date-range-input" type="hidden" name="${esc(startName)}" id="form-${esc(startName)}"${startValue ? ` value="${esc(startValue)}"` : ""}><input class="date-range-input" type="hidden" name="${esc(endName)}" id="form-${esc(endName)}"${endValue ? ` value="${esc(endValue)}"` : ""}><button class="date-range-trigger" type="button" data-action="open-date-range" data-start-name="${esc(startName)}" data-end-name="${esc(endName)}" data-range-title="${esc(label)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}" aria-label="${esc(label)}. Choose ${esc(startLabel.toLowerCase())}${options.allowSingle ? "" : ` and ${esc(endLabel.toLowerCase())}`}" aria-describedby="${fieldId}-status"><span class="date-range-trigger__icon">${icon("calendar", 20)}</span><span class="date-range-trigger__copy"><small>Select dates</small><strong>Choose dates</strong></span>${icon("chevron", 18)}</button><span class="sr-only" id="${fieldId}-status" aria-live="polite">No date selected.</span></fieldset>`;
+    const bounds = `${options.min ? ` data-min="${esc(options.min)}"` : ""}${options.max ? ` data-max="${esc(options.max)}"` : ""}`;
+    return `<fieldset class="date-range-field form-field--wide" id="${fieldId}"${options.allowSingle ? ' data-allow-single="true"' : ""}><legend>${esc(label)}</legend><input class="date-range-input" type="hidden" name="${esc(startName)}" id="form-${esc(startName)}"${startValue ? ` value="${esc(startValue)}"` : ""}><input class="date-range-input" type="hidden" name="${esc(endName)}" id="form-${esc(endName)}"${endValue ? ` value="${esc(endValue)}"` : ""}><button class="date-range-trigger" type="button" data-action="open-date-range" data-start-name="${esc(startName)}" data-end-name="${esc(endName)}" data-range-title="${esc(label)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}"${bounds} aria-label="${esc(label)}. Choose ${esc(startLabel.toLowerCase())}${options.allowSingle ? "" : ` and ${esc(endLabel.toLowerCase())}`}" aria-describedby="${fieldId}-status"><span class="date-range-trigger__icon">${icon("calendar", 20)}</span><span class="date-range-trigger__copy"><small>Select dates</small><strong>Choose dates</strong></span>${icon("chevron", 18)}</button><span class="sr-only" id="${fieldId}-status" aria-live="polite">No date selected.</span></fieldset>`;
   }
   function syncDateRangeField(form, startName, endName) {
     const start = form?.elements[startName], end = form?.elements[endName];
@@ -6685,9 +6765,13 @@
     const monthStart = new Date(`${rangeMonthStart(range.month)}T12:00:00Z`), year = monthStart.getUTCFullYear(), month = monthStart.getUTCMonth(), firstWeekday = monthStart.getUTCDay(), daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate(), previousDays = new Date(Date.UTC(year, month, 0)).getUTCDate(), cells = [];
     for (let index = 0; index < 42; index += 1) {
       const dayOffset = index - firstWeekday + 1, date = new Date(Date.UTC(year, month, dayOffset)), iso = date.toISOString().slice(0, 10), inMonth = date.getUTCMonth() === month, isStart = iso === range.start, isEnd = iso === range.end, inRange = Boolean(range.start && range.end && iso > range.start && iso < range.end), label = dateFormatter(undefined, { weekday:"long", month:"long", day:"numeric", year:"numeric", timeZone:"UTC" }).format(date);
+      const outOfBounds = (range.min && iso < range.min) || (range.max && iso > range.max);
       const isFocused = iso === range.focusDate || (!range.focusDate && ((range.start && iso === range.start) || (!range.start && inMonth && dayOffset === 1)));
-      cells.push(`<button type="button" role="gridcell" tabindex="${isFocused ? "0" : "-1"}" class="range-day${inMonth ? "" : " is-outside"}${inRange ? " is-between" : ""}${isStart ? " is-start" : ""}${isEnd ? " is-end" : ""}" data-action="select-range-day" data-date="${iso}" aria-label="${esc(label)}${isStart ? ", start date" : isEnd ? ", end date" : ""}" aria-selected="${isStart || isEnd}"><span>${date.getUTCDate()}</span></button>`);
+      cells.push(`<button type="button" role="gridcell" tabindex="${isFocused && !outOfBounds ? "0" : "-1"}" class="range-day${inMonth ? "" : " is-outside"}${inRange ? " is-between" : ""}${isStart ? " is-start" : ""}${isEnd ? " is-end" : ""}${outOfBounds ? " is-disabled" : ""}"${outOfBounds ? " disabled aria-disabled=\"true\"" : ` data-action="select-range-day" data-date="${iso}"`} aria-label="${esc(label)}${outOfBounds ? ", outside your trip dates" : isStart ? ", start date" : isEnd ? ", end date" : ""}" aria-selected="${isStart || isEnd}"><span>${date.getUTCDate()}</span></button>`);
     }
+    // With trip-date bounds, hide month arrows that would leave the trip window.
+    const prevBlocked = Boolean(range.min && rangeMonthStart(shiftRangeMonth(range.month, -1)) < rangeMonthStart(range.min));
+    const nextBlocked = Boolean(range.max && rangeMonthStart(shiftRangeMonth(range.month, 1)) > rangeMonthStart(range.max));
     const summary = range.start ? range.end ? `${formatDateOnly(range.start)} – ${formatDateOnly(range.end)}` : range.allowSingle ? formatDateOnly(range.start) : `${formatDateOnly(range.start)} · now choose ${range.endLabel.toLowerCase()}` : `Choose ${range.startLabel.toLowerCase()}`;
     const ready = Boolean(range.start && (range.end || range.allowSingle)),
       heading = range.allowSingle ? `Select ${range.startLabel.toLowerCase()}` : "Select dates",
@@ -6703,7 +6787,7 @@
     const skipAction = range.optional
       ? `<button type="button" class="range-picker__skip" data-action="skip-date-range">I don’t know my dates yet</button>`
       : "";
-    return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><p class="range-picker__instruction">${icon("calendar",19)}<span>${esc(instruction)}</span></p><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month">${icon("back",20)}</button><strong>${esc(dateFormatter(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month">${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p><div class="range-picker__actions"><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Confirm date" : "Confirm dates"}</button>${skipAction}</div></main></section>`;
+    return `<section class="full-screen-picker date-range-screen" role="dialog" aria-modal="true" aria-labelledby="date-range-screen-title"><header class="full-screen-picker__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="close-sheet" aria-label="Back">${icon("back",22)}</button><div><strong id="date-range-screen-title">${esc(heading)}</strong></div><button type="button" class="full-screen-picker__clear" data-action="clear-date-range"${range.start || range.end ? "" : " disabled"}>Clear</button></header><main class="range-picker"><p class="range-picker__instruction">${icon("calendar",19)}<span>${esc(instruction)}</span></p><div class="range-picker__selection" role="status" aria-live="polite"><section class="range-choice range-choice--start${!range.start ? " is-active" : ""}"><small>${esc(range.startLabel)}</small><strong>${esc(startValue)}</strong></section>${range.allowSingle ? "" : `<section class="range-choice range-choice--end${range.start && !range.end ? " is-active" : ""}"><small>${esc(range.endLabel)}</small><strong>${esc(endValue)}</strong></section>`}</div><section class="range-picker__calendar" aria-label="Calendar"><div class="range-month"><button type="button" class="icon-button" data-action="range-month" data-offset="-1" aria-label="Previous month"${prevBlocked ? " disabled" : ""}>${icon("back",20)}</button><strong>${esc(dateFormatter(undefined, {month:"long",year:"numeric",timeZone:"UTC"}).format(monthStart))}</strong><button type="button" class="icon-button" data-action="range-month" data-offset="1" aria-label="Next month"${nextBlocked ? " disabled" : ""}>${icon("chevron",20)}</button></div><div class="range-weekdays" aria-hidden="true">${["S","M","T","W","T","F","S"].map((day)=>`<span>${day}</span>`).join("")}</div><div class="range-days" role="grid" aria-label="${esc(range.title)}">${cells.join("")}</div></section><p class="range-picker__status sr-only">${esc(summary)}</p><div class="range-picker__actions"><button type="button" class="mobile-primary-action range-picker__apply" data-action="apply-date-range"${ready ? "" : " disabled"}>${range.allowSingle ? "Confirm date" : "Confirm dates"}</button>${skipAction}</div></main></section>`;
   }
   function tripSetupReadyScreen() {
     const preview = state.tripSetupPreview || {},
@@ -7307,13 +7391,18 @@
   function addToTripScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add to your trip");
     const tripName = state.trip.title || "your trip";
-    const row = (action, ic, title, copy, tone) => `<button type="button" class="add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="add-intent-row__icon">${icon(ic, 24)}</span><span class="add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
     // Gradient hero + dashed journey stepper, matching the "Where are you going?"
     // new-journey screen (reuses the .trip-create-head / .trip-create-route look).
     const stepper = `<div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("ticket", 18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("map", 22)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("favorite", 20)}</span></div>`;
     const hero = `<header class="trip-create-head add-intent-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">ADD TO TRIP</span><h1>What would you like to add?</h1><div class="trip-create-head__sub"><p>Book it, plan your days, or save an idea for ${esc(tripName)}.</p></div></div>${stepper}</header>`;
-    const body = `${hero}<div class="add-intent-fields">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
+    const body = `${hero}${addIntentRows()}`;
     return focusedTaskPage(`Add to ${tripName}`, body, "add-intent-page");
+  }
+  // The three "Add to trip" intention rows, shared by the Add-to-trip screen and
+  // the empty Timeline (an empty trip lands straight on these choices).
+  function addIntentRows() {
+    const row = (action, ic, title, copy, tone) => `<button type="button" class="add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="add-intent-row__icon">${icon(ic, 24)}</span><span class="add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
+    return `<div class="add-intent-fields">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
   }
 
   // Day Plan (spec §8/§9): pick one of ten activity types. Neighborhood is the
@@ -7357,8 +7446,12 @@
     if (editing && !existing) return missingDetailScreen("Plan unavailable", "This activity is not available.");
     const activityType = editing ? String(val(existing, "activity_type", "activityType") || "") : raw.slice(4);
     const meta = dayPlanType(activityType);
-    const label = meta ? meta.label : "Activity";
-    const desc = meta ? meta.desc : "Add what you want to do and, when you know it, the day and time.";
+    const isIdea = !meta && activityType === "idea";
+    const label = meta ? meta.label : (isIdea ? "Idea" : "Activity");
+    const desc = meta ? meta.desc : (isIdea ? "Give it a name now — add the day and details whenever you like." : "Add what you want to do and, when you know it, the day and time.");
+    // A brand-new idea names its trip in the heading ("Save idea for \"Trip\"").
+    const tripTitle = String(val(state.trip, "title") || "").trim();
+    const newHeading = isIdea ? (tripTitle ? `Save idea for "${tripTitle}"` : "Save idea") : label;
     const fromSaveLater = state.dayPlanContext === "save-later";
     const tz = (editing ? val(existing, "start_timezone", "startTimezone") : "") || tripDefaultTimezone() || "UTC";
     // Prefill the day from the day in context, unless we came from Save for
@@ -7395,7 +7488,18 @@
       return `<label class="form-field form-field--${opts.wide === false ? "half" : "wide"}" for="dp-${name}"><span>${esc(lbl)}${opts.required ? ' <b aria-hidden="true">*</b>' : ' <em class="field-optional">Optional</em>'}</span><input type="${opts.type || "text"}" id="dp-${name}" name="${name}"${req}${ph} autocomplete="off" value="${esc(value || "")}"></label>`;
     };
     const editAttrs = editing ? ` data-edit-id="${esc(raw)}" data-edit-version="${esc(Number(val(existing, "version")) || 1)}"` : "";
-    const form = `<form class="mobile-form premium-form day-plan-form" id="day-plan-form" data-activity-type="${esc(activityType)}"${editAttrs} novalidate><header class="manual-form-heading"><span>Day plan</span><h1>${esc(editing ? nameVal || label : label)}</h1><p>${esc(desc)}</p></header><section class="form-section manual-essentials" aria-labelledby="day-plan-essentials-title"><h2 id="day-plan-essentials-title">Details</h2><div class="quick-primary-fields">${field("title", "Name or place", nameVal, { required: true, placeholder: label })}<div class="form-fields form-fields--date-time">${field("dpDate", "Day", dateVal, { type: "date", wide: false })}${field("dpTime", "Start time", timeVal, { type: "time", wide: false })}</div>${field("dpEndTime", "End time", endTimeVal, { type: "time", wide: false })}${field("dpAddress", "Address", address, { placeholder: "Street address or area" })}${field("dpNotes", "Notes", notes, { type: "textarea" })}</div></section><p class="field-helper form-note">Leave the day blank to keep this as an idea in Save for Later. Add a day and it appears on your timeline.</p><input type="hidden" name="timezone" value="${esc(tz)}"><input type="hidden" name="activityType" value="${esc(activityType)}"></form>`;
+    const attachmentScope = manualAttachmentScope("activity", editing ? raw : "");
+    const attachments = manualAttachmentsSection("activity", attachmentScope);
+    // A day plan / idea can only be scheduled onto a day WITHIN the trip window.
+    // With no trip dates yet, there is no day to choose — it saves as an idea.
+    const tripRange = tripDateDays(), tripStart = tripRange[0] || "", tripEnd = tripRange[tripRange.length - 1] || "";
+    const dayField = tripRange.length
+      ? dateRangeField("dpDate", "dpDateEnd", "Day", "Day", "Day", dateVal, "", { allowSingle: true, min: tripStart, max: tripEnd })
+      : `<div class="day-plan-no-dates form-field--wide"><span class="day-plan-no-dates__icon" aria-hidden="true">${icon("calendar", 20)}</span><span class="day-plan-no-dates__copy"><strong>No trip dates yet</strong><small>Add your trip's dates to schedule this. For now it's saved as an idea.</small></span><input type="hidden" name="dpDate" value=""><input type="hidden" name="dpDateEnd" value=""></div>`;
+    const noteCopy = tripRange.length
+      ? "Leave the day blank to keep this as an idea in Save for Later. Pick a day within your trip and it appears on your timeline."
+      : "This is saved as an idea. Add your trip's dates to schedule it onto a day.";
+    const form = `<form class="mobile-form premium-form day-plan-form" id="day-plan-form" data-kind="activity" data-activity-type="${esc(activityType)}" data-attachment-scope="${esc(attachmentScope.draftId)}"${editAttrs} novalidate><header class="manual-form-heading"><span>Day plan</span><h1>${esc(editing ? nameVal || label : newHeading)}</h1><p>${esc(desc)}</p></header><section class="form-section manual-essentials" aria-labelledby="day-plan-essentials-title"><h2 id="day-plan-essentials-title">Details</h2><div class="quick-primary-fields">${field("title", "Name or place", nameVal, { required: true, placeholder: label })}${dayField}<div class="form-fields form-fields--date-time">${field("dpTime", "Start time", timeVal, { type: "time", wide: false })}${field("dpEndTime", "End time", endTimeVal, { type: "time", wide: false })}</div>${field("dpAddress", "Address", address, { placeholder: "Street address or area" })}${field("dpNotes", "Notes", notes, { type: "textarea" })}</div></section>${attachments}<p class="field-helper form-note">${esc(noteCopy)}</p><input type="hidden" name="timezone" value="${esc(tz)}"><input type="hidden" name="activityType" value="${esc(activityType)}"></form>`;
     return focusedTaskPage(editing ? `Edit ${label.toLowerCase()}` : `Add ${label.toLowerCase()}`, form, "form-screen day-plan-form-screen", formHeaderSave("day-plan-form", "Save"));
   }
 
@@ -7410,6 +7514,13 @@
     const addressText = String(fd.get("dpAddress") || "").trim(), notes = String(fd.get("dpNotes") || "").trim();
     let startsAtUtc = null, endsAtUtc = null;
     if (date) {
+      // Day plans and ideas live inside the trip window only — reject any day
+      // outside it so scheduling can never drift onto a non-trip date.
+      const tripRange = tripDateDays();
+      if (tripRange.length && (date < tripRange[0] || date > tripRange[tripRange.length - 1])) {
+        showFormSubmissionError(form, "Pick a day within your trip dates.");
+        return;
+      }
       try { startsAtUtc = resolveEventLocalDateTime(`${date}T${time || "09:00"}`, tz); }
       catch (error) { showFormSubmissionError(form, error.message); return; }
       if (endTime) {
@@ -7427,16 +7538,29 @@
         location = await createManualVenueLocation("attraction", title, "", addressText, date ? tz : null, "", existingLocationId).catch(() => null);
       }
       const body = { kind: "activity", status: date ? "confirmed" : "planned", title, startsAtUtc, endsAtUtc, timezone: date ? tz : null, locationId: location?.id || null, activityType: activityType || null, notes: notes || null, confidence: date ? "confirmed" : "estimated" };
+      let savedId = editId;
       if (editId) {
         const existing = (state.timeline || []).find((it) => itemId(it) === editId);
         body.version = Number(val(existing || {}, "version")) || 1;
         await api(`/api/v1/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(editId)}`, { method: "PATCH", body: JSON.stringify(body) });
       } else {
-        await api(`/api/v1/trips/${encodeURIComponent(tripId)}/activities`, { method: "POST", body: JSON.stringify(body) });
+        const created = await api(`/api/v1/trips/${encodeURIComponent(tripId)}/activities`, { method: "POST", body: JSON.stringify(body) });
+        savedId = String(created?.item?.id || "");
+      }
+      const scope = form.dataset.attachmentScope || "";
+      let attachmentWarning = "";
+      if (savedId && scope) {
+        try {
+          const linked = await commitManualAttachments(scope, savedId, "activity", []);
+          if (linked?.status === "linked") { forgetManualAttachmentRetry("activity", savedId); try { await clearManualAttachment(scope); } catch (_) {} }
+        } catch (_) {
+          rememberManualAttachmentRetry("activity", savedId, scope);
+          attachmentWarning = "Saved, but one or more documents could not be attached. Edit this plan and tap Retry.";
+        }
       }
       await loadTripDetails();
       formHasMeaningfulChanges = false; state.editingEntity = null; state.dayPlanContext = null;
-      showToast(date ? `${title} added to your timeline.` : `${title} saved for later.`);
+      showToast(attachmentWarning || (date ? `${title} added to your timeline.` : `${title} saved for later.`), attachmentWarning ? "alert" : "status");
       if (date) { state.timelineDayKey = timelineDay(startsAtUtc, tz).key; route("timeline", null, true); }
       else route("save-later", null, true);
     } catch (error) {
@@ -7453,33 +7577,219 @@
     if (!state.trip) return missingDetailScreen("Save for Later", "Create or select a trip first.");
     const canEdit = canEditCurrentTrip();
     const items = saveForLaterItems();
-    const buckets = { place: [], food_drink: [], shopping: [] };
-    for (const item of items) buckets[saveLaterBucketForType(val(item, "activity_type", "activityType"))].push(item);
-    const itemRow = (item) => {
+    // Two states of the SAME idea: an idea is "planned" once it has been placed
+    // into a neighborhood (a live linking stop). The default view shows only
+    // un-planned ideas; the Planned filter shows where placed ideas landed.
+    const planned = items.filter(ideaIsPlanned);
+    const ideas = items.filter((it) => !ideaIsPlanned(it));
+    const filter = state.saveLaterFilter === "planned" ? "planned" : "ideas";
+    const tab = (key, label, count) => `<button type="button" class="save-later-tab${filter === key ? " is-active" : ""}" data-action="save-later-filter" data-filter="${key}"${filter === key ? ' aria-current="true"' : ""}>${esc(label)}${count ? ` <span class="save-later-tab__count">${count}</span>` : ""}</button>`;
+    // Always show both tabs so the Planned list is discoverable even before any
+    // idea has been placed — tapping Planned then shows an empty-planned state.
+    const filterBar = `<div class="save-later-filter" role="tablist" aria-label="Show">${tab("ideas", "Ideas", ideas.length)}${tab("planned", "Planned", planned.length)}</div>`;
+    // One clean list, no category buckets: every idea is a row you can open.
+    const ideaRow = (item) => {
       const address = String(val(locationById(val(item, "start_location_id", "venue_location_id")) || {}, "local_address", "formatted_address") || "");
       const sub = ["Not scheduled", address].filter(Boolean).join(" · ");
-      return `<button type="button" class="save-later-row" data-action="schedule-save-later" data-id="${esc(itemId(item))}"><span class="save-later-row__copy"><strong>${esc(val(item, "title") || "Idea")}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18)}</button>`;
+      return `<button type="button" class="save-later-row" data-action="open-idea" data-id="${esc(itemId(item))}"><span class="save-later-row__mark" aria-hidden="true">${icon("star", 18)}</span><span class="save-later-row__copy"><strong>${esc(val(item, "title") || "Idea")}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18)}</button>`;
     };
-    const section = (cfg) => {
-      const rows = buckets[cfg.type] || [];
-      const addBtn = canEdit ? `<button type="button" class="save-later-add" data-action="add-save-later" data-type="${esc(cfg.type)}">${icon("plus", 18)}<span>Add ${esc(cfg.label.toLowerCase())}</span></button>` : "";
-      return `<section class="save-later-group" aria-label="${esc(cfg.label)}"><h2>${icon(cfg.icon, 20)} ${esc(cfg.label)}</h2>${rows.length ? `<div class="save-later-list">${rows.map(itemRow).join("")}</div>` : `<p class="save-later-empty">Nothing saved yet.</p>`}${addBtn}</section>`;
+    const plannedRow = (item) => {
+      const sub = ideaPlacementSummary(item) || "In your plan";
+      return `<button type="button" class="save-later-row save-later-row--planned" data-action="open-idea" data-id="${esc(itemId(item))}"><span class="save-later-row__mark" aria-hidden="true">${icon("check", 18)}</span><span class="save-later-row__copy"><strong>${esc(val(item, "title") || "Idea")}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18)}</button>`;
     };
-    const body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>Save for Later</h1><p>Ideas you haven't scheduled yet. Open one to pick a day and add it to your timeline.</p></section>${SAVE_LATER_TYPES.map(section).join("")}`;
+    const addCta = canEdit ? `<button type="button" class="save-later-add-cta" data-action="add-save-later" data-type="idea">${icon("plus", 20)}<span>Add an idea</span></button>` : "";
+    const tripName = String(val(state.trip, "title") || "").trim();
+    const hasTripDates = tripDateDays().length > 0;
+    const heading = tripName ? `Save ideas for “${esc(tripName)}”` : "Save for Later";
+    const scheduleHint = hasTripDates
+      ? "Open one to add it to a day plan."
+      : "Add your trip's dates first, then you can plan these onto its days.";
+    let body;
+    if (filter === "planned") {
+      const plannedList = planned.length
+        ? `<div class="save-later-list" role="list">${planned.map(plannedRow).join("")}</div>`
+        : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("check", 24)}</span><strong>Nothing planned yet</strong><p>Ideas you add to a day plan or neighborhood show up here. Open an idea in the Ideas tab to place it.</p></div>`;
+      body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>${heading}</h1><p>Ideas you've added to a day plan. Open one to see it, or return it to your ideas.</p></section>${filterBar}${plannedList}`;
+    } else {
+      const list = ideas.length
+        ? `<div class="save-later-list" role="list">${ideas.map(ideaRow).join("")}</div>`
+        : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("star", 24)}</span><strong>No ideas yet</strong><p>Save places, food and things you might want to do. ${hasTripDates ? "Plan them onto a day whenever you're ready." : "Add your trip's dates to plan them onto days."}</p></div>`;
+      body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>${heading}</h1><p>A running list of things you might do. ${scheduleHint}</p></section>${filterBar}${list}${addCta}`;
+    }
     return focusedTaskPage("Save for Later", body, "save-later-page");
+  }
+  // Idea action sheet (spec §5/§6/§10): the hub for a single Save-for-Later idea.
+  // Un-planned ideas offer "Add to a day plan" (opens the plan panel) plus edit
+  // and delete; planned ideas add "Open in plan" and "Return to ideas".
+  function ideaSheet() {
+    const id = String(state.ideaMenu || "");
+    const item = (state.timeline || []).find((it) => itemId(it) === id && isSaveForLaterItem(it));
+    if (!item) return bottomSheet("idea", "Idea", `<p class="sheet-empty">This idea is no longer available.</p>`);
+    const canEdit = canEditCurrentTrip();
+    const placements = ideaPlacements(item);
+    const planned = placements.length > 0;
+    const opt = (action, ic, label, sub, extra = "", danger = false) => `<button type="button" class="stop-action${danger ? " stop-action--danger" : ""}" data-action="${action}" data-id="${esc(id)}"${extra}><span class="stop-action__icon">${icon(ic, 20)}</span><span class="stop-action__body"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="stop-action__chev" aria-hidden="true">${icon("chevron-right", 18)}</span></button>`;
+    const meta = planned ? `<div class="stop-meta"><span class="stop-meta__line">${esc(ideaPlacementSummary(item))}</span></div>` : "";
+    if (!canEdit) {
+      const openRow = planned ? opt("open-collection", "map", "Open in plan", "See where this idea sits", ` data-id="${esc(placements[0].collection.id)}"`) : "";
+      return bottomSheet("idea", val(item, "title") || "Idea", `${meta}<div class="stop-actions"><div class="stop-actions__group">${openRow || `<p class="sheet-note">You have view-only access to this trip.</p>`}</div></div>`);
+    }
+    const hasTripDates = tripDateDays().length > 0;
+    const planRows = planned
+      ? `${opt("open-collection", "map", "Open in plan", ideaPlacementSummary(item), ` data-id="${esc(placements[0].collection.id)}"`)}${opt("idea-return", "refresh", "Return to ideas", "Unschedule without deleting")}`
+      : `${hasTripDates
+          ? opt("idea-add-to-plan", "map", "Add to a day plan", "Choose a day and an optional time")
+          : opt("idea-add-to-plan", "map", "Add to a day plan", "Add your trip's dates first", " disabled")}${opt("edit-idea", "edit", "Edit idea", "Name, address and notes")}`;
+    const editRows = planned ? opt("edit-idea", "edit", "Edit idea", "Name, address and notes") : "";
+    const body = `${meta}<div class="stop-actions"><div class="stop-actions__group">${planRows}${editRows}</div><div class="stop-actions__group stop-actions__group--danger">${opt("delete-idea", "delete", "Delete idea", "Remove it from Save for Later", "", true)}</div></div>`;
+    return bottomSheet("idea", val(item, "title") || "Idea", body);
+  }
+  // The "Add to a day plan" panel (spec §7/§8/§9). Day Trip = a day of the trip.
+  // Pick a day, then either drop the idea into that day's general plan (schedules
+  // the activity) or group it inside a Neighborhood (a linked stop, no copy).
+  function addToPlanScreen() {
+    if (!state.trip) return missingDetailScreen("Add to plan", "Create or select a trip first.");
+    const id = String(state.selectedId || "");
+    const item = (state.timeline || []).find((it) => itemId(it) === id && isSaveForLaterItem(it));
+    if (!item) return missingDetailScreen("Idea unavailable", "This idea is no longer available. It may already be on your timeline.");
+    if (!canEditCurrentTrip()) return missingDetailScreen("Add to plan", "You have view-only access to this trip.");
+    const days = tripDateDays();
+    const selectedDay = days.includes(state.addToPlanDay) ? state.addToPlanDay : (days[0] || "");
+    const timeVal = /^\d{2}:\d{2}$/.test(String(state.addToPlanTime || "")) ? state.addToPlanTime : "";
+    const title = val(item, "title") || "this idea";
+    const dayChips = days.length
+      ? `<section class="plan-panel__section" aria-label="Choose a day"><h2>Choose a day</h2><div class="plan-day-list" role="radiogroup" aria-label="Trip days">${days.map((key, i) => {
+          const lbl = moveDayLabel(key), on = key === selectedDay;
+          return `<button type="button" class="plan-day-chip${on ? " is-active" : ""}" role="radio" aria-checked="${on}" data-action="plan-pick-day" data-key="${esc(key)}"><span class="plan-day-chip__dow">${esc(lbl.weekday)}</span><span class="plan-day-chip__date">${esc(lbl.date)}</span></button>`;
+        }).join("")}</div></section>`
+      : `<section class="plan-panel__section" aria-label="Days"><h2>Choose a day</h2><p class="plan-panel__note">This trip has no dates yet. Set the trip's dates first, then you can plan ideas onto its days.</p></section>`;
+    // One optional start time, applied to the day plan.
+    const timeField = days.length
+      ? `<label class="plan-time-row" for="plan-time"><span class="plan-time-row__icon" aria-hidden="true">${icon("clock", 22)}</span><span class="plan-time-row__copy"><strong>Start time</strong><small>Optional — used for the day plan</small></span><input type="time" id="plan-time" name="plan-time" value="${esc(timeVal)}" data-action="plan-set-time" class="plan-time-row__input"></label>`
+      : "";
+    const generalRow = days.length
+      ? `<button type="button" class="plan-option plan-option--general plan-option--cta" data-action="plan-general" data-id="${esc(id)}"${selectedDay ? "" : " disabled"}><span class="plan-option__icon">${icon("calendar", 22)}</span><span class="plan-option__copy"><strong>Add to the day plan</strong><small>Put it on ${esc(selectedDay ? moveDayLabel(selectedDay).date : "the day")}${timeVal ? ` at ${esc(timeVal)}` : ""}</small></span></button>`
+      : "";
+    const generalSection = generalRow ? `<section class="plan-panel__section" aria-label="Day plan"><h2>Add to the day</h2><div class="plan-option-list">${generalRow}</div></section>` : "";
+    const body = `<section class="plan-panel__intro"><span>ADD TO PLAN</span><h1>Add ${esc(title)}</h1><p>Pick a trip day and an optional time, then add it to the day plan.</p></section>${dayChips}${timeField}${generalSection}`;
+    return focusedTaskPage("Add to plan", body, "plan-panel-page");
+  }
+  // Schedule an idea straight onto the chosen day (the day plan): give the
+  // activity a start so it moves to the main Timeline. Reuses the activities
+  // PATCH; the idempotency lock stops a double-tap from firing twice.
+  async function planIdeaToDay(id, dayISO, timeStr, trigger) {
+    if (!id || !dayISO || planInFlight.has(id)) return;
+    const item = (state.timeline || []).find((it) => itemId(it) === id && isSaveForLaterItem(it));
+    if (!item) { showToast("This idea is no longer available.", "alert"); return; }
+    const tz = String(val(item, "start_timezone", "startTimezone") || "") || tripDefaultTimezone() || "UTC";
+    const time = /^\d{2}:\d{2}$/.test(String(timeStr || "")) ? timeStr : "09:00";
+    let startsAtUtc;
+    try { startsAtUtc = resolveEventLocalDateTime(`${dayISO}T${time}`, tz); }
+    catch (error) { showToast(error?.message || "Could not add to that day.", "alert"); return; }
+    planInFlight.add(id);
+    if (trigger) trigger.disabled = true;
+    try {
+      const body = { kind: "activity", status: "confirmed", title: String(val(item, "title") || "Idea"), startsAtUtc, endsAtUtc: null, timezone: tz, locationId: val(item, "start_location_id", "venue_location_id") || null, activityType: val(item, "activity_type", "activityType") || null, notes: val(item, "activity_notes", "notes") || null, confidence: "confirmed", version: Number(val(item, "version")) || 1 };
+      await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/activities/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+      await loadTripDetails();
+      showToast(`${body.title} added to ${moveDayLabel(dayISO).date}.`);
+      state.timelineDayKey = timelineDay(startsAtUtc, tz).key;
+      route("timeline", null, true);
+    } catch (error) {
+      showToast(error?.message || "Could not add to that day. Try again.", "alert");
+      if (trigger && document.contains(trigger)) trigger.disabled = false;
+    } finally { planInFlight.delete(id); }
+  }
+  // Place an idea inside a neighborhood as a linked stop (link-not-copy). The
+  // server dedupes a repeat link into the same neighborhood, and the in-flight
+  // lock stops a double submit; offline the add is queued like any other stop.
+  async function planIdeaToNeighborhood(id, collectionId, timeStr, trigger) {
+    if (!id || !collectionId || planInFlight.has(id)) return;
+    const item = (state.timeline || []).find((it) => itemId(it) === id && isSaveForLaterItem(it));
+    const collection = collectionForItem(collectionId);
+    if (!item || !collection) { showToast("This idea is no longer available.", "alert"); return; }
+    if (ideaPlacements(item).some((p) => String(p.collection.id) === String(collectionId))) { showToast("Already in this neighborhood."); route("collection", collectionId, true); return; }
+    const address = String(val(locationById(val(item, "start_location_id", "venue_location_id")) || {}, "local_address", "formatted_address") || "");
+    const scheduledTime = /^\d{2}:\d{2}$/.test(String(timeStr || "")) ? timeStr : null;
+    const body = { title: String(val(item, "title") || "Idea"), scheduledTime, timezone: val(collection, "start_timezone", "startTimezone") || tripDefaultTimezone() || "UTC", addressSnapshot: address || null, placeType: null, linkedTripItemId: id, notes: null, status: "planned" };
+    const base = `/api/v1/trips/${encodeURIComponent(state.trip.id)}/collections/${encodeURIComponent(collectionId)}/stops`;
+    planInFlight.add(id);
+    if (trigger) trigger.disabled = true;
+    try {
+      await api(base, { method: "POST", body: JSON.stringify(body) });
+      await loadTripDetails();
+      showToast(`${body.title} added to ${collection.title || "the neighborhood"}.`);
+      route("collection", collectionId, true);
+    } catch (error) {
+      if (!navigator.onLine) {
+        const tempId = `local-${crypto.randomUUID()}`;
+        const position = collectionStopsFor(collectionId).length;
+        state.collectionStops = [...(state.collectionStops || []), { id: tempId, collection_item_id: collectionId, position, version: 1, __local: true, ...toStopRow(body) }];
+        queuePendingMutation({ kind: "collection", op: "add-stop", tripId: state.trip.id, collectionId, tempId, body });
+        showToast("Saved on this phone. It will sync when you reconnect.");
+        route("collection", collectionId, true);
+        return;
+      }
+      showToast(error?.message || "Could not add to that neighborhood. Try again.", "alert");
+      if (trigger && document.contains(trigger)) trigger.disabled = false;
+    } finally { planInFlight.delete(id); }
+  }
+  // Return a planned idea to Save for Later (spec §10): delete its linking stops
+  // and, if it was scheduled as a general day plan, clear the day — never delete
+  // the idea itself. Atomic-ish: each removal is versioned; failures surface.
+  async function returnIdeaToSaveForLater(id) {
+    if (!id || planInFlight.has(id)) return;
+    const item = (state.timeline || []).find((it) => itemId(it) === id);
+    if (!item) { showToast("This idea is no longer available.", "alert"); return; }
+    const placements = ideaPlacements(item);
+    const dated = (Number(val(item, "starts_at_utc", "startsAtUtc")) || null) != null;
+    if (!placements.length && !dated) { showToast("This idea is already in your ideas."); return; }
+    planInFlight.add(id);
+    try {
+      for (const p of placements) {
+        const version = Number(val(p.stop, "version")) || 1;
+        await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/collections/${encodeURIComponent(p.collection.id)}/stops/${encodeURIComponent(p.stop.id)}`, { method: "DELETE", body: JSON.stringify({ version }) });
+      }
+      if (dated) {
+        const body = { kind: "activity", status: "planned", title: String(val(item, "title") || "Idea"), startsAtUtc: null, endsAtUtc: null, timezone: null, locationId: val(item, "start_location_id", "venue_location_id") || null, activityType: val(item, "activity_type", "activityType") || null, notes: val(item, "activity_notes", "notes") || null, confidence: "estimated", version: Number(val(item, "version")) || 1 };
+        await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/activities/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+      }
+      await loadTripDetails();
+      state.saveLaterFilter = "ideas";
+      showToast(`${val(item, "title") || "Idea"} returned to your ideas.`);
+      route("save-later", null, true);
+    } catch (error) {
+      showToast(error?.message || "Could not return this idea. Try again.", "alert");
+      await loadTripDetails().catch(() => {});
+      render();
+    } finally { planInFlight.delete(id); }
+  }
+  function confirmDeleteIdea(id) {
+    const item = (state.timeline || []).find((it) => itemId(it) === id && isSaveForLaterItem(it));
+    if (!item) return;
+    if (state.sheet === "idea") { state.sheet = null; state.ideaMenu = null; render(); }
+    openConfirmDialog({
+      title: "Delete this idea?",
+      body: `“${val(item, "title") || "Idea"}” will be removed from Save for Later. Any neighborhood it was placed in stays. This cannot be undone.`,
+      onConfirm: async () => {
+        const version = Number(val(item, "version")) || 1;
+        await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/activities/${encodeURIComponent(id)}`, { method: "DELETE", body: JSON.stringify({ version }) });
+        await loadTripDetails();
+        showToast("Idea deleted.");
+        route("save-later", null, true);
+      },
+    });
   }
 
   function addBookingScreen() {
     if (!state.trip) return noTripQuickAdd("booking", "Add Booking");
     const bookable = Object.entries(MANUAL_BOOKING_TYPES).filter(([type]) => !BOOKING_PICKER_HIDDEN.has(type));
-    const groups = [...new Set(bookable.map(([, config]) => config.group))];
     // Same row language as the Day Plan screen: full-width list rows with a
     // round icon, title, hint and chevron (not the old tone-coloured 2-col grid).
     const typeRow = ([type, config]) => `<button type="button" class="day-plan-row" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" aria-label="Add ${esc(config.label)}"><span class="day-plan-row__icon">${icon(config.icon,24)}</span><span class="day-plan-row__copy"><strong>${esc(config.label)}</strong><small>${esc(config.hint)}</small></span>${icon("chevron",18)}</button>`;
-    const groupedCategories = groups.map((group) => {
-      const id = `manual-group-${group.toLowerCase().replace(/[^a-z0-9]+/g,"-")}`;
-      return `<section class="manual-add-group" aria-labelledby="${esc(id)}"><h2 id="${esc(id)}">${esc(BOOKING_GROUP_DISPLAY[group] || group)}</h2><div class="day-plan-list">${bookable.filter(([,config])=>config.group===group).map(typeRow).join("")}</div></section>`;
-    }).join("");
+    // One flat list — no category headers (Getting there / around / Stay / …);
+    // rows keep their definition order.
+    const groupedCategories = `<div class="day-plan-list">${bookable.map(typeRow).join("")}</div>`;
     const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
     return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>For travel you've already reserved. To plan what to see and do, use Day Plan.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page day-plan-page");
   }
@@ -7610,6 +7920,7 @@
     if (state.sheet === "share") html += shareSheet();
     if (state.sheet === "currency-picker") html += currencyPickerSheet();
     if (state.sheet === "collection-stop") html += collectionStopSheet();
+    if (state.sheet === "idea") html += ideaSheet();
     return html;
   }
   function renderToast() {
@@ -7673,6 +7984,7 @@
         case "day-plan": html = dayPlanScreen(); break;
         case "day-plan-form": html = dayPlanFormScreen(); break;
         case "save-later": html = saveLaterScreen(); break;
+        case "add-to-plan": html = addToPlanScreen(); break;
         case "flight":
           html = flightScreen();
           break;
@@ -7788,6 +8100,24 @@
     if (name === "trip-setup-ready") ensureStay22().catch(() => {});
     bindDynamic();
   }
+  // Re-render only the date-range picker overlay in place, leaving the
+  // underlying task page's live DOM (and any half-typed fields on it) intact.
+  // Month navigation and day selection only affect the picker, so a full
+  // render() — which rebuilds the whole screen from state — is both wasteful
+  // and lossy for forms without draft persistence (day-plan / collection).
+  function refreshDateRangeSheet() {
+    const existing = document.querySelector(".full-screen-picker.date-range-screen");
+    if (!existing) { render(); return; }
+    const tmp = document.createElement("div");
+    tmp.innerHTML = dateRangeSheet();
+    const next = tmp.firstElementChild;
+    if (!next) { render(); return; }
+    existing.replaceWith(next);
+    const focusTarget = state.dateRange?.focusDate
+      ? next.querySelector(`[data-date="${state.dateRange.focusDate}"]`)
+      : null;
+    (focusTarget || next.querySelector(".range-days")) ?.focus?.();
+  }
   function closeSheet() {
     const sheet = document.querySelector(".bottom-sheet,.full-screen-picker"),
       backdrop = document.querySelector(".sheet-backdrop"),
@@ -7807,6 +8137,24 @@
     sheet.classList.add("is-closing");
     backdrop?.classList.add("is-closing");
     setTimeout(finish, 180);
+  }
+  // Close an overlay while leaving the underlying task page's live DOM intact
+  // (no render()). Used when the page carries state that lives only on its DOM
+  // inputs — e.g. a date just applied to the day-plan / collection form, which
+  // a full re-render would rebuild from stale state and drop.
+  function closeSheetKeepPage() {
+    const app = document.getElementById("app"),
+      background = app?.querySelector(".phone-app");
+    app?.querySelectorAll(".bottom-sheet,.full-screen-picker,.sheet-backdrop")
+      .forEach((el) => el.remove());
+    document.documentElement.classList.remove("sheet-open");
+    if (background) {
+      background.removeAttribute("inert");
+      background.removeAttribute("aria-hidden");
+    }
+    state.sheet = null;
+    state.dateRange = null;
+    restoreSheetFocus();
   }
   function setupSheet() {
     const sheet = document.querySelector(".bottom-sheet,.full-screen-picker");
@@ -8327,9 +8675,16 @@
   function keepFocusedFieldVisible() {
     const focused = document.activeElement;
     if (!focused?.matches?.("input,select,textarea")) return;
-    requestAnimationFrame(() =>
-      focused.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" }),
-    );
+    requestAnimationFrame(() => {
+      if(document.activeElement!==focused)return;
+      const scroller=focused.closest(".sheet-scroll,main");
+      if(!scroller)return;
+      const field=focused.getBoundingClientRect(),area=scroller.getBoundingClientRect(),padding=16;
+      const delta=field.bottom>area.bottom-padding?field.bottom-area.bottom+padding:field.top<area.top+padding?field.top-area.top-padding:0;
+      // Scroll only the form's content. scrollIntoView also scrolls the iOS
+      // layout viewport, which can pull the header under Safari's toolbar.
+      if(delta)scroller.scrollBy({top:delta,behavior:"auto"});
+    });
   }
   let keyboardOpen = false, fieldFocused = false, lastObscured = -1;
   const KEYBOARD_FIELD_SELECTOR = "input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]),select,textarea";
@@ -8360,6 +8715,7 @@
       document.documentElement.style.setProperty(
         "--app-viewport-offset", `${Math.max(0, Math.round(viewport?.offsetTop || 0))}px`,
       );
+
     }
     const open = obscured > 80;
     if (open && !keyboardOpen) keepFocusedFieldVisible();
@@ -8609,6 +8965,7 @@
     if (collectionForm && !collectionForm.dataset.bound) {
       collectionForm.dataset.bound = "1";
       bindMeaningfulChanges(collectionForm);
+      bindDateRangeControls(collectionForm);
       collectionForm.addEventListener("submit", (event) => {
         event.preventDefault();
         if (!validateFocusedForm(collectionForm)) return;
@@ -8629,11 +8986,41 @@
     if (dayPlanForm && !dayPlanForm.dataset.bound) {
       dayPlanForm.dataset.bound = "1";
       bindMeaningfulChanges(dayPlanForm);
+      bindDateRangeControls(dayPlanForm);
       dayPlanForm.addEventListener("submit", (event) => {
         event.preventDefault();
         if (!validateFocusedForm(dayPlanForm)) return;
         saveDayPlanForm(dayPlanForm);
       });
+      const dpFiles = dayPlanForm.querySelector("[data-manual-attachments]");
+      if (dpFiles) {
+        refreshManualAttachmentPanel(dayPlanForm, true)
+          .then((record) => { if (record?.files?.length) formHasMeaningfulChanges = true; })
+          .catch(() => {});
+        dpFiles.addEventListener("change", async () => {
+          const files = Array.from(dpFiles.files || []),
+            picker = dpFiles.closest(".manual-attachments__picker"),
+            submit = formSubmitButton(dayPlanForm);
+          if (!files.length) return;
+          const finishActivity = beginActivity("Preparing your files…");
+          picker?.classList.add("is-busy");
+          dpFiles.disabled = true;
+          if (submit) submit.disabled = true;
+          try {
+            await stageManualAttachments(dayPlanForm.dataset.attachmentScope, files, { documentType: "ticket", kind: "activity", tripId: state.trip?.id || null, travelerIds: [] });
+            formHasMeaningfulChanges = true;
+            await refreshManualAttachmentPanel(dayPlanForm);
+          } catch (error) {
+            showFormSubmissionError(dayPlanForm, error?.message || "The selected files could not be prepared. Your plan details are still here.");
+          } finally {
+            dpFiles.disabled = false;
+            dpFiles.value = "";
+            finishActivity();
+            picker?.classList.remove("is-busy");
+            if (submit && dayPlanForm.getAttribute("aria-busy") !== "true") submit.disabled = false;
+          }
+        });
+      }
     }
     setupSheet();
   }
@@ -9355,6 +9742,8 @@
     "add-collection", "edit-collection", "delete-collection",
     "collection-add-place", "edit-stop", "delete-stop", "stop-move", "stop-status",
     "open-day-plan", "day-plan-type", "add-save-later", "schedule-save-later",
+    "idea-add-to-plan", "plan-general", "plan-add-neighborhood",
+    "plan-create-neighborhood", "idea-return", "edit-idea", "delete-idea",
   ]);
   function canManageTripRecord(trip) {
     if (!trip) return false;
@@ -9453,17 +9842,75 @@
       }
       case "add-save-later": {
         const bucket = SAVE_LATER_TYPE_MAP[target.dataset.type || ""];
-        if (bucket) {
-          state.editingEntity = null;
-          state.dayPlanContext = "save-later";
-          route("day-plan-form", `new:${bucket.activityType}`);
-        }
+        state.editingEntity = null;
+        state.dayPlanContext = "save-later";
+        route("day-plan-form", `new:${bucket ? bucket.activityType : "idea"}`);
         break;
       }
       case "schedule-save-later":
+        closeSheet();
         state.editingEntity = null;
         state.dayPlanContext = null;
         route("day-plan-form", target.dataset.id);
+        break;
+      case "save-later-filter":
+        state.saveLaterFilter = target.dataset.filter === "planned" ? "planned" : "ideas";
+        render();
+        break;
+      case "open-idea":
+        state.ideaMenu = target.dataset.id;
+        openSheet("idea", target);
+        break;
+      case "idea-add-to-plan":
+        if (!tripDateDays().length) { showToast("Add your trip's dates first to plan ideas onto days.", "alert"); break; }
+        closeSheet();
+        state.ideaMenu = null;
+        state.addToPlanDay = "";
+        state.addToPlanTime = "";
+        route("add-to-plan", target.dataset.id);
+        break;
+      case "plan-set-time":
+        state.addToPlanTime = /^\d{2}:\d{2}$/.test(String(target.value || "")) ? target.value : "";
+        break;
+      case "plan-pick-day": {
+        const timeInput = document.getElementById("plan-time");
+        if (timeInput) state.addToPlanTime = /^\d{2}:\d{2}$/.test(String(timeInput.value || "")) ? timeInput.value : "";
+        state.addToPlanDay = target.dataset.key || "";
+        render();
+        break;
+      }
+      case "plan-general": {
+        const timeInput = document.getElementById("plan-time");
+        const chosenTime = timeInput && /^\d{2}:\d{2}$/.test(String(timeInput.value || "")) ? timeInput.value : (state.addToPlanTime || "");
+        await planIdeaToDay(target.dataset.id, state.addToPlanDay || (tripDateDays()[0] || ""), chosenTime, target);
+        break;
+      }
+      case "plan-add-neighborhood": {
+        const timeInput = document.getElementById("plan-time");
+        const chosenTime = timeInput && /^\d{2}:\d{2}$/.test(String(timeInput.value || "")) ? timeInput.value : (state.addToPlanTime || "");
+        await planIdeaToNeighborhood(target.dataset.id, target.dataset.collection, chosenTime, target);
+        break;
+      }
+      case "plan-create-neighborhood":
+        state.pendingPlanIdea = target.dataset.id;
+        state.editingEntity = null;
+        formHasMeaningfulChanges = false;
+        route("collection-form", "new:neighborhood");
+        break;
+      case "idea-return":
+        closeSheet();
+        state.ideaMenu = null;
+        await returnIdeaToSaveForLater(target.dataset.id);
+        break;
+      case "edit-idea":
+        closeSheet();
+        state.ideaMenu = null;
+        state.editingEntity = null;
+        state.dayPlanContext = "save-later";
+        route("day-plan-form", target.dataset.id);
+        break;
+      case "delete-idea":
+        confirmDeleteIdea(target.dataset.id);
         break;
       case "toggle-checklist":
         await toggleChecklistItem(target.dataset.id);
@@ -9680,13 +10127,19 @@
         const form = target.closest("form"), startName = target.dataset.startName, endName = target.dataset.endName, start = String(form?.elements[startName]?.value || ""), end = String(form?.elements[endName]?.value || "");
         if (!form || !startName || !endName) break;
         saveQuickDraft(form);
+        const min = String(target.dataset.min || ""), max = String(target.dataset.max || "");
+        const seed = start || end || (min && new Date().toISOString().slice(0, 10) < min ? min : "") || new Date().toISOString().slice(0, 10);
+        const clampedSeed = min && seed < min ? min : max && seed > max ? max : seed;
         state.dateRange = {
           startName,
           endName,
+          formId: form.id || "",
           start,
           end,
-          focusDate: start || new Date().toISOString().slice(0, 10),
-          month: rangeMonthStart(start || end),
+          min,
+          max,
+          focusDate: clampedSeed,
+          month: rangeMonthStart(clampedSeed),
           title: target.dataset.rangeTitle || "Choose dates",
           startLabel: target.dataset.startLabel || "Start date",
           endLabel: target.dataset.endLabel || "End date",
@@ -9703,14 +10156,14 @@
           state.dateRange.end = "";
           state.dateRange.focusDate = today;
           state.dateRange.month = rangeMonthStart(today);
-          render();
+          refreshDateRangeSheet();
         }
         break;
       case "range-month":
         if (state.dateRange) {
           state.dateRange.month = shiftRangeMonth(state.dateRange.month, Number(target.dataset.offset) || 0);
           state.dateRange.focusDate = state.dateRange.month;
-          render();
+          refreshDateRangeSheet();
         }
         break;
       case "select-range-day":
@@ -9729,7 +10182,7 @@
           } else {
             state.dateRange.end = selected;
           }
-          render();
+          refreshDateRangeSheet();
         }
         break;
       case "skip-date-range": {
@@ -9747,7 +10200,7 @@
         break;
       }
       case "apply-date-range": {
-        const range = state.dateRange, rangeForm = document.getElementById("native-form");
+        const range = state.dateRange, rangeForm = (range && range.formId && document.getElementById(range.formId)) || document.getElementById("native-form");
         if (!range || !range.start || (!range.end && !range.allowSingle) || !rangeForm) break;
         rangeForm.elements[range.startName].value = range.start;
         rangeForm.elements[range.endName].value = range.end || "";
@@ -9757,7 +10210,8 @@
         syncDateRangeField(rangeForm, range.startName, range.endName);
         saveQuickDraft(rangeForm);
         formHasMeaningfulChanges = true;
-        closeSheet();
+        if (rangeForm.id === "native-form") closeSheet();
+        else closeSheetKeepPage();
         break;
       }
       case "return-trip-setup":
@@ -9970,7 +10424,7 @@
         await setStopStatus(target.dataset.collection, target.dataset.id, target.dataset.status);
         break;
       case "manual-attachment-remove": {
-        const form = document.getElementById("native-form");
+        const form = target.closest("form") || document.getElementById("native-form");
         try {
           await clearManualAttachment(target.dataset.scope, target.dataset.id);
           await refreshManualAttachmentPanel(form);
@@ -9993,7 +10447,7 @@
         break;
       }
       case "manual-attachment-retry": {
-        const form = document.getElementById("native-form");
+        const form = target.closest("form") || document.getElementById("native-form");
         target.disabled = true;
         try {
           const editId = String(form?.dataset.editId || ""),
@@ -10494,6 +10948,12 @@
   }
   function cancelLongPress() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } lpCard = null; lpStart = null; }
   app.addEventListener("touchstart", (event) => {
+    // A fresh gesture must never inherit a stale click-suppression flag. iOS
+    // Safari often omits the synthetic click after a long-press, which would
+    // otherwise leave suppressClick stuck true and swallow the NEXT real tap
+    // anywhere (back/close buttons included). Clearing here bounds suppression
+    // to the single gesture that set it.
+    suppressClick = false;
     if (event.touches.length !== 1) { swipeState = null; cancelLongPress(); return; }
     const t = event.touches[0];
     const handle = event.target.closest?.("[data-swipe-handle]");
@@ -10689,11 +11149,23 @@
   window.visualViewport?.addEventListener("resize", syncVisualViewport);
   window.visualViewport?.addEventListener("scroll", syncVisualViewport);
   window.addEventListener("resize", syncVisualViewport);
+  // The app frame is pinned and content scrolls inside <main>, so the window
+  // itself must never scroll. iOS Safari still scrolls the LAYOUT viewport to
+  // reveal a focused field (even with overflow:hidden), which drags the pinned
+  // header up behind the top browser chrome. A one-shot reset misses the tail of
+  // that animation, so keep the window snapped to 0 continuously while a field is
+  // focused / the keyboard is up — that's the only time iOS forces this scroll.
+  window.addEventListener("scroll", () => {
+    if ((fieldFocused || keyboardOpen) && window.pageYOffset !== 0) window.scrollTo(0, 0);
+  }, { passive: true });
   document.addEventListener("focusin", (event) => {
     if (event.target?.matches?.(KEYBOARD_FIELD_SELECTOR)) {
       fieldFocused = true;
       applyKeyboardState();
       setTimeout(keepFocusedFieldVisible, 80);
+      // Undo any layout-viewport scroll iOS performs to reveal the field, which
+      // would otherwise pull the pinned header behind the top browser chrome.
+      setTimeout(() => { if (window.pageYOffset > 0) window.scrollTo(0, 0); }, 100);
     }
   });
   document.addEventListener("focusout", () => {

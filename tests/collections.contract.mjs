@@ -75,6 +75,12 @@ assert(app.includes('case "planning": html = planningScreen();')&&app.includes('
 assert(app.includes('function flushCollectionsQueue')&&app.includes('await flushCollectionsQueue();'),'offline queue flusher for collections missing/not wired to online');
 assert(app.includes('queuePendingMutation({ kind: "collection"'),'collection mutations must queue offline');
 
+// --- Dedup: re-linking the same idea into a neighborhood is idempotent ---
+// A double-tap (or offline-replay) must not create a second linking stop; the
+// server returns the existing stop instead of inserting a duplicate.
+assert(/addStop[\s\S]*?SELECT \* FROM planning_stops WHERE collection_item_id=\? AND linked_trip_item_id=\? AND deleted_at IS NULL/.test(routes)&&routes.includes('deduped:true'),'addStop must be idempotent for a repeated idea link (dedup guard)');
+assert(routes.indexOf('deduped:true')<routes.indexOf('INSERT INTO planning_stops'),'dedup guard must run before the insert');
+
 // --- Functional: dot-state derivation (self-contained pure function) ---
 {
   const src=app.slice(app.indexOf('function collectionStopStates('));

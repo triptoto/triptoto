@@ -11,8 +11,8 @@ assert(css.includes('--font-ui:-apple-system')&&css.includes('BlinkMacSystemFont
 assert(!index.includes('/vendor/dm-serif-display/')&&!index.includes('/vendor/geist/')&&!sw.includes('/vendor/dm-serif-display/')&&!sw.includes('/vendor/geist/'),'obsolete webfont remains in the application shell');
 assert(!privacy.includes('/vendor/dm-serif-display/')&&!terms.includes('/vendor/dm-serif-display/')&&!privacy.includes('/vendor/geist/')&&!terms.includes('/vendor/geist/')&&privacy.includes('--font:-apple-system')&&terms.includes('--font:-apple-system')&&privacy.includes('font-family:var(--font)')&&terms.includes('font-family:var(--font)'),'legal interface pages do not use the Apple system stack');
 for(const selector of ['.trip-v2-selector strong','.trip-group .trip-row__copy strong','.journey-copy strong','.fd-title','.hotel-detail-screen .fd-flight','.booking-card[data-action="booking-detail"] strong','.booking-trip-group>h2','.quick-trip-context strong'])assert(css.includes(selector),`Apple title role missing: ${selector}`);
-for(const token of ['--type-display:40px','--type-route:40px','--type-screen:28px','--type-section:20px','--type-body:16px','--type-meta:14px','--type-label:12px'])assert(css.includes(token),`typography scale missing: ${token}`);
-for(const token of ['--weight-regular:400','--weight-medium:500','--weight-semibold:600','--weight-bold:700'])assert(css.includes(token),`typography weight missing: ${token}`);
+for(const token of ['--type-display:32px','--type-route:40px','--type-screen:23px','--type-section:17px','--type-body:16px','--type-meta:14px','--type-label:12px'])assert(css.includes(token),`typography scale missing: ${token}`);
+for(const token of ['--weight-regular:400','--weight-medium:500','--weight-semibold:600','--weight-bold:700','--weight-extrabold:800'])assert(css.includes(token),`typography weight missing: ${token}`);
 assert(css.includes('--welcome-title:clamp(40px,11.6vw,52px)'),'Welcome headline must preserve the approved responsive display size');
 assert(css.includes('html .welcome-thread .first-run-hero h1{\n  font-weight:var(--welcome-weight)'),'Global typography must preserve the approved welcome weight');
 assert(!/font-weight:\s*(?:650|750|800)\b/.test(css),'nonstandard text weight remains outside the approved typography hierarchy');
@@ -67,7 +67,7 @@ const retiredLocalGuide=router.parsePath('/local-guide');
 assert(retiredLocalGuide.screen==='trip-options'&&retiredLocalGuide.redirect===true,'retired Local Guide route must redirect to Trip Options');
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 assert(app.includes('startupRoute.redirect || location.hash')&&app.includes('routeUrl(startupRoute.screen, startupRoute.id)'),'legacy hash and retired-route canonicalization missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v182-journey-onecolor'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v220-keyboard-header'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-pattern')&&app.includes('welcome-arc--five')&&app.includes('welcome-orbit-dot')&&!app.includes('welcome-route-matrix'),'Approved abstract welcome pattern missing');
@@ -132,13 +132,46 @@ assert(app.includes('case "day-plan-type":')&&app.includes('route("collection-fo
 const dayPlanForm=app.slice(app.indexOf('function dayPlanFormScreen('),app.indexOf('async function saveDayPlanForm('));
 for(const marker of ['Name or place','"Day"','Start time','End time','Address','Notes','activeTimelineDateISO()','id="day-plan-form"'])assert(dayPlanForm.includes(marker),`Day Plan form missing: ${marker}`);
 assert(app.includes('function activeTimelineDateISO(')&&dayPlanForm.includes('fromSaveLater')&&!app.includes('choose-day'),'contextual day prefill / no separate choose-day screen missing');
+// Day plans / ideas may only be scheduled onto days inside the trip window: the
+// day field carries trip-date bounds and the save rejects out-of-range days.
+assert(dayPlanForm.includes('tripDateDays()')&&dayPlanForm.includes('min: tripStart')&&dayPlanForm.includes('max: tripEnd'),'Day Plan day field must be bounded to the trip dates');
+assert(app.includes('function dateRangeField(')&&app.includes('data-min="')&&app.includes('data-max="')&&app.includes('is-disabled')&&app.includes('outside your trip dates'),'date-range picker must support and disable out-of-bounds days');
+assert(app.includes('Pick a day within your trip dates.'),'Day Plan save must validate the day is inside the trip window');
 assert(app.includes('async function saveDayPlanForm(')&&app.includes('status: date ? "confirmed" : "planned"')&&app.includes('/activities`, { method: "POST"')&&app.includes('route("save-later", null, true)'),'Day Plan save must reuse activities and drop unscheduled ideas into Save for Later');
-// Save for Later: unscheduled ideas grouped Place / Food & Drink / Shopping,
+// Save for Later: a single flat list of unscheduled ideas (no category buckets),
 // each labelled "Not scheduled", never on the main timeline until scheduled.
 const saveLater=app.slice(app.indexOf('function saveLaterScreen('),app.indexOf('function addBookingScreen('));
-for(const copy of ['SAVE FOR LATER','Save for Later','Not scheduled','schedule-save-later','add-save-later'])assert(saveLater.includes(copy),`Save for Later screen missing: ${copy}`);
+for(const copy of ['SAVE FOR LATER','Save for Later','Not scheduled','add-save-later'])assert(saveLater.includes(copy),`Save for Later screen missing: ${copy}`);
 assert(app.includes('function isSaveForLaterItem(')&&app.includes('function saveForLaterItems(')&&app.includes('function isTimelineVisibleItem('),'unscheduled ideas must be filtered out of the main timeline');
 assert(app.includes('const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood"])'),'neighborhood must be the only timeline-capable collection type');
+// Save-for-Later ↔ Day Plan / Neighborhood integration (spec §5–§10). An idea is
+// "planned" when a live linking stop points at it; the default list shows only
+// un-planned ideas, with an Ideas/Planned filter appearing once anything is placed.
+assert(app.includes('function stopsLinkingItem(')&&app.includes('function ideaIsPlanned(')&&app.includes('function ideaPlacements(')&&app.includes('function ideaPlacementSummary('),'idea-planned derivation helpers missing');
+assert(saveLater.includes("items.filter(ideaIsPlanned)")&&saveLater.includes('save-later-filter')&&saveLater.includes('save-later-row--planned')&&saveLater.includes('open-idea'),'Save for Later Ideas/Planned split + idea sheet entry missing');
+// Heading names the trip, and with no trip dates you cannot schedule onto a day.
+assert(saveLater.includes('Save ideas for')&&saveLater.includes('const hasTripDates = tripDateDays().length > 0'),'Save for Later must title with the trip name and know whether trip dates exist');
+// Idea action sheet: un-planned ideas add to a day plan; planned ideas can open
+// in the plan or return to ideas (unschedule without deleting). No trip dates =>
+// the "Add to a day plan" row is disabled.
+const ideaSheetFn=app.slice(app.indexOf('function ideaSheet('),app.indexOf('function addToPlanScreen('));
+for(const marker of ['idea-add-to-plan','open-collection','idea-return','delete-idea'])assert(ideaSheetFn.includes(marker),`idea sheet action missing: ${marker}`);
+assert(ideaSheetFn.includes('const hasTripDates = tripDateDays().length > 0')&&ideaSheetFn.includes("Add your trip's dates first"),'idea sheet must disable Add-to-day-plan without trip dates');
+assert(/case "idea-add-to-plan":\s*\n\s*if \(!tripDateDays\(\)\.length\)/.test(app),'idea-add-to-plan handler must guard against missing trip dates');
+assert(app.includes('day-plan-no-dates')&&app.includes("No trip dates yet"),'Day Plan form must drop the date picker when the trip has no dates');
+// Add-to-plan panel: day chips are the trip's own dates only (tripDateDays), plus
+// one optional start time. The panel places ideas onto the day plan only — the
+// neighborhood destination was removed from this page per product direction.
+const addToPlan=app.slice(app.indexOf('function addToPlanScreen('),app.indexOf('async function planIdeaToDay('));
+for(const marker of ['plan-day-chip','plan-pick-day','plan-general','tripDateDays()','plan-time','plan-set-time'])assert(addToPlan.includes(marker),`Add-to-plan panel missing: ${marker}`);
+assert(!addToPlan.includes('plan-add-neighborhood')&&!addToPlan.includes('plan-create-neighborhood'),'Add-to-plan panel must not offer neighborhoods (day plan only)');
+assert(app.includes('function tripDateDays(')&&!addToPlan.includes('tripDayOptions('),'Add-to-plan day chips must use trip dates only (tripDateDays), not tripDayOptions');
+assert(app.includes('async function planIdeaToDay(id, dayISO, timeStr, trigger)')&&app.includes('`${dayISO}T${time}`'),'planIdeaToDay must accept and apply a chosen time');
+assert(app.includes('const planInFlight = new Set()')&&app.includes('planInFlight.has(id)')&&app.includes('planInFlight.add(id)')&&app.includes('planInFlight.delete(id)'),'in-flight double-tap lock missing from plan actions');
+assert(app.includes('async function planIdeaToDay(')&&app.includes('status: "confirmed"')&&app.includes('/activities/'),'Day plan destination must schedule the activity');
+assert(app.includes('async function planIdeaToNeighborhood(id, collectionId, timeStr, trigger)')&&app.includes('const scheduledTime = /^\\d{2}:\\d{2}$/.test(String(timeStr || "")) ? timeStr : null')&&app.includes('linkedTripItemId: id')&&app.includes('"add-stop"'),'neighborhood link must carry the chosen time (link-not-copy) + offline queue');
+assert(app.includes('async function returnIdeaToSaveForLater(')&&app.includes('startsAtUtc: null'),'Return to ideas must unschedule without deleting');
+for(const selector of ['.save-later-filter','.save-later-tab','.save-later-row--planned','.plan-day-chip','.plan-option','.plan-option--general','.plan-option--create','.plan-time-row'])assert(css.includes(selector),`Add-to-plan design token missing: ${selector}`);
 for(const [alias,target] of [['plane','flight'],['trash','delete'],['bell','notifications'],['user','traveler'],['chevron','chevron-right'],['pin','location'],['qr','qr-code'],['document','documents'],['users','travelers'],['external','external-link'],['check-circle','confirmed'],['dest-mountain','mountain'],['dest-beach','beach'],['dest-monument','landmark']])assert(new RegExp(`["']?${alias}["']?:\\s*"${target}"`).test(app),`approved icon alias mapping missing: ${alias} -> ${target}`);
 const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function tripOptionsScreen('));
 assert(plus.includes('Add Booking')&&plus.includes('Create New Trip')&&!plus.includes('Flight'),'plus menu invalid');
@@ -146,7 +179,7 @@ assert(app.includes('function timelineContextCard('),'Timeline priority context 
 assert(app.includes('if (isEmptyTripSetup()) return "";'),'empty trip must not surface premature health warnings');
 assert(app.includes('timeline-empty__eyebrow">Start building'),'empty-trip setup hierarchy missing');
 assert(css.includes('.timeline-page--empty')&&css.includes('min-height:calc(100dvh - var(--header-h) - var(--nav-height))')&&css.includes('padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom) + 6vh)'),'empty timeline viewport sizing missing');
-assert(app.includes('timeline-empty__add')&&app.includes('emptySetup ? "plus" : "calendar"'),'Product V2 empty-trip structure missing');
+assert(app.includes('timeline-empty--intent')&&app.includes('addIntentRows()'),'Product V2 empty-trip structure missing');
 for(const concept of ['need attention','Now','Next','Before you go'])assert(app.includes(concept),`Timeline state missing: ${concept}`);
 assert(app.includes('timeline-day__header')&&app.includes('journey-event journey-event--${phase}')&&app.includes('timelineDay(starts, zone)'),'Timeline structure/local grouping missing');
 assert(app.includes('showTimelineStatus = !["confirmed", "booked", "complete", "completed"].includes(statusKey)')&&!css.includes('.journey-event--confirmed .journey-meta'),'confirmed Timeline events must not repeat a green status line');
@@ -164,7 +197,7 @@ assert(app.includes('timeline-screen--ribbon')&&app.includes('timeline-ribbon')&
 const neutralNav = css.slice(css.indexOf('html body .bottom-nav,'),css.indexOf('/* Trip Map'));
 assert(neutralNav.includes('background:var(--paper)')&&neutralNav.includes('color:var(--muted)')&&neutralNav.includes('color:var(--ink)')&&!neutralNav.includes('var(--fab)')&&!css.includes('.bottom-nav .nav-item:nth-child(1) .nav-item__icon'),'bottom navigation must use a neutral theme surface with muted items and an ink selected state');
 assert(app.includes('navBtn("trip-options", "route", "Trip options")')&&app.includes('"route", "notifications"'),'Trip options must use the Route icon with a selected-state glyph');
-for(const token of ['--timeline-trip-title-size:clamp(24px,6.7vw,28px)','--timeline-booking-title-size:clamp(17px,4.6vw,19px)','--timeline-metadata-size:clamp(15px,3.9vw,16px)','--timeline-status-size:clamp(14px,3.7vw,15px)','--timeline-time-size:clamp(15px,4vw,17px)','--timeline-day-size:clamp(14px,3.85vw,16px)'])assert(css.includes(token),`Timeline typography role missing: ${token}`);
+for(const token of ['--timeline-trip-title-size:clamp(24px,6.7vw,28px)','--timeline-booking-title-size:clamp(15px,4vw,16px)','--timeline-metadata-size:clamp(13px,3.4vw,14px)','--timeline-status-size:clamp(11px,3.1vw,12px)','--timeline-time-size:clamp(12px,3.4vw,13px)','--timeline-day-size:clamp(14px,3.85vw,16px)'])assert(css.includes(token),`Timeline typography role missing: ${token}`);
 const timelineFn=app.slice(app.indexOf('function timelineScreen('),app.indexOf('function patchTimelineLiveStatus('));
 assert(timelineFn.includes('data-action="switch-trip"')&&timelineFn.includes('notifyAction()')&&!timelineFn.includes('data-action="open-trip-menu"'),'Timeline header must use the trip selector and Notifications, not duplicate Trip options');
 assert(app.includes('function tripOptionsScreen(')&&app.includes('case "trip-options": html = tripOptionsScreen()')&&app.includes('route("trip-options")')&&app.includes('data-screen="documents"')&&!app.includes('data-screen="local-guide"'),'full-page trip options (weather/currency/map/eSIM/documents/collaboration/edit/help) missing or retired Local Guide still exposed');

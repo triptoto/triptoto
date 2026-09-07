@@ -155,6 +155,13 @@ export async function addStop(request:Request,env:Env,auth:AuthContext,tripId:st
   const values=normalizeStop(body,false);
   await ensureLocation(env,tripId,values.locationId);
   await ensureLinkedItem(env,tripId,values.linkedTripItemId);
+  // Idempotent link-not-copy: placing the same idea/booking into the same
+  // neighborhood twice must not create a duplicate stop. Return the existing
+  // live link instead so a retried or double-tapped "Add to plan" is a no-op.
+  if(values.linkedTripItemId){
+    const dup=await env.DB.prepare(`SELECT * FROM planning_stops WHERE collection_item_id=? AND linked_trip_item_id=? AND deleted_at IS NULL`).bind(itemId,values.linkedTripItemId).first();
+    if(dup)return json({stop:dup,deduped:true},{status:200},request,env);
+  }
   // Default new stops to the end of the current order.
   let position=values.position;
   if(body.position===undefined){

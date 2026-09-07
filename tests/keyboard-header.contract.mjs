@@ -1,0 +1,16 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const js=fs.readFileSync('public/mobile-app.js','utf8'),css=fs.readFileSync('public/mobile-app.css','utf8');
+const properties=new Map();let windowScrolls=0;
+const viewport={height:340,offsetTop:64,scale:1};
+const context=vm.createContext({window:{innerHeight:740,pageYOffset:90,visualViewport:viewport,scrollTo:()=>windowScrolls++},document:{documentElement:{style:{setProperty:(k,v)=>properties.set(k,v)}}},keepFocusedFieldVisible:()=>{},applyKeyboardState:()=>{}});
+vm.runInContext('let lastObscured=-1,keyboardOpen=false;'+js.slice(js.indexOf('  function syncVisualViewport()'),js.indexOf('  function bindDynamic()')),context);
+context.syncVisualViewport();assert.equal(properties.get('--app-viewport-offset'),'64px');assert.equal(properties.get('--app-viewport-height'),'340px');assert.equal(windowScrolls,0,'No competing document scroll while Safari pans');
+viewport.offsetTop=110;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-offset'),'110px');
+viewport.scale=2;viewport.offsetTop=180;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-offset'),'110px','Pinch zoom remains native');
+viewport.scale=1;viewport.offsetTop=0;viewport.height=740;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-offset'),'0px');
+let moved=0,field={top:410,bottom:460};const scroller={getBoundingClientRect:()=>({top:120,bottom:420}),scrollBy:({top})=>moved+=top};const input={matches:()=>true,closest:()=>scroller,getBoundingClientRect:()=>field};const focus=vm.createContext({document:{activeElement:input},requestAnimationFrame:f=>f()});
+vm.runInContext(js.slice(js.indexOf('  function keepFocusedFieldVisible()'),js.indexOf('  let keyboardOpen')),focus);focus.keepFocusedFieldVisible();assert.equal(moved,56);
+moved=0;field={top:160,bottom:210};focus.keepFocusedFieldVisible();assert.equal(moved,0,'Visible field should not jump');
+field={top:110,bottom:150};focus.keepFocusedFieldVisible();assert.equal(moved,-26,'Reveal field below header');
+assert(css.includes('position:fixed;top:var(--app-viewport-offset,0px);left:0;right:0;margin-inline:auto;'));
+console.log('Keyboard header: viewport pan, resize, restore, pinch zoom, fixed frame and bounded field scrolling PASS.');

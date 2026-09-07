@@ -9,7 +9,7 @@ TMP_DIR="${TMPDIR:-/tmp}/tripto-candidate-validate-$$"
 cleanup(){ rm -rf "$TMP_DIR"; }
 trap cleanup EXIT
 mkdir -p "$TMP_DIR"
-tsc --noEmit false --outDir "$TMP_DIR" --rewriteRelativeImportExtensions true --allowImportingTsExtensions true
+npx tsc --noEmit false --outDir "$TMP_DIR" --rewriteRelativeImportExtensions true --allowImportingTsExtensions true
 node "$TMP_DIR/tests/scenarios/candidate.scenarios.js"
 
 echo '3/8 Candidate recovery contracts'
@@ -32,7 +32,7 @@ test ! -f public/app.js
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/8 PWA and disabled integrations'
-grep -q "tripto-shell-product-v182-journey-onecolor" public/sw.js
+grep -q "tripto-shell-product-v220-keyboard-header" public/sw.js
 grep -q "/icons/tripto-system.svg" public/sw.js
 grep -q "/canonical-host.js" public/sw.js
 grep -q "/google-auth-client.js" public/sw.js

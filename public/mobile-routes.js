@@ -39,6 +39,7 @@
     "import-review": "/bookings/import/review",
     join: "/join",
     collection: "/collections",
+    "add-to-plan": "/plan-idea",
   });
 
   const EXACT_ROUTES = new Map(
