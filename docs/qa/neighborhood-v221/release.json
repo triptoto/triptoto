@@ -1,0 +1,31 @@
+{
+  "version": "901496fb-1c55-4842-ba70-83db0c024270",
+  "commit": "272b5be",
+  "live_assets_match": true,
+  "assets": {
+    "mobile-app.min.js": "d7791e57c91bcb4ac3210c410b9f4e4f9c26157dafe7353b4fb45affec9959e8",
+    "mobile-app.min.css": "27bddcd162ca96fd07000056a2124cfdad13c18b69cabf794ed61501a0b4dcf8",
+    "sw.js": "9ea1c229a015f1805f6bd9d70f88f66b108f9ff5785cc52cd2432913e873b9d5"
+  },
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788795275493
+  }
+}
