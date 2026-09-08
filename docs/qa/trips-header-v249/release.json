@@ -1,0 +1,109 @@
+{
+  "url": "https://tripto.to/trips",
+  "version": "1964fb78-5341-4646-abb2-8e504552affe",
+  "previous_version": "42d575c5-7cd8-4022-9953-3a3069063975",
+  "traffic_percent": 100,
+  "commit": "764716d17b6b37e11eebecd43f7f31f029bbb64c",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v249-trips-header",
+  "asset_version": "flat-design-system-v171",
+  "checked_at": "2026-09-08T15:21:18.763411+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788880878752
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "aea57f501f11a492befd960c7fcf52dc20c2f1e447710cf17cc4afd106198839",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "8f7b5284f956846cb5e4c8d02da5fe6473e380359196eed48c22f14664e09467",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "sha256": "efd6c8da4bc347c0126a3726c851ecfec7010858cda56296bf355b8732f79a24",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "78bbab148749048e2dceff7ea76054db4e4fb1ccdc577ff01d1f78fab9b6f81c",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "d03b8f3699c9abbfa7dd3e67453c74f437c328dd27cb906837ed46006e4a8a22",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "189de66e4a07d067306265fe496fdd047fa90f5d3f730cc85b344ed7abf00420",
+      "matches_local": true
+    }
+  },
+  "check_ui": "PASS",
+  "smart_import_auth_contract": "PASS",
+  "app_viewport_contract": "PASS",
+  "dry_run": "PASS",
+  "local_browser": {
+    "viewports": [
+      [
+        320,
+        740
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        430,
+        932
+      ]
+    ],
+    "horizontal_overflow": false,
+    "trips_bottom_navigation_removed": true,
+    "main_reaches_viewport_bottom": true,
+    "header_height": 68,
+    "header_control_size": [
+      44,
+      44
+    ],
+    "account_and_back_populated_and_empty": "PASS",
+    "create_trip_and_back": "PASS",
+    "empty_current_filter_and_show_all": "PASS",
+    "opened_trip_retains_bottom_navigation": true,
+    "console_errors": []
+  },
+  "public_browser": {
+    "path": "/trips",
+    "viewport": [
+      390,
+      844
+    ],
+    "asset_version": "flat-design-system-v171",
+    "bottom_navigation_removed": true,
+    "account_header_icon_present": true,
+    "main_bottom": 844,
+    "main_client_and_scroll_width": 390,
+    "account_and_back": "PASS",
+    "console_errors": [],
+    "cache_update": "Initial cached v170 shell updated to v171 after one ordinary reload; no data cleared."
+  },
+  "physical_iphone_tested": false,
+  "production_data_modified": false
+}
