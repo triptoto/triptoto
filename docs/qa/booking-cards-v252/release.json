@@ -1,0 +1,80 @@
+{
+  "url": "https://tripto.to/",
+  "version": "4509b7c8-7b28-4b8a-8f23-a3c6f3bc9336",
+  "previous_version": "5fa27827-544c-4aee-a2ae-8a1079ef48de",
+  "commit": "a5b206ffb138b8c7218ae481cc50e26adf46f058",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v252-booking-cards",
+  "asset_version": "flat-design-system-v174",
+  "checked_at": "2026-09-08T17:09:24.075415+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788887364008
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "bee4df019f0f985c752ceb6161ba97a250211d1689e66c6498427d4d8a514181",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "d53013dd1eeefddad69c523ac8f3c049d237ee490fbfa85f08934a6677a9196d",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "sha256": "8d647333d7e5fcc9008366fb8cdc5d4436a7ace3ef97097b4c0a9e1cbcabf3d1",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "b24ef133da03a31720439022aaced622b1850192266158ee05d69ef3cd88d2e3",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "ad4e302913150c3d7eefe1d2199fab81145612e605e22b5bc855ea0469bf3ce0",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "30f4f5f7f984417c2b96ef91a5154e44b847ebf7052bf224a37ce69b7d309e34",
+      "matches_local": true
+    }
+  },
+  "traffic_percent": 100,
+  "public_browser": {
+    "mode": "Isolated preview on production host; no production booking data changed",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "screens": [
+      "flight",
+      "hotel",
+      "train",
+      "plan"
+    ],
+    "matched_card_surface": {
+      "background": "rgb(255, 255, 255)",
+      "outline": "1px",
+      "radius": "16px"
+    },
+    "internal_dividers": 0,
+    "flight_disclosure": "Opened and closed successfully",
+    "console_errors": []
+  }
+}

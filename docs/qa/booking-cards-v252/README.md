@@ -16,3 +16,9 @@ Horizontal separators are removed from action rows, document rows, the expanded 
 - Cloudflare dry run passed with the verified production account. Cache namespace: `tripto-shell-product-v252-booking-cards`; shell query: `flat-design-system-v174`.
 
 This release changes presentation only. The backend/D1 integration suite was not repeated. Public deployment and served-file verification are recorded separately in `release.json`.
+
+## Publication
+
+Application commit `a5b206f` is pushed to `fix/keyboard-header-20260907`; main was not merged. Worker `4509b7c8-7b28-4b8a-8f23-a3c6f3bc9336` serves 100% of traffic. All six checked public app files exactly match the release. `/health` and D1 are healthy and feature flags remain unchanged.
+
+Published flight, hotel, train and activity screens were checked at 390×844 using isolated preview data on the production host. They use the matching white card surface, 1px outline and 16px corners with no internal dividers. The Flight details disclosure works. No browser errors or production data mutations occurred.
