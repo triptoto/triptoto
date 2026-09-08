@@ -1,0 +1,114 @@
+{
+  "url": "https://tripto.to",
+  "worker": "tripto-api",
+  "cloudflare_account": "travelinkme@gmail.com",
+  "version": "2c5ac89c-8e0d-4f2d-b031-e86271747634",
+  "previous_version": "c0174fd0-b2a3-4af3-b5a2-4f0013062c73",
+  "commit": "62c7bb2134a3f8cdac2ad504444393c177b6c769",
+  "branch": "fix/keyboard-header-20260907",
+  "cache": "tripto-shell-product-v244-design-audit",
+  "asset_version": "flat-design-system-v166",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788873791852
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "8d055ba9d527368e68f3d4dedd1fe70079560a59beb50c551743eeabe93ef180",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "28f227d0f698f3afdaa87af55fcefe0254da133a32d24e46349b22f2245f2067",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "sha256": "fb1f50594254475f22390a2424813ee5e0ac23b3fe45fd260f4cf0b808885b18",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "74b994e5bd4d6e304ef39c691c1a81335d80257f49c3fffbd3439d46ce26cdea",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "bb09340f84c92f4c99e63896eaa7656b735b2b5633a0e7ec0d07fc4d54b5d0a7",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "f6828869c3b9a15cf7471ee30ec9d69663fa0fcd3233e444083c3a37658d2e2a",
+      "matches_local": true
+    },
+    "privacy.html": {
+      "sha256": "0924f45a456baf2649d3c5eb054fe6c3aeb48a1648281f34e1335fc32984bf8e",
+      "matches_local": true
+    },
+    "terms.html": {
+      "sha256": "a6ad77ba9d179adc98513ac835b625119ad34a16f9272acb83e9c9b18e001d99",
+      "matches_local": true
+    }
+  },
+  "validation": {
+    "validate_v2": "PASS",
+    "wrangler_dry_run": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "github_pushed": true,
+  "browser": {
+    "surface": "Codex in-app browser",
+    "trip_list_viewports": [
+      [
+        390,
+        844
+      ],
+      [
+        430,
+        932
+      ]
+    ],
+    "trip_creation_viewports": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        430,
+        932
+      ]
+    ],
+    "date_picker_viewport": [
+      390,
+      844
+    ],
+    "horizontal_overflow": false,
+    "create_trip_input_height": 52,
+    "header_height": 68,
+    "header_control_height": 44,
+    "date_picker_back": "PASS",
+    "create_trip_back": "PASS",
+    "console_errors": [],
+    "shell_urls_observed": "flat-design-system-v166",
+    "old_cached_page_replaced_by_current_shell": true,
+    "production_data_modified": false,
+    "physical_iphone_safari": "NOT TESTED"
+  }
+}

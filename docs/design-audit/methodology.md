@@ -2,7 +2,7 @@
 
 ## Scope and isolation
 
-This is a local visual audit of the existing Tripto shell and its app-controlled interactions. Baseline commit: `196b25c7413a33f789652ffc79945efb5b88a1f2`. No production data edits, invitation sends, account deletions, purchases, deployment, git push or release approval were performed.
+This records the local visual audit of the existing Tripto shell and its app-controlled interactions. Baseline commit: `196b25c7413a33f789652ffc79945efb5b88a1f2`. At the end of that audit, no production data edits, invitation sends, account deletions, purchases, deployment, git push or release approval had been performed. The user's subsequent “deploy everything” instruction authorized the separate release recorded below.
 
 The app runs with `?preview=1` from a loopback static server. Existing preview data is supplemented by a clearly local fixture for Neighborhood, ideas, roles and invitation states. Synthetic roles and API error/loading states are **rendering evidence**, not proof of successful real authentication or persistence. Fixture rates/weather are not real travel information. The only file uploaded in the browser audit was a generated LOCAL QA PNG, staged on the isolated browser profile and then removed.
 
@@ -74,4 +74,10 @@ There is no screenshot-comparison auto-pass. Every screenshot needs human/model 
 
 Actual iPhone Safari keyboard/browser-chrome behavior, browser zoom 200%, native PDF viewer traversal, real Google callback and production recognition/deletion preview require an appropriate device or integration environment. Equivalent 512×340 reflow is recorded separately; it is not mislabeled as real 200% zoom.
 
-Before a future authorized release, perform the repository's cache-safe release procedure: rebuild shell assets, synchronize asset/cache contracts as required, deploy the reviewed version and separately check the public `/health` and served assets. No cache/version bump or deployment was done for this local audit.
+## Authorized production release, 2026-09-08
+
+After the user requested “deploy everything”, all audited runtime changes and the removal of the pretrip preparation card were committed as `62c7bb2134a3f8cdac2ad504444393c177b6c769` and pushed to `fix/keyboard-header-20260907`. The cache namespace was advanced to `tripto-shell-product-v244-design-audit`, both shell asset URLs to `flat-design-system-v166`, and matching contracts were synchronized.
+
+The full `validate:v2` suite and Wrangler dry run passed for that final build. Cloudflare deployment used the verified `travelinkme@gmail.com` account and the existing production Worker `tripto-api`. Public `/health` and SHA-256 comparisons for all eight changed assets passed. Actual browser checks covered Trips, Create Trip, the date picker and Back navigation; Create Trip was reviewed at 320×568, 390×844 and 430×932. No trip was created or modified during the live check. One immediate screenshot during viewport resizing contained a stale scaled frame; the stable frame and DOM geometry were rechecked successfully.
+
+See [release record](release-v244.json), [deployment output](deploy-v244.log), [full validation](validation-v244-release.log) and [dry run](dry-run-v244-release.log). This publication does not convert the physical-device and integration limitations above into completed tests.
