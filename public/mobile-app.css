@@ -4088,9 +4088,8 @@ html body .premium-form:not(.trip-create-form) .form-fields--flight-when>.form-f
    replaces the separate journal/FAB and illustrated setup treatments.
    ========================================================================== */
 html body .phone-app>.trips-screen>.app-bar.app-bar--root{grid-template-columns:44px minmax(0,1fr) 44px;gap:8px}
-html body .trips-app-bar .app-bar-spacer{display:block;width:44px;height:44px}
-html body .trips-app-bar .trips-header-add{background:var(--surface);color:var(--accent);box-shadow:none}
-html body .trips-app-bar .trips-header-add:active{background:var(--activity-soft)}
+html body .trips-app-bar .trips-header-add,html body .trips-app-bar .trips-header-account{background:var(--surface);color:var(--accent);box-shadow:none}
+html body .trips-app-bar .trips-header-add:active,html body .trips-app-bar .trips-header-account:active{background:var(--activity-soft)}
 html body .phone-app>.trips-screen>.trips-page{display:grid;align-content:start;gap:var(--space-5);padding:var(--space-4) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));background:var(--paper)}
 html body .trips-intro{display:grid;gap:var(--space-1);padding:0}
 html body .trips-intro>span{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em;line-height:1.2;text-transform:uppercase}

@@ -1,5 +1,9 @@
 // Served only by the loopback audit server after preview data initialization.
 // Select with ?preview=1&qaState=account-signed-in (or the states below).
+if (QA_STATE === "trips-empty") {
+  state.trips = [];
+  state.trip = null;
+}
 if (QA_STATE === "account-compact") {
   state.account = { mode: "account", user: {
     display_name: "Alex Morgan",

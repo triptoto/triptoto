@@ -4922,10 +4922,10 @@
     return `<li class="journal-row-wrap" data-swipe-row><button type="button" class="journal-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="journal-row${archived ? " journal-row--archive" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}"><span class="journal-row__date" aria-hidden="true">${stamp}</span><span class="journal-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${countdown || label === "Cancelled" ? `<span class="journal-row__status">${icon("clock", 16)} ${esc(countdown || "Cancelled")}</span>` : ""}<span class="journal-row__arrow" aria-hidden="true">${icon("chevron", 18)}</span></button></li>`;
   }
   // Trips is a root destination, so it uses the same centered app bar as the
-  // rest of the product without exposing a misleading back button. The add
-  // action stays in the header alongside other collection-level actions.
+  // rest of the product. Account and Create trip stay accessible in the header
+  // without showing trip-specific bottom navigation on the full trip list.
   function tripsPageHeader() {
-    return `<header class="app-bar app-bar--root trips-app-bar"><span class="app-bar-spacer" aria-hidden="true"></span><div class="app-bar-title"><strong>Trips</strong></div><div class="app-bar-actions"><button type="button" class="icon-button trips-header-add" data-action="create-trip" aria-label="Create trip">${icon("plus", 24)}</button></div></header>`;
+    return `<header class="app-bar app-bar--root trips-app-bar"><button type="button" class="icon-button trips-header-account" data-screen="account" aria-label="Account" title="Account">${icon("user", 24)}</button><div class="app-bar-title"><strong>Trips</strong></div><div class="app-bar-actions"><button type="button" class="icon-button trips-header-add" data-action="create-trip" aria-label="Create trip">${icon("plus", 24)}</button></div></header>`;
   }
   function tripListRow(trip, label) {
     const isCurrent = label === "Current";
@@ -4960,7 +4960,7 @@
     }).join("");
     const emptyCopy = {current:"Trips happening now will appear here.",upcoming:"Your next adventures will appear here.",past:"Completed trips will appear here.",all:"Create your first trip and keep everything in one place."};
     const body = content || `<section class="ds-empty-state trips-empty"><span class="ds-empty-state__icon">${icon("trips", 26)}</span><h1>${!state.trips.length ? "No trips yet" : `No ${filter === "all" ? "" : filter + " "}trips`}</h1><p>${emptyCopy[filter]}</p><button type="button" class="ds-primary-button" data-action="${state.trips.length ? "filter-trips" : "create-trip"}"${state.trips.length ? ' data-filter="all"' : ""}>${state.trips.length ? "Show all trips" : "Create trip"}</button></section>`;
-    return `<div class="phone-app"><section class="screen trips-screen">${tripsPageHeader()}${mobileAlert()}<main class="trips-page"><section class="trips-intro"><span>YOUR JOURNEYS</span><h1>All your trips</h1><p>Plans, bookings, and ideas stay together here.</p></section>${filterBar}<div class="trip-list-results" aria-live="polite">${body}</div></main>${bottomNav("trips")}</section></div>`;
+    return `<div class="phone-app"><section class="screen trips-screen">${tripsPageHeader()}${mobileAlert()}<main class="trips-page"><section class="trips-intro"><span>YOUR JOURNEYS</span><h1>All your trips</h1><p>Plans, bookings, and ideas stay together here.</p></section>${filterBar}<div class="trip-list-results" aria-live="polite">${body}</div></main></section></div>`;
   }
   function meaningfulBookingStatus(item) {
     const raw = String(val(item, "booking_status", "status") || "").toLowerCase();

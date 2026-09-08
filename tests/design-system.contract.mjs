@@ -102,7 +102,7 @@ assert.match(css, /\.form-fields--flight-when\{[^}]*align-items:start/, 'flight 
 assert.match(css, /\.form-fields--flight-when>\.form-field>input\{[^}]*min-height:var\(--control-height\)/, 'flight departure time must match the shared date control height');
 assert.ok(js.includes('function tripsPageHeader(') && js.includes('class="screen trips-screen"'), 'Trips root must use the shared application shell');
 const tripsInventory = js.slice(js.indexOf('function tripsPageHeader('), js.indexOf('function meaningfulBookingStatus('));
-assert.ok(!tripsInventory.includes('trips-fab') && tripsInventory.includes('bottomNav("trips")'), 'Trips must keep navigation in flow and create from the header');
+assert.ok(!tripsInventory.includes('trips-fab') && !tripsInventory.includes('bottomNav(') && tripsInventory.includes('data-screen="account"') && tripsInventory.includes('data-action="create-trip"'), 'Trips must open Account and create trips from the header without bottom navigation');
 assert.match(css, /trips-screen[^}]*trips-page\{[^}]*background:var\(--paper\)/);
 assert.match(css, /trip-create-screen \.trip-create-head\{[^}]*background:transparent!important/);
 assert.match(css, /trip-create-screen \.trip-create-route\{[^}]*display:none!important/);
