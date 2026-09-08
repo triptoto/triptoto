@@ -99,7 +99,7 @@ assert(app.includes('startupRoute.redirect || location.hash || history.state?.tr
 for(const [action,handler] of [['close-doc-viewer','close-doc-viewer'],['close-sheet','close-sheet'],['return-trip-setup','return-trip-setup'],['close-driver','close-driver']]) {
   assert(app.includes(`data-action="${action}"`)&&app.includes(`case "${handler}"`),`special back/close affordance missing for ${action}`);
 }
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v245-detail-loading'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v246-account-todo'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-features ds-grouped-card')&&!app.includes('welcome-arc')&&!app.includes('welcome-orbit-dot'),'Welcome must show the shared feature card without decorative artwork');
@@ -252,7 +252,7 @@ assert(app.includes('Nothing was overwritten.')&&app.includes('Review pending ch
 assert(app.includes('method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})'),'native checklist creation missing');
 assert(app.includes('data-edit-version')&&app.includes('method:editId?"PATCH":"POST"'),'native traveler editing missing');
 const account=app.slice(app.indexOf('function accountScreen('),app.indexOf('let googleScriptPromise'));
-for(const copy of ['All trips','Your plans','Email Inbox','go@tripto.to','Take the tour','Sign out'])assert(account.includes(copy),`Account missing: ${copy}`);
+for(const copy of ['All trips','Your trips','Email Inbox','go@tripto.to','Take the tour','Sign out'])assert(account.includes(copy),`Account missing: ${copy}`);
 for(const internal of ['Trip Health','Smart Essentials','Smart Import'])assert(!account.includes(internal),`internal name exposed: ${internal}`);
 assert(sw.includes("url.pathname.startsWith('/api/')")&&sw.includes("navigationCacheKey=isMobileShell?'/index.html':url.pathname"),'service worker isolation missing');
 assert(index.indexOf('/mobile-trip-rules.js')<index.indexOf('/mobile-app.min.js'),'trip rules load order wrong');

@@ -1,0 +1,203 @@
+
+> tripto-to@0.9.0-beta.1 validate:v2
+> bash scripts/validate-v2.sh
+
+
+> tripto-to@0.9.0-beta.1 validate:candidate
+> bash scripts/validate-candidate.sh
+
+1/8 Major baseline
+
+> tripto-to@0.9.0-beta.1 validate:major
+> bash scripts/validate-major.sh
+
+1/7 Frontend JavaScript
+2/7 TypeScript
+3/7 Scenario suites (compiled; no tsx CLI IPC)
+Extended beta scenario suite passed.
+Milestone 2 scenario suite passed.
+Import parser scenarios passed: flight, stay, mixed booking, expanded types (train/car/transfer/cruise/ferry/restaurant/activity/generic), stray-keyword safety, ambiguous locale safety and unsupported handling.
+Launch readiness scenarios passed: quotas, feature boundaries, event privacy and request-size guard.
+Major scenario suite passed: journeys, deterministic health and sync version safety.
+4/7 Existing + major local D1 integration
+Local D1 integration suite passed: auth, migration, sharing, collaboration roles, imports, beta metrics, rate limits, ops privacy and data deletion.
+Major local D1 integration passed: travel management, health, sync and readiness.
+Planning-collections integration passed: create, stops, reorder, version conflict, linked booking, soft-delete and tombstone.
+Major local D1 integration passed: journeys, activities, booking details, contacts, markers, intelligence, sync and readiness.
+5/7 Migrations
+Applied 25 migrations in clean SQLite; major tables verified.
+6/7 Shell scripts
+7/7 Static release files
+Major Beta Milestone 5–8 validation passed.
+2/8 Candidate scenarios
+ok 1 - normal vacation chooses the next confirmed plan
+ok 2 - multi-city preserves explicit sequence
+ok 3 - open-jaw requires multiple legs
+ok 4 - family trip with travelers avoids missing-traveler warning
+ok 5 - overnight flight uses UTC ordering
+ok 6 - date-line crossing resolves event-local times independently
+ok 7 - cancelled future flight is prioritized by Trip Health
+ok 8 - delay assumptions remain unknown without reliable times
+ok 9 - protected connection uses explicit buffer
+ok 10 - self-transfer risk is not softened
+ok 11 - airport change adds deterministic safety buffer
+ok 12 - road trip cannot be empty
+ok 13 - mixed flight train ferry sequence remains generic
+ok 14 - offline create applies only when the entity is absent
+ok 15 - connectivity restoration applies matching base version
+ok 16 - shared-trip conflict boundary rejects stale base version
+ok 17 - changed hotel overlapping another plan is reported
+ok 18 - flight traveler without a travel document is not Ready Offline
+ok 19 - missing traveler document remains per-traveler
+ok 20 - low-confidence import is never silently confirmed
+ok 21 - duplicate import input normalizes deterministically
+ok 22 - expired guest session is rejected at the exact expiry boundary
+ok 23 - DST spring gap is rejected
+ok 24 - DST autumn overlap is ambiguous
+ok 25 - device timezone change does not change stored UTC next item
+ok 26 - provider outage leaves travel duration unavailable
+ok 27 - stale route estimate is labeled unavailable
+ok 28 - completed trip has no What’s Next or preparation warnings
+ok 29 - cancelled segment invalidates connection outcome
+ok 30 - unknown connection buffer stays unavailable in Trip Health
+ok 31 - connection requirements use additive shared deterministic rules
+ok 32 - Trip Health and Impact Engine share combined connection assessment
+ok 33 - travel-duration source and freshness matrix is enforced
+ok 34 - Ready Offline requirements are semantic and itinerary-bound
+Beta Candidate 1 scenario suite passed: 34 scenarios.
+3/8 Candidate recovery contracts
+Browser timezone contract passed.
+4/8 Mobile application UI contracts
+
+> tripto-to@0.9.0-beta.1 check:ui
+> npm run build:app-shell && npm run build:icons && npm run build:smart-import && npm run build:airport-timezones && npm run build:places && node --check public/mobile-app.min.js && node --check public/smart-import.js && node --check public/airport-timezones.js && node --check public/places-provider.js && node --check public/places-search-worker.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node tests/airport-timezones.contract.mjs && node tests/places-browser.contract.mjs && node tests/mobile-ui.contract.mjs && node tests/button-size.contract.mjs && node tests/currency.contract.mjs && node tests/checklist-help.contract.mjs && node tests/design-system.contract.mjs
+
+
+> tripto-to@0.9.0-beta.1 build:app-shell
+> esbuild public/mobile-app.js --minify --target=es2022 --outfile=public/mobile-app.min.js && esbuild public/mobile-app.css --minify --target=chrome100,safari15 --outfile=public/mobile-app.min.css
+
+
+  public/mobile-app.min.js  431.0kb
+
+⚡ Done in 26ms
+
+  public/mobile-app.min.css  327.3kb
+
+⚡ Done in 13ms
+
+> tripto-to@0.9.0-beta.1 build:icons
+> node scripts/build-icon-sprite.mjs
+
+Built public/icons/tripto-system.svg (147 regular, 6 selected).
+
+> tripto-to@0.9.0-beta.1 build:smart-import
+> esbuild packages/document-recognition/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --external:/vendor/* --outfile=public/smart-import.js
+
+
+  public/smart-import.js  370.1kb
+
+⚡ Done in 11ms
+
+> tripto-to@0.9.0-beta.1 build:airport-timezones
+> esbuild packages/airport-timezones/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/airport-timezones.js
+
+
+  public/airport-timezones.js  117.5kb
+
+⚡ Done in 9ms
+
+> tripto-to@0.9.0-beta.1 build:places
+> esbuild packages/places/src/browser-provider.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-provider.js && esbuild packages/places/src/worker.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-search-worker.js
+
+
+  public/places-provider.js  1.5kb
+
+⚡ Done in 2ms
+
+  public/places-search-worker.js  4.5kb
+
+⚡ Done in 2ms
+Airport timezone contract passed.
+Offline places browser, privacy, accessibility, form, and lazy-cache contracts passed.
+Product V2 mobile UI contract passed.
+Button sizing contract passed.
+currency contract and unloaded-rate input regression: ok
+Checklist/Help contract passed.
+Unified Tripto Elegant Flat Cards design-system contract passed.
+5/8 PWA and disabled integrations
+6/8 Offline places validation
+
+> tripto-to@0.9.0-beta.1 validate:places
+> npm run build:places && node --import tsx/esm tests/places-search.scenarios.ts && node tests/places-cache.scenarios.mjs && node tests/places-browser.contract.mjs
+
+
+> tripto-to@0.9.0-beta.1 build:places
+> esbuild packages/places/src/browser-provider.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-provider.js && esbuild packages/places/src/worker.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-search-worker.js
+
+
+  public/places-provider.js  1.5kb
+
+⚡ Done in 2ms
+
+  public/places-search-worker.js  4.5kb
+
+⚡ Done in 2ms
+Offline places scenarios passed (34114 cities, 4007 airports; max warm search 4.3ms).
+Offline places first-download, cached-offline, and version-upgrade scenarios passed.
+Offline places browser, privacy, accessibility, form, and lazy-cache contracts passed.
+7/8 Manual booking validation
+
+> tripto-to@0.9.0-beta.1 validate:manual-booking
+> node tests/manual-booking-attachments.contract.mjs && node tests/manual-booking-ui.contract.mjs
+
+Manual booking attachment contract passed: v2 upgrade, supported types, integrity, multi-file removal, limits, link and retry recovery.
+Manual booking Product V2 UI contract passed.
+8/8 Candidate release files
+Beta Candidate 1 validation with Mobile App UI v1 passed.
+
+> tripto-to@0.9.0-beta.1 validate:live-flights
+> node --import tsx/esm tests/scenarios/live-flights.scenarios.ts && node tests/live-flights.contract.mjs
+
+Live flight scenarios passed: provider normalization, strict matching, codeshare, cancellation confirmation/recovery, merge safety, impact rules, disabled provider, projected calls [{"flights":1,"uncappedCalls":8,"cappedCalls":8},{"flights":10,"uncappedCalls":80,"cappedCalls":80},{"flights":100,"uncappedCalls":800,"cappedCalls":240},{"flights":1000,"uncappedCalls":8000,"cappedCalls":240}].
+Live flights contract passed: safe defaults, provider boundary, quota/cache/cancellation policy, scheduled handler and truthful UI.
+Product V2 backend/auth/email contract passed.
+
+> tripto-to@0.9.0-beta.1 validate:smart-import-auth
+> bash scripts/validate-smart-import-auth.sh
+
+1/5 Build and typecheck
+
+> tripto-to@0.9.0-beta.1 build:smart-import
+> esbuild packages/document-recognition/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --external:/vendor/* --outfile=public/smart-import.js
+
+
+  public/smart-import.js  370.1kb
+
+⚡ Done in 8ms
+
+> tripto-to@0.9.0-beta.1 typecheck
+> tsc --noEmit
+
+2/5 Smart Import deterministic scenarios
+Smart Import scenarios passed: 10 formats, 8 booking classes, ambiguity, provenance, privacy and limits.
+Smart Import fixture suite passed: 5 realistic airline, hotel, train, activity and ambiguous-date inputs.
+3/5 Google token verification scenarios
+Google auth scenarios passed: signed JWT, issuer, audience, expiry, nonce, verified email and feature gate.
+4/5 Browser and security contracts
+Smart Import + Google auth browser/security contracts passed.
+5/5 Local D1 integration
+
+> tripto-to@0.9.0-beta.1 test:integration
+> bash scripts/test-local-d1.sh
+
+Local D1 integration suite passed: auth, migration, sharing, collaboration roles, imports, beta metrics, rate limits, ops privacy and data deletion.
+Major local D1 integration passed: travel management, health, sync and readiness.
+Smart Import + Google Sign-In validation passed.
+Free trip collaboration contract passed.
+Planning-collections contract passed.
+Loading pattern: concurrency, fast completion, errors, timeout, action failure, boot and reduced motion passed.
+Detail loading: cached slugs, both IDs, partial/cold cache, refresh races, network failure, navigation, confirmed missing data and pending-detail rendering passed.
+Render performance: formatter reuse/output, invalid zones, overlay preservation, full-screen fallback and isolated toasts passed.
+Booking notes: bus create/update/clear/readback, taxi structured detail preservation, and existing booking routes passed.
+App viewport: visible height, keyboard reduction, restoration, pinch zoom preservation and fallback passed.
+Product V2 validation passed.

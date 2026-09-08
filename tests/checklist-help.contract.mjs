@@ -51,7 +51,7 @@ const cl=app.slice(app.indexOf('function checklistScreen('),app.indexOf('const F
 assert(cl.includes('data-action="toggle-checklist"')&&cl.includes('data-action="edit-checklist"')&&cl.includes('data-action="delete-checklist"'),'checklist row actions missing');
 assert(cl.includes('id="checklist-add-form"'),'checklist add form missing');
 assert(cl.includes('aria-pressed'),'checklist toggle lacks aria-pressed');
-assert(cl.includes('mobilePage("Checklist"'),'checklist screen title wrong');
+assert(cl.includes('mobilePage("To-do"'),'checklist screen title wrong');
 assert(app.includes('function normalizeChecklist(')&&app.includes('completed_at')&&app.includes('completedAt != null'),'checklist completion normalization missing (completed_at bug guard)');
 assert(app.includes('function showUndoToast('),'undo toast for delete missing');
 assert(app.includes('function flushChecklistQueue('),'offline checklist replay missing');

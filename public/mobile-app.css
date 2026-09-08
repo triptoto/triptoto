@@ -974,37 +974,6 @@ button:active{transform:scale(.985)}
 .travel-state{justify-self:start;color:var(--green);font-size:12px;font-style:normal;font-weight:600}.travel-state--attention{color:var(--amber)}
 .account-section{padding-bottom:8px}.account-card{padding:8px 0 20px;border-bottom:1px solid var(--line)}.account-profile{display:flex;align-items:center;gap:13px}.account-profile__id{flex:1 1 auto;min-width:0}.account-profile__id strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.account-signout-btn{flex:0 0 auto;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:14px;font-weight:600;box-shadow:none}.avatar,.traveler-avatar{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;font-size:20px;font-weight:600}.account-profile strong{font-size:20px}.account-meta{margin-top:3px;color:var(--muted);font-size:12px}.account-signin{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface)}.account-signin h2{margin:0 0 5px;font-size:20px}.account-signin p{color:var(--muted);font-size:14px;line-height:1.4}.account-signin--active{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 12px 16px;border-color:rgba(255,255,255,.1);background:var(--ink);color:#fff}.account-signin--active .account-signin__label{display:flex;align-items:center;gap:9px;min-width:0}.account-signin--active .account-signin__label strong{color:#fff;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.account-signin--active .account-signin__out{flex:0 0 auto;width:auto;min-height:44px;margin:0;padding:0 20px;border:0;border-radius:999px;background:#fff;color:var(--ink);box-shadow:none}.simple-row--danger{color:var(--red)}.app-version{text-align:center;margin:28px 0 0;color:var(--muted-soft);font-size:12px}
 .sheet-note{text-align:center;margin:16px 0 0;color:var(--muted-soft);font-size:12px}
-/* Big tripto.to wordmark anchoring the foot of the Account screen. Pushed to
-   the bottom (just above the nav) so there's no dead space below it. */
-.account-v2{display:flex;flex-direction:column}
-.account-v2 .account-section{flex:1 1 auto;display:flex;flex-direction:column}
-.account-footer-brand{margin-top:auto;padding-top:28px}
-.account-brand{display:block;margin:0 auto 4px;padding:0;border:0;background:none;font-family:inherit;font-size:40px;line-height:1;font-weight:700;letter-spacing:-.055em;text-align:center;color:var(--ink);cursor:pointer}
-.account-brand:active{opacity:.6}
-.account-brand span{color:var(--accent)}
-/* No hairline dividers anywhere on the Account screen. */
-.account-section .account-card,.account-section .simple-row,.account-section .travel-row,.account-section .document-row{border-bottom:0}
-/* Account tab: compact rows, smaller icons and tighter vertical rhythm. */
-.account-v2 .account-card{padding:4px 0 14px}
-.account-v2 .account-profile{gap:11px}
-.account-v2 .avatar{width:44px;height:44px;font-size:16px}
-.account-v2 .account-profile strong{font-size:17px;font-weight:700}
-.account-v2 .account-meta{font-size:12px}
-.account-v2 .section-label{margin:16px 0 6px;font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--accent)}
-.account-v2 .simple-row{grid-template-columns:44px minmax(0,1fr) 18px;gap:12px;min-height:48px;padding:4px 0}
-.account-v2 .simple-row .row-icon{width:44px;height:44px}
-.account-v2 .simple-row .row-icon .ph-svg{width:24px;height:24px}
-.account-v2 .simple-row .row-icon .ph{font-size:24px}
-.account-v2 .simple-row .chevron{width:18px;height:18px}
-.account-v2 .simple-row .row-copy strong{font-size:16px;font-weight:500}
-.account-v2 .simple-row .row-copy span{font-size:12px}
-.account-v2 .account-partner-row{text-decoration:none;color:var(--ink);min-height:60px}
-.account-v2 .account-partner-row .row-copy strong{white-space:normal;line-height:1.3}
-.account-v2 .account-partner-row:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px}
-.account-partner-disclosure{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.4}
-.account-v2 .account-footer-brand{padding-top:18px}
-.account-v2 .account-brand{font-size:34px}
-.account-v2 .app-version{margin-top:16px}
 .traveler-profile{text-align:center;padding:12px 0 24px;border-bottom:1px solid var(--line)}.traveler-row .traveler-avatar{width:40px;height:40px;border-radius:var(--radius-control);background:var(--activity-soft);color:var(--accent)}.traveler-row .travel-row__body em{font-size:var(--type-meta);font-style:normal;color:var(--muted)}.traveler-avatar--large{width:72px;height:72px;margin:0 auto;font-size:28px}.traveler-profile h1{margin:12px 0 4px}.traveler-profile p{color:var(--muted)}
 
 /* Add flow, forms and sheets */
@@ -1730,8 +1699,6 @@ html .trip-row .chevron{display:none !important}
 html .dark-detail .fd-row__chev:not(.flight-more__chevron){display:none !important}
 /* Account screen list rows: drop the trailing ">" chevron (user request).
    Collapse the trailing grid column so the copy keeps full width. */
-html .account-v2 .simple-row .chevron{display:none !important}
-html .account-v2 .simple-row{grid-template-columns:44px minmax(0,1fr) !important}
 /* Simple flat bottom nav: a full app-width bar with Trip | Trip options | + | To-do | Account.
    The center + is the only filled circular action. */
 html .bottom-nav,html .trips-bg-screen .bottom-nav{
@@ -2036,45 +2003,56 @@ html .trips-bg-screen .trip-group .trip-row{
 html .trips-bg-screen .trip-group .trip-row:last-child{border-bottom:0}
 html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 
-/* === Trip Checklist (packing list) — simple, native-feeling list === */
-.cl-screen{display:flex;flex-direction:column;gap:16px;padding-bottom:8px}
-.cl-progress{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
-.cl-progress strong{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:600;color:var(--ink)}
-.cl-progress small{font-size:13px;color:var(--muted)}
-.cl-progress--done strong{color:var(--icon)}
-.cl-bar{margin-top:8px;height:6px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
-.cl-bar__fill{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .25s var(--ease)}
-.cl-add{display:flex;align-items:center;gap:8px}
-.cl-add__input{flex:1 1 auto;min-width:0;height:50px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:16px}
+/* To-do: shared cards and controls, with compact task-specific rows. */
+.cl-screen{display:flex;flex-direction:column;gap:var(--space-6);padding-bottom:var(--space-2)}
+.cl-progress{display:flex;flex-direction:column;gap:var(--space-3)}
+.cl-progress__heading{display:flex;align-items:center;gap:var(--space-3)}
+.cl-progress__heading>div{min-width:0}
+html body .phone-app>.screen>.mobile-page .cl-progress h1{margin:2px 0 0;font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.3;letter-spacing:-.02em;overflow-wrap:anywhere}
+.cl-trip-label{color:var(--muted);font-size:var(--type-meta);line-height:1.4}
+.cl-progress__summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);font-size:var(--type-meta);line-height:1.4;color:var(--muted)}
+html body .cl-progress__summary strong{font-size:var(--type-meta);font-weight:var(--weight-semibold);color:var(--accent);white-space:nowrap}
+.cl-bar{display:block;height:6px;border-radius:999px;background:var(--activity-soft);overflow:hidden}
+.cl-bar__fill{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .2s var(--ease)}
+.cl-progress--done .cl-bar{background:var(--stay-soft)}
+.cl-progress--done .cl-bar__fill{background:var(--green)}
+html body .cl-progress--done .cl-progress__summary strong{color:var(--green)}
+.cl-add{display:grid;gap:var(--space-2)}
+.cl-add>label{font-size:var(--type-body);font-weight:var(--weight-semibold);color:var(--ink)}
+.cl-add__controls{display:flex;align-items:center;gap:var(--space-2)}
+.cl-add__input{flex:1 1 auto;min-width:0;width:100%;height:var(--control-height);padding:0 var(--space-3);border-radius:var(--radius-control);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
 .cl-add__input::placeholder{color:var(--muted)}
-.cl-add__btn{flex:0 0 auto;display:grid;place-items:center;width:50px;height:50px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
-.cl-add__btn:active{transform:scale(.94)}
-.cl-section{display:flex;flex-direction:column;gap:8px}
-.cl-section>h2{margin:4px 2px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.cl-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--line)}
-.cl-row{display:flex;align-items:center;gap:2px;min-height:56px;padding:0 6px 0 4px;border-bottom:0}
+.cl-add__btn{flex:0 0 auto;display:grid;place-items:center;width:var(--control-height);height:var(--control-height);border:0;border-radius:var(--radius-control);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.cl-section{display:flex;flex-direction:column;gap:var(--space-2)}
+.cl-section>h2{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin:0;font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.4;color:var(--ink)}
+.cl-section>h2>span{display:grid;place-items:center;min-width:28px;min-height:28px;padding:0 var(--space-2);border-radius:var(--radius-control);background:var(--surface);color:var(--muted);font-size:var(--type-meta);font-weight:var(--weight-medium);font-variant-numeric:tabular-nums}
+.cl-list{list-style:none;margin:0;display:flex;flex-direction:column}
+.cl-row{display:flex;align-items:center;min-height:64px;padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
 .cl-row:last-child{border-bottom:0}
-.cl-row__toggle{flex:1 1 auto;display:flex;align-items:center;gap:12px;min-height:56px;min-width:0;padding:6px 8px;border:0;background:transparent;color:var(--ink);font-size:16px;text-align:left;cursor:pointer}
-.cl-check{flex:0 0 auto;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;border:2px solid var(--ink);background:transparent;color:transparent;transition:background .16s var(--ease),border-color .16s var(--ease)}
+.cl-row__toggle{flex:1 1 auto;display:flex;align-items:center;gap:var(--space-3);min-height:56px;min-width:0;padding:var(--space-2) 0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:var(--type-body);line-height:1.4;text-align:left;cursor:pointer}
+.cl-check{flex:0 0 auto;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;border:1.5px solid var(--line-strong);background:var(--card);color:transparent}
 .cl-row.is-complete .cl-check{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.cl-row__title{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
-.cl-row.is-complete .cl-row__title{color:var(--muted);text-decoration:line-through}
-.cl-row__act{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--ink);cursor:pointer}
-.cl-row__act:active{transform:scale(.92)}
-.cl-row__del:active{color:var(--accent)}
-/* Inline rename (replaces window.prompt, which installed PWAs suppress) */
-.cl-row--editing{padding:6px 6px 6px 8px}
-.cl-edit{flex:1 1 auto;display:flex;align-items:center;gap:6px;min-width:0}
-.cl-edit__input{flex:1 1 auto;min-width:0;height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--accent);background:var(--card);color:var(--ink);font-size:16px}
-.cl-edit__act{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:12px;cursor:pointer}
-.cl-edit__act:active{transform:scale(.92)}
+.cl-row__title{flex:1 1 auto;min-width:0;font-weight:var(--weight-medium);overflow-wrap:anywhere}
+.cl-row.is-complete .cl-row__title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-strong)}
+.cl-row__act{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:var(--radius-control);background:transparent;color:var(--muted);cursor:pointer}
+.cl-row__act:hover,.cl-row__act:active{background:var(--surface);color:var(--accent)}
+.cl-row__del:hover,.cl-row__del:active{color:var(--red)}
+/* Rename stays inline, with an input matching the shared form height. */
+.cl-edit{flex:1 1 auto;display:grid;gap:var(--space-2);min-width:0;padding:var(--space-2) 0}
+.cl-edit__actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-2)}
+.cl-edit__actions>.cl-row__del{margin-right:auto}
+.cl-edit__input{flex:1 1 auto;min-width:0;height:var(--control-height);padding:0 var(--space-3);border-radius:var(--radius-control);border:1px solid var(--accent);background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
+.cl-edit__act{flex:0 0 auto;display:grid;place-items:center;min-width:64px;height:44px;padding:0 var(--space-3);border:0;border-radius:var(--radius-control);font:inherit;font-size:var(--type-meta);font-weight:var(--weight-semibold);cursor:pointer}
 .cl-edit__save{background:var(--accent);color:var(--accent-ink)}
 .cl-edit__cancel{background:transparent;color:var(--muted)}
-.cl-suggest{display:flex;flex-direction:column;gap:10px}
-.cl-suggest__label{margin:0 2px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.cl-chips{display:flex;flex-wrap:wrap;gap:8px}
-.cl-chip{display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:14px;cursor:pointer}
-.cl-chip:active{transform:scale(.96)}
+.cl-suggest{display:flex;flex-direction:column;gap:var(--space-3)}
+.cl-suggest__label{margin:0;font-size:var(--type-section);font-weight:var(--weight-semibold);color:var(--ink)}
+.cl-chips{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.cl-chip{display:inline-flex;align-items:center;gap:var(--space-1);min-height:44px;padding:0 var(--space-3);border-radius:var(--radius-control);border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:var(--type-meta);cursor:pointer}
+.cl-chip .ph-svg{color:var(--accent)}
+.cl-screen button:focus-visible,.cl-screen input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:359px){.cl-row__toggle{gap:var(--space-2)}}
+@media(prefers-reduced-motion:reduce){.cl-bar__fill{transition:none}}
 
 /* === Help & FAQ === */
 .help-screen{display:flex;flex-direction:column;gap:22px;padding-bottom:8px}
@@ -2603,9 +2581,6 @@ html .trips-bg-screen .trip-group .trip-row__copy strong{
 }
 html .trips-bg-screen .trip-group .trip-row__copy small{
   font-size:var(--type-meta);font-weight:var(--weight-medium)
-}
-html .account-v2 .account-profile strong{
-  font-size:var(--type-section);font-weight:var(--weight-semibold)
 }
 /* Trip-header ⋮ overflow menu — biggest + bolder dots (user request). */
 html .trip-v2-actions .icon-button .ph-dots-three-vertical{
@@ -3198,86 +3173,35 @@ html .bottom-sheet--currency-picker .sheet-scroll{max-height:calc(min(68dvh,560p
 .journal-next .journal-open{padding-inline:14px}
 @media(max-width:359px){.journal-next{padding:14px;column-gap:14px}.journal-next h2{font-size:22px}.journal-next__aside{padding-left:14px}.journal-next__countdown{font-size:12px;gap:4px}.journal-next .journal-open{padding-inline:10px}}
 
-/* Account: a personal travel space, scoped to preserve all other screens. */
-html .account-refresh .account-section{display:flex;gap:0;padding:12px 20px calc(108px + env(safe-area-inset-bottom))}
-html .account-refresh .account-passport{padding:14px;border:0;border-radius:18px;background:var(--activity-soft);color:var(--ink)}
-.account-passport__top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--accent)}
-.account-kicker{font-size:12px;font-weight:500;letter-spacing:.09em;text-transform:uppercase}
-html .account-refresh .account-profile{align-items:center;gap:10px}
-html .account-refresh .avatar{width:44px;height:44px;flex:0 0 44px;box-shadow:none;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-size:20px;font-weight:500}
-html .account-refresh .account-profile h1{margin:0;font-size:20px;font-weight:500;line-height:1.15;letter-spacing:-.035em;overflow-wrap:anywhere}
-html .account-refresh .account-meta{margin-top:3px;font-size:14px;line-height:1.4;overflow-wrap:anywhere;color:var(--muted)}
-.account-trip-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px;padding-top:10px;border-top:1px dashed var(--accent)}
-.account-trip-summary>div{display:flex;flex-direction:column;gap:2px}
-.account-trip-summary strong{font-size:20px;font-weight:500;line-height:1.1;font-variant-numeric:tabular-nums}
-.account-trip-summary span{font-size:12px;color:var(--muted)}
-html .account-refresh .account-signout-btn{display:flex;align-items:center;gap:6px;margin:2px 0 -8px;padding:8px 0;min-height:44px;border:0;border-radius:0;background:transparent;color:var(--accent);font-size:14px;font-weight:700}
-.account-guest-note{margin:8px 0 0;font-size:12px;line-height:1.4;color:var(--muted)}
-html .account-refresh .account-signin{margin:16px 0 0;padding:18px;border-radius:18px;background:var(--surface);border:0}
-html .account-refresh .account-signin h2{font-size:20px;font-weight:500;line-height:1.2}
-html .account-refresh .account-signin p{font-size:14px;line-height:1.5;margin:8px 0 14px}
-.account-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
-.account-shortcuts>button{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px 8px;min-width:0;min-height:116px;padding:16px;border:0;border-radius:18px;background:var(--flight-soft);color:var(--ink);text-align:left;font-family:inherit}
-.account-shortcuts>button:nth-child(2){background:var(--stay-soft)}
-.account-shortcuts>button>.ph-svg:first-child{grid-column:1 / -1}
-.account-shortcuts>button>span{display:flex;flex-direction:column;gap:5px;font-size:16px;font-weight:500}
-.account-shortcuts small{font-size:12px;font-weight:400;color:var(--muted)}
-html .account-refresh .account-settings-group{margin-top:26px}
-html .account-refresh .section-label{margin:0 0 8px;font-size:16px;line-height:1.4;font-weight:500;color:var(--ink);letter-spacing:-.015em;text-transform:none}
-
-html .account-refresh .simple-row{grid-template-columns:24px minmax(0,1fr) 18px!important;gap:12px;min-height:70px;padding:12px 0;border:0;background:transparent}
-html .account-refresh .account-list>*+*{border-top:1px solid var(--line)}
-html .account-refresh .simple-row .row-icon{width:24px;height:24px;border-radius:0;background:transparent;color:var(--muted)}
-html .account-refresh .simple-row .chevron{display:block!important;width:18px;height:18px;color:var(--muted)}
-html .account-refresh .simple-row .row-copy strong{font-size:16px;line-height:1.35;font-weight:400;white-space:normal;overflow-wrap:anywhere}
-html .account-refresh .simple-row .row-copy span{font-size:14px;line-height:1.4;color:var(--muted)}
-html .account-refresh .account-data-section .simple-row .row-copy strong,html .account-refresh .account-data-section .simple-row .row-icon{color:var(--red)}
-html .account-refresh .account-partner-disclosure{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}
-html .account-refresh .account-footer-brand{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 0;padding:0}
-html .account-refresh .account-brand{margin:0;font-size:24px;font-weight:500}
-html .account-refresh .app-version{margin:0;font-size:12px}
-html .account-refresh main button:focus-visible,html .account-refresh main a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-@media(max-width:359px){html .account-refresh .account-section{padding-inline:16px}html .account-refresh .account-passport{padding:14px}html .account-refresh .account-profile{gap:10px}html .account-refresh .avatar{width:44px;height:44px;flex-basis:44px;border-radius:14px}.account-shortcuts{gap:10px}.account-shortcuts>button{padding:14px}}
-
-/* Checklist: compact packing progress and a clear, flat task list. */
-html .cl-refresh{gap:22px}
-html .cl-refresh .cl-progress{display:flex;gap:0;padding:18px;border:0;border-radius:18px!important;background:var(--stay-soft)!important;color:var(--ink);box-shadow:none}
-.cl-progress__top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;color:var(--green)}
-.cl-trip-name{min-width:0;font-size:14px;line-height:1.35;overflow-wrap:anywhere}
-.cl-progress__top>.ph-svg{flex-shrink:0}
-.cl-progress__summary{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.cl-progress__summary>div{min-width:0}
-html .cl-refresh .cl-progress h1{margin:0 0 6px;font-size:24px;line-height:1.15;font-weight:500;letter-spacing:-.035em;overflow-wrap:anywhere}
-html .cl-refresh .cl-progress small{font-size:14px;line-height:1.4;color:var(--muted)}
-html .cl-refresh .cl-percent{font-size:32px;line-height:1;font-weight:500;letter-spacing:-.04em;white-space:nowrap;color:var(--green);font-variant-numeric:tabular-nums}
-html .cl-refresh .cl-percent small{font-size:14px;color:var(--green)}
-html .cl-refresh .cl-bar{width:100%;height:6px;margin-top:18px;background:color-mix(in srgb,var(--green) 14%,transparent);border-radius:8px}
-html .cl-refresh .cl-bar__fill{background:var(--green)}
-html .cl-refresh .cl-add{gap:8px;padding:6px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
-html .cl-refresh .cl-add__input{height:44px;padding:0 8px;border:0;border-radius:10px;background:transparent;box-shadow:none;font-size:16px}
-html .cl-refresh .cl-add__btn{width:44px;height:44px;border-radius:12px;background:var(--activity-soft);color:var(--accent)}
-html .cl-refresh .cl-section{gap:6px}
-html .cl-refresh .cl-section>h2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;font-size:16px;line-height:1.5;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink)}
-.cl-refresh .cl-section>h2>span{font-size:14px;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
-
-html .cl-refresh .cl-row{gap:0;padding:3px 0;min-height:62px;border:0;border-bottom:1px solid var(--line);background:transparent}
-html .cl-refresh .cl-row:last-child{border-bottom:0}
-html .cl-refresh .cl-row__toggle{min-height:56px;gap:12px;padding:8px 4px 8px 0;font-size:16px;line-height:1.4}
-html .cl-refresh .cl-check{width:24px;height:24px;border:1.5px solid var(--line-strong);border-radius:8px;background:var(--card)}
-html .cl-refresh .cl-row.is-complete .cl-check{background:var(--stay-soft);border-color:var(--stay-soft);color:var(--green)}
-html .cl-refresh .cl-row__act{width:44px;height:44px;border-radius:10px;background:transparent;color:var(--muted)}
-html .cl-refresh .cl-row__del:hover{color:var(--red)}
-html .cl-refresh .cl-row.is-complete .cl-row__title{color:var(--muted);text-decoration-color:var(--line-strong)}
-html .cl-refresh .cl-row--editing{padding:8px 0}
-html .cl-refresh .cl-edit__input{border-radius:10px;border-color:var(--accent);background:var(--card)}
-html .cl-refresh .cl-edit__save{background:var(--activity-soft);color:var(--accent)}
-html .cl-refresh .cl-suggest__label{margin:0;font-size:16px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink)}
-html .cl-refresh .cl-chip{min-height:44px;border:0;border-radius:12px;background:var(--flight-soft);color:var(--ink);font-size:14px}
-html .cl-refresh .cl-chip:nth-child(3n+2){background:var(--transfer-soft)}
-html .cl-refresh .cl-chip:nth-child(3n){background:var(--activity-soft)}
-html .cl-refresh button:focus-visible,html .cl-refresh input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media(max-width:359px){html .cl-refresh .cl-progress{padding:16px}html .cl-refresh .cl-progress h1{font-size:20px}html .cl-refresh .cl-percent{font-size:28px}html .cl-refresh .cl-row__toggle{gap:8px}}
-@media(prefers-reduced-motion:reduce){html .cl-refresh .cl-bar__fill{transition:none}}
+/* Account uses the same grouped rows as Trip options and the shared form actions. */
+html body .account-page .account-section{display:flex;flex-direction:column;gap:var(--space-6);padding:var(--space-4)}
+.account-profile-card{display:grid;gap:var(--space-4)}
+.account-page .account-profile{gap:var(--space-3)}
+.account-avatar{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:var(--radius-control);background:var(--activity-soft);color:var(--accent);font-size:20px;font-weight:var(--weight-semibold)}
+html body .phone-app>.account-page>.mobile-page .account-profile h1{margin:0;font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.3;letter-spacing:-.02em;overflow-wrap:anywhere}
+.account-page .account-meta{margin:var(--space-1) 0 0;font-size:var(--type-meta);line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
+.account-trip-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2);padding:var(--space-3);border-radius:var(--radius-control);background:var(--surface)}
+.account-trip-summary>div{display:grid;gap:var(--space-1);text-align:center}
+.account-trip-summary strong{font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.2;font-variant-numeric:tabular-nums}
+.account-trip-summary span{font-size:var(--type-meta);line-height:1.3;color:var(--muted)}
+html body .account-page .account-signout-btn{justify-self:start;min-height:44px;margin:-8px 0;padding:0 var(--space-2);border:0;border-radius:var(--radius-control);background:transparent;color:var(--accent);font-size:var(--type-meta);font-weight:var(--weight-semibold)}
+html body .account-page .account-signin{margin:0;padding:var(--space-4);border:1px solid var(--line);border-radius:var(--radius-regular);background:var(--card)}
+.account-page .account-signin h2{margin:0;font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.3}
+.account-page .account-signin p{margin:var(--space-2) 0 var(--space-4);font-size:var(--type-meta);line-height:1.45}
+.account-page .account-signin .signin-error{margin-bottom:0}
+.account-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+.account-shortcuts>button{min-width:0}
+.account-settings-group{display:grid;gap:var(--space-2)}
+.account-settings-group .ds-section-header{margin:0}
+.account-partner-row{text-decoration:none}
+html body .account-danger-row .ds-flat-row__copy strong{color:var(--red)}
+html body .account-danger-row .ds-pastel-icon{background:var(--red-soft);color:var(--red)}
+.account-partner-disclosure{margin:0;font-size:12px;line-height:1.45;color:var(--muted)}
+.account-footer-brand{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+.account-brand{display:block;min-height:44px;padding:0;border:0;background:transparent;font:inherit;font-size:24px;font-weight:var(--weight-semibold);letter-spacing:-.05em;color:var(--ink);cursor:pointer}
+.account-brand span{color:var(--accent)}
+.account-page .app-version{margin:0;font-size:12px}
+.account-page main button:focus-visible,.account-page main a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* Trip options: everyday tools first, quieter utility rows below. */
 html .trip-options-page .mobile-page{gap:26px;padding:12px 16px calc(108px + env(safe-area-inset-bottom))}
@@ -3829,12 +3753,6 @@ html body .ready-content,html body .health-content{padding:var(--space-4)}
 html body .ready-content .offline-summary,html body .health-content .health-summary{margin:0 0 var(--space-4);padding:var(--space-4);border:0;border-radius:var(--radius-hero);background:var(--activity-soft);box-shadow:none}
 html body .ready-content .info-card,html body .health-content .health-card{min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
 html body .health-content .list-stack{padding:0}
-html body .cl-progress{border-radius:var(--radius-hero);box-shadow:none}
-html body .cl-section{padding:0;border:0}
-html body .cl-list{border-top:0}
-html body .cl-row{min-height:var(--row-height);border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
-html body .account-v2 .account-signin,html body .account-v2 .account-card{border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
-html body .account-v2 .simple-row{min-height:var(--row-height);border-bottom:1px solid var(--line)}
 html body .collab-hero{border-radius:var(--radius-hero);background:var(--activity-soft);box-shadow:none}
 html body .collab-signin{padding:var(--space-4) 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
 html body .collab-benefit{min-height:var(--row-height);padding:var(--space-3) 0}
