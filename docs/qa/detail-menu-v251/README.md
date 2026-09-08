@@ -17,3 +17,9 @@ Menu closes before native sharing or a deletion confirmation opens. Cancelling n
 - Cloudflare dry run passed with the production account. Cache namespace is `tripto-shell-product-v251-detail-menu`; shell asset query is `flat-design-system-v173`.
 
 Production deployment and public verification are recorded separately in `release.json`.
+
+## Publication
+
+Application commit `2ab9d18` is pushed to `fix/keyboard-header-20260907` without a main merge. Worker `5fa27827-544c-4aee-a2ae-8a1079ef48de` serves 100% of traffic. All six checked public assets match the local release. `/health` and D1 are healthy, with feature flags unchanged.
+
+The public browser loaded `flat-design-system-v173`. Normal-mode Trips retained its protected header. Detail Menu and direct Edit were verified using isolated preview data on the production host because the available signed-in trip contained no bookings. No production records were changed.

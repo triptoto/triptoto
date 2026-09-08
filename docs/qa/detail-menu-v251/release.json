@@ -1,0 +1,76 @@
+{
+  "url": "https://tripto.to/",
+  "version": "5fa27827-544c-4aee-a2ae-8a1079ef48de",
+  "previous_version": "2393affc-4425-4add-bbb2-1bd3ac42ea9a",
+  "commit": "2ab9d18134aacbd032d6b90ab12a6583c5008f01",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v251-detail-menu",
+  "asset_version": "flat-design-system-v173",
+  "checked_at": "2026-09-08T16:57:43.728618+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788886663576
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "124dbc02052bf8a899e6560c6ec838a2b3ce03657ba3921cc4aab381c308b780",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "d53013dd1eeefddad69c523ac8f3c049d237ee490fbfa85f08934a6677a9196d",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "sha256": "638345a30e943150b2ebfad2498a8e82ac4a78272ee63fe72af8210af6f490d2",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "b24ef133da03a31720439022aaced622b1850192266158ee05d69ef3cd88d2e3",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "8b9650ed8cf821cc55c6d3362fffc7f03db95a715ad7d765c93ae1decfe99f08",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "f452e8e425cf63f2035dbc40f03c9087f20c2f27566f652da64cffae1f2649c1",
+      "matches_local": true
+    }
+  },
+  "traffic_percent": 100,
+  "public_browser": {
+    "asset_version": "flat-design-system-v173",
+    "normal_mode": [
+      "Trips keeps Account and Create trip",
+      "Global menu routes remain available"
+    ],
+    "detail_check_mode": "Isolated preview on production host; signed-in trip contained no bookings. No production records were added or changed.",
+    "detail_checks": [
+      "68px header",
+      "No second action row",
+      "Edit and Share in Menu",
+      "Move and Delete remain accessible",
+      "Four global links retained",
+      "Edit opens prefilled Wine tasting form with visible Save"
+    ],
+    "console_errors": []
+  }
+}
