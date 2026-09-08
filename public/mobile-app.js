@@ -583,7 +583,11 @@
   }
   function routeEntityForId(screen, id) {
     const wanted = String(id || "");
-    return routeEntities(screen).find((entity) => itemId(entity) === wanted) || null;
+    const collectionRoute = ["collection", "collection-form", "stop-form"].includes(screen);
+    return routeEntities(screen).find((entity) =>
+      itemId(entity) === wanted ||
+      (collectionRoute && String(val(entity, "trip_item_id") || "") === wanted),
+    ) || null;
   }
   function resolveRouteId(screen, rawId) {
     const wanted = String(rawId || "");
@@ -592,6 +596,28 @@
     if (exact) return itemId(exact);
     const match = routeEntities(screen).find((entity) => routeEntitySlug(screen, entity) === wanted);
     return match ? itemId(match) : null;
+  }
+  // Detail routes carry a private record ID (or its readable slug). A stale
+  // link must never leave that unresolved ID in state: detail screens otherwise
+  // render the misleading generic "Plan unavailable" page.
+  const ENTITY_ROUTE_SCREENS = new Set([
+    "flight", "hotel", "train", "plan", "traveler", "collection",
+    "collection-form", "stop-form", "day-plan-form", "add-to-plan",
+  ]);
+  const MISSING_ENTITY_DESTINATIONS = Object.freeze({
+    flight: "bookings", hotel: "bookings", train: "bookings", plan: "timeline",
+    traveler: "travelers", collection: "planning", "collection-form": "day-plan",
+    "stop-form": "planning", "day-plan-form": "day-plan", "add-to-plan": "save-later",
+  });
+  function isNewEntityRoute(screen, rawId) {
+    return ["collection-form", "day-plan-form"].includes(screen) &&
+      String(rawId || "").startsWith("new:");
+  }
+  function requiresResolvedRouteEntity(screen, rawId) {
+    return Boolean(rawId) && ENTITY_ROUTE_SCREENS.has(screen) && !isNewEntityRoute(screen, rawId);
+  }
+  function missingEntityDestination(screen) {
+    return { screen: MISSING_ENTITY_DESTINATIONS[screen] || "timeline", id: null };
   }
   function applyRouteTripSelection() {
     const parsed = parseRoute();
@@ -607,10 +633,16 @@
     if (parsed.screen === "timeline" && parsed.id) {
       applyRouteTripSelection();
       state.selectedId = null;
-      return;
+      return true;
     }
+    if (!requiresResolvedRouteEntity(parsed.screen, parsed.id)) return true;
     const resolved = resolveRouteId(parsed.screen, parsed.id);
-    if (resolved) state.selectedId = resolved;
+    if (resolved) {
+      state.selectedId = resolved;
+      return true;
+    }
+    state.selectedId = null;
+    return false;
   }
   function readableRouteId(screen, id) {
     const wanted = String(id || "");
@@ -620,8 +652,21 @@
   }
   function canonicalizeAppRoute() {
     if (state.loading || !state.tripsLoaded) return;
-    resolveRouteSelection();
     const parsed = parseRoute();
+    const hasResolvedSelection = resolveRouteSelection();
+    if (requiresResolvedRouteEntity(parsed.screen, parsed.id) && !hasResolvedSelection) {
+      const fallback = missingEntityDestination(parsed.screen);
+      state.screen = fallback.screen;
+      state.selectedId = fallback.id;
+      state.sheet = null;
+      const fallbackUrl = routeUrl(fallback.screen, fallback.id);
+      history.replaceState(
+        routeHistoryState(fallback.screen, fallback.id, routeHistoryIndex()),
+        "",
+        fallbackUrl,
+      );
+      return;
+    }
     const screen = parsed.screen === "timeline" ? "timeline" : state.screen;
     const id = screen === "timeline" ? state.trip?.id || parsed.id : state.selectedId || parsed.id;
     const nextUrl = routeUrl(screen, id);
@@ -2031,6 +2076,38 @@
   function stayForItem(id) {
     return state.stays.find((x) => itemId(x) === String(id)) || null;
   }
+  // All timeline, booking-list, and notification routes use this one resolver.
+  // It only opens a detail page after the current trip data confirms the item;
+  // deleted or stale notifications therefore cannot route into a blank detail.
+  function detailRouteForItem(rawId) {
+    const id = String(rawId || "");
+    if (!id) return null;
+    const collection = collectionForItem(id);
+    if (collection) return { screen: "collection", id: itemId(collection) };
+    const transport = transportForItem(id);
+    if (transport) {
+      const kind = String(val(transport, "transport_type") || "");
+      if (kind === "flight") return { screen: "flight", id: itemId(transport) };
+      if (["train", "ferry"].includes(kind)) return { screen: "train", id: itemId(transport) };
+    }
+    const stay = stayForItem(id);
+    if (stay) return { screen: "hotel", id: itemId(stay) };
+    const timelineItem = (state.timeline || []).find((item) => itemId(item) === id);
+    return timelineItem ? { screen: "plan", id: itemId(timelineItem) } : null;
+  }
+  function openTimelineItemDetail(rawId) {
+    if (state.tripDetailsLoading) {
+      showToast("Your trip is still loading. Try again in a moment.");
+      return false;
+    }
+    const destination = detailRouteForItem(rawId);
+    if (!destination) {
+      showToast("This item is no longer available. Your trip is unchanged.", "alert");
+      return false;
+    }
+    route(destination.screen, destination.id);
+    return true;
+  }
   function selectedFlight() {
     const flights = state.transport.filter(
       (x) => String(val(x, "transport_type")) === "flight" && !isCancelled(x),
@@ -3005,12 +3082,15 @@
       results[index] && results[index].status === "fulfilled"
         ? (results[index].value?.[key] ?? fallback)
         : fallback;
-    state.timeline = take(0, "items", []);
+    // Every section is independently cached. Keep the last good section if a
+    // secondary request fails, rather than emptying the whole trip because one
+    // optional endpoint (for example collections or live-flight data) is down.
+    state.timeline = take(0, "items", state.timeline || []);
     state.timelineDayKey = null;
-    state.checklist = normalizeChecklist(take(1, "items", []));
-    state.brain = take(2, "brain", null);
-    state.impacts = take(3, "impacts", []);
-    state.transport = take(4, "transport", []);
+    state.checklist = normalizeChecklist(take(1, "items", state.checklist || []));
+    state.brain = take(2, "brain", state.brain || null);
+    state.impacts = take(3, "impacts", state.impacts || []);
+    state.transport = take(4, "transport", state.transport || []);
     state.liveFlights =
       results[4] && results[4].status === "fulfilled"
         ? results[4].value?.liveFlights || {
@@ -3019,26 +3099,26 @@
             betaOnly: true,
             reason: "disabled",
           }
-        : { enabled: false, available: false, betaOnly: true, reason: "unavailable" };
-    state.stays = take(5, "stays", []);
-    state.locations = take(6, "locations", []);
-    state.travelers = take(7, "travelers", []);
-    state.connections = take(8, "connections", []);
-    state.health = take(9, "health", null);
-    state.bookingDetails = take(10, "bookingDetails", []);
-    state.contacts = take(11, "contacts", []);
+        : state.liveFlights || { enabled: false, available: false, betaOnly: true, reason: "unavailable" };
+    state.stays = take(5, "stays", state.stays || []);
+    state.locations = take(6, "locations", state.locations || []);
+    state.travelers = take(7, "travelers", state.travelers || []);
+    state.connections = take(8, "connections", state.connections || []);
+    state.health = take(9, "health", state.health || null);
+    state.bookingDetails = take(10, "bookingDetails", state.bookingDetails || []);
+    state.contacts = take(11, "contacts", state.contacts || []);
     state.syncStatus = take(
       12,
       "sync",
-      results[12] && results[12].status === "fulfilled" ? results[12].value : null,
+      state.syncStatus || null,
     );
     const activityDetails = take(13, "activities", []),
       activityById = new Map(activityDetails.map((item) => [String(item.id), item]));
     state.timeline = state.timeline.map((item) => activityById.has(String(item.id)) ? { ...item, ...activityById.get(String(item.id)) } : item);
-    state.imports = take(14, "imports", []);
-    state.changes = take(15, "changes", []);
-    state.collections = take(16, "collections", []);
-    state.collectionStops = take(16, "stops", []);
+    state.imports = take(14, "imports", state.imports || []);
+    state.changes = take(15, "changes", state.changes || []);
+    state.collections = take(16, "collections", state.collections || []);
+    state.collectionStops = take(16, "stops", state.collectionStops || []);
   }
   // Imports that still need the traveler to review/confirm them (the unread set).
   function pendingImportCount() {
@@ -3088,16 +3168,16 @@
       resetCollaborationState();
     const [results, localDocs] = await Promise.all([
       Promise.allSettled(tripDetailPaths().map(apiGet)),
-      listLocalDocs(tripId),
+      // Local documents improve offline use but must never block the itinerary
+      // if this browser temporarily cannot open IndexedDB.
+      listLocalDocs(tripId).catch(() => []),
     ]);
     // Drop the response if the user switched trips while it was in flight, so a
     // slow request can never overwrite the newly-opened trip's data.
     if (state.trip?.id !== tripId) return;
-    const failed = results.filter((result) => result.status === "rejected");
-    if (failed.length) {
-      const first = failed[0].reason;
-      throw Object.assign(new Error(`Some trip details could not be loaded (${failed.length} section${failed.length === 1 ? "" : "s"}). Existing information has been kept.`), { cause: first, status: first?.status, code: first?.code });
-    }
+    // Do not make the entire itinerary unavailable when one independent
+    // section fails. applyTripDetails keeps the last verified values for any
+    // rejected request and still applies the sections that did arrive.
     applyTripDetails(results);
     state.localDocs = localDocs;
     if (state.trip?.id !== tripId) return;
@@ -8276,7 +8356,7 @@
       bindDynamic();
       return;
     }
-    if (state.error && !state.trip) {
+    if (state.error) {
       app.innerHTML = decorateScreen(errorScreen()) + toast();
       bindDynamic();
       return;
@@ -8401,7 +8481,7 @@
     const app = document.getElementById("app");
     const background = app?.querySelector(".phone-app");
     const canKeepPage = !state.sheet && name !== "driver" && background &&
-      !state.loading && !state.googleAuthHandoffStatus && !(state.error && !state.trip);
+      !state.loading && !state.googleAuthHandoffStatus && !state.error;
     if (!state.sheet)
       sheetReturnFocus = focusKeyFor(opener || document.activeElement);
     state.sheet = name;
@@ -10826,24 +10906,11 @@
         break;
       }
       case "timeline-detail": {
-        const id = target.dataset.id,
-          transport = transportForItem(id),
-          stay = stayForItem(id);
-        if (collectionForItem(id)) route("collection", id);
-        else if (transport && String(val(transport, "transport_type")) === "flight")
-          route("flight", id);
-        else if (transport && ["train", "ferry"].includes(String(val(transport, "transport_type")))) route("train", id);
-        else if (stay) route("hotel", id);
-        else route("plan", id);
+        openTimelineItemDetail(target.dataset.id);
         break;
       }
       case "booking-detail": {
-        const kind = target.dataset.kind,
-          id = target.dataset.id;
-        if (kind === "flight") route("flight", id);
-        else if (kind === "hotel") route("hotel", id);
-        else if (["train", "ferry"].includes(kind)) route("train", id);
-        else route("plan", id);
+        openTimelineItemDetail(target.dataset.id);
         break;
       }
       case "refresh-booking-email-inbox":
@@ -10920,14 +10987,8 @@
         openSheet("notifications", target);
         break;
       case "notification-open": {
-        const id = target.dataset.id,
-          transport = transportForItem(id),
-          stay = stayForItem(id);
         closeSheet();
-        if (transport && String(val(transport, "transport_type")) === "flight") route("flight", id);
-        else if (transport && ["train", "ferry"].includes(String(val(transport, "transport_type")))) route("train", id);
-        else if (stay) route("hotel", id);
-        else route("plan", id);
+        openTimelineItemDetail(target.dataset.id);
         break;
       }
       case "open-upcoming-trips":
@@ -11402,7 +11463,27 @@
       requestDiscardChanges(() => history.back());
       return;
     }
-    const nextId = next.screen === "timeline" ? null : resolveRouteId(next.screen, next.id) || next.id;
+    const resolvedId = next.screen === "timeline" ? null : resolveRouteId(next.screen, next.id);
+    if (
+      state.tripsLoaded &&
+      requiresResolvedRouteEntity(next.screen, next.id) &&
+      !resolvedId
+    ) {
+      const fallback = missingEntityDestination(next.screen);
+      state.screen = fallback.screen;
+      state.selectedId = fallback.id;
+      state.sheet = null;
+      history.replaceState(
+        routeHistoryState(fallback.screen, fallback.id, routeHistoryIndex()),
+        "",
+        routeUrl(fallback.screen, fallback.id),
+      );
+      transitionRender();
+      maybeLoadScreenData();
+      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
+      return;
+    }
+    const nextId = next.screen === "timeline" ? null : resolvedId || next.id;
     if (next.screen === "timeline") applyRouteTripSelection();
     scrollPositions.set(state.screen, window.scrollY);
     if (
