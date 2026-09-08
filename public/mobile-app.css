@@ -3663,12 +3663,13 @@ button.mini-stop__hit:active{background:var(--surface)}
   .collection-page .mini-stop__marker{width:42px;height:42px}
   .collection-page .mini-stop__content{padding-left:11px}
 }
-.collection-page .focused-page>.primary-cta{display:grid;grid-template-columns:36px minmax(0,1fr) 20px;align-items:center;gap:10px;width:100%;max-width:none;min-height:64px;margin:0;padding:8px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card);color:var(--ink);box-shadow:none;text-align:left}
-.collection-page .focused-page>.primary-cta:active{background:var(--surface);transform:scale(.99)}
-.collection-page .focused-page>.primary-cta .cta-left{display:contents}
-.collection-page .focused-page>.primary-cta .cta-left>.app-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--activity-soft);color:var(--accent)}
-.collection-page .focused-page>.primary-cta .cta-left>span{font-size:15px;font-weight:var(--weight-semibold)}
-.collection-page .focused-page>.primary-cta>.app-icon{justify-self:end;color:var(--muted)}
+/* Adding a place is an immediate page action, so it sits beside edit/delete
+   in the header instead of pushing the first stop down with a large row. */
+html body .collection-page .app-bar .collection-header-add{color:var(--accent)}
+html body .collection-page .app-bar .collection-header-add:active{background:var(--activity-soft)}
+@media(max-width:359px){
+  html body .collection-page .app-bar .app-bar-title strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
 
 /* Plan-your-days cards on the Add screen + form intros */
 .manual-add-card--plan{background:var(--surface)}
