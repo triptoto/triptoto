@@ -5035,7 +5035,7 @@
   // bucket is derived from the activity_type it was tagged with.
   const SAVE_LATER_BUCKET_FOR = Object.freeze({ food_drink: "food_drink", shopping: "shopping" });
   function saveLaterBucketForType(activityType) { return SAVE_LATER_BUCKET_FOR[String(activityType || "")] || "place"; }
-  const PLACE_TYPE_OPTIONS = [["", "No type"], ["cafe", "Cafe"], ["restaurant", "Restaurant"], ["attraction", "Attraction"], ["museum", "Museum"], ["shop", "Shop"], ["market", "Market"], ["park", "Park"], ["activity", "Activity"], ["viewpoint", "Viewpoint"], ["monument", "Monument"], ["street", "Street"], ["other", "Other"]];
+  const PLACE_TYPE_OPTIONS = [["", "Choose a type"], ["cafe", "Cafe"], ["restaurant", "Restaurant"], ["attraction", "Attraction"], ["museum", "Museum"], ["shop", "Shop"], ["market", "Market"], ["park", "Park"], ["activity", "Activity"], ["viewpoint", "Viewpoint"], ["monument", "Monument"], ["street", "Street"], ["other", "Other"]];
   const STOP_STATE_LABEL = { next: "Next", future: "Upcoming", past: "Visited", skipped: "Skipped" };
   function collectionConfig(type) { return COLLECTION_TYPE_CONFIG[String(type || "")] || null; }
   function collectionForItem(id) {
@@ -5243,7 +5243,7 @@
     // Existing bookings that can be grouped into this plan without duplication.
     const linkable = (state.timeline || []).filter((it) => !isCollectionItem(it) && String(itemId(it)) !== String(collectionId));
     const linkChoices = `<option value="">Not linked</option>` + linkable.map((it) => `<option value="${esc(itemId(it))}"${String(s.linked_trip_item_id || "") === String(itemId(it)) ? " selected" : ""}>${esc(it.title || "Booking")}</option>`).join("");
-    const statusField = editingStop ? field("status", "Status", "", { type: "select", choices: statusChoices, wide: false }) : "";
+    const statusField = editingStop ? field("status", "Status", "", { type: "select", choices: statusChoices }) : "";
     const form = `<form class="mobile-form premium-form stop-form" id="stop-form" data-collection="${esc(collectionId)}"${editingStop ? ` data-edit-id="${esc(s.id)}"` : ""} novalidate><header class="manual-form-heading"><span>${esc(editingStop ? "Edit " + cfg.stop : "Add " + cfg.stop)}</span><h1>${esc(editingStop ? s.title || "Place" : "New " + cfg.stop)}</h1></header><section class="form-section manual-essentials" aria-labelledby="stop-essentials-title"><h2 id="stop-essentials-title">Details</h2><div class="quick-primary-fields">${field("title", "Name", s.title, { required: true, placeholder: "Place name" })}<div class="form-fields form-fields--date-time">${field("scheduledTime", "Time", s.scheduled_time, { type: "time", wide: false })}${field("placeType", "Type", "", { type: "select", choices: placeChoices, wide: false })}</div>${field("streetAddress", "Address", s.address_snapshot, { placeholder: "Street address or area" })}${statusField}${field("notes", "Notes", s.notes, { type: "textarea" })}</div><input type="hidden" name="timezone" value="${esc(s.timezone || val(c, "start_timezone") || tripDefaultTimezone() || "UTC")}"></section></form>`;
     return focusedTaskPage(editingStop ? `Edit ${cfg.stop}` : `Add ${cfg.stop}`, form, "form-screen stop-form-screen", formHeaderSave("stop-form", "Save"));
   }
@@ -5273,7 +5273,7 @@
     const status = String(stop.status || "planned");
     const bits = [];
     if (stop.scheduled_time) bits.push(esc(String(stop.scheduled_time)));
-    const typeLabel = (PLACE_TYPE_OPTIONS.find(([v]) => v === String(stop.place_type || ""))?.[1]) || "";
+    const typeLabel = stop.place_type ? (PLACE_TYPE_OPTIONS.find(([v]) => v === String(stop.place_type))?.[1]) || "" : "";
     if (typeLabel) bits.push(esc(typeLabel));
     const statusChip = status === "visited"
       ? `<span class="stop-meta__chip stop-meta__chip--done">${icon("check", 13)}Visited</span>`

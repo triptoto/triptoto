@@ -64,5 +64,10 @@ assert.match(css, /collection-form-screen[^{]*collection-schedule\{[^}]*grid-col
 assert.ok(js.includes('function sheetActionRow('), 'item action sheets must share one row primitive');
 assert.ok(!js.includes('class="stop-action'), 'legacy nested-card action rows must not survive in item sheets');
 assert.match(css, /bottom-sheet[^{]*sheet-action-row\{[^}]*grid-template-columns:40px minmax\(0,1fr\) 20px!important/);
+assert.ok(js.includes('[["", "Choose a type"]'), 'an unset place type must read as a clear choice');
+assert.ok(js.includes('field("status", "Status", "", { type: "select", choices: statusChoices })'), 'place status must use the full-width shared control');
+assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*quick-primary-fields[^{]*\{[^}]*grid-template-columns:minmax\(0,1fr\)!important/);
+assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*form-field :is\(input,select,textarea\)\{[^}]*border:1px solid var\(--line-strong\)!important/);
+assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*form-field select\{[^}]*background-image:url/);
 
 console.log("Unified Tripto Flat Travel design-system contract passed.");
