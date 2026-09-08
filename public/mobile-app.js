@@ -4764,7 +4764,7 @@
     return bottomNav(active);
   }
   function PageShell({ title, body, active = "trips", right = "", extraClass = "", task = false }) {
-    const shellClass = `screen mobile-v1-screen ${esc(extraClass)}`;
+    const shellClass = `screen mobile-v1-screen app-surface ${esc(extraClass)}`;
     return `<div class="phone-app"><section class="${shellClass}">${AppHeader(title, "", false, right)}${mobileAlert()}<main class="${task ? "focused-page" : "mobile-page"}">${body}</main>${task ? "" : BottomNavigation(active)}</section></div>`;
   }
   function formHeaderSave(formId, label) {
@@ -4877,6 +4877,28 @@
     const countdown = label === "Upcoming" ? tripCountdownLabel(trip) : "";
     return `<li class="journal-row-wrap" data-swipe-row><button type="button" class="journal-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="journal-row${archived ? " journal-row--archive" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}"><span class="journal-row__date" aria-hidden="true">${stamp}</span><span class="journal-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span>${countdown || label === "Cancelled" ? `<span class="journal-row__status">${icon("clock", 16)} ${esc(countdown || "Cancelled")}</span>` : ""}<span class="journal-row__arrow" aria-hidden="true">${icon("chevron", 18)}</span></button></li>`;
   }
+  // Trips is a root destination, so it uses the same centered app bar as the
+  // rest of the product without exposing a misleading back button. The add
+  // action stays in the header alongside other collection-level actions.
+  function tripsPageHeader() {
+    return `<header class="app-bar app-bar--root trips-app-bar"><span class="app-bar-spacer" aria-hidden="true"></span><div class="app-bar-title"><strong>Trips</strong></div><div class="app-bar-actions"><button type="button" class="icon-button trips-header-add" data-action="create-trip" aria-label="Create trip">${icon("plus", 24)}</button></div></header>`;
+  }
+  function tripListRow(trip, label) {
+    const isCurrent = label === "Current";
+    const isPast = label === "Past";
+    const isCancelled = label === "Cancelled";
+    const days = isCurrent ? journalDays(trip) : null;
+    const dateMeta = `${formatTripDates(trip)}${days ? ` · Day ${days.day} of ${days.total}` : ""}`;
+    const status = isCurrent
+      ? "Current"
+      : isCancelled
+        ? "Cancelled"
+        : isPast
+          ? "Completed"
+          : tripCountdownLabel(trip) || "Upcoming";
+    const iconName = isCurrent ? "directions" : isCancelled ? "close" : isPast ? "clock" : tripMarkIcon(trip);
+    return `<li class="trip-list-row-wrap" data-swipe-row><button type="button" class="trip-list-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="trip-list-row ds-flat-row${isCurrent ? " trip-list-row--current" : ""}${isPast ? " trip-list-row--past" : ""}${isCancelled ? " trip-list-row--cancelled" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}"><span class="trip-list-row__mark" aria-hidden="true">${icon(iconName, 22)}</span><span class="ds-flat-row__copy trip-list-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(dateMeta)}</small>${tripSharedBadge(trip)}<span class="trip-list-row__status">${esc(status)}</span></span>${icon("chevron", 18, "ds-flat-row__chevron")}</button></li>`;
+  }
   function tripListScreen() {
     const filters = [["all","All"],["current","Current"],["upcoming","Upcoming"],["past","Past"]];
     const filter = filters.some(([key]) => key === state.tripFilter) ? state.tripFilter : "all";
@@ -4885,18 +4907,16 @@
       const sa = String(val(a, "starts_on", "startsOn") || "9999-12-31"), sb = String(val(b, "starts_on", "startsOn") || "9999-12-31");
       return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
     })]));
-    const filterBar = `<div class="trip-filters journal-filters" role="group" aria-label="Filter trips">${filters.map(([key,label]) => `<button type="button" data-action="filter-trips" data-filter="${key}" aria-pressed="${filter === key}" class="trip-filter${filter === key ? " is-active" : ""}">${label}<span>${key === "all" ? state.trips.length : groups[label].length}</span></button>`).join("")}</div>`;
+    const filterBar = `<div class="ds-segmented trips-filter" role="group" aria-label="Filter trips">${filters.map(([key,label]) => `<button type="button" data-action="filter-trips" data-filter="${key}" aria-pressed="${filter === key}" class="${filter === key ? "is-active" : ""}">${label}<span>${key === "all" ? state.trips.length : groups[label].length}</span></button>`).join("")}</div>`;
     const content = order.filter((label) => filter === "all" || label.toLowerCase() === filter).map((label) => {
       const trips = groups[label];
       if (!trips.length) return "";
-      if (label === "Current") return trips.map(journalCurrentTrip).join("");
-      const featured = label === "Upcoming" && (filter === "upcoming" || !groups.Current.length) && journalDate(val(trips[0], "starts_on", "startsOn")) ? trips[0] : null;
-      const remaining = featured ? trips.slice(1) : trips;
-      return `${featured ? journalNextTrip(featured) : ""}${remaining.length ? `<section class="journal-group"><header><h2>${label === "Past" ? "Good memories" : label === "Upcoming" ? featured ? "More to look forward to" : "On the horizon" : label}</h2><span>${remaining.length}</span></header><ul>${remaining.map((trip) => journalTripRow(trip, label)).join("")}</ul></section>` : ""}`;
+      const heading = label === "Past" ? "Past trips" : label;
+      return `<section class="trip-list-group trip-list-group--${label.toLowerCase()}"><header class="trip-list-group__header"><h2>${heading}</h2><span class="trip-list-group__count">${trips.length}</span></header><ul class="trip-list">${trips.map((trip) => tripListRow(trip, label)).join("")}</ul></section>`;
     }).join("");
     const emptyCopy = {current:"Trips happening now will appear here.",upcoming:"Your next adventures will appear here.",past:"Completed trips will appear here.",all:"Create your first trip and keep everything in one place."};
-    const body = content || `<section class="journal-empty"><h2>${!state.trips.length ? "No journeys yet." : `No ${filter === "all" ? "" : filter + " "}trips.`}</h2><p>${emptyCopy[filter]}</p><button type="button" class="journal-open" data-action="${state.trips.length ? "filter-trips" : "create-trip"}"${state.trips.length ? ' data-filter="all"' : ""}>${state.trips.length ? "Show all trips" : "Create trip"}</button></section>`;
-    return `<div class="phone-app"><section class="screen journal-screen"><header class="journal-header"><div class="journal-brand-row"><span class="journal-logo">Tripto<span aria-hidden="true">.</span></span><button type="button" data-screen="account">Account ${icon("user", 18)}</button></div>${filterBar}</header>${mobileAlert()}<main class="journal-main"><div class="trip-filter-results" aria-live="polite">${body}</div></main><button type="button" class="trips-fab" data-action="create-trip" aria-label="New trip">${icon("plus", 40)}</button></section></div>`;
+    const body = content || `<section class="ds-empty-state trips-empty"><span class="ds-empty-state__icon">${icon("trips", 26)}</span><h1>${!state.trips.length ? "No trips yet" : `No ${filter === "all" ? "" : filter + " "}trips`}</h1><p>${emptyCopy[filter]}</p><button type="button" class="ds-primary-button" data-action="${state.trips.length ? "filter-trips" : "create-trip"}"${state.trips.length ? ' data-filter="all"' : ""}>${state.trips.length ? "Show all trips" : "Create trip"}</button></section>`;
+    return `<div class="phone-app"><section class="screen trips-screen">${tripsPageHeader()}${mobileAlert()}<main class="trips-page"><section class="trips-intro"><span>YOUR JOURNEYS</span><h1>All your trips</h1><p>Plans, bookings, and ideas stay together here.</p></section>${filterBar}<div class="trip-list-results" aria-live="polite">${body}</div></main>${bottomNav("trips")}</section></div>`;
   }
   function meaningfulBookingStatus(item) {
     const raw = String(val(item, "booking_status", "status") || "").toLowerCase();
@@ -6681,7 +6701,7 @@
       const tripNameField = editingTrip
         ? `<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}`
         : "";
-      const tripBody=`<header class="trip-create-head"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div><div class="trip-create-route" aria-hidden="true"><span class="trip-create-route__stop trip-create-route__origin">${icon("globe",18)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__plane">${icon("flight",23)}</span><i class="trip-create-route__line"></i><span class="trip-create-route__stop trip-create-route__destination">${icon("location",20)}</span></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
+      const tripBody=`<header class="trip-create-head trip-create-intro"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
       return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form trip-create-form" id="native-form" data-kind="trip"${editAttrs} novalidate>${tripBody}</form>`, "form-screen trip-create-screen", headerActions);
     }
     return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);

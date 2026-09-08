@@ -44,6 +44,7 @@ for (const routeMarkup of [
   "ds-flat-row add-intent-row",
   "ds-flat-row day-plan-row",
   "ds-flat-row travel-row",
+  "trip-list-row ds-flat-row",
 ]) {
   assert.ok(js.includes(routeMarkup), `route is not using the shared flat-row grammar: ${routeMarkup}`);
 }
@@ -69,5 +70,11 @@ assert.ok(js.includes('field("status", "Status", "", { type: "select", choices: 
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*quick-primary-fields[^{]*\{[^}]*grid-template-columns:minmax\(0,1fr\)!important/);
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*form-field :is\(input,select,textarea\)\{[^}]*border:1px solid var\(--line-strong\)!important/);
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*form-field select\{[^}]*background-image:url/);
+assert.ok(js.includes('function tripsPageHeader(') && js.includes('class="screen trips-screen"'), 'Trips root must use the shared application shell');
+const tripsInventory = js.slice(js.indexOf('function tripsPageHeader('), js.indexOf('function meaningfulBookingStatus('));
+assert.ok(!tripsInventory.includes('trips-fab') && tripsInventory.includes('bottomNav("trips")'), 'Trips must keep navigation in flow and create from the header');
+assert.match(css, /trips-screen[^}]*trips-page\{[^}]*background:var\(--paper\)/);
+assert.match(css, /trip-create-screen \.trip-create-head\{[^}]*background:transparent!important/);
+assert.match(css, /trip-create-screen \.trip-create-route\{[^}]*display:none!important/);
 
 console.log("Unified Tripto Flat Travel design-system contract passed.");

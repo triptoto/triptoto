@@ -4028,3 +4028,100 @@ html body .premium-form:not(.trip-create-form) .date-range-trigger{border:1px so
   html body .premium-form:not(.trip-create-form) .form-fields--activity-time,
   html body .premium-form:not(.trip-create-form) .form-fields--flight-when{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* ===========================================================================
+   Unified trips inventory and trip setup
+   ---------------------------------------------------------------------------
+   The Trips root and Create Trip route now use the same flat page grammar as
+   timelines, planning, details and forms: one app bar, one readable intro,
+   calm section headers, token surfaces and 44px actions. This deliberately
+   replaces the separate journal/FAB and illustrated setup treatments.
+   ========================================================================== */
+html body .phone-app>.trips-screen>.app-bar.app-bar--root{grid-template-columns:44px minmax(0,1fr) 44px;gap:8px}
+html body .trips-app-bar .app-bar-spacer{display:block;width:44px;height:44px}
+html body .trips-app-bar .trips-header-add{background:var(--surface);color:var(--accent);box-shadow:none}
+html body .trips-app-bar .trips-header-add:active{background:var(--activity-soft)}
+html body .phone-app>.trips-screen>.trips-page{display:grid;align-content:start;gap:var(--space-5);padding:var(--space-4) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));background:var(--paper)}
+html body .trips-intro{display:grid;gap:var(--space-1);padding:0}
+html body .trips-intro>span{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em;line-height:1.2;text-transform:uppercase}
+html body .trips-intro h1{margin:0;color:var(--ink);font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.12}
+html body .trips-intro p{max-width:34ch;margin:0;color:var(--muted);font-size:var(--type-body);line-height:1.45}
+html body .trips-screen .trips-filter{margin:0}
+html body .trips-screen .trips-filter button{display:flex;align-items:center;justify-content:center;gap:4px}
+html body .trips-screen .trips-filter button>span{color:inherit;font-size:11px;font-variant-numeric:tabular-nums;opacity:.75}
+html body .trip-list-results{display:grid;gap:var(--space-6);min-width:0}
+html body .trip-list-group{display:grid;gap:var(--space-2);min-width:0}
+html body .trip-list-group__header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:28px}
+html body .trip-list-group__header h2{margin:0;color:var(--ink);font-size:var(--type-section);font-weight:var(--weight-semibold);letter-spacing:-.02em;line-height:1.25}
+html body .trip-list-group__count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:var(--radius-pill);background:var(--surface);color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);font-variant-numeric:tabular-nums}
+html body .trip-list{display:grid;min-width:0;margin:0;padding:0;list-style:none}
+html body .trip-list-row-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--ds-divider)}
+html body .trip-list-row-wrap:last-child{border-bottom:0}
+html body .trip-list-row-wrap .trip-list-row{position:relative;z-index:1;min-height:var(--row-height);border-bottom:0;background:var(--paper);transition:transform .2s var(--ease);will-change:transform;touch-action:pan-y}
+html body .trip-list-row-wrap.is-swiping .trip-list-row{transition:none}
+html body .trip-list-row-wrap.is-open .trip-list-row{transform:translateX(-88px)}
+html body .trip-list-row__delete-action{position:absolute;inset:0 0 0 auto;display:flex;align-items:center;justify-content:center;width:88px;border:0;background:var(--red);color:#fff;font:inherit;font-size:var(--type-meta);font-weight:var(--weight-semibold)}
+html body .trip-list-row__mark{display:grid;place-items:center;width:40px;height:40px;border-radius:var(--radius-control);background:var(--flight-soft);color:var(--indigo)}
+html body .trip-list-row--current .trip-list-row__mark{background:var(--stay-soft);color:var(--green)}
+html body .trip-list-row--past .trip-list-row__mark{background:var(--surface);color:var(--muted)}
+html body .trip-list-row--cancelled .trip-list-row__mark{background:color-mix(in srgb,var(--red) 10%,var(--surface));color:var(--red)}
+html body .trip-list-row__copy{gap:2px}
+html body .trip-list-row__copy .trip-shared-badge{display:inline-flex;align-items:center;max-width:100%;min-height:18px;color:var(--muted);font-size:var(--type-label);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .trip-list-row__status{display:inline-flex;align-items:center;min-height:18px;color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);line-height:1.2}
+html body .trip-list-row--current .trip-list-row__status{color:var(--green)}
+html body .trip-list-row--past .trip-list-row__status{color:var(--muted)}
+html body .trip-list-row--cancelled .trip-list-row__status{color:var(--red)}
+html body .trips-empty{padding:var(--space-7) var(--space-4);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+html body .trips-empty .ds-primary-button{width:auto;min-width:142px;margin-top:var(--space-2)}
+
+/* Create and edit trip use the shared form hierarchy instead of a standalone
+   illustrated hero. Search, date selection and validation behaviours remain
+   unchanged; only their reading order and surfaces are unified. */
+html body .trip-create-screen>.focused-page{padding:var(--space-4)!important;background:var(--paper)}
+html body .trip-create-screen .trip-create-form{display:grid;align-content:start;gap:var(--space-5);min-height:0;padding:0 0 calc(var(--space-6) + var(--keyboard-offset) + env(safe-area-inset-bottom))}
+html body .trip-create-screen .trip-create-head{display:grid;gap:var(--space-2);min-height:0!important;margin:0;padding:0 0 var(--space-4);overflow:visible;border:0!important;border-bottom:1px solid var(--line);border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html body .trip-create-screen .trip-create-head::after{display:none!important}
+html body .trip-create-screen .trip-create-route{display:none!important}
+html body .trip-create-screen .trip-create-head__copy{max-width:36ch}
+html body .trip-create-screen .trip-create-head__eyebrow{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em}
+html body .trip-create-screen .trip-create-head h1{max-width:none;margin:0;color:var(--ink);font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.12;letter-spacing:-.03em}
+html body .trip-create-screen .trip-create-head__sub{max-width:35ch;color:var(--muted);font-size:var(--type-body);line-height:1.45}
+html body .trip-create-screen .trip-create-fields{display:grid;gap:var(--space-5);margin:0;padding:0}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen),
+html body .trip-create-screen .trip-create-details{padding:0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen){z-index:4}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen) .trip-create-destination__head{margin:0 0 var(--space-3)}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen) .trip-create-destination__head>span{width:40px;height:40px;border-radius:var(--radius-control);background:var(--activity-soft);color:var(--accent)}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen) .trip-create-destination__head strong{font-size:var(--type-body);font-weight:var(--weight-semibold);letter-spacing:-.01em}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen) .trip-create-destination__head small{font-size:var(--type-meta);line-height:1.35}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen) .form-field input{box-sizing:border-box;min-height:var(--control-height);padding:0 var(--space-3);border:1px solid var(--line-strong);border-radius:var(--radius-control);background:var(--surface);color:var(--ink);font-size:var(--type-body);font-weight:var(--weight-regular);letter-spacing:0;box-shadow:none}
+html body .trip-create-screen .trip-create-destination:not(.is-fullscreen) .form-field input:focus{border-color:var(--accent);box-shadow:var(--ds-focus);outline:0}
+html body .trip-create-screen .trip-create-destination__coverage{margin:var(--space-2) 0 0;color:var(--muted);font-size:var(--type-meta)}
+html body .trip-create-screen .trip-create-details{display:grid;gap:var(--space-4)}
+html body .trip-create-screen .trip-create-details>.date-range-field{margin:0;padding:0;border:0;background:transparent}
+html body .trip-create-screen .trip-create-details .date-range-trigger{min-height:var(--control-height);padding:0 var(--space-3);border:1px solid var(--line-strong);border-radius:var(--radius-control);background:var(--surface)}
+html body .trip-create-screen .trip-create-details .date-range-trigger__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--activity-soft)!important;color:var(--accent)}
+html body .trip-create-screen .trip-create-details .date-range-trigger__copy strong{font-size:var(--type-body);font-weight:var(--weight-semibold)}
+html body .trip-create-screen .trip-create-details .form-field{margin:0;padding:0}
+html body .trip-create-screen .trip-create-details .form-field>span{margin:0 0 var(--space-2);color:var(--muted);font-size:var(--type-meta);font-weight:var(--weight-semibold);letter-spacing:0;text-transform:none}
+html body .trip-create-screen .trip-create-details .form-field input{box-sizing:border-box;min-height:var(--control-height);padding:0 var(--space-3);border:1px solid var(--line-strong);border-radius:var(--radius-control);background:var(--surface);color:var(--ink);font-size:var(--type-body)}
+html body .trip-create-screen .trip-create-details .form-field input:focus{border-color:var(--accent);box-shadow:var(--ds-focus);outline:0}
+html body .trip-create-screen .trip-create-details__divider{height:1px;margin:0;background:var(--line)}
+html body .trip-create-screen .trip-create-reassurance{justify-content:flex-start;gap:var(--space-2);margin:0;padding:0;color:var(--muted);font-size:var(--type-meta);text-align:left}
+html body .trip-create-screen .trip-create-reassurance .ph-svg{color:var(--accent)}
+html body .trip-create-screen .trip-delete-text{justify-self:start;margin:0;padding:10px 0;border:0;background:transparent;color:var(--red);font:inherit;font-size:var(--type-meta);font-weight:var(--weight-semibold)}
+
+/* The post-date step is part of the same flow, so keep its intro concise and
+   flat as well instead of restoring the retired hero treatment. */
+html body .trip-setup-ready__hero{min-height:0!important;margin:0!important;padding:var(--space-4) var(--space-4) var(--space-5)!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html body .trip-setup-ready__hero::after{display:none!important}
+html body .trip-setup-ready__hero h1{max-width:none;margin:var(--space-1) 0 var(--space-2);font-size:var(--type-screen);line-height:1.12}
+html body .trip-setup-ready__hero .trip-create-head__sub{max-width:35ch;font-size:var(--type-body)}
+html body .trip-setup-ready__hero .trip-plan-fields{margin-top:var(--space-4)}
+html body .trip-setup-ready__hero .trip-plan-field{min-height:56px;border-color:var(--line);border-radius:var(--radius-control);background:var(--surface)}
+@media(max-width:359px){
+  html body .phone-app>.trips-screen>.trips-page{padding-inline:var(--space-3)}
+  html body .trips-screen .trips-filter button{padding-inline:3px;font-size:12px}
+  html body .trip-list-row{grid-template-columns:36px minmax(0,1fr) 18px;gap:var(--space-2)}
+  html body .trip-list-row__mark{width:36px;height:36px}
+}
