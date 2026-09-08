@@ -52,8 +52,8 @@ assert(
 );
 
 assert(
-  css.includes("html .bottom-nav .nav-item{color:var(--muted);font-size:12px;font-weight:600;min-height:var(--button-compact-height);height:auto"),
-  "production bottom navigation items must preserve the 44px touch target",
+  css.includes("min-width:44px;min-height:44px"),
+  "production header navigation items must preserve the 44px touch target",
 );
 
 function channel(value) {
@@ -87,6 +87,6 @@ assert(productionPaper, "production page color is missing");
 assert(productionAccent, "production notification accent is missing");
 assert(contrast(productionGreen, productionPaper) >= 4.5, "Ready Offline text must meet WCAG AA on the production page");
 assert(contrast("#ffffff", productionAccent) >= 4.5, "header notification badge must meet WCAG AA");
-assert(contrast("#ffffff", productionAccent) >= 4.5, "bottom-nav notification badge must meet WCAG AA");
+assert(contrast("#ffffff", productionAccent) >= 4.5, "notification badge must meet WCAG AA");
 
 console.log("Button sizing contract passed.");

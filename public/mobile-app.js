@@ -1298,7 +1298,7 @@
     if (
       formHasMeaningfulChanges &&
       DIRTY_TASK_SCREENS.has(state.screen) &&
-      screen !== state.screen
+      (screen !== state.screen || String(id || "") !== String(state.selectedId || ""))
     ) {
       requestDiscardChanges(() => route(screen, id, replace, kind));
       return;
@@ -3622,10 +3622,30 @@
     state.offline = false;
   }
   function topbar() {
-    return `<header class="app-header"><button class="brand" data-screen="home" aria-label="tripto.to Home">tripto<span class="brand-dot">.</span>to</button><div class="connection-state">${state.offline ? `<span class="offline-state" role="status">${icon("info", 16)} Offline</span>` : ""}<button class="header-icon" data-screen="account" aria-label="Account">${icon("user", 30)}</button></div></header>`;
+    return `<header class="app-header"><button class="brand" data-screen="home" aria-label="tripto.to Home">tripto<span class="brand-dot">.</span>to</button><div class="connection-state">${state.offline ? `<span class="offline-state" role="status">${icon("info", 16)} Offline</span>` : ""}${HeaderNavigation()}</div></header>`;
   }
   function appBar(title, subtitle = "", dark = false, right = "") {
-    return `<header class="app-bar ${dark ? "app-bar--dark" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 24)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div><div class="app-bar-actions">${right || ""}</div></header>`;
+    return `<header class="app-bar app-bar--navigation ${dark ? "app-bar--dark" : ""}${right ? " app-bar--with-actions" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 24)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div>${HeaderNavigation()}${right ? `<div class="app-bar-actions">${right}</div>` : ""}</header>`;
+  }
+  function HeaderNavigation() {
+    const collection = state.screen === "collection" ? collectionForItem(state.selectedId) : null;
+    const addPlace = state.trip && collection && canEditCurrentTrip();
+    const label = addPlace ? `Add ${collectionConfig(collection.collection_type)?.stop || "place"}` : !state.trip ? "Create trip" : "Add to trip";
+    const add = addPlace ? `data-action="collection-add-place" data-id="${esc(collection.id)}"` : 'data-action="open-add"';
+    return `<div class="header-navigation"><button type="button" class="icon-button header-navigation__add${addPlace ? " collection-header-add" : ""}" ${add} aria-label="${esc(label)}" title="${esc(label)}">${icon("plus", 24)}</button><button type="button" class="icon-button header-navigation__menu" data-action="open-navigation" aria-label="Menu" title="Menu" aria-haspopup="dialog" aria-expanded="${state.sheet === "navigation"}" aria-controls="navigation-menu">${icon("menu", 24)}</button></div>`;
+  }
+  function navigationSheet() {
+    const entries = [
+      ["trips", "trips", "All trips"],
+      ["trip-options", "route", "Trip Options"],
+      ["checklist", "checklist", "To-Do List"],
+      ["account", "user", "Account"],
+    ];
+    const links = entries.map(([screen, glyph, label]) => sheetActionLink(
+      glyph, label, "", routeUrl(screen),
+      ` data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}`,
+    )).join("");
+    return bottomSheet("navigation", "Menu", `<nav id="navigation-menu" aria-label="Primary navigation">${sheetActionList(links)}</nav>`);
   }
   // Header notification bell. Opens the Notifications sheet, which merges the
   // trip's /changes feed (imports, added stops, time markers, documents…) with
@@ -3647,21 +3667,6 @@
       ? `<span class="unread-badge" aria-hidden="true">${unread > 9 ? "9+" : unread}</span>`
       : "";
     return `<button class="icon-button notify-button" data-action="open-notifications" aria-label="${esc(label)}">${icon("bell", 24)}${badge}</button>`;
-  }
-  function bottomNav(active) {
-    const norm = active === "account"
-        ? "account"
-        : active === "checklist"
-          ? "checklist"
-          : active === "trip-options"
-            ? "trip-options"
-          : "trips";
-    const navBtn = (screen, ic, label) =>
-      `<button class="nav-item ${norm === screen ? "active" : ""}" data-screen="${screen}" ${norm === screen ? 'aria-current="page"' : ""}><span class="nav-item__icon">${icon(ic, 23, "", norm === screen ? "fill" : "regular")}</span><span>${label}</span></button>`;
-    const addBtn = canEditCurrentTrip()
-      ? `<button class="nav-item nav-add" data-action="open-add" aria-label="Add"><span>${icon("plus", 30)}</span></button>`
-      : `<button class="nav-item nav-add nav-add--view-only" data-action="view-only-hint" aria-label="View only — you can't add to this trip"><span>${icon("viewer", 26)}</span></button>`;
-    return `<nav class="bottom-nav bottom-nav--v2" aria-label="Primary navigation">${navBtn("trips", "plane", "Trip")}${navBtn("trip-options", "route", "Trip options")}${addBtn}${navBtn("checklist", "checklist", "To-do")}${navBtn("account", "user", "Account")}</nav>`;
   }
   function mobileAlert() {
     if (state.offline)
@@ -4060,7 +4065,7 @@
       summaries = state.trip
         ? `<section class="home-summary-module">${sectionHead("Upcoming journey", "open-timeline")}<div>${upcomingRows()}</div></section><section class="home-summary-module home-health-module ${health.kind === "setup" ? "home-health-module--setup" : ""}">${sectionHead("Trip health", "open-health", "Review")}<button class="simple-row" ${health.kind === "setup" ? 'data-action="open-add"' : 'data-screen="health"'}><span class="row-icon ${health.kind === "warning" ? "health-warning" : health.kind === "good" ? "health-good" : "health-info"}">${icon(health.icon, 22)}</span><span class="row-copy"><strong>${esc(health.title)}</strong><span>${esc(health.subtitle)}</span></span>${icon("chevron", 22, "chevron")}</button></section>`
         : "";
-    return `<div class="phone-app"><section class="screen home-screen">${topbar()}${mobileAlert()}<main class="content">${tripContext()}${nextCard}${summaries}</main>${bottomNav("home")}</section></div>`;
+    return `<div class="phone-app"><section class="screen home-screen">${topbar()}${mobileAlert()}<main class="content">${tripContext()}${nextCard}${summaries}</main></section></div>`;
   }
   function timeGreeting() {
     const hour = new Date().getHours();
@@ -4085,9 +4090,9 @@
         (state.account?.mode || "guest") !== "account" &&
         !state.trip &&
         state.trips.length === 0 &&
-        // A direct invitation link is an intentional entry flow. It must take
-        // priority over the generic first-run welcome for a brand-new guest.
-        !["tour", "join"].includes(state.screen),
+        // Explicit routes (including invitations, Account and Create trip)
+        // remain reachable from the header even before a guest has a trip.
+        ["home", "timeline"].includes(state.screen),
     );
   }
   function syncFirstRunPresentation(active) {
@@ -4112,7 +4117,7 @@
     const entryAction = state.account?.mode === "account"
       ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span>${icon("chevron", 20)}</button>`
       : googleAction;
-    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div><span class="welcome-brand-caption">Your travel companion</span>${offline}</header><main class="first-run-main"><section class="first-run-hero"><p class="first-run-eyebrow">A little less to think about</p><h1 id="first-run-title" aria-label="Your trip. In good order."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">In good order.</span></h1><p class="first-run-lede">Flights, stays, and everything between.<br>Together, wherever you go.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span></button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Your plans stay private.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
+    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div>${offline}${HeaderNavigation()}</header><main class="first-run-main"><section class="first-run-hero"><p class="first-run-eyebrow">A little less to think about</p><h1 id="first-run-title" aria-label="Your trip. In good order."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">In good order.</span></h1><p class="first-run-lede">Flights, stays, and everything between.<br>Together, wherever you go.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span></button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Your plans stay private.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
   }
   // --- Trip change notifications (header bell) ---------------------------
   // Sourced from the existing /changes feed (change_events), so booking
@@ -4247,7 +4252,7 @@
 
   function timelineScreen() {
     if (!state.trip)
-      return `<div class="phone-app"><section class="screen timeline-screen">${appBar("Trip")}<main class="timeline-page timeline-page--empty"><div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No trip selected</h1><p>Create or select a trip first.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div></main>${bottomNav("trips")}</section></div>`;
+      return `<div class="phone-app"><section class="screen timeline-screen">${appBar("Trip")}<main class="timeline-page timeline-page--empty"><div class="timeline-empty"><span class="timeline-empty__icon">${icon("calendar", 28)}</span><h1>No trip selected</h1><p>Create or select a trip first.</p>${primaryCta("Create a Trip", "create-trip", "plus")}</div></main></section></div>`;
     const now = Date.now(),
       highlightedNextId =
         QA_STATE === "timeline-normal" ? "" : itemId(nextItem() || {}),
@@ -4368,9 +4373,9 @@
           )
           .join("")}</div>`
       : `<div class="timeline-empty timeline-empty--intent"><span class="timeline-empty__eyebrow">Start building</span><h1>Add to ${esc(state.trip.title || "your trip")}</h1><p>Book it, plan your days, or save an idea.</p>${addIntentRows()}</div>`;
-    const headerAction = `<div class="trip-v2-actions">${notifyAction()}</div>`;
+    const headerAction = `<div class="trip-v2-actions">${notifyAction()}${HeaderNavigation()}</div>`;
     const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
-    return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}${dayTabs}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${groups.length ? timelineContextCard() : ""}${content}</main>${bottomNav("timeline")}</section></div>`;
+    return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}${dayTabs}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${groups.length ? timelineContextCard() : ""}${content}</main></section></div>`;
   }
 
   // Fast path for Day-tab taps: regenerate the timeline screen markup and swap
@@ -4699,7 +4704,7 @@
         ],
         "Flight details and actions",
       );
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main></section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -4709,8 +4714,8 @@
   }
   function missingDetailScreen(title, body) {
     if (state.loading || state.tripDetailsLoading)
-      return `<div class="phone-app"><section class="screen">${appBar("Loading…")}<main class="missing-detail-content" aria-busy="true">${loadingSkeleton()}</main>${bottomNav("bookings")}</section></div>`;
-    return `<div class="phone-app"><section class="screen">${appBar(title)}<main class="missing-detail-content">${EmptyState(title, body)}</main>${bottomNav("bookings")}</section></div>`;
+      return `<div class="phone-app"><section class="screen">${appBar("Loading…")}<main class="missing-detail-content" aria-busy="true">${loadingSkeleton()}</main></section></div>`;
+    return `<div class="phone-app"><section class="screen">${appBar(title)}<main class="missing-detail-content">${EmptyState(title, body)}</main></section></div>`;
   }
   function hotelScreen() {
     const stay = selectedStay();
@@ -4756,7 +4761,7 @@
       fdDocRows(stay),
       fdAddRow(),
       fdNoteRow(stay, "hotel"),
-    ], "Hotel details and documents")}</main>${bottomNav("bookings")}</section></div>`;
+    ], "Hotel details and documents")}</main></section></div>`;
   }
   function bookingsScreen() {
     const rows = [];
@@ -4781,7 +4786,7 @@
           `<button class="booking-card" data-action="booking-detail" data-kind="hotel" data-id="${esc(itemId(item))}"><span class="info-icon purple">${icon("hotel", 22)}</span><span><strong>${esc(val(item, "property_name", "title") || "Stay")}</strong><span>${esc(formatDateOnly(val(item, "check_in_date")))} – ${esc(formatDateOnly(val(item, "check_out_date")))}</span></span>${icon("chevron", 22, "chevron")}</button>`,
         ),
       );
-    return `<div class="phone-app"><section class="screen">${appBar("Bookings")}${mobileAlert()}<div class="intro-block"><h1>Your bookings</h1><p>Only the details you need while travelling.</p></div><main class="bookings-list">${rows.length ? rows.join("") : `<div class="empty-mobile"><h2>No bookings yet</h2><p>Add transport, a stay or an activity.</p>${primaryCta("Add Booking", "open-add", "plus")}</div>`}<button class="booking-card" data-screen="documents"><span class="info-icon green">${icon("document", 22)}</span><span><strong>Documents</strong><span>${state.localDocs.filter((doc) => doc.integrity === "verified").length} verified offline files</span></span>${icon("chevron", 22, "chevron")}</button><button class="booking-card" data-screen="ready"><span class="info-icon">${icon("download", 22)}</span><span><strong>Ready Offline</strong><span>Check what is saved on this phone</span></span>${icon("chevron", 22, "chevron")}</button></main>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen">${appBar("Bookings")}${mobileAlert()}<div class="intro-block"><h1>Your bookings</h1><p>Only the details you need while travelling.</p></div><main class="bookings-list">${rows.length ? rows.join("") : `<div class="empty-mobile"><h2>No bookings yet</h2><p>Add transport, a stay or an activity.</p>${primaryCta("Add Booking", "open-add", "plus")}</div>`}<button class="booking-card" data-screen="documents"><span class="info-icon green">${icon("document", 22)}</span><span><strong>Documents</strong><span>${state.localDocs.filter((doc) => doc.integrity === "verified").length} verified offline files</span></span>${icon("chevron", 22, "chevron")}</button><button class="booking-card" data-screen="ready"><span class="info-icon">${icon("download", 22)}</span><span><strong>Ready Offline</strong><span>Check what is saved on this phone</span></span>${icon("chevron", 22, "chevron")}</button></main></section></div>`;
   }
   function documentsScreen() {
     const rows = state.localDocs
@@ -4804,12 +4809,9 @@
   function AppHeader(title, subtitle = "", dark = false, right = "") {
     return appBar(title, subtitle, dark, right);
   }
-  function BottomNavigation(active) {
-    return bottomNav(active);
-  }
   function PageShell({ title, body, active = "trips", right = "", extraClass = "", task = false }) {
     const shellClass = `screen mobile-v1-screen app-surface ${esc(extraClass)}`;
-    return `<div class="phone-app"><section class="${shellClass}">${AppHeader(title, "", false, right)}${mobileAlert()}<main class="${task ? "focused-page" : "mobile-page"}">${body}</main>${task ? "" : BottomNavigation(active)}</section></div>`;
+    return `<div class="phone-app"><section class="${shellClass}">${AppHeader(title, "", false, right)}${mobileAlert()}<main class="${task ? "focused-page" : "mobile-page"}">${body}</main></section></div>`;
   }
   function formHeaderSave(formId, label) {
     return `<button type="submit" form="${esc(formId)}" class="app-bar-save mobile-primary-action">${esc(label)}</button>`;
@@ -4986,7 +4988,7 @@
         status = meaningfulBookingStatus(item);
       return `<button class="ds-flat-row travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="ds-flat-row__icon travel-row__icon">${PastelIcon(transportIcon(kind), ["hotel"].includes(kind) ? "stay" : ["flight", "train", "ferry"].includes(kind) ? "flight" : "transfer", 22)}</span><span class="ds-flat-row__copy travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? StatusLabel(status, "attention") : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
     }).join("");
-    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add-booking" aria-label="Add booking">${icon("plus", 24)}</button>`);
+    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings");
   }
   function selectedTrain() {
     const supported = new Set(["train", "ferry"]),
@@ -5056,7 +5058,7 @@
       fdDocRows(train),
       fdAddRow(),
       fdNoteRow(train, kind),
-    ], "Journey details and documents")}</main>${bottomNav("bookings")}</section></div>`;
+    ], "Journey details and documents")}</main></section></div>`;
   }
   function selectedPlan() {
     const wanted = String(state.selectedId || "");
@@ -5129,7 +5131,7 @@
       fdDocRows(item),
       fdAddRow(),
       fdNoteRow(item, kind),
-    ], "Plan details and documents")}</main>${bottomNav("bookings")}</section></div>`;
+    ], "Plan details and documents")}</main></section></div>`;
   }
 
   // ---------------------------------------------------------------------------
@@ -5347,7 +5349,7 @@
     const scheduled = Number(val(c, "starts_at_utc", "startsAtUtc")) || null;
     const zone = val(c, "start_timezone", "startTimezone");
     const metaBits = [c.city, scheduled ? formatDateTime(scheduled, zone) : ""].filter(Boolean).join(" · ");
-    const actions = canEdit ? `<button class="icon-button collection-header-add" data-action="collection-add-place" data-id="${esc(id)}" aria-label="Add ${esc(cfg.stop)}">${icon("plus", 24)}</button><button class="icon-button" data-action="edit-collection" data-id="${esc(id)}" aria-label="Edit ${esc(cfg.label)}">${icon("edit", 20)}</button><button class="icon-button" data-action="delete-collection" data-id="${esc(id)}" aria-label="Delete ${esc(cfg.label)}">${icon("trash", 20)}</button>` : "";
+    const actions = canEdit ? `<button class="icon-button" data-action="edit-collection" data-id="${esc(id)}" aria-label="Edit ${esc(cfg.label)}">${icon("edit", 20)}</button><button class="icon-button" data-action="delete-collection" data-id="${esc(id)}" aria-label="Delete ${esc(cfg.label)}">${icon("trash", 20)}</button>` : "";
     const hit = (s, st, inner) => {
       const time = String(s.scheduled_time || "").trim();
       const label = `${time ? time + ", " : ""}${s.title || "Place"}. ${STOP_STATE_LABEL[st] || ""}`;
@@ -5811,7 +5813,7 @@
     const rows = readyOfflineRows(),
       ready = rows.filter((row) => row.ready).length,
       allReady = rows.length > 0 && ready === rows.length;
-    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 24)}</button>`)}<main class="ready-content"><section class="offline-summary ${allReady ? "offline-summary--ready" : "offline-summary--attention"}"><span class="offline-summary-icon">${icon(allReady ? "check" : "warning", 27)}</span><span class="offline-summary-copy"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Your essentials are saved on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></span></section><div class="list-stack ready-list ds-grouped-card ds-grouped-card--list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 16)}`}</span></div>`).join("")}</div><div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}</div></main>${bottomNav("trips")}</section></div>`;
+    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 24)}</button>`)}<main class="ready-content"><section class="offline-summary ${allReady ? "offline-summary--ready" : "offline-summary--attention"}"><span class="offline-summary-icon">${icon(allReady ? "check" : "warning", 27)}</span><span class="offline-summary-copy"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Your essentials are saved on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></span></section><div class="list-stack ready-list ds-grouped-card ds-grouped-card--list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 16)}`}</span></div>`).join("")}</div><div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}</div></main></section></div>`;
   }
   function issueKind(issue) {
     return ["critical", "high"].includes(issue.severity)
@@ -5839,7 +5841,7 @@
         : setup
           ? `<div class="health-card info"><span>${icon("plus", 26)}</span><span><strong>Trip setup</strong><p>Add your first booking to build the itinerary.</p><button class="text-action" data-action="open-add-booking">Add booking</button></span></div>`
           : `<div class="health-card ${top.kind === "good" ? "good" : "info"}"><span>${icon(top.kind === "good" ? "check" : "info", 26)}</span><span><strong>${top.kind === "good" ? "No known issues" : "Not enough information"}</strong><p>${esc(top.subtitle)}</p></span></div>`;
-    return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 24)}</button>`)}<main class="health-content"><div class="health-summary"><div class="health-shield ${shieldClass} ${setup ? "setup" : ""}">${icon(issues.length ? "warning" : setup ? "plus" : top.kind === "good" ? "check" : "info", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><div class="list-stack">${rows}${setup ? "" : `<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button>`}</div></main>${bottomNav("home")}</section></div>`;
+    return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 24)}</button>`)}<main class="health-content"><div class="health-summary"><div class="health-shield ${shieldClass} ${setup ? "setup" : ""}">${icon(issues.length ? "warning" : setup ? "plus" : top.kind === "good" ? "check" : "info", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><div class="list-stack">${rows}${setup ? "" : `<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button>`}</div></main></section></div>`;
   }
   function checklistScreen() {
     if (!state.trip)
@@ -5871,11 +5873,11 @@
   const FAQ_SECTIONS = [
     { title: "Getting started", questions: [
       { id: "create-trip", q: "How do I create a trip?", a: "Open Account and tap Create trip, or tap + on the Trips screen. Add a name, destination and dates. Your trip opens in the Timeline.", keywords: "new trip start plan create destination dates", action: { label: "Create trip", action: "create-trip" } },
-      { id: "edit-trip", q: "How do I edit my trip?", a: "Open the trip and tap the menu button in the top right, then choose Edit trip to change its name, dates or details.", keywords: "edit change trip name dates rename" },
+      { id: "edit-trip", q: "How do I edit my trip?", a: "Open Menu, choose Trip Options, then Edit trip to change its name, dates or details.", keywords: "edit change trip name dates rename" },
       { id: "switch-trip", q: "How do I switch between trips?", a: "Open Account and tap Switch trip to pick another one. Your upcoming and past trips are listed there too.", keywords: "switch change multiple trips select", action: { label: "My trips", screen: "trips" } },
     ] },
     { title: "Bookings", questions: [
-      { id: "add-booking", q: "How do I add a booking?", a: "Tap + at the bottom, then choose how to add it: Upload Booking or ADD NEW BOOKING. Everything you add appears in the Timeline.", keywords: "add booking flight hotel reservation upload manual" },
+      { id: "add-booking", q: "How do I add a booking?", a: "Tap + in the header, choose Add a booking, then Upload Booking or ADD NEW BOOKING. Everything you add appears in the Timeline.", keywords: "add booking flight hotel reservation upload manual" },
       { id: "upload-booking", q: "How does Upload Booking work?", a: "Tap + then Upload Booking and choose a ticket or confirmation file. tripto.to reads it on this device and fills in what it can. Check the details before saving, because recognition is not always perfect.", keywords: "upload file pdf ticket confirmation ocr read extract" },
       { id: "manual-booking", q: "How do I add a booking manually?", a: "Tap + then Add a booking and pick a type: Flight, Hotel / Stay, Train, Ferry, Bus, Cruise, Car Rental, Transfer, Taxi, Parking, Insurance or Other. Only the essential fields are required. To plan restaurants, tours, museums and other things to see and do, use Day Plan instead.", keywords: "manual enter flight hotel stay train ferry bus cruise car rental transfer taxi parking insurance other day plan" },
       { id: "edit-booking", q: "How do I edit a booking?", a: "Open the booking from your Timeline, then choose Edit to update its details.", keywords: "edit change booking details update" },
@@ -5883,13 +5885,13 @@
     ] },
     { title: "Your trip", questions: [
       { id: "timeline", q: "What is the Timeline?", a: "The Timeline is the main view of your trip. Flights, stays, restaurants, activities and other bookings are shown in travel order so you can see what is coming next.", keywords: "timeline schedule order plans main view" },
-      { id: "checklist", q: "How does the checklist work?", a: "Open To-do in the bottom bar. Type a task and tap Add, then tick it when it is done. Open Completed to find finished tasks and untick one to return it to your list. Use the pencil to rename or delete a task.", keywords: "checklist packing list passport wallet charger pack completed tasks", action: { label: "Open checklist", screen: "checklist" } },
-      { id: "documents", q: "Where are my tickets and documents?", a: "Documents attached to a booking open from that booking. You can also open the trip menu and choose Documents to see your trip files. Some files are stored only on this device.", keywords: "tickets documents files pdf storage device" },
-      { id: "trip-map", q: "When can I use Trip Map?", a: "Open the trip menu and choose Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
+      { id: "checklist", q: "How does the checklist work?", a: "Open Menu and choose To-Do List. Type a task and tap Add, then tick it when it is done. Open Completed to find finished tasks and untick one to return it to your list. Use the pencil to rename or delete a task.", keywords: "checklist packing list passport wallet charger pack completed tasks", action: { label: "Open checklist", screen: "checklist" } },
+      { id: "documents", q: "Where are my tickets and documents?", a: "Documents attached to a booking open from that booking. You can also open Menu, choose Trip Options, then Documents to see your trip files. Some files are stored only on this device.", keywords: "tickets documents files pdf storage device" },
+      { id: "trip-map", q: "When can I use Trip Map?", a: "Open Menu, choose Trip Options, then Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
       { id: "offline", q: "What works offline?", a: "Your cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and opening directions need a connection.", keywords: "offline internet connection cached without wifi directions" },
     ] },
     { title: "Plan together", flag: "sharing", questions: [
-      { id: "collab-what", q: "Can I plan a trip with other people?", a: "Yes. Open the trip menu and choose Plan together to invite people. Everyone signs in with their own free account — planning together never costs anything.", keywords: "collaborate share invite together people group family plan", action: { label: "Plan together", action: "open-collaboration" } },
+      { id: "collab-what", q: "Can I plan a trip with other people?", a: "Yes. Open Menu, choose Trip Options, then Plan together to invite people. Everyone signs in with their own free account — planning together never costs anything.", keywords: "collaborate share invite together people group family plan", action: { label: "Plan together", action: "open-collaboration" } },
       { id: "collab-roles", q: "What can invited people do?", a: "You choose a role for each person. Can edit lets them add and change bookings. View only lets them see the trip without changing it. As the owner you can change roles or remove people at any time.", keywords: "role owner editor viewer permissions can edit view only access" },
       { id: "collab-invite", q: "How do invitation links work?", a: "Each invitation link works once and you can revoke it at any time. The person opens it, signs in with their own free account, and joins the trip.", keywords: "invite link join revoke expire one time accept" },
       { id: "collab-leave", q: "How do I stop sharing or leave a trip?", a: "Owners can remove people or revoke pending invites from Plan together. If you were invited to someone else's trip, open Plan together and choose Leave this trip.", keywords: "leave remove revoke stop sharing unshare" },
@@ -6063,7 +6065,7 @@
       <section class="account-settings-group">${SectionHeader("Travel essentials")}${FlatList([partnerRow("flight","Find a flight","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,"flight"),partnerRow("bed","Find a place to stay","Browse stays on Booking.com","https://www.booking.com/","stay"),row("sim","Travel eSIM","Get connected before you land","","open-esim","activity")])}<p class="account-partner-disclosure">Partner links may earn Tripto a commission at no extra cost.</p></section>
       <section class="account-settings-group">${SectionHeader("Help & support")}${FlatList([row("info","Take the tour","Get to know Tripto","","open-first-run-how"),row("info","Help, privacy & terms","Support and legal information","","open-help")])}</section>
       <section class="account-settings-group">${SectionHeader("Privacy & data")}${FlatList([row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data","food"),...(mode==="account"?[row("warning","Delete my account","Permanently removes your server account and trips","","delete-account","food")]:[])])}</section>
-      <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
+      <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main></section></div>`;
   }
 
   function rememberPostAuthDestination(screen, tripId = null) {
@@ -7137,7 +7139,7 @@
       address =
         val(location, "local_address", "formatted_address") ||
         "Address unavailable";
-    return `<div class="phone-app"><section class="driver-screen"><header class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close">${icon("close", 26)}</button><strong>Show to Driver</strong><span aria-hidden="true"></span></header><main class="driver-main"><div class="driver-label">${icon("car", 24)} <span>Please drive to</span></div><section class="driver-pass" aria-labelledby="driver-destination-name"><span class="driver-pass__eyebrow">Destination</span><h1 class="driver-name" id="driver-destination-name">${esc(name)}</h1>${showLocalName ? `<p class="driver-local">${esc(localName)}</p>` : ""}<div class="driver-address">${icon("pin", 26)}<span><small>Address</small><strong>${esc(address)}</strong></span></div></section><p class="driver-hint">Show this screen to your driver. The destination is saved with your trip.</p></main><footer class="driver-cta">${primaryCta("Open directions", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</footer></section></div>`;
+    return `<div class="phone-app"><section class="driver-screen"><header class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close">${icon("close", 26)}</button><strong>Show to Driver</strong>${HeaderNavigation()}</header><main class="driver-main"><div class="driver-label">${icon("car", 24)} <span>Please drive to</span></div><section class="driver-pass" aria-labelledby="driver-destination-name"><span class="driver-pass__eyebrow">Destination</span><h1 class="driver-name" id="driver-destination-name">${esc(name)}</h1>${showLocalName ? `<p class="driver-local">${esc(localName)}</p>` : ""}<div class="driver-address">${icon("pin", 26)}<span><small>Address</small><strong>${esc(address)}</strong></span></div></section><p class="driver-hint">Show this screen to your driver. The destination is saved with your trip.</p></main><footer class="driver-cta">${primaryCta("Open directions", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</footer></section></div>`;
   }
   // One action-row primitive for every compact popup that performs a choice.
   // One-line rows stay at least 48px; rows with explanatory copy stay 56px.
@@ -8311,11 +8313,11 @@
   }
   function errorScreen() {
     const rejected = state.sessionRejected;
-    return `<div class="phone-app"><section class="screen">${topbar()}<main class="error-state"><div class="empty-mobile-icon">${icon(rejected ? "user" : "warning", 31)}</div><h1>${rejected ? "Reconnect your account" : "Trip data could not load"}</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta(rejected ? "Reconnect with Google" : "Try Again", rejected ? "restart-google-sign-in" : "retry", rejected ? "user" : "refresh")}</main>${bottomNav("home")}</section></div>`;
+    return `<div class="phone-app"><section class="screen">${topbar()}<main class="error-state"><div class="empty-mobile-icon">${icon(rejected ? "user" : "warning", 31)}</div><h1>${rejected ? "Reconnect your account" : "Trip data could not load"}</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta(rejected ? "Reconnect with Google" : "Try Again", rejected ? "restart-google-sign-in" : "retry", rejected ? "user" : "refresh")}</main></section></div>`;
   }
   function googleAuthRecoveryScreen() {
     const pending = state.googleAuthHandoffStatus === "pending";
-    return `<div class="phone-app"><section class="screen screen--navless google-auth-recovery"><header class="google-auth-recovery__brand" aria-label="tripto.to">tripto<span>.</span>to</header><main class="error-state" role="status" aria-live="polite"><div class="empty-mobile-icon">${icon(pending ? "refresh" : "warning", 31)}</div><h1>${pending ? "Finish signing in" : "Sign-in link expired"}</h1><p>${esc(state.googleAuthHandoffMessage || (pending ? "The secure sign-in handoff was interrupted." : "Please start Google sign-in again."))}</p><p class="recovery-safe">Your trips, offline files, and unsynced changes remain on this phone.</p>${primaryCta(pending ? "Try Again" : "Sign in again", pending ? "retry-google-sign-in" : "restart-google-sign-in", pending ? "refresh" : "user")}</main></section></div>`;
+    return `<div class="phone-app"><section class="screen screen--navless google-auth-recovery">${topbar()}<main class="error-state" role="status" aria-live="polite"><div class="empty-mobile-icon">${icon(pending ? "refresh" : "warning", 31)}</div><h1>${pending ? "Finish signing in" : "Sign-in link expired"}</h1><p>${esc(state.googleAuthHandoffMessage || (pending ? "The secure sign-in handoff was interrupted." : "Please start Google sign-in again."))}</p><p class="recovery-safe">Your trips, offline files, and unsynced changes remain on this phone.</p>${primaryCta(pending ? "Try Again" : "Sign in again", pending ? "retry-google-sign-in" : "restart-google-sign-in", pending ? "refresh" : "user")}</main></section></div>`;
   }
   function toast() {
     const role = state.toastKind === "alert" ? "alert" : "status";
@@ -8398,6 +8400,7 @@
   }
   function sheetContent() {
     let html = "";
+    if (state.sheet === "navigation") html += navigationSheet();
     if (state.sheet === "add") html += addSheet();
     if (state.sheet === "document") html += documentSheet();
     if (state.sheet === "trips") html += tripSwitchSheet();
@@ -8527,15 +8530,6 @@
         default:
           html = state.trip ? timelineScreen() : firstRunScreen();
       }
-    // Any screen that carries the bottom nav pins the whole frame to the small
-    // viewport so the document can never scroll under the browser toolbar — that
-    // scroll is what makes a fixed bottom bar appear to drift. With the frame
-    // locked, the screen's own <main> is the single internal scroller and the
-    // nav stays stuck in place on every screen, every time.
-    document.documentElement.classList.toggle(
-      "nav-frame",
-      typeof html === "string" && html.includes('class="bottom-nav'),
-    );
     html = decorateScreen(html);
     html += sheetContent();
     app.innerHTML = html + toast();
@@ -8575,9 +8569,9 @@
   function openSheet(name, opener) {
     const app = document.getElementById("app");
     const background = app?.querySelector(".phone-app");
-    const canKeepPage = !state.sheet && name !== "driver" && background &&
-      !state.loading && !state.googleAuthHandoffStatus && !state.error;
-    if (!state.sheet)
+    const canKeepPage = (!state.sheet || (name === "navigation" && state.sheet === "driver")) && name !== "driver" && background &&
+      (name === "navigation" || (!state.loading && !state.googleAuthHandoffStatus && !state.error));
+    if (!state.sheet || state.sheet === "driver")
       sheetReturnFocus = focusKeyFor(opener || document.activeElement);
     state.sheet = name;
     state.routeMotion = "";
@@ -8591,6 +8585,7 @@
     document.documentElement.classList.remove("fixed-screen");
     background.setAttribute("inert", "");
     background.setAttribute("aria-hidden", "true");
+    background.querySelector('[data-action="open-navigation"]')?.setAttribute("aria-expanded", String(name === "navigation"));
     app.insertAdjacentHTML("beforeend", content);
     if (name === "trip-setup-ready") ensureStay22().catch(() => {});
     bindDynamic();
@@ -8614,6 +8609,9 @@
     (focusTarget || next.querySelector(".range-days")) ?.focus?.();
   }
   function closeSheet() {
+    // The navigation menu can open above any form. Closing it must not
+    // rebuild the form or drop text that the user has not saved yet.
+    if (state.sheet === "navigation") { closeSheetKeepPage(); return; }
     const sheet = document.querySelector(".bottom-sheet,.full-screen-picker"),
       backdrop = document.querySelector(".sheet-backdrop"),
       finish = () => {
@@ -8647,8 +8645,10 @@
     if (background) {
       background.removeAttribute("inert");
       background.removeAttribute("aria-hidden");
+      background.querySelector('[data-action="open-navigation"]')?.setAttribute("aria-expanded", "false");
     }
     state.sheet = null;
+    if (background?.querySelector(".driver-screen")) state.sheet = "driver";
     state.dateRange = null;
     state.memberMenu = null;
     restoreSheetFocus();
@@ -10280,6 +10280,9 @@
       }
     }
     switch (action) {
+      case "open-navigation":
+        openSheet("navigation", target);
+        break;
       case "view-only-hint":
         showToast("You have view-only access to this trip.", "status");
         break;
@@ -10304,13 +10307,19 @@
         showToast("Please continue with Google again.");
         break;
       case "open-add":
-        if (state.screen === "trips") {
+        if (state.sheet) closeSheetKeepPage();
+        state.error = null;
+        state.googleAuthHandoffStatus = null;
+        if (state.screen === "trips" || !state.trip) {
+          if (formHasMeaningfulChanges && DIRTY_TASK_SCREENS.has(state.screen)) {
+            requestDiscardChanges(() => handleActionTask("open-add", target, inputMethod));
+            break;
+          }
           state.editingEntity = null;
           route("form", "trip");
         } else {
           // The ubiquitous "+" opens the Add-to-trip hub (Add a booking, Day
           // Plan, Save for Later). Create-trip lives only on /trips and Account.
-          closeSheet();
           route("add-trip");
         }
         break;
@@ -11518,6 +11527,21 @@
     const target = event.target.closest("[data-screen],[data-action]");
     if (!target) return;
     if (target.dataset.screen) {
+      if (target.tagName === "A") {
+        // Retain real link behavior for a new tab / copy link. Plain taps use
+        // the app router and its unsaved-change guard without a page reload.
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+        event.preventDefault();
+      }
+      if (state.sheet === "navigation") {
+        closeSheetKeepPage();
+        const leavingRecovery = Boolean(state.error || state.googleAuthHandoffStatus);
+        // Explicit navigation leaves the recovery presentation; credentials
+        // and saved trip data remain owned by the existing auth/load flows.
+        state.error = null;
+        state.googleAuthHandoffStatus = null;
+        if (target.dataset.screen === state.screen && !leavingRecovery) return;
+      }
       // Generic navigation to the trips list shows every trip. Only the explicit
       // "Upcoming trips" / "Past trips" rows (data-action) set a filter, right
       // before they route — so clear any stale filter here.

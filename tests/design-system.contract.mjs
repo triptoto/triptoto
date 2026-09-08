@@ -31,7 +31,7 @@ for (const primitive of [
   "function SecondaryButton(",
   "function StatusLabel(",
   "function ProgressSummary(",
-  "function BottomNavigation(",
+  "function HeaderNavigation(",
   "function EmptyState(",
   "function LoadingState(",
   "function ErrorState(",

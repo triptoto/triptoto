@@ -11,4 +11,5 @@ node tests/detail-loading.contract.mjs
 node tests/render-performance.contract.mjs
 node tests/booking-notes.contract.mjs
 node tests/app-viewport.contract.mjs
+node tests/header-navigation.contract.mjs
 echo "Product V2 validation passed."

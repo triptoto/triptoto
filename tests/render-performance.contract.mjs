@@ -13,7 +13,7 @@ assert.throws(()=>context.dateFormatter('en',{timeZone:'invalid-zone'}),RangeErr
 for(let i=0;i<200;i++)context.dateFormatter(`en-x-${i}`,{year:'numeric'});
 assert.equal(vm.runInContext('dateFormatters.size',context),128);
 let renders=0, binds=0, insertions=0, removedToasts=0;
-const background={setAttribute(){}};
+const background={setAttribute(){},querySelector:()=>null};
 const app={querySelector:selector=>selector==='.phone-app'?background:{remove(){removedToasts++;}},insertAdjacentHTML(){insertions++;}};
 Object.assign(context,{state:{sheet:null,screen:'form'},document:{activeElement:null,getElementById:()=>app,documentElement:{classList:{add(){},remove(){}}}},focusKeyFor:()=>null,render:()=>renders++,sheetContent:()=>'<section class="bottom-sheet"></section>',bindDynamic:()=>binds++,ensureStay22:()=>Promise.resolve(),toast:()=>'<div class="toast-mobile">Saved</div>'});
 vm.runInContext('let sheetReturnFocus=null;'+source.slice(source.indexOf('  function openSheet('),source.indexOf('  function closeSheet()')),context);

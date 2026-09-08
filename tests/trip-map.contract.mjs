@@ -4,7 +4,7 @@ const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Trip 
 const app=read('public/mobile-app.js'),css=read('public/mobile-app.css'),index=read('public/index.html'),routeSource=read('public/mobile-routes.js'),workerIndex=read('apps/worker/src/index.ts'),weather=read('apps/worker/src/routes/weather.ts');
 
 // --- Contextual entry, never a permanent tab ------------------------------
-const nav=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
+const nav=app.slice(app.indexOf('function navigationSheet('),app.indexOf('function totalNotificationCount('));
 assert(!nav.includes('data-screen="trip-map"'),'a permanent Trip Map tab leaked into the bottom navigation');
 assert(!app.includes('Timeline|Map')&&!app.includes('data-action="toggle-map"')&&!app.includes('timeline-map-switch'),'a permanent Timeline/Map switch is forbidden');
 const plus=app.slice(app.indexOf('function addSheet('),app.indexOf('function tripOptionsScreen('));

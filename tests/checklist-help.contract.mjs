@@ -4,9 +4,9 @@ const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Check
 const app=read('public/mobile-app.js'),css=read('public/mobile-app.css'),routes=read('public/mobile-routes.js');
 
 // ---- Current approved primary navigation ----
-const nav=app.slice(app.indexOf('function bottomNav('),app.indexOf('function mobileAlert('));
-for(const item of ['navBtn("trips"','navBtn("trip-options"','navBtn("checklist"','navBtn("account"'])assert(nav.includes(item),`approved navigation item missing: ${item}`);
-assert(nav.includes('class="nav-item nav-add"')&&!nav.includes('navBtn("help"'),'Help must remain contextual and Add must remain centered');
+const nav=app.slice(app.indexOf('function navigationSheet('),app.indexOf('function totalNotificationCount('));
+for(const item of ['["trips", "trips", "All trips"]','["trip-options", "route", "Trip Options"]','["checklist", "checklist", "To-Do List"]','["account", "user", "Account"]'])assert(nav.includes(item),`approved navigation item missing: ${item}`);
+assert(!nav.includes('"help"'),'Help must remain contextual');
 
 // ---- Route registration (offline-capable deep links) ----
 assert(routes.includes('help: "/help"'),'Help route /help missing');

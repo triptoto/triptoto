@@ -55,7 +55,7 @@ assert(app.includes('owner: { label: "Owner", icon: "owner" }')&&app.includes('e
 assert(app.includes('function canEditCurrentTrip()')&&app.includes('You have view-only access to this trip.'),'viewer read-only UI guard missing');
 assert(app.includes('function canManageCurrentTrip()')&&app.includes('Only the trip owner can change trip details.'),'owner-only trip metadata UI guard missing');
 assert(app.includes('state.collabTripId')&&app.includes('state.joinCheckedToken !== token'),'collaboration and invitation routes must render loading until current data is verified');
-assert(app.includes('!["tour", "join"].includes(state.screen)'),'direct invitation links must take priority over the first-run welcome');
+assert(app.includes('["home", "timeline"].includes(state.screen)'),'direct invitation links must take priority over the first-run welcome');
 assert(app.includes('Pending invitations couldn’t be loaded.')&&app.includes('state.inviteLoadError'),'pending-invitation errors must not render as an empty list');
 assert(app.includes("never trusts or sends 'owner' as an assignable role"),'frontend owner-escalation guard comment missing');
 for(const copy of ['Why plan together?','Build one plan','Keep everyone aligned','You stay in control','One trip.<br>Everyone in sync.'])assert(app.includes(copy),`informative collaboration UX missing: ${copy}`);
