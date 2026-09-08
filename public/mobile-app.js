@@ -7172,6 +7172,10 @@
   function bottomSheet(id, title, content) {
     return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet compact-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
   }
+  function tripCreatedSheet() {
+    const confetti = Array.from({length:18}, (_, i) => `<i style="--piece:${i};--drift:${(i % 5 - 2) * 16}px" aria-hidden="true"></i>`).join("");
+    return bottomSheet("trip-created", "Your trip is ready!", `<div class="trip-celebration"><div class="trip-celebration__confetti" aria-hidden="true">${confetti}</div><span class="trip-celebration__mark" aria-hidden="true">${icon("check",32)}</span><p class="trip-celebration__name">${esc(state.trip?.title || "Your new trip")}</p><p class="trip-celebration__copy">Let the adventure begin.</p><button type="button" class="mobile-primary-action" data-screen="timeline">Open trip</button></div>`);
+  }
   function currencyPickerSheet() {
     const currency = initCurrency();
     const field = state.currencyPickerField === "from" ? "from" : "to";
@@ -8428,6 +8432,7 @@
     if (state.sheet === "move-booking") html += moveBookingSheet();
     if (state.sheet === "date-range") html += dateRangeSheet();
     if (state.sheet === "trip-setup-ready") html += tripSetupReadyScreen();
+    if (state.sheet === "trip-created") html += tripCreatedSheet();
     if (state.sheet === "booking-email-trip") html += bookingEmailTripSheet();
     if (state.sheet === "share") html += shareSheet();
     if (state.sheet === "member-actions") html += collabMemberSheet();
@@ -9732,7 +9737,7 @@
           Object.assign(state,{trips:[trip],trip,timeline:[],checklist:[],brain:null,impacts:[],transport:[],stays:[],locations:[],travelers:[],connections:[],health:null,bookingDetails:[],contacts:[],syncStatus:null,localDocs:[],tripsLoaded:true});
         }
         clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`);
-        route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true); return;
+        route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true); if (isFirstTripCreation && !editId) openSheet("trip-created"); return;
       }
       if (kind === "trip") {
         const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
@@ -9874,6 +9879,7 @@
       const roundTripSaved = kind==="flight" && !editId && String(fd.get("roundTrip")||"")==="1" && String(fd.get("returnDepartureDate")||"") && savedBookingId;
       showToast(saveWarning||(roundTripSaved?"Round trip saved — outbound and return flights added.":(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`)),saveWarning?"alert":"status");
       route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+      if (kind === "trip" && !editId && !saveWarning) openSheet("trip-created");
     } catch (error) {
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."

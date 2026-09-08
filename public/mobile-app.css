@@ -4416,3 +4416,16 @@ html body .trip-setup-ready__create:active{transform:scale(.96);box-shadow:0 2px
 @keyframes trip-create-arrive{from{opacity:0;translate:0 4px}to{opacity:1;translate:0 0}}
 @keyframes trip-create-sheen{from{transform:translateX(-130%)}to{transform:translateX(130%)}}
 @media(prefers-reduced-motion:reduce){html body .trip-setup-ready__create{animation:none;transition:none}html body .trip-setup-ready__create::after{animation:none;display:none}html body .trip-setup-ready__create:is(:hover,:active){transform:none}}
+
+.trip-celebration{position:relative;isolation:isolate;overflow:hidden;text-align:center;padding:8px 0 4px}
+.trip-celebration__mark{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 12px;border-radius:20px;background:var(--activity-soft);color:var(--accent);animation:trip-celebrate-pop 420ms ease-out both}
+.trip-celebration__name{margin:0;color:var(--ink);font-size:20px;font-weight:600;overflow-wrap:anywhere}
+.trip-celebration__copy{margin:6px 0 20px;color:var(--muted);font-size:15px}
+.trip-celebration .mobile-primary-action{width:100%;margin:0;min-height:48px}
+.trip-celebration__confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.trip-celebration__confetti i{position:absolute;top:-12px;left:calc(var(--piece) * 5.5%);width:6px;height:10px;border-radius:2px;background:var(--accent);opacity:0;animation:trip-confetti 1500ms ease-out calc(var(--piece) * 35ms) both}
+.trip-celebration__confetti i:nth-child(3n){background:var(--stay-soft)}
+.trip-celebration__confetti i:nth-child(3n+1){background:var(--flight-soft)}
+@keyframes trip-confetti{0%{opacity:0;transform:translate(0,-8px) rotate(0)}15%{opacity:.9}100%{opacity:0;transform:translate(var(--drift),180px) rotate(240deg)}}
+@keyframes trip-celebrate-pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.trip-celebration__mark{animation:none}.trip-celebration__confetti{display:none}}
