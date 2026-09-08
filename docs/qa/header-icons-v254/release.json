@@ -1,0 +1,114 @@
+{
+  "url": "https://tripto.to/",
+  "version": "4f01a082-c859-42d6-9390-4f77d85aa095",
+  "previous_version": "6ff4a861-22e6-4a31-b84c-7c5f81799c20",
+  "commit": "e2cbca82f4f280a101eba0a984edfe4a0efa996c",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v254-header-icons",
+  "asset_version": "flat-design-system-v176",
+  "legal_css_version": "header-icons-v254",
+  "checked_at": "2026-09-08T17:39:15.953279+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788889155914
+  },
+  "assets": {
+    "index.html": {
+      "public_path": "/",
+      "sha256": "c08719b9695cc4e68d7d84152328ce39d75156179ef2a977ddd14d7a80a13fd7",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "public_path": "/mobile-app.js",
+      "sha256": "5efa9143aedb3b7be70640c88fb3a382bb397e5cd503dfc0648f9eeea5c297bb",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "public_path": "/mobile-app.css",
+      "sha256": "dacee260039ac9b57488268083214dd0d6c678959509bbfaeeaaf44ecd9ef5a2",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "public_path": "/mobile-app.min.js",
+      "sha256": "5d4b9b1ee92124b2ac97baf78b384434dc97cfc8b27587030cab94062613844f",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "public_path": "/mobile-app.min.css",
+      "sha256": "bda0d84d5fce3ba1951a3c6f68c089ebeaac17cdc6727494b8118dac92d772de",
+      "matches_local": true
+    },
+    "sw.js": {
+      "public_path": "/sw.js",
+      "sha256": "baee5e595f65b7e8b225fe43117e5c422aa7207d9ed912a92aa60baec847c8b0",
+      "matches_local": true
+    },
+    "privacy.html": {
+      "public_path": "/privacy",
+      "sha256": "c22d35b9ec1a4be50a38b624b5fc4bf138ba1ec8249693f41d27d15eff1781bc",
+      "matches_local": true
+    },
+    "terms.html": {
+      "public_path": "/terms",
+      "sha256": "aeadc6900bc22426271248441aa3bdf4100dbc4684c1768cd7a3985edd9a2fed",
+      "matches_local": true
+    },
+    "legal-navigation.css": {
+      "public_path": "/legal-navigation.css",
+      "sha256": "804f7e93512cf6c37a0bc317054c6a793049665fe028c311be4ccd52828f6b52",
+      "matches_local": true
+    },
+    "legal-navigation.js": {
+      "public_path": "/legal-navigation.js",
+      "sha256": "a5ff1389383e00ac6b3ae02ece0b3e8e3977975cf89150d4091df60585597a96",
+      "matches_local": true
+    }
+  },
+  "traffic_percent": 100,
+  "public_browser": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "routes": [
+      "/trip-options",
+      "/account",
+      "/timeline",
+      "/trips",
+      "/before-you-go",
+      "/privacy",
+      "/terms"
+    ],
+    "all_styles_matched": true,
+    "icon_control": {
+      "width": 44,
+      "height": 44,
+      "svg_width": 24,
+      "radius": "12px",
+      "background": "rgb(243, 239, 240)",
+      "color": "rgb(5, 21, 45)"
+    },
+    "menu_to_account": "passed",
+    "console_errors": [],
+    "preview_mode": false,
+    "production_data_mutations": false
+  }
+}

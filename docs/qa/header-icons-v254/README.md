@@ -18,3 +18,9 @@ Coverage includes standard pages and forms, the main timeline notification/Add/M
 - Cloudflare dry run passed for `travelinkme@gmail.com`. Cache `tripto-shell-product-v254-header-icons`, shell query `flat-design-system-v176`, legal CSS query `header-icons-v254`.
 
 The browser matrix verifies header presentation, not every underlying business workflow. Backend/D1 integration suites were not repeated for this presentation change. Public publication is recorded in `release.json`.
+
+## Publication
+
+Application commit `e2cbca8` is pushed to `fix/keyboard-header-20260907`; main was not merged. Worker `4f01a082-c859-42d6-9390-4f77d85aa095` serves 100% of traffic. All 10 checked public shell/legal files exactly match the release, `/health` and its database check pass, and feature flags are unchanged.
+
+Public browser at 390×844: Trip options, Account, Timeline, Trips, To-do, Privacy and Terms all show the same 44px tiles, 24px icons, 12px corners and matching surface/ink colors. Menu → Account navigated correctly and the browser console reported no errors. No preview fixture was used for these public checks.
