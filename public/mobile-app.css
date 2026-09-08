@@ -3647,7 +3647,8 @@ html body .add-intent-page .add-intent-row__copy{display:grid;gap:3px}
 html body .add-intent-page .add-intent-row__copy strong{font-size:var(--type-body);font-weight:var(--weight-semibold)}
 html body .add-intent-page .add-intent-row__copy small{font-size:var(--type-meta);line-height:1.35}
 
-html body .day-plan-page .day-plan-intro,html body .save-later-page .save-later-intro,html body .planning-page .planning-intro,html body .plan-panel-page .plan-panel__intro{padding:0}
+html body .day-plan-page .day-plan-intro{padding:0 0 var(--space-6)}
+html body .save-later-page .save-later-intro,html body .planning-page .planning-intro,html body .plan-panel-page .plan-panel__intro{padding:0}
 html body .day-plan-page .day-plan-intro>span,html body .save-later-page .save-later-intro>span,html body .planning-page .planning-intro>span,html body .plan-panel-page .plan-panel__intro>span{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em}
 html body .day-plan-page .day-plan-list{display:grid;gap:0}
 html body .day-plan-page .day-plan-row{display:grid;grid-template-columns:40px minmax(0,1fr) 20px;align-items:center;gap:var(--space-3);min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
