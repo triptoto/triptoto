@@ -2235,8 +2235,8 @@
   function fdStaticRow(iconName, title, sub = "", warn = false) {
     return `<div class="fd-row fd-row--static">${fdRowIcon(iconName, warn)}${fdRowText(title, sub)}</div>`;
   }
-  function fdButtonRow(iconName, title, action, attrs = "", sub = "", trail = "chevron") {
-    return `<button type="button" class="fd-row fd-row--button" data-action="${action}" ${attrs}>${fdRowIcon(iconName)}${fdRowText(title, sub)}${trail ? `<span class="fd-row__chev">${icon(trail, 18)}</span>` : ""}</button>`;
+  function fdButtonRow(iconName, title, action, attrs = "", sub = "", trail = "chevron", rowClass = "") {
+    return `<button type="button" class="fd-row fd-row--button${rowClass ? ` ${esc(rowClass)}` : ""}" data-action="${action}" ${attrs}>${fdRowIcon(iconName)}${fdRowText(title, sub)}${trail ? `<span class="fd-row__chev">${icon(trail, 18)}</span>` : ""}</button>`;
   }
   function fdLinkRow(iconName, title, href, ariaLabel = "", sub = "") {
     return `<a class="fd-row fd-row--button" href="${esc(href)}"${ariaLabel ? ` aria-label="${esc(ariaLabel)}"` : ""}>${fdRowIcon(iconName)}${fdRowText(title, sub)}<span class="fd-row__chev">${icon("chevron", 18)}</span></a>`;
@@ -2255,6 +2255,11 @@
   function fdList(rows, label = "Booking details and documents") {
     const body = rows.filter(Boolean).join("");
     return body ? `<section class="fd-list" aria-label="${esc(label)}">${body}</section>` : "";
+  }
+  function fdSection(label, rows, description = "") {
+    const body = Array.isArray(rows) ? rows.filter(Boolean).join("") : rows;
+    if (!body) return "";
+    return `<section class="fd-list__section" aria-label="${esc(label)}"><div class="fd-list__section-head"><h2>${esc(label)}</h2>${description ? `<p>${esc(description)}</p>` : ""}</div><div class="fd-list__rows">${body}</div></section>`;
   }
   // Editable notes, shared by every booking detail screen. Notes are stored
   // either on a scoped contact (flight/hotel/train/car/transfer) or inline on
@@ -4564,14 +4569,14 @@
           return `<div class="fd-row fd-row--doc"><button type="button" class="fd-row__main" data-action="open-document" data-id="${esc(document.id)}"><span class="fd-row__icon">${icon(document.type === "boarding_pass" ? "qr" : "document", 20)}</span><span class="fd-row__text"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${ready ? "Ready offline" : statusText(document.integrity || "checking")}</small></span></button><button type="button" class="fd-row__trail fd-row__trail--remove" data-action="remove-document" data-id="${esc(document.id)}" aria-label="Remove ${esc(document.name || "document")}">${icon("trash", 18)}</button></div>`;
         })
         .join(""),
-      boardingRow = `<div class="fd-row fd-row--static"><span class="fd-row__icon${bpStored ? "" : " fd-row__icon--warn"}">${icon(bpStored ? "qr" : "warning", 20)}</span><span class="fd-row__text"><strong>Boarding pass</strong><small>${bpStored ? "Stored and verified on this phone" : "No verified boarding pass on this phone yet"}</small></span></div>`,
-      directionsRow = fdButtonRow("navigation", "Directions", "directions-flight", `data-id="${esc(itemId(flight))}"`),
-      addRow = `<button type="button" class="fd-row fd-row--button" data-action="add-document"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add document</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`,
+      boardingRow = `<div class="fd-row fd-row--static fd-row--with-meta"><span class="fd-row__icon${bpStored ? "" : " fd-row__icon--warn"}">${icon(bpStored ? "qr" : "warning", 20)}</span><span class="fd-row__text"><strong>Boarding pass</strong><small>${bpStored ? "Stored and verified on this phone" : "No verified boarding pass on this phone yet"}</small></span></div>`,
+      directionsRow = fdButtonRow("navigation", "Directions", "directions-flight", `data-id="${esc(itemId(flight))}"`, "", "chevron", "fd-row--compact"),
+      addRow = `<button type="button" class="fd-row fd-row--button fd-row--compact" data-action="add-document"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add document</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`,
       liveEnabled = Number(val(flight, "live_data_enabled")) === 1,
       liveControls = state.liveFlights?.available
-        ? `<section class="live-flight-controls" aria-label="Live flight updates"><button type="button" class="fd-row fd-row--button" data-action="toggle-live-flight" data-id="${esc(itemId(flight))}" aria-pressed="${liveEnabled}"><span class="fd-row__icon">${icon("plane", 20)}</span><span class="fd-row__text"><strong>Live flight status</strong><small>${liveEnabled ? "On · beta" : "Off"}</small></span><span class="fd-row__chev">${icon(liveEnabled ? "chevronUp" : "chevron", 18)}</span></button>${liveEnabled ? fdButtonRow("refresh", "Refresh now", "refresh-live-flight", `data-id="${esc(itemId(flight))}"`) : ""}</section>`
+        ? `<button type="button" class="fd-row fd-row--button fd-row--with-meta" data-action="toggle-live-flight" data-id="${esc(itemId(flight))}" aria-pressed="${liveEnabled}"><span class="fd-row__icon">${icon("plane", 20)}</span><span class="fd-row__text"><strong>Live flight status</strong><small>${liveEnabled ? "On · beta" : "Off"}</small></span><span class="fd-row__chev">${icon(liveEnabled ? "chevronUp" : "chevron", 18)}</span></button>${liveEnabled ? fdButtonRow("refresh", "Refresh now", "refresh-live-flight", `data-id="${esc(itemId(flight))}"`, "", "chevron", "fd-row--compact") : ""}`
         : "",
-      fdList = `<section class="fd-list" aria-label="Documents and flight details">${directionsRow}${liveControls}${boardingRow}${disclosure}${docRows}${addRow}${fdNoteRow(flight, "flight")}</section>`;
+      fdList = `<section class="fd-list fd-list--flight" aria-label="Flight actions and documents">${fdSection("Actions", [directionsRow, liveControls])}${fdSection("Documents", [boardingRow, docRows, addRow])}${fdSection("Booking information", [disclosure, fdNoteRow(flight, "flight")])}</section>`;
     return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${fdList}</div></main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {

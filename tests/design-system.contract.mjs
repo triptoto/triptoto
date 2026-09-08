@@ -53,5 +53,9 @@ assert.match(css, /trip-options-page[^{]*trip-option-card\{[^}]*background:trans
 assert.match(css, /add-intent-page[^{]*add-intent-row\{[^}]*border-bottom:1px solid var\(--line\)/);
 assert.match(css, /save-later-page[^{]*save-later-row\{[^}]*background:transparent/);
 assert.match(css, /dark-detail[^{]*fd-list\{[^}]*box-shadow:none/);
+assert.ok(js.includes('fd-list--flight'), 'flight detail must use the shared flat-list layout');
+assert.ok(js.includes('fdSection("Actions"'), 'flight detail must group actions by intent');
+assert.match(css, /flight-detail-screen[^{]*fd-list--flight\{[^}]*border:0!important/);
+assert.match(css, /flight-detail-screen[^{]*fd-row\{[^}]*min-height:60px!important/);
 
 console.log("Unified Tripto Flat Travel design-system contract passed.");

@@ -3888,6 +3888,31 @@ html body .dark-detail .fd-row:last-child{border-bottom:0}
 html body .dark-detail .flight-more,html body .dark-detail .flight-more-content{border:0;border-radius:0;background:transparent}
 html body .dark-detail .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface)}
 
+/* Flight detail: a compact action list, grouped by intent. These rules are
+   final and important because an older booking-detail pass used an important
+   rounded list container, which created the oversized frame. */
+html body .flight-detail-screen .detail-content{padding:var(--space-4) var(--ds-page-padding) calc(var(--nav-height) + var(--space-6) + env(safe-area-inset-bottom))!important}
+html body .flight-detail-screen .flight-detail-stack{display:grid;gap:var(--space-6)}
+html body .flight-detail-screen .fd-list--flight{display:grid;gap:var(--space-6);margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+html body .flight-detail-screen .fd-list__section{display:grid;gap:var(--space-2)}
+html body .flight-detail-screen .fd-list__section-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-3);margin:0}
+html body .flight-detail-screen .fd-list__section-head h2{margin:0;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em;line-height:1.2;text-transform:uppercase}
+html body .flight-detail-screen .fd-list__section-head p{margin:0;color:var(--muted);font-size:var(--type-meta)}
+html body .flight-detail-screen .fd-list__rows{border-top:1px solid var(--line)}
+html body .flight-detail-screen .fd-row{gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html body .flight-detail-screen .fd-row--with-meta,html body .flight-detail-screen .fd-row--note{min-height:74px!important}
+html body .flight-detail-screen .fd-row:last-child{border-bottom:1px solid var(--line)!important}
+html body .flight-detail-screen .fd-row__main{min-height:60px!important;padding:var(--space-2) 0!important}
+html body .flight-detail-screen .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface);color:var(--accent)}
+html body .flight-detail-screen .fd-row__text{gap:2px}
+html body .flight-detail-screen .fd-row__text strong{font-size:var(--type-body);font-weight:var(--weight-semibold);line-height:1.25}
+html body .flight-detail-screen .fd-row__text small{font-size:var(--type-meta);line-height:1.35}
+html body .flight-detail-screen .fd-row--button .fd-row__chev{display:grid!important;color:var(--muted)}
+html body .flight-detail-screen .fd-row--button:focus-visible,html body .flight-detail-screen .fd-row__main:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+html body .flight-detail-screen .fd-panel{padding:var(--space-2) 0 var(--space-3);border-bottom:1px solid var(--line)}
+html body .flight-detail-screen .fd-panel dl>div{padding:var(--space-2) 0}
+@media(max-width:359px){html body .flight-detail-screen .detail-content{padding-inline:var(--space-3)!important}}
+
 /* Weather, Currency and eSIM use one utility grammar. */
 html body .weather-refresh .weather-page,html body .currency-screen .currency-page,html body .esim-refresh .esim-page{gap:var(--space-6);padding:var(--space-4)}
 html body .weather-refresh .wx-block,html body .weather-refresh .wx-block--days{padding:0;border:0;background:transparent}
