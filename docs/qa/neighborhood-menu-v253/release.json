@@ -1,0 +1,84 @@
+{
+  "url": "https://tripto.to/",
+  "version": "6ff4a861-22e6-4a31-b84c-7c5f81799c20",
+  "previous_version": "4509b7c8-7b28-4b8a-8f23-a3c6f3bc9336",
+  "commit": "9fb6e25add783773d2964cbaf233cb1a5d9ff57f",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v253-neighborhood-menu",
+  "asset_version": "flat-design-system-v175",
+  "checked_at": "2026-09-08T17:21:05.984981+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788888065935
+  },
+  "assets": {
+    "index.html": {
+      "public_path": "/",
+      "sha256": "eca82fa6633c791631e5dcd9ffd22e7df68b607be32afafa8bcdfb8108a9b835",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "public_path": "/mobile-app.js",
+      "sha256": "e32a38190f0e920296e1f1607775e35838b7ddd7de106f885f3f29b079ae4e4c",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "public_path": "/mobile-app.css",
+      "sha256": "e3297c5d0b9d7d9092dd846fbb414833fd9f818ef642c5359314063bafa82431",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "public_path": "/mobile-app.min.js",
+      "sha256": "e017086a048f308eba1c68e0ae7861c7ecfef292af098b6b35128802d2c56a0c",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "public_path": "/mobile-app.min.css",
+      "sha256": "10c2061a72b498dc7b4f870c527aabe2b7bf9c0ec7d5db174e84115eda75ee90",
+      "matches_local": true
+    },
+    "sw.js": {
+      "public_path": "/sw.js",
+      "sha256": "aa3094fe7c2a5310af5de303df1ff5dab507281d08954b04979ded5a6fba85fc",
+      "matches_local": true
+    }
+  },
+  "traffic_percent": 100,
+  "public_browser": {
+    "route": "/trip-options",
+    "mode": "Signed-in read-only smoke check; Neighborhood flows checked with local fixtures",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "header_height": 68,
+    "horizontal_overflow": false,
+    "navigation_links": [
+      "All trips",
+      "Trip Options",
+      "To-Do List",
+      "Account"
+    ],
+    "misplaced_collection_action": false,
+    "console_errors": [],
+    "production_mutations": false
+  }
+}

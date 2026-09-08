@@ -17,3 +17,11 @@ The edit action resolves the displayed collection, closes the menu, and opens it
 - Cloudflare dry run passed for the verified `travelinkme@gmail.com` account. Cache is `tripto-shell-product-v253-neighborhood-menu`; both shell asset queries are `flat-design-system-v175`.
 
 This is a bounded navigation/UI change. Backend mutation and D1 integration suites were not repeated. Publication and public verification are recorded separately in `release.json`.
+
+## Publication
+
+Application commit `9fb6e25` is pushed to `fix/keyboard-header-20260907`; main was not merged. Worker `6ff4a861-22e6-4a31-b84c-7c5f81799c20` serves 100% of traffic. All six checked public files match the local release exactly. `/health` reports healthy service and database; feature flags are unchanged.
+
+The HTML comparison uses `/`, the canonical shell URL. An initial check against `/index.html` received its empty redirect response; the corrected canonical URL matched the build. No application change was needed.
+
+The signed-in public `/trip-options` page was checked at 390×844: 68px header, no overflow, all four menu links, no misplaced collection action and no console errors. Neighborhood-specific flows were verified with local fixtures; no production plan was created or edited.
