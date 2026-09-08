@@ -117,6 +117,7 @@
   const state = {
     token: localStorage.getItem("tripto_token") || "",
     loading: true,
+    tripDetailsLoading: false,
     offline: !navigator.onLine,
     screen: parseRoute().screen,
     selectedId: parseRoute().id,
@@ -679,7 +680,7 @@
     return entity ? routeEntitySlug(screen, entity) : id;
   }
   function canonicalizeAppRoute() {
-    if (state.loading || !state.tripsLoaded) return;
+    if (state.loading || state.tripDetailsLoading || !state.tripsLoaded) return;
     const parsed = parseRoute();
     const hasResolvedSelection = resolveRouteSelection();
     if (requiresResolvedRouteEntity(parsed.screen, parsed.id) && !hasResolvedSelection) {
@@ -3017,7 +3018,10 @@
       return;
     }
     const hydrated = hydrateAppFromCache();
-    state.loading = !hydrated;
+    // Cached detail pages still carry a readable URL slug on startup. Resolve
+    // it before the first paint; an incomplete cache must wait for the record,
+    // not briefly render the missing-plan fallback while requests are pending.
+    state.loading = !hydrated || !resolveRouteSelection();
     if (hydrated) state.tripsLoaded = true;
     render();
     try {
@@ -3166,8 +3170,11 @@
     applyTripDetails(results);
     return true;
   }
+  let tripDetailsRequestId = 0;
   async function loadTripDetails() {
+    const requestId = ++tripDetailsRequestId;
     if (!state.trip) {
+      state.tripDetailsLoading = false;
       state.timeline = [];
       state.checklist = [];
       state.brain = null;
@@ -3184,34 +3191,42 @@
       state.contacts = [];
       state.syncStatus = null;
       state.localDocs = [];
+      state.collections = [];
+      state.collectionStops = [];
       resetCollaborationState();
       return;
     }
     const tripId = state.trip.id;
-    if (
-      (state.sharingTripId && String(state.sharingTripId) !== String(tripId)) ||
-      (state.collabTripId && String(state.collabTripId) !== String(tripId))
-    )
-      resetCollaborationState();
-    const [results, localDocs] = await Promise.all([
-      Promise.allSettled(tripDetailPaths().map(apiGet)),
-      // Local documents improve offline use but must never block the itinerary
-      // if this browser temporarily cannot open IndexedDB.
-      listLocalDocs(tripId).catch(() => []),
-    ]);
-    // Drop the response if the user switched trips while it was in flight, so a
-    // slow request can never overwrite the newly-opened trip's data.
-    if (state.trip?.id !== tripId) return;
-    // Do not make the entire itinerary unavailable when one independent
-    // section fails. applyTripDetails keeps the last verified values for any
-    // rejected request and still applies the sections that did arrive.
-    applyTripDetails(results);
-    state.localDocs = localDocs;
-    if (state.trip?.id !== tripId) return;
-    void ensureWeather();
-    // Soft, non-fatal: lets the trip menu reveal "Plan together" only when the
-    // server kill-switch (SHARING_ENABLED) is on. Never blocks trip loading.
-    void loadSharingStatus(tripId);
+    state.tripDetailsLoading = true;
+    try {
+      if (
+        (state.sharingTripId && String(state.sharingTripId) !== String(tripId)) ||
+        (state.collabTripId && String(state.collabTripId) !== String(tripId))
+      )
+        resetCollaborationState();
+      const [results, localDocs] = await Promise.all([
+        Promise.allSettled(tripDetailPaths().map(apiGet)),
+        // Local documents improve offline use but must never block the itinerary
+        // if this browser temporarily cannot open IndexedDB.
+        listLocalDocs(tripId).catch(() => []),
+      ]);
+      // Drop the response if the user switched trips while it was in flight, so a
+      // slow request can never overwrite the newly-opened trip's data.
+      if (state.trip?.id !== tripId || requestId !== tripDetailsRequestId) return;
+      // Do not make the entire itinerary unavailable when one independent
+      // section fails. applyTripDetails keeps the last verified values for any
+      // rejected request and still applies the sections that did arrive.
+      applyTripDetails(results);
+      state.localDocs = localDocs;
+      if (state.trip?.id !== tripId) return;
+      void ensureWeather();
+      // Soft, non-fatal: lets the trip menu reveal "Plan together" only when the
+      // server kill-switch (SHARING_ENABLED) is on. Never blocks trip loading.
+      void loadSharingStatus(tripId);
+    } finally {
+      // An older request must not clear the loading state of a newer one.
+      if (requestId === tripDetailsRequestId) state.tripDetailsLoading = false;
+    }
   }
   async function refreshBookingEmailInbox() {
     if (PREVIEW_MODE || state.account?.mode !== "account") return;
@@ -3237,14 +3252,10 @@
     // name, bottom nav) stays on screen, then show a contained in-place loader
     // instead of replacing the whole app with the full-screen grey skeleton.
     // Clear the previous trip's detail arrays first so nothing stale flashes.
-    Object.assign(state, { timeline: [], transport: [], stays: [], locations: [], travelers: [], checklist: [], brain: null, impacts: [], changes: [], health: null, bookingDetails: [], contacts: [] });
+    Object.assign(state, { timeline: [], transport: [], stays: [], locations: [], travelers: [], checklist: [], brain: null, impacts: [], changes: [], health: null, bookingDetails: [], contacts: [], collections: [], collectionStops: [] });
     state.tripDetailsLoading = true;
     routeAfter();
-    try {
-      await loadTripDetails();
-    } finally {
-      state.tripDetailsLoading = false;
-    }
+    await loadTripDetails();
     render();
   }
 
@@ -4692,6 +4703,8 @@
     return hours ? `${hours}h ${rest ? `${rest}m` : ""}`.trim() : `${rest}m`;
   }
   function missingDetailScreen(title, body) {
+    if (state.loading || state.tripDetailsLoading)
+      return `<div class="phone-app"><section class="screen">${appBar("Loading…")}<main class="missing-detail-content" aria-busy="true">${loadingSkeleton()}</main>${bottomNav("bookings")}</section></div>`;
     return `<div class="phone-app"><section class="screen">${appBar(title)}<main class="missing-detail-content">${EmptyState(title, body)}</main>${bottomNav("bookings")}</section></div>`;
   }
   function hotelScreen() {

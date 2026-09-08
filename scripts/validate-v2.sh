@@ -7,6 +7,7 @@ npm run validate:smart-import-auth
 node tests/collaboration.contract.mjs
 node tests/collections.contract.mjs
 node tests/loading-pattern.contract.mjs
+node tests/detail-loading.contract.mjs
 node tests/render-performance.contract.mjs
 node tests/booking-notes.contract.mjs
 node tests/app-viewport.contract.mjs
