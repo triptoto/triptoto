@@ -54,6 +54,21 @@
     }
   }
 
+  // Human-readable route segments are part of the shareable URL contract. Keep
+  // the slug deterministic and stable across browsers; the app resolves it to
+  // the private record ID after the user's trip data is loaded.
+  function slugify(value) {
+    return String(value || "")
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[łŁ]/g, "l")
+      .toLocaleLowerCase()
+      .replace(/&/g, " and ")
+      .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 96) || "item";
+  }
+
   function normalizePath(pathname) {
     const value = String(pathname || "/").replace(/\/{2,}/g, "/");
     if (value === "/") return value;
@@ -83,6 +98,8 @@
       return { screen: "trip-options", id: null, redirect: true };
 
     if (path === "/trips/new") return { screen: "form", id: "trip" };
+    if (path.startsWith("/trips/"))
+      return { screen: "timeline", id: safelyDecode(path.slice("/trips/".length)), tripRoute: true };
     if (path === "/travelers/new")
       return { screen: "form", id: "traveler" };
     if (path === "/before-you-go/new")
@@ -143,6 +160,11 @@
         : "/bookings/new";
     }
 
+    // A trip timeline is addressable by its readable trip slug. Keep the
+    // existing /timeline path for the generic shell and legacy bookmarks.
+    if (normalizedScreen === "timeline" && normalizedId)
+      return `/trips/${encodeURIComponent(normalizedId)}`;
+
     if (normalizedScreen === "collection-form") {
       if (normalizedId && normalizedId.startsWith("new:"))
         return `/collections/new/${encodeURIComponent(normalizedId.slice(4))}`;
@@ -176,6 +198,7 @@
     parsePath,
     pathFor,
     urlFor,
+    slugify,
     screens: Object.freeze({ ...STATIC_PATHS, ...DETAIL_PATHS }),
   });
 })(globalThis);

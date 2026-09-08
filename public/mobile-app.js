@@ -544,8 +544,98 @@
   function parseRoute() {
     return routes?.parse(location) || { screen: "timeline", id: null };
   }
+  function routeEntities(screen) {
+    if (screen === "timeline") return state.trips || [];
+    if (screen === "collection" || screen === "collection-form" || screen === "stop-form") return state.collections || [];
+    if (screen === "flight") return (state.transport || []).filter((item) => String(val(item, "transport_type") || "") === "flight");
+    if (screen === "train") return (state.transport || []).filter((item) => ["train", "ferry"].includes(String(val(item, "transport_type") || "")));
+    if (screen === "hotel") return state.stays || [];
+    if (["plan", "add-to-plan", "day-plan-form"].includes(screen)) return state.timeline || [];
+    if (screen === "traveler") return state.travelers || [];
+    return [];
+  }
+  function routeEntityLabel(screen, entity) {
+    if (!entity) return "";
+    const locationFor = (id) => (state.locations || []).find((row) => String(row.id) === String(id)) || null;
+    const locationNameFor = (id) => val(locationFor(id), "city", "display_name", "local_name") || "";
+    if (screen === "timeline") return [val(entity, "title"), val(entity, "starts_on", "startsOn")].filter(Boolean).join(" ");
+    if (["collection", "collection-form", "stop-form"].includes(screen)) return [val(entity, "title"), val(entity, "city", "area")].filter(Boolean).join(" ");
+    if (screen === "flight") {
+      const from = locationFor(val(entity, "departure_location_id", "start_location_id")), to = locationFor(val(entity, "arrival_location_id", "end_location_id"));
+      return [val(entity, "title", "carrier_name", "marketing_flight_number"), val(from, "iata_code", "station_code"), val(to, "iata_code", "station_code")].filter(Boolean).join(" ");
+    }
+    if (screen === "train") {
+      const from = locationFor(val(entity, "departure_location_id", "start_location_id")), to = locationFor(val(entity, "arrival_location_id", "end_location_id"));
+      return [val(entity, "title", "service_number", "carrier_name"), val(from, "city", "display_name"), val(to, "city", "display_name")].filter(Boolean).join(" ");
+    }
+    if (screen === "hotel") return [val(entity, "property_name", "title"), locationNameFor(val(entity, "property_location_id", "start_location_id"))].filter(Boolean).join(" ");
+    if (["plan", "add-to-plan", "day-plan-form"].includes(screen)) return [val(entity, "title"), val(entity, "activity_type", "reservation_type")].filter(Boolean).join(" ");
+    if (screen === "traveler") return val(entity, "display_name", "name") || "Traveler";
+    return val(entity, "title", "name") || "Item";
+  }
+  function routeEntitySlug(screen, entity) {
+    const id = itemId(entity), label = routeEntityLabel(screen, entity), base = routes?.slugify?.(label) || "item";
+    if (!id) return base;
+    const peers = routeEntities(screen).filter((candidate) => (routes?.slugify?.(routeEntityLabel(screen, candidate)) || "item") === base);
+    if (peers.length <= 1) return base;
+    const disambiguator = routes?.slugify?.(id) || id.replace(/[^a-z0-9]+/gi, "-") || "item";
+    return `${base}-${disambiguator.slice(0, 8)}`;
+  }
+  function routeEntityForId(screen, id) {
+    const wanted = String(id || "");
+    return routeEntities(screen).find((entity) => itemId(entity) === wanted) || null;
+  }
+  function resolveRouteId(screen, rawId) {
+    const wanted = String(rawId || "");
+    if (!wanted) return null;
+    const exact = routeEntityForId(screen, wanted);
+    if (exact) return itemId(exact);
+    const match = routeEntities(screen).find((entity) => routeEntitySlug(screen, entity) === wanted);
+    return match ? itemId(match) : null;
+  }
+  function applyRouteTripSelection() {
+    const parsed = parseRoute();
+    if (parsed.screen !== "timeline" || !parsed.id) return;
+    const tripId = resolveRouteId("timeline", parsed.id), trip = (state.trips || []).find((row) => String(row.id) === String(tripId));
+    if (trip) {
+      state.trip = trip;
+      try { localStorage.setItem("tripto_selected_trip", trip.id); } catch (_) {}
+    }
+  }
+  function resolveRouteSelection() {
+    const parsed = parseRoute();
+    if (parsed.screen === "timeline" && parsed.id) {
+      applyRouteTripSelection();
+      state.selectedId = null;
+      return;
+    }
+    const resolved = resolveRouteId(parsed.screen, parsed.id);
+    if (resolved) state.selectedId = resolved;
+  }
+  function readableRouteId(screen, id) {
+    const wanted = String(id || "");
+    if (!wanted || wanted.startsWith("new:")) return id;
+    const entity = routeEntityForId(screen, wanted);
+    return entity ? routeEntitySlug(screen, entity) : id;
+  }
+  function canonicalizeAppRoute() {
+    if (state.loading || !state.tripsLoaded) return;
+    resolveRouteSelection();
+    const parsed = parseRoute();
+    const screen = parsed.screen === "timeline" ? "timeline" : state.screen;
+    const id = screen === "timeline" ? state.trip?.id || parsed.id : state.selectedId || parsed.id;
+    const nextUrl = routeUrl(screen, id);
+    const currentUrl = `${location.pathname}${location.search}`;
+    if (nextUrl !== currentUrl) history.replaceState(routeHistoryState(screen, id, routeHistoryIndex()), "", nextUrl);
+  }
   function routeUrl(screen, id = null) {
-    return routes?.urlFor(screen, id, location.search) || "/timeline";
+    const routeId = screen === "timeline" && !id ? state.trip?.id || null : id;
+    // Keep the public shell at its canonical root URL on first load. Internal
+    // navigation still has its own /home route, while /, /app, and
+    // /index.html remain equivalent entry points for search and bookmarks.
+    if (screen === "home" && !routeId && ["/", "/app", "/index.html"].includes(location.pathname))
+      return `/${location.search || ""}`;
+    return routes?.urlFor(screen, readableRouteId(screen, routeId), location.search) || "/timeline";
   }
   function quickDraftKey(kind = state.selectedId) {
     const normalized = String(kind || "unknown");
@@ -2808,8 +2898,11 @@
           "Trip data could not be reached. Your saved trip data remains safe.";
         state.requestId = "local-preview";
       }
+      applyRouteTripSelection();
       state.tripsLoaded = !state.error;
       state.loading = false;
+      resolveRouteSelection();
+      canonicalizeAppRoute();
       render();
       maybeLoadScreenData();
       return;
@@ -2833,8 +2926,9 @@
             () => { state.bookingEmails = []; },
           )
         : Promise.resolve().then(() => { state.bookingEmails = []; });
+      applyRouteTripSelection();
       const selected = localStorage.getItem("tripto_selected_trip");
-      state.trip =
+      state.trip = state.trip ||
         state.trips.find((trip) => String(trip.id) === selected) ||
         selectRelevantTrip(state.trips) ||
         null;
@@ -2859,6 +2953,8 @@
       }
     } finally {
       state.loading = false;
+      resolveRouteSelection();
+      canonicalizeAppRoute();
       render();
       maybeLoadScreenData();
     }
@@ -7949,6 +8045,61 @@
       `class="phone-app route-enter route-${motion}"`,
     );
   }
+  function setSeoMeta(selector, content) {
+    const node = document.head?.querySelector(selector);
+    if (node && content) node.setAttribute("content", content);
+  }
+  function seoPageTitle() {
+    const entity = routeEntityForId(state.screen, state.selectedId);
+    const name = entity ? routeEntityLabel(state.screen, entity) : "";
+    const labels = {
+      home: "Travel planning on one calm timeline",
+      trips: "Trips",
+      timeline: state.trip?.title || "Trip timeline",
+      planning: "Trip planning",
+      collection: name || "Neighborhood plan",
+      "save-later": "Save for Later",
+      bookings: "Bookings",
+      account: "Account",
+      checklist: "Before you go",
+      travelers: "Travelers",
+      documents: "Travel documents",
+      health: "Trip health",
+      "trip-options": "Trip options",
+      "add-trip": "Add to trip",
+      "add-booking": "Add a booking",
+      "day-plan": "Day plan",
+      "add-to-plan": name ? `Add ${name} to your plan` : "Add to plan",
+      flight: name || "Flight details",
+      hotel: name || "Stay details",
+      train: name || "Train details",
+      plan: name || "Plan details",
+      traveler: name || "Traveler details",
+    };
+    return `${labels[state.screen] || "Travel planning"} · tripto.to`;
+  }
+  function updateSeoMeta() {
+    if (!document.head) return;
+    const privateRoute = state.screen !== "home" || Boolean(state.trip);
+    const description = privateRoute
+      ? "A private trip timeline for your bookings, plans, and travel details."
+      : "tripto.to is a calm, private travel companion for organizing bookings and plans on one timeline.";
+    document.title = seoPageTitle();
+    setSeoMeta('meta[name="description"]', description);
+    setSeoMeta('meta[name="robots"]', privateRoute ? "noindex, nofollow" : "index, follow");
+    setSeoMeta('meta[property="og:title"]', document.title);
+    setSeoMeta('meta[property="og:description"]', description);
+    setSeoMeta('meta[property="og:url"]', `${location.origin}${location.pathname}`);
+    setSeoMeta('meta[name="twitter:title"]', document.title);
+    setSeoMeta('meta[name="twitter:description"]', description);
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    canonical.href = `${location.origin}${location.pathname}`;
+  }
   function transitionRender() {
     // Route changes render immediately. The old route-enter/route-exit classes
     // had no CSS behind them, so the previous setTimeout was pure navigation
@@ -7984,6 +8135,7 @@
   }
   function render() {
     if (!app) return;
+    updateSeoMeta();
     document.documentElement.classList.remove("place-search-open");
     const firstRun = shouldShowFirstRun();
     const showWelcome = firstRun || state.screen === "home";
@@ -11135,6 +11287,8 @@
       requestDiscardChanges(() => history.back());
       return;
     }
+    const nextId = next.screen === "timeline" ? null : resolveRouteId(next.screen, next.id) || next.id;
+    if (next.screen === "timeline") applyRouteTripSelection();
     scrollPositions.set(state.screen, window.scrollY);
     if (
       next.screen !== "flight" ||
@@ -11143,7 +11297,7 @@
       state.flightDetailsOpen = false;
     if (!state.routeMotion) state.routeMotion = "back";
     state.screen = next.screen;
-    state.selectedId = next.id;
+    state.selectedId = nextId;
     state.sheet = null;
     transitionRender();
     maybeLoadScreenData();

@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Mobile UI contract failed: ${m}`)};
-const index=read('public/index.html'),css=read('public/mobile-app.css'),app=read('public/mobile-app.js'),sw=read('public/sw.js'),shellUpdate=read('public/shell-update.js'),rules=read('public/mobile-trip-rules.js'),routeSource=read('public/mobile-routes.js'),manifest=read('public/manifest.webmanifest'),iconSprite=read('public/icons/tripto-system.svg'),phosphorLicense=read('public/icons/PHOSPHOR-LICENSE.txt'),privacy=read('public/privacy.html'),terms=read('public/terms.html');
+const index=read('public/index.html'),css=read('public/mobile-app.css'),app=read('public/mobile-app.js'),sw=read('public/sw.js'),shellUpdate=read('public/shell-update.js'),rules=read('public/mobile-trip-rules.js'),routeSource=read('public/mobile-routes.js'),manifest=read('public/manifest.webmanifest'),iconSprite=read('public/icons/tripto-system.svg'),phosphorLicense=read('public/icons/PHOSPHOR-LICENSE.txt'),privacy=read('public/privacy.html'),terms=read('public/terms.html'),robots=read('public/robots.txt'),sitemap=read('public/sitemap.xml');
 assert(index.includes('/mobile-app.min.css')&&index.includes('/mobile-app.min.js')&&index.includes('/mobile-routes.js')&&index.includes('/mobile-trip-rules.js')&&index.includes('/google-auth-client.js'),'mobile assets missing');
 assert(index.includes('/shell-update.js?v=shell-refresh-v1')&&shellUpdate.includes('controllerchange')&&shellUpdate.includes('window.location.reload()')&&sw.includes('/shell-update.js'),'service-worker shell refresh wiring missing');
 assert(!index.includes('/airport-timezones.js')&&!index.includes('/places-provider.js')&&!index.includes('/places-search-worker.js'),'flow-specific search assets must stay lazy');
@@ -36,6 +36,12 @@ assert(!navFn.includes('"Home"')&&!navFn.includes('"Bookings"')&&!navFn.includes
 assert(app.includes('function selectRelevantTrip(')&&app.includes('selectRelevantTrip(state.trips)'),'relevant-trip selection missing');
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;
 assert(router&&typeof router.parsePath==='function'&&typeof router.pathFor==='function','clean route module missing');
+assert(index.includes('<meta name="robots" content="index, follow">')&&!index.includes('<link rel="canonical"')&&index.includes('application/ld+json')&&index.includes('"@type":"WebSite"'),'root shell must start with crawlable metadata and a public WebSite schema');
+assert(app.includes('function updateSeoMeta()')&&app.includes('noindex, nofollow')&&app.includes('canonical = document.createElement("link")'),'app routes must update title, description, robots, and canonical metadata');
+assert(app.includes('screen === "home" && !routeId && ["/", "/app", "/index.html"].includes(location.pathname)'),'public home entry points must keep the root canonical URL');
+assert(robots.includes('Allow: /')&&robots.includes('Disallow: /trips')&&robots.includes('Disallow: /collections')&&robots.includes('Sitemap: https://tripto.to/sitemap.xml'),'private app routes must be excluded while public sitemap discovery stays enabled');
+assert(sitemap.includes('<loc>https://tripto.to/</loc>')&&sitemap.includes('<loc>https://tripto.to/privacy</loc>')&&sitemap.includes('<loc>https://tripto.to/terms</loc>'),'public sitemap must contain only canonical public pages');
+assert(privacy.includes('name="description"')&&privacy.includes('rel="canonical" href="https://tripto.to/privacy"')&&terms.includes('name="description"')&&terms.includes('rel="canonical" href="https://tripto.to/terms"'),'public legal pages need unique SEO metadata');
 const routeCases=[
   ['timeline',null,'/timeline'],['account',null,'/account'],['trips',null,'/trips'],
   ['add-booking',null,'/bookings/add'],['bookings',null,'/bookings'],
@@ -58,6 +64,10 @@ const routeCases=[
   ['day-plan-form','new:attraction','/day-plan/new/attraction'],
   ['day-plan-form','act-1','/day-plan/item/act-1'],
 ];
+assert(router.slugify('Museum & Culture — Łódź')==='museum-and-culture-lodz','route slugification must be readable and deterministic');
+assert(router.pathFor('timeline','rome-2026')==='/trips/rome-2026','trip timelines must use readable deep links');
+const readableTripRoute=router.parsePath('/trips/rome-2026');
+assert(readableTripRoute.screen==='timeline'&&readableTripRoute.id==='rome-2026'&&readableTripRoute.tripRoute===true,'readable trip deep link must resolve as a timeline route');
 for(const [screen,id,path] of routeCases){
   assert(router.pathFor(screen,id)===path,`clean path mismatch for ${screen}`);
   const parsed=router.parsePath(path);
@@ -77,7 +87,7 @@ assert(app.includes('startupRoute.redirect || location.hash || history.state?.tr
 for(const [action,handler] of [['close-doc-viewer','close-doc-viewer'],['close-sheet','close-sheet'],['return-trip-setup','return-trip-setup'],['close-driver','close-driver']]) {
   assert(app.includes(`data-action="${action}"`)&&app.includes(`case "${handler}"`),`special back/close affordance missing for ${action}`);
 }
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v224-back-navigation-audit'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v225-readable-seo-routes'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-pattern')&&app.includes('welcome-arc--five')&&app.includes('welcome-orbit-dot')&&!app.includes('welcome-route-matrix'),'Approved abstract welcome pattern missing');

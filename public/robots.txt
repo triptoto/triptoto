@@ -1,2 +1,35 @@
 User-agent: *
-Disallow: /
+Allow: /
+
+# Trip timelines and account screens contain private, user-owned travel data.
+# Keep their readable deep links functional while excluding them from search.
+Disallow: /account
+Disallow: /add
+Disallow: /app
+Disallow: /before-you-go
+Disallow: /bookings
+Disallow: /collaboration
+Disallow: /collections
+Disallow: /day-plan
+Disallow: /documents
+Disallow: /flights
+Disallow: /hotels
+Disallow: /home
+Disallow: /help
+Disallow: /currency
+Disallow: /join
+Disallow: /pending-changes
+Disallow: /plan-idea
+Disallow: /plans
+Disallow: /ready-offline
+Disallow: /save-later
+Disallow: /travelers
+Disallow: /trains
+Disallow: /timeline
+Disallow: /trip-health
+Disallow: /trip-map
+Disallow: /trip-options
+Disallow: /trips
+Disallow: /weather
+
+Sitemap: https://tripto.to/sitemap.xml
