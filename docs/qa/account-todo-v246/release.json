@@ -1,0 +1,88 @@
+{
+  "url": "https://tripto.to",
+  "version": "090cb338-1a4a-4256-afbe-a90607a5c313",
+  "previous_version": "ee1b87a9-4bac-4610-8ec1-026658d5a31d",
+  "commit": "ddb7a0c1cec8d75d67781c8a0e2164a52843f880",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v246-account-todo",
+  "asset_version": "flat-design-system-v168",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788877890141
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "779800e6bee9f3f89468c38cb0607b6e5aad533927b62bfc97eff253a904d7b9",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "f0490616f0f07566ee2c3faa276409a26e76c55ee1883af7356affa56c98050a",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "06799f696d5ef19f60ab238c2dccf6aae88be33aa566adbca0c32552f4102ee4",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "25fb8831eb1dcc68680dc086709e435696ecd34e15d7bd64b4a5d488bdc4eba3",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "494880883b8d2588ed81dcc72d96385dc95f59a63a4ef20bbe1001157c4e18f3",
+      "matches_local": true
+    }
+  },
+  "validate_v2": "PASS",
+  "dry_run": "PASS",
+  "local_browser": {
+    "widths": [
+      320,
+      390,
+      430
+    ],
+    "horizontal_overflow": false,
+    "account_guest_signed_in_long_names": "PASS",
+    "account_help_and_trip_picker_sheets": "PASS",
+    "esim_and_back": "PASS",
+    "todo_add_suggestion_rename_cancel_toggle_delete_undo": "PASS",
+    "todo_empty_completed_long_names": "PASS"
+  },
+  "physical_iphone_tested": false,
+  "production_data_modified": false,
+  "public_browser": {
+    "paths": [
+      "/account",
+      "/before-you-go"
+    ],
+    "viewport": [
+      390,
+      844
+    ],
+    "shell_url_version_observed": "flat-design-system-v168",
+    "account_updated_profile_and_groups": true,
+    "google_button_rendered": true,
+    "todo_updated_summary_and_add_field": true,
+    "todo_field_and_add_button_height": 52,
+    "console_errors": [],
+    "horizontal_overflow": false,
+    "cache_update": "Initial cached v167 shell updated to v168 after one ordinary reload; no data cleared."
+  }
+}
