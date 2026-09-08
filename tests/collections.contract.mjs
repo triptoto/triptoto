@@ -78,6 +78,11 @@ assert(css.includes('.collection-page .app-bar .collection-header-add{color:var(
 assert(collectionScreen.includes('class="collection-timeline-scroll"')&&collectionScreen.includes('aria-label="Places timeline"'),'collection stop list must have its own labelled scrolling region');
 assert(/html body \.phone-app > \.collection-page > main\.focused-page\{[^}]*overflow:hidden/.test(css),'collection page shell must keep its context fixed while the list scrolls');
 assert(/\.collection-page \.collection-timeline-scroll\{[^}]*flex:1 1 auto[^}]*overflow-y:auto/.test(css),'only the collection timeline list must own vertical scrolling');
+assert(collectionScreen.includes('class="mini-stop__hit"')&&collectionScreen.includes('data-action="stop-menu"'),'each mini-timeline row must remain an interactive stop menu action');
+assert(!collectionScreen.includes('mini-stop__more'),'mini-timeline rows must not show chevrons; the row itself remains the action');
+assert(!css.includes('.collection-page .mini-stop__more{'),'mini-timeline must not reserve a chevron affordance');
+assert(css.includes('.collection-page .mini-stop__content{grid-column:4;display:grid;align-content:center;gap:1px;min-width:0;padding:12px 0 12px 14px;border:0}'),'mini-timeline copy must use the released chevron space');
+assert(css.includes('html body .phone-app > .collection-page > .app-bar .app-bar-title strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'),'narrow Neighborhood headers must truncate instead of wrapping beside their actions');
 
 // --- Client routes: planning + collection + forms, forms matched first ---
 assert(clientRoutes.includes('planning: "/planning"')&&clientRoutes.includes('collection: "/collections"'),'planning/collection routes missing');
