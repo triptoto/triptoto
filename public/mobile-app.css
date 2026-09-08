@@ -3786,6 +3786,10 @@ html body .dark-detail .fd-list--detail .fd-row--button .fd-row__chev{display:gr
 html body .dark-detail .fd-list--detail .fd-row__main{grid-template-columns:40px minmax(0,1fr);gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important}
 html body .dark-detail .fd-list--detail .fd-row--doc{padding:0!important;border:0!important}
 html body .dark-detail .fd-list--detail .fd-row--doc:last-child{border-bottom:0!important}
+/* Supporting booking details use hairlines; summary cards and sheets stay clean. */
+html body .dark-detail .fd-list--detail .fd-row:not(:last-child){border-bottom:1px solid var(--line)!important}
+html body .dark-detail .fd-list--detail .fd-panel:not([hidden]):not(:last-child){border-bottom:1px solid var(--line)}
+html body .dark-detail .fd-list--detail .fd-panel dl>div+div{border-top:1px solid var(--line)}
 html body .dark-detail .fd-list--detail .fd-row--button:focus-visible,html body .dark-detail .fd-list--detail .fd-row__main:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
 /* Plan Together uses the same compact hero, flat rows and sheet grammar as
