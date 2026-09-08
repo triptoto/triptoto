@@ -1,0 +1,92 @@
+{
+  "url": "https://tripto.to/before-you-go",
+  "version": "5523e309-cd02-4ebd-abe5-c6178b3de145",
+  "previous_version": "090cb338-1a4a-4256-afbe-a90607a5c313",
+  "traffic_percent": 100,
+  "commit": "16a3e95edb94da3dd55fb091595cf7511f670ebc",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v247-simple-todo",
+  "asset_version": "flat-design-system-v169",
+  "checked_at": "2026-09-08T15:01:49.514894+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788879709504
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "1ba950ca304eab43400eda0201387f0d0a0237faecbc28e478ac48dd02259cb8",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "111828fb4cb3c61e4427b1a1976ea8eb72be82a7102f2eff8f6b4ad5e1631f4b",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "sha256": "c4c5fa4ba3a7dfdd897bfce28aa054b3e116736be6010e4e81344e98bd29f6f6",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "5a09f687cf66710f47fc754b02c62584944bab59a0468fc6ec47674b14a8e9de",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "e67e04b079b3bd3b86a08d84575b0c924dd2abcec129d73bb8fd8df96fdba1b8",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "eb61589ad077324b256dcecbe212ba07fa02b2764bf1333c585793997825b5a6",
+      "matches_local": true
+    }
+  },
+  "validate_v2": "PASS",
+  "dry_run": "PASS",
+  "local_browser": {
+    "widths": [
+      320,
+      390,
+      430
+    ],
+    "horizontal_overflow": false,
+    "add_rename_cancel_complete_uncomplete_delete_undo": "PASS",
+    "empty_first_task_all_done_long_names": "PASS",
+    "add_and_edit_drafts_survive_disclosure": "PASS",
+    "add_draft_survives_other_task_changes": "PASS",
+    "field_and_add_button_height": 52,
+    "minimum_small_control_height": 44,
+    "console_errors": []
+  },
+  "public_browser": {
+    "path": "/before-you-go",
+    "viewport": [
+      390,
+      844
+    ],
+    "asset_version": "flat-design-system-v169",
+    "old_progress_and_suggestions_removed": true,
+    "field_and_add_button_height": 52,
+    "horizontal_overflow": false,
+    "console_errors": [],
+    "cache_update": "Initial cached v168 shell updated to v169 after one ordinary reload; no data cleared."
+  },
+  "physical_iphone_tested": false,
+  "production_data_modified": false,
+  "fetch_note": "Asset comparison follows the normal /index.html redirect. The first comparison omitted redirect following and received an empty redirect response for index.html; the corrected fetch matched all six files."
+}
