@@ -66,8 +66,18 @@ for(const [screen,id,path] of routeCases){
 const retiredLocalGuide=router.parsePath('/local-guide');
 assert(retiredLocalGuide.screen==='trip-options'&&retiredLocalGuide.redirect===true,'retired Local Guide route must redirect to Trip Options');
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
-assert(app.includes('startupRoute.redirect || location.hash')&&app.includes('routeUrl(startupRoute.screen, startupRoute.id)'),'legacy hash and retired-route canonicalization missing');
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v223-collection-route-fix'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(app.includes('function routeHistoryState')&&app.includes('triptoIndex')&&app.includes('function goBackFromCurrentScreen'),'back navigation must use an app-owned history index');
+for(const [screen,fallback] of [['home','trips'],['trips','timeline'],['trip-options','timeline'],['travelers','account'],['traveler','travelers'],['checklist','timeline'],['import','add-booking'],['import-review','import'],['import-history','import'],['booking-email-inbox','bookings'],['sync','trip-options'],['collection','planning'],['collection-form','day-plan'],['stop-form','collection'],['day-plan-form','day-plan'],['save-later','add-trip'],['add-to-plan','save-later'],['flight','bookings'],['hotel','bookings'],['plan','bookings']]) {
+  const entry = screen.includes('-') ? `"${screen}": "${fallback}"` : `${screen}: "${fallback}"`;
+  assert(app.includes(entry),`back fallback missing for ${screen}`);
+}
+assert(app.includes('if (id === "trip") return { screen: "trips", id: null }')&&app.includes('if (QUICK_ADD_KINDS.has(id)) return { screen: "add-booking", id: null }'),'form back destinations must preserve trip and booking entry points');
+assert(app.includes('if (routeHistoryIndex() > 0) history.back()'),'back must fall back inside the app when there is no app history entry');
+assert(app.includes('startupRoute.redirect || location.hash || history.state?.tripto !== true')&&app.includes('routeUrl(startupRoute.screen, startupRoute.id)'),'legacy hash and retired-route canonicalization missing');
+for(const [action,handler] of [['close-doc-viewer','close-doc-viewer'],['close-sheet','close-sheet'],['return-trip-setup','return-trip-setup'],['close-driver','close-driver']]) {
+  assert(app.includes(`data-action="${action}"`)&&app.includes(`case "${handler}"`),`special back/close affordance missing for ${action}`);
+}
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v224-back-navigation-audit'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
 for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
 assert(app.includes('welcome-pattern')&&app.includes('welcome-arc--five')&&app.includes('welcome-orbit-dot')&&!app.includes('welcome-route-matrix'),'Approved abstract welcome pattern missing');

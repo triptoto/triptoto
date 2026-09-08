@@ -1084,6 +1084,48 @@
     requestAnimationFrame(() => keep.focus());
     return true;
   }
+  const BACK_FALLBACKS = Object.freeze({
+    home: "trips", trips: "timeline", timeline: "trips", bookings: "timeline", flight: "bookings", hotel: "bookings",
+    train: "bookings", plan: "bookings", documents: "bookings", ready: "bookings",
+    health: "timeline", account: "trips", collaboration: "timeline", planning: "timeline",
+    "trip-options": "timeline", travelers: "account", traveler: "travelers", checklist: "timeline",
+    import: "add-booking", "import-review": "import", "import-history": "import",
+    "booking-email-inbox": "bookings", sync: "trip-options", join: "trips",
+    collection: "planning", "collection-form": "day-plan", "stop-form": "collection",
+    "add-trip": "timeline", "add-booking": "add-trip", "day-plan": "add-trip",
+    "day-plan-form": "day-plan", "save-later": "add-trip", "add-to-plan": "save-later",
+    "trip-map": "timeline", weather: "trip-options", currency: "trip-options", esim: "trip-options",
+  });
+  function routeHistoryState(screen, id, index = 0) {
+    return { tripto: true, triptoIndex: Math.max(0, Number(index) || 0), screen, id: id || null };
+  }
+  function routeHistoryIndex() {
+    return history.state?.tripto === true ? Math.max(0, Number(history.state.triptoIndex) || 0) : 0;
+  }
+  function backDestination() {
+    const screen = state.screen, id = String(state.selectedId || "");
+    if (screen === "form") {
+      if (id === "trip") return { screen: "trips", id: null };
+      if (id === "document") return { screen: "documents", id: null };
+      if (QUICK_ADD_KINDS.has(id)) return { screen: "add-booking", id: null };
+      return { screen: "bookings", id: null };
+    }
+    if (screen === "stop-form" && id) return { screen: "collection", id };
+    if (screen === "collection-form" && id && !id.startsWith("new:")) return { screen: "collection", id };
+    if (screen === "day-plan-form" && state.dayPlanContext === "save-later") return { screen: "save-later", id: null };
+    return { screen: BACK_FALLBACKS[screen] || "timeline", id: null };
+  }
+  function goBackFromCurrentScreen() {
+    const destination = backDestination();
+    const goBack = () => {
+      formHasMeaningfulChanges = false;
+      state.routeMotion = "back";
+      if (routeHistoryIndex() > 0) history.back();
+      else route(destination.screen, destination.id, false, "back");
+    };
+    if (formHasMeaningfulChanges && DIRTY_TASK_SCREENS.has(state.screen)) requestDiscardChanges(goBack);
+    else goBack();
+  }
   function route(screen, id, replace = false, kind = "forward") {
     if (
       formHasMeaningfulChanges &&
@@ -1103,9 +1145,9 @@
     const nextUrl = routeUrl(screen, id);
     state.routeMotion =
       kind === "tab" ? "tab" : kind === "back" ? "back" : "forward";
-    if (replace) history.replaceState(null, "", nextUrl);
+    if (replace) history.replaceState(routeHistoryState(screen, id, routeHistoryIndex()), "", nextUrl);
     else if (`${location.pathname}${location.search}` !== nextUrl)
-      history.pushState(null, "", nextUrl);
+      history.pushState(routeHistoryState(screen, id, routeHistoryIndex() + 1), "", nextUrl);
     state.screen = screen;
     state.selectedId = id || null;
     if (screen !== "checklist") state.editingChecklistId = null;
@@ -9783,20 +9825,7 @@
         showToast("You have view-only access to this trip.", "status");
         break;
       case "back":
-        {
-          const goBack = () => {
-            formHasMeaningfulChanges = false;
-            state.routeMotion = "back";
-            if (history.length > 1) history.back();
-            else route("timeline", null, false, "back");
-          };
-          if (
-            formHasMeaningfulChanges &&
-            DIRTY_TASK_SCREENS.has(state.screen)
-          )
-            requestDiscardChanges(goBack);
-          else goBack();
-        }
+        goBackFromCurrentScreen();
         break;
       case "retry":
         await loadApp();
@@ -9811,7 +9840,7 @@
         state.googleAuthHandoffMessage = "";
         state.screen = "account";
         state.selectedId = null;
-        history.replaceState(null, "", routeUrl("account"));
+        history.replaceState(routeHistoryState("account", null, routeHistoryIndex()), "", routeUrl("account"));
         await loadApp();
         showToast("Please continue with Google again.");
         break;
@@ -11099,7 +11128,7 @@
       next.screen !== state.screen
     ) {
       history.pushState(
-        null,
+        routeHistoryState(state.screen, state.selectedId, routeHistoryIndex()),
         "",
         routeUrl(state.screen, state.selectedId),
       );
@@ -11272,9 +11301,9 @@
     getState: () => state,
   };
   const startupRoute = parseRoute();
-  if (startupRoute.redirect || location.hash)
+  if (startupRoute.redirect || location.hash || history.state?.tripto !== true)
     history.replaceState(
-      null,
+      routeHistoryState(startupRoute.screen, startupRoute.id, 0),
       "",
       routeUrl(startupRoute.screen, startupRoute.id),
     );
