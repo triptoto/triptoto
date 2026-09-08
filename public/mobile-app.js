@@ -3556,6 +3556,66 @@
   function sectionHead(title, action = "", label = "View all") {
     return `<div class="section-head"><div class="section-label">${esc(title)}</div>${action ? `<button class="text-action" data-action="${action}">${esc(label)}</button>` : ""}</div>`;
   }
+
+  // -----------------------------------------------------------------------
+  // Tripto Flat Travel primitives
+  // -----------------------------------------------------------------------
+  // These small string primitives are intentionally framework-free: the app's
+  // renderer is a single offline-capable shell, so keeping the grammar here
+  // means every route can share the same row, status, header and state markup
+  // without changing its data flow or event delegation.
+  function PastelIcon(name, tone = "activity", size = 22, extra = "") {
+    return `<span class="ds-pastel-icon ds-pastel-icon--${esc(tone)} ${esc(extra)}" aria-hidden="true">${icon(name, size)}</span>`;
+  }
+  function StatusLabel(label, tone = "neutral") {
+    return label ? `<span class="ds-status ds-status--${esc(tone)}">${esc(label)}</span>` : "";
+  }
+  function SectionHeader(title, action = "", label = "View all") {
+    return `<div class="ds-section-header"><h2>${esc(title)}</h2>${action ? `<button type="button" class="ds-text-action" data-action="${esc(action)}">${esc(label)}</button>` : ""}</div>`;
+  }
+  function SegmentedControl(items, active, action = "") {
+    return `<div class="ds-segmented" role="group">${items.map(([key, label]) => `<button type="button" class="${key === active ? "is-active" : ""}" data-action="${esc(action)}" data-filter="${esc(key)}" aria-pressed="${key === active}">${esc(label)}</button>`).join("")}</div>`;
+  }
+  function FlatList(rows, label = "") {
+    return `<div class="ds-flat-list"${label ? ` aria-label="${esc(label)}"` : ""}>${rows.join("")}</div>`;
+  }
+  function FlatRow({ title, meta = "", iconName = "info", tone = "activity", action = "", screen = "", id = "", attrs = "", status = "", statusTone = "neutral", className = "", trailing = "chevron", description = "" }) {
+    const target = action ? `data-action="${esc(action)}"` : screen ? `data-screen="${esc(screen)}"` : "";
+    const identity = id ? ` data-id="${esc(id)}"` : "";
+    const trail = trailing === "none" ? "" : trailing === "chevron" ? icon("chevron", 18, "ds-flat-row__chevron") : trailing;
+    return `<button type="button" class="ds-flat-row ${esc(className)}" ${target}${identity}${attrs}><span class="ds-flat-row__icon">${PastelIcon(iconName, tone, 22)}</span><span class="ds-flat-row__copy"><strong>${esc(title)}</strong>${meta ? `<small>${esc(meta)}</small>` : ""}${description ? `<small class="ds-flat-row__description">${esc(description)}</small>` : ""}${status ? StatusLabel(status, statusTone) : ""}</span>${trail}</button>`;
+  }
+  function ChoiceTile({ title, meta = "", iconName = "info", tone = "activity", action = "", attrs = "" }) {
+    return `<button type="button" class="ds-choice-tile" data-action="${esc(action)}"${attrs}><span class="ds-choice-tile__icon">${PastelIcon(iconName, tone, 22)}</span><span><strong>${esc(title)}</strong>${meta ? `<small>${esc(meta)}</small>` : ""}</span>${icon("chevron", 18, "ds-choice-tile__chevron")}</button>`;
+  }
+  function HeroSummary(eyebrow, title, meta = "", tone = "activity", body = "") {
+    return `<section class="ds-hero-summary ds-hero-summary--${esc(tone)}"><span class="ds-hero-summary__eyebrow">${esc(eyebrow)}</span><h1>${esc(title)}</h1>${meta ? `<p>${esc(meta)}</p>` : ""}${body}</section>`;
+  }
+  function TimelineRow(time, title, meta = "", index = "", tone = "activity", attrs = "") {
+    return `<div class="ds-timeline-row"${attrs}><time>${esc(time || "—")}</time><span class="ds-timeline-row__rail"><i></i></span>${index ? `<span class="ds-timeline-row__marker ds-timeline-row__marker--${esc(tone)}">${esc(index)}</span>` : PastelIcon("info", tone, 22)}<span class="ds-timeline-row__copy"><strong>${esc(title)}</strong>${meta ? `<small>${esc(meta)}</small>` : ""}</span></div>`;
+  }
+  function FormField(label, value = "", attrs = "") {
+    return `<label class="ds-form-field"><span>${esc(label)}</span><input value="${esc(value)}" ${attrs}></label>`;
+  }
+  function PrimaryButton(label, action = "", attrs = "") {
+    return `<button type="button" class="ds-primary-button" data-action="${esc(action)}"${attrs}>${esc(label)}</button>`;
+  }
+  function SecondaryButton(label, action = "", attrs = "") {
+    return `<button type="button" class="ds-secondary-button" data-action="${esc(action)}"${attrs}>${esc(label)}</button>`;
+  }
+  function ProgressSummary(done, total, title = "Ready") {
+    const current = Math.max(0, Number(done) || 0), max = Math.max(current, Number(total) || 0), pct = max ? Math.round((current / max) * 100) : 0;
+    return `<section class="ds-progress-summary"><strong>${esc(title)}</strong><span>${current} of ${max} ready</span><span class="ds-progress-summary__bar" role="progressbar" aria-valuenow="${current}" aria-valuemin="0" aria-valuemax="${max}"><i style="width:${pct}%"></i></span></section>`;
+  }
+  function EmptyState(title, body, iconName = "info", action = "", actionLabel = "") {
+    return `<section class="ds-empty-state"><span class="ds-empty-state__icon">${icon(iconName, 28)}</span><h1>${esc(title)}</h1><p>${esc(body)}</p>${action && actionLabel ? PrimaryButton(actionLabel, action) : ""}</section>`;
+  }
+  function LoadingState(label = "Loading…") {
+    return `<section class="ds-loading-state" role="status" aria-live="polite"><span class="ds-loading-state__mark" aria-hidden="true"></span><strong>${esc(label)}</strong></section>`;
+  }
+  function ErrorState(title, body, action = "retry", actionLabel = "Try again") {
+    return `<section class="ds-error-state" role="alert"><span class="ds-error-state__icon">${icon("warning", 28)}</span><h1>${esc(title)}</h1><p>${esc(body)}</p>${PrimaryButton(actionLabel, action)}</section>`;
+  }
   function activeHealthIssues() {
     const rows = state.health?.issues || [];
     return [...rows].sort(
@@ -4607,10 +4667,20 @@
   }
 
   function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
-    return `<div class="phone-app"><section class="screen mobile-v1-screen ${esc(extraClass)}">${appBar(title, "", false, right)}${mobileAlert()}<main class="mobile-page">${body}</main>${bottomNav(active)}</section></div>`;
+    return PageShell({ title, body, active, right, extraClass });
   }
   function focusedTaskPage(title, body, className = "", right = "") {
-    return `<div class="phone-app"><section class="screen mobile-v1-screen focused-task ${esc(className)}">${appBar(title, "", false, right)}${mobileAlert()}<main class="focused-page">${body}</main></section></div>`;
+    return PageShell({ title, body, right, extraClass: `focused-task ${className}`, task: true });
+  }
+  function AppHeader(title, subtitle = "", dark = false, right = "") {
+    return appBar(title, subtitle, dark, right);
+  }
+  function BottomNavigation(active) {
+    return bottomNav(active);
+  }
+  function PageShell({ title, body, active = "trips", right = "", extraClass = "", task = false }) {
+    const shellClass = `screen mobile-v1-screen ${esc(extraClass)}`;
+    return `<div class="phone-app"><section class="${shellClass}">${AppHeader(title, "", false, right)}${mobileAlert()}<main class="${task ? "focused-page" : "mobile-page"}">${body}</main>${task ? "" : BottomNavigation(active)}</section></div>`;
   }
   function formHeaderSave(formId, label) {
     return `<button type="submit" form="${esc(formId)}" class="app-bar-save mobile-primary-action">${esc(label)}</button>`;
@@ -4765,7 +4835,7 @@
         title = kind === "flight" ? `${flightNumber(item)} · ${flightRoute(item).fromCode} → ${flightRoute(item).toCode}` : ["train", "ferry"].includes(kind) ? val(item, "title", "service_number") || statusText(kind) : kind === "hotel" ? val(item, "property_name", "title") || "Stay" : val(item, "title", "carrier_name") || statusText(kind),
         subtitle = kind === "hotel" ? `${formatDateOnly(val(item, "check_in_date"))} – ${formatDateOnly(val(item, "check_out_date"))}` : transport ? formatDateTime(at, zone) : `${formatDateTime(at, zone)}${val(item, "subtitle") ? ` · ${val(item, "subtitle")}` : ""}`,
         status = meaningfulBookingStatus(item);
-      return `<button class="travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="travel-row__icon">${icon(transportIcon(kind), 22)}</span><span class="travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? `<em class="travel-state travel-state--attention">${esc(status)}</em>` : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
+      return `<button class="ds-flat-row travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="ds-flat-row__icon travel-row__icon">${PastelIcon(transportIcon(kind), ["hotel"].includes(kind) ? "stay" : ["flight", "train", "ferry"].includes(kind) ? "flight" : "transfer", 22)}</span><span class="ds-flat-row__copy travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? StatusLabel(status, "attention") : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
     }).join("");
     return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add-booking" aria-label="Add booking">${icon("plus", 24)}</button>`);
   }
@@ -6967,7 +7037,7 @@
       ? `${pending} booking${pending === 1 ? "" : "s"} to review`
       : "Forwarded and uploaded bookings";
     const optionCard = (tone, iconName, title, sub, attr, badge = 0) =>
-      `<button type="button" class="trip-option-card trip-option-card--${esc(tone)}" ${attr}><span class="trip-option-card__icon">${icon(iconName, 24)}</span>${badge ? `<span class="trip-option-card__badge" aria-label="${badge} waiting">${badge > 9 ? "9+" : badge}</span>` : ""}<span class="trip-option-card__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span><span class="trip-option-card__chevron">${icon("chevron", 17)}</span></button>`;
+      `<button type="button" class="ds-flat-row trip-option-card trip-option-card--${esc(tone)}" ${attr}><span class="ds-flat-row__icon trip-option-card__icon">${PastelIcon(iconName, tone === "currency" ? "stay" : tone === "map" || tone === "together" ? "activity" : tone === "connect" ? "transfer" : tone === "documents" ? "stay" : "flight", 22)}</span>${badge ? `<span class="trip-option-card__badge" aria-label="${badge} waiting">${badge > 9 ? "9+" : badge}</span>` : ""}<span class="ds-flat-row__copy trip-option-card__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span><span class="trip-option-card__chevron">${icon("chevron", 18)}</span></button>`;
     // Show unless the server kill-switch explicitly disables sharing. When the
     // status hasn't loaded yet (guest trip / pending fetch) the card still
     // appears; the collaboration screen handles sign-in and disabled states.
@@ -7551,7 +7621,7 @@
   // The three "Add to trip" intention rows, shared by the Add-to-trip screen and
   // the empty Timeline (an empty trip lands straight on these choices).
   function addIntentRows() {
-    const row = (action, ic, title, copy, tone) => `<button type="button" class="add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="add-intent-row__icon">${icon(ic, 24)}</span><span class="add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
+    const row = (action, ic, title, copy, tone) => `<button type="button" class="ds-flat-row add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="ds-flat-row__icon add-intent-row__icon">${PastelIcon(ic, tone === "booking" ? "flight" : tone === "plan" ? "activity" : "food", 22)}</span><span class="ds-flat-row__copy add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
     return `<div class="add-intent-fields">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
   }
 
@@ -7560,7 +7630,7 @@
   // form and land directly on the Timeline once given a day.
   function dayPlanScreen() {
     if (!state.trip) return missingDetailScreen("Day Plan", "Create or select a trip first.");
-    const row = (t) => `<button type="button" class="day-plan-row" data-action="day-plan-type" data-type="${esc(t.type)}" aria-label="${esc(t.label)}"><span class="day-plan-row__icon">${icon(t.icon, 24)}</span><span class="day-plan-row__copy"><strong>${esc(t.label)}</strong><small>${esc(t.desc)}</small></span>${icon("chevron", 18)}</button>`;
+    const row = (t) => `<button type="button" class="ds-flat-row day-plan-row" data-action="day-plan-type" data-type="${esc(t.type)}" aria-label="${esc(t.label)}"><span class="ds-flat-row__icon day-plan-row__icon">${PastelIcon(t.icon, ["restaurant", "food_drink", "shopping"].includes(t.type) ? "food" : ["flight", "train", "ferry", "bus", "cruise"].includes(t.type) ? "flight" : ["car", "transfer", "taxi", "parking"].includes(t.type) ? "transfer" : ["hotel", "neighborhood"].includes(t.type) ? "stay" : "activity", 22)}</span><span class="ds-flat-row__copy day-plan-row__copy"><strong>${esc(t.label)}</strong><small>${esc(t.desc)}</small></span>${icon("chevron", 18)}</button>`;
     const body = `<section class="day-plan-intro"><span>DAY PLAN</span><h1>Plan your day</h1><p>What do you want to visit or do? Pick a type, then add the details.</p></section><div class="day-plan-list">${DAY_PLAN_TYPES.map(row).join("")}</div>`;
     return focusedTaskPage("Day Plan", body, "day-plan-page");
   }

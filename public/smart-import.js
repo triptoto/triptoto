@@ -26,9 +26,9 @@
     mod
   ));
 
-  // node_modules/jsqr/dist/jsQR.js
+  // ../production-main-release/node_modules/jsqr/dist/jsQR.js
   var require_jsQR = __commonJS({
-    "node_modules/jsqr/dist/jsQR.js"(exports, module) {
+    "../production-main-release/node_modules/jsqr/dist/jsQR.js"(exports, module) {
       (function webpackUniversalModuleDefinition(root, factory) {
         if (typeof exports === "object" && typeof module === "object")
           module.exports = factory();
@@ -10045,7 +10045,7 @@
     }
   });
 
-  // node_modules/fflate/esm/browser.js
+  // ../production-main-release/node_modules/fflate/esm/browser.js
   var u8 = Uint8Array;
   var u16 = Uint16Array;
   var i32 = Int32Array;

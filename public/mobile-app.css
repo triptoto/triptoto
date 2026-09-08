@@ -63,6 +63,29 @@
   --shadow-soft:0 10px 24px -20px rgba(5,21,45,.18);
   --keyboard-offset:0px;
   --ease:cubic-bezier(.2,.8,.2,1);
+
+  /* Tripto Flat Travel design-system tokens. Keep the established palette
+     above as the source of colour truth; these tokens make rhythm, type and
+     shape reusable across every operational screen. */
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --space-7:32px;
+  --space-8:40px;
+  --radius-control:12px;
+  --radius-regular:16px;
+  --radius-hero:22px;
+  --radius-pill:999px;
+  --control-height:52px;
+  --row-height:74px;
+  --ds-shadow:none;
+  --ds-page-padding:16px;
+  --ds-section-gap:24px;
+  --ds-divider:var(--line);
+  --ds-focus:0 0 0 3px color-mix(in srgb,var(--accent) 24%,transparent);
 }
 
 /* Offline city and airport search. The dataset loads only after this control is used. */
@@ -3690,3 +3713,231 @@ html .manual-attachments>header h2,html .booking-documents>h2{font-weight:var(--
    the dark category chips; brighten them to the night accents so they stay
    legible. The Google button keeps its required on-brand light styling.
    ========================================================================== */
+
+/* ============================================================================
+   Tripto Flat Travel — unified component layer
+   --------------------------------------------------------------------------
+   This block is the final, shared layer for operational screens. It keeps the
+   existing palette and canonical Trips/Timeline layouts while removing the
+   page-by-page card, spacing and type drift accumulated over earlier passes.
+   Welcome and Show to Driver intentionally keep their purpose-built layouts.
+   ========================================================================== */
+
+html body .ds-pastel-icon,
+html body .ds-flat-row__icon,
+html body .ds-choice-tile__icon{
+  display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border-radius:var(--radius-control);color:var(--icon)
+}
+html body .ds-pastel-icon--flight{background:var(--flight-soft);color:var(--indigo)}
+html body .ds-pastel-icon--stay{background:var(--stay-soft);color:var(--green)}
+html body .ds-pastel-icon--activity{background:var(--activity-soft);color:var(--accent)}
+html body .ds-pastel-icon--transfer{background:var(--transfer-soft);color:var(--amber)}
+html body .ds-pastel-icon--food{background:var(--food-soft);color:var(--red)}
+html body .ds-pastel-icon--neutral{background:var(--surface);color:var(--muted)}
+
+html body .ds-status{display:inline-flex;align-items:center;width:max-content;max-width:100%;min-height:20px;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);line-height:1.2}
+html body .ds-status--good,html body .ds-status--ready,html body .ds-status--confirmed{color:var(--green)}
+html body .ds-status--attention,html body .ds-status--warning,html body .ds-status--pending{color:var(--amber)}
+html body .ds-status--danger,html body .ds-status--cancelled{color:var(--red)}
+html body .ds-status--accent{color:var(--accent)}
+html body .ds-section-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:28px;margin:0 0 var(--space-2)}
+html body .ds-section-header h2{margin:0;color:var(--ink);font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.25;letter-spacing:-.02em}
+html body .ds-text-action{min-height:44px;padding:0;border:0;background:transparent;color:var(--accent);font:inherit;font-size:var(--type-meta);font-weight:var(--weight-semibold)}
+html body .ds-segmented{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:2px;min-height:48px;padding:3px;border-radius:var(--radius-control);background:var(--surface)}
+html body .ds-segmented button{min-width:0;min-height:42px;padding:0 var(--space-2);border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:var(--type-meta);font-weight:var(--weight-semibold);white-space:nowrap}
+html body .ds-segmented button.is-active{background:var(--card);color:var(--ink);box-shadow:none}
+html body .ds-flat-list{display:grid;min-width:0}
+html body .ds-flat-row{position:relative;display:grid;grid-template-columns:40px minmax(0,1fr) 20px;align-items:center;gap:var(--space-3);width:100%;min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--ds-divider);border-radius:0;background:transparent;color:var(--ink);text-align:left;box-shadow:none;cursor:pointer}
+html body .ds-flat-row:last-child{border-bottom:0}
+html body .ds-flat-row:active{background:var(--surface)}
+html body .ds-flat-row:focus-visible,html body .ds-choice-tile:focus-visible{outline:3px solid var(--blue-soft);outline-offset:2px}
+html body .ds-flat-row__icon{width:40px;height:40px}
+html body .ds-flat-row__copy{display:grid;gap:3px;min-width:0}
+html body .ds-flat-row__copy strong{min-width:0;overflow:hidden;color:var(--ink);font-size:var(--type-body);font-weight:var(--weight-semibold);line-height:1.25;text-overflow:ellipsis;white-space:nowrap}
+html body .ds-flat-row__copy small{min-width:0;overflow:hidden;color:var(--muted);font-size:var(--type-meta);font-weight:var(--weight-regular);line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+html body .ds-flat-row__description{white-space:normal}
+html body .ds-flat-row__chevron{justify-self:end;color:var(--muted-soft)}
+html body .ds-choice-tile{display:grid;grid-template-columns:40px minmax(0,1fr) 18px;align-items:center;gap:var(--space-3);min-height:72px;padding:var(--space-3);border:1px solid var(--line);border-radius:var(--radius-regular);background:var(--surface);color:var(--ink);text-align:left;box-shadow:none}
+html body .ds-choice-tile>span:nth-child(2){display:grid;gap:2px;min-width:0}
+html body .ds-choice-tile strong{font-size:var(--type-body);font-weight:var(--weight-semibold)}
+html body .ds-choice-tile small{color:var(--muted);font-size:var(--type-meta);line-height:1.3}
+html body .ds-choice-tile__chevron{justify-self:end;color:var(--muted-soft)}
+html body .ds-hero-summary{padding:var(--space-5);border-radius:var(--radius-hero);background:var(--activity-soft);color:var(--ink)}
+html body .ds-hero-summary--flight{background:var(--flight-soft)}
+html body .ds-hero-summary--stay{background:var(--stay-soft)}
+html body .ds-hero-summary--transfer{background:var(--transfer-soft)}
+html body .ds-hero-summary--food{background:var(--food-soft)}
+html body .ds-hero-summary__eyebrow{display:block;margin-bottom:var(--space-2);color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em;text-transform:uppercase}
+html body .ds-hero-summary h1{margin:0 0 var(--space-2);font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.1}
+html body .ds-hero-summary p{margin:0;color:var(--muted);font-size:var(--type-meta);line-height:1.45}
+html body .ds-progress-summary{display:grid;gap:var(--space-2);padding:var(--space-4) 0;border-bottom:1px solid var(--line)}
+html body .ds-progress-summary strong{font-size:var(--type-section);font-weight:var(--weight-semibold)}
+html body .ds-progress-summary>span{color:var(--muted);font-size:var(--type-meta)}
+html body .ds-progress-summary__bar{display:block!important;height:8px;overflow:hidden;border-radius:var(--radius-pill);background:var(--surface)}
+html body .ds-progress-summary__bar i{display:block;height:100%;border-radius:inherit;background:var(--accent)}
+html body .ds-empty-state,html body .ds-error-state,html body .ds-loading-state{display:grid;justify-items:center;gap:var(--space-2);padding:var(--space-7) var(--space-4);text-align:center}
+html body .ds-empty-state__icon,html body .ds-error-state__icon{display:grid;place-items:center;width:56px;height:56px;border-radius:var(--radius-regular);background:var(--blue-soft);color:var(--accent)}
+html body .ds-empty-state h1,html body .ds-error-state h1{margin:var(--space-2) 0 0;font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.1}
+html body .ds-empty-state p,html body .ds-error-state p{max-width:34ch;margin:0;color:var(--muted);font-size:var(--type-body);line-height:1.45}
+html body .ds-loading-state{min-height:200px;color:var(--muted)}
+html body .ds-loading-state__mark{width:24px;height:24px;border:3px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:ds-spin .8s linear infinite}
+@keyframes ds-spin{to{transform:rotate(360deg)}}
+html body .ds-primary-button,html body .ds-secondary-button{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);width:100%;min-height:var(--control-height);padding:0 var(--space-4);border-radius:var(--radius-control);font:inherit;font-size:var(--type-body);font-weight:var(--weight-semibold)}
+html body .ds-primary-button{border:0;background:var(--accent);color:var(--accent-ink)}
+html body .ds-secondary-button{border:1px solid var(--line-strong);background:transparent;color:var(--ink)}
+html body .ds-form-field{display:grid;gap:var(--space-2);min-width:0}
+html body .ds-form-field>span{color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.04em;text-transform:uppercase}
+html body .ds-form-field input{width:100%;height:var(--control-height);padding:0 2px;border:0;border-bottom:1px solid var(--line-strong);border-radius:0;background:transparent;color:var(--ink);font:inherit}
+
+/* One header grammar. The root and welcome headers remain separate variants. */
+html body .phone-app>.screen>.app-bar{min-height:68px;border-bottom:1px solid var(--line);background:var(--paper);color:var(--ink)}
+html body .phone-app>.screen>.app-bar .icon-button{width:44px;height:44px;border-radius:var(--radius-control);color:var(--ink)}
+html body .phone-app>.screen>.app-bar .app-bar-title strong{font-size:18px;font-weight:var(--weight-semibold);letter-spacing:-.02em}
+html body .phone-app>.screen>.app-bar .app-bar-title span{color:var(--muted);font-size:var(--type-label)}
+html body .phone-app>.screen>.app-bar .app-bar-save{min-height:44px;border-radius:var(--radius-control);background:var(--accent);color:var(--accent-ink)}
+html body .phone-app>.screen>.app-bar.app-bar--dark{background:var(--paper);color:var(--ink)}
+html body .phone-app>.screen>.app-bar.app-bar--dark .icon-button{color:var(--ink)}
+html body .phone-app>.screen>.app-bar.app-bar--dark .app-bar-title span{color:var(--muted)}
+html body .phone-app>.screen>.bottom-nav{box-shadow:none;border-top:1px solid var(--line);background:var(--paper)}
+
+/* Shared operational page rhythm. */
+html body .phone-app>.screen>.mobile-page,
+html body .phone-app>.screen>.focused-page{padding:var(--space-4);gap:var(--ds-section-gap);background:var(--paper)}
+html body .phone-app>.screen>.mobile-page h1,
+html body .phone-app>.screen>.focused-page h1{font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.12}
+html body .mobile-group{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+html body .mobile-group>h2{margin:0 0 var(--space-2);padding:0;color:var(--ink);font-size:var(--type-section);font-weight:var(--weight-semibold);letter-spacing:-.02em;text-transform:none}
+html body .mobile-list,html body .travel-list,html body .document-list,html body .detail-list,html body .list-stack{display:grid;min-width:0}
+
+/* Navigation and planning rows use one flat grammar. */
+html body .trip-options-page .trip-options-group{display:grid;gap:var(--space-2)}
+html body .trip-options-page .trip-options-group>h2{margin:0;padding:0;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em;text-transform:uppercase}
+html body .trip-options-page .trip-options-grid{display:grid!important;grid-template-columns:1fr!important;gap:0!important}
+html body .trip-options-page .trip-option-card{display:grid!important;grid-template-columns:40px minmax(0,1fr) 20px!important;align-items:center!important;gap:var(--space-3)!important;min-height:var(--row-height)!important;padding:var(--space-3) 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html body .trip-options-page .trip-option-card:last-child{border-bottom:0!important}
+html body .trip-options-page .trip-option-card__icon{grid-column:1!important;grid-row:1!important;width:40px!important;height:40px!important;border-radius:var(--radius-control)!important;background:transparent!important}
+html body .trip-options-page .trip-option-card__copy{grid-column:2!important;grid-row:1!important;display:grid!important;gap:3px!important;min-width:0!important}
+html body .trip-options-page .trip-option-card__copy strong{font-size:var(--type-body)!important;font-weight:var(--weight-semibold)!important;line-height:1.25!important}
+html body .trip-options-page .trip-option-card__copy small{display:block!important;overflow:hidden!important;color:var(--muted)!important;font-size:var(--type-meta)!important;line-height:1.35!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+html body .trip-options-page .trip-option-card__chevron{position:static!important;grid-column:3!important;grid-row:1!important;justify-self:end!important;color:var(--muted-soft)!important}
+html body .trip-options-page .trip-option-card__badge{top:8px!important;left:28px!important;right:auto!important;border:2px solid var(--paper)!important;box-shadow:none!important}
+html body .trip-options-page .trip-options-intro{padding:0}
+html body .trip-options-page .trip-options-intro h1{margin:var(--space-2) 0 var(--space-1);font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.12}
+html body .trip-options-page .trip-options-intro p{margin:0;color:var(--muted);font-size:var(--type-meta)}
+html body .trip-options-page .trip-options-intro>span{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em}
+
+html body .add-intent-page .trip-create-head{margin:0;padding:0 0 var(--space-4);border:0;border-radius:0;background:transparent;box-shadow:none}
+html body .add-intent-page .trip-create-head__eyebrow{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em}
+html body .add-intent-page .trip-create-head h1{margin:var(--space-2) 0 var(--space-1);font-size:var(--type-screen);font-weight:var(--weight-bold)}
+html body .add-intent-page .trip-create-head__sub p{color:var(--muted);font-size:var(--type-body);line-height:1.45}
+html body .add-intent-page .trip-create-route{display:none}
+html body .add-intent-page .add-intent-fields{display:grid;gap:0;padding:0}
+html body .add-intent-page .add-intent-row{display:grid;grid-template-columns:40px minmax(0,1fr) 20px;align-items:center;gap:var(--space-3);min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .add-intent-page .add-intent-row:last-child{border-bottom:0}
+html body .add-intent-page .add-intent-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:transparent}
+html body .add-intent-page .add-intent-row__copy{display:grid;gap:3px}
+html body .add-intent-page .add-intent-row__copy strong{font-size:var(--type-body);font-weight:var(--weight-semibold)}
+html body .add-intent-page .add-intent-row__copy small{font-size:var(--type-meta);line-height:1.35}
+
+html body .day-plan-page .day-plan-intro,html body .save-later-page .save-later-intro,html body .planning-page .planning-intro,html body .plan-panel-page .plan-panel__intro{padding:0}
+html body .day-plan-page .day-plan-intro>span,html body .save-later-page .save-later-intro>span,html body .planning-page .planning-intro>span,html body .plan-panel-page .plan-panel__intro>span{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em}
+html body .day-plan-page .day-plan-list{display:grid;gap:0}
+html body .day-plan-page .day-plan-row{display:grid;grid-template-columns:40px minmax(0,1fr) 20px;align-items:center;gap:var(--space-3);min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .day-plan-page .day-plan-row:last-child{border-bottom:0}
+html body .day-plan-page .day-plan-row__icon{width:40px;height:40px;border-radius:var(--radius-control)}
+html body .day-plan-page .day-plan-row__copy{display:grid;gap:3px}
+html body .day-plan-page .day-plan-row__copy strong{font-size:var(--type-body);font-weight:var(--weight-semibold)}
+html body .day-plan-page .day-plan-row__copy small{font-size:var(--type-meta);line-height:1.35}
+
+/* Save for Later and planning are first-class flat lists, not note cards. */
+html body .save-later-page .save-later-filter{border:0;border-radius:0;background:var(--surface);box-shadow:none}
+html body .save-later-page .save-later-tab{border-radius:10px;box-shadow:none}
+html body .save-later-page .save-later-tab.is-active{box-shadow:none;background:var(--card)}
+html body .save-later-page .save-later-list{display:grid;gap:0}
+html body .save-later-page .save-later-row{display:grid;grid-template-columns:40px minmax(0,1fr) 18px;gap:var(--space-3);min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .save-later-page .save-later-row:last-child{border-bottom:0}
+html body .save-later-page .save-later-row__mark{width:40px;height:40px;border-radius:var(--radius-control);background:var(--activity-soft)}
+html body .save-later-page .save-later-empty-state{padding:var(--space-7) var(--space-4);border:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+html body .save-later-page .save-later-add-cta{min-height:var(--control-height);margin-top:var(--space-2);border:1px solid var(--line-strong);border-radius:var(--radius-control);background:transparent;box-shadow:none}
+html body .planning-page .planning-list{display:grid;gap:0}
+html body .planning-page .planning-row{display:grid;grid-template-columns:40px minmax(0,1fr) 18px;align-items:center;gap:var(--space-3);min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .planning-page .planning-row:last-child{border-bottom:0}
+html body .planning-page .planning-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--activity-soft)}
+html body .planning-page .planning-add-grid{gap:var(--space-3)}
+html body .planning-page .planning-add-card{min-height:72px;padding:var(--space-3);border:1px solid var(--line);border-radius:var(--radius-regular);background:var(--surface);box-shadow:none}
+
+/* Standard list/detail rows. */
+html body .travel-row,html body .document-row,html body .simple-row,html body .booking-card,html body .info-card,html body .booking-email-row,html body .import-history-item,html body .checklist-row{min-height:var(--row-height);border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .travel-row:last-child,html body .document-row:last-child,html body .simple-row:last-child,html body .booking-card:last-child,html body .info-card:last-child{border-bottom:0}
+html body .bookings-list,html body .booking-trip-group .travel-list{padding:0 var(--space-4)}
+html body .booking-trip-group{margin:0 calc(-1 * var(--space-4))}
+html body .document-row-wrap{border-bottom:1px solid var(--line)}
+html body .document-row-wrap:last-child{border-bottom:0}
+html body .document-row-wrap .document-row{border-bottom:0}
+html body .segmented-control{min-height:48px;padding:3px;border:0;border-radius:var(--radius-control);background:var(--surface)}
+html body .segmented-control button{min-height:42px;border-radius:10px}
+html body .segmented-control button.is-active{background:var(--card);color:var(--ink);box-shadow:none}
+
+/* Detail pages keep a single meaningful category hero; all supporting data is flat. */
+html body .dark-detail .fd-card{border:0;border-radius:var(--radius-hero);box-shadow:none}
+html body .dark-detail .fd-list{border:0;border-radius:0;background:transparent;box-shadow:none}
+html body .dark-detail .fd-row{min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .dark-detail .fd-row:last-child{border-bottom:0}
+html body .dark-detail .flight-more,html body .dark-detail .flight-more-content{border:0;border-radius:0;background:transparent}
+html body .dark-detail .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface)}
+
+/* Weather, Currency and eSIM use one utility grammar. */
+html body .weather-refresh .weather-page,html body .currency-screen .currency-page,html body .esim-refresh .esim-page{gap:var(--space-6);padding:var(--space-4)}
+html body .weather-refresh .wx-block,html body .weather-refresh .wx-block--days{padding:0;border:0;background:transparent}
+html body .weather-refresh .wx-block__title{margin:0 0 var(--space-2);font-size:var(--type-section);font-weight:var(--weight-semibold)}
+html body .weather-refresh .wx-hour{border-radius:var(--radius-control);background:transparent;border-bottom:1px solid var(--line)}
+html body .weather-refresh .wx-hour.is-now{background:var(--activity-soft)}
+html body .weather-refresh .wx-day{border-radius:var(--radius-control);background:transparent;border-bottom:1px solid var(--line)}
+html body .weather-refresh .wx-day.is-today{background:var(--activity-soft)}
+html body .weather-refresh .weather-empty{border:0;border-radius:var(--radius-hero);background:var(--flight-soft)}
+html body .currency-screen .currency-hero{border-radius:var(--radius-hero)}
+html body .currency-screen .currency-workspace{overflow:visible;border:0;border-radius:0;background:transparent}
+html body .currency-screen .currency-zone,html body .currency-screen .currency-zone--pay,html body .currency-screen .currency-zone--receive{padding-inline:0;background:transparent}
+html body .currency-screen .currency-bridge{padding-inline:0;background:transparent}
+html body .currency-screen .currency-bridge::after{left:0;right:0}
+html body .currency-screen .currency-update-row{padding-inline:0;background:transparent}
+html body .currency-screen .currency-quick button{background:transparent;box-shadow:none}
+html body .esim-refresh .esim-hero{border-radius:var(--radius-hero)!important;box-shadow:none!important}
+html body .esim-refresh .esim-features,html body .esim-refresh .esim-steps{padding:0;border:0;border-radius:0;background:transparent}
+html body .esim-refresh .esim-feature{min-height:52px;border-bottom:1px solid var(--line)}
+html body .esim-refresh .esim-steps li{min-height:52px;padding:var(--space-2) 0;border-bottom:1px solid var(--line)}
+
+/* Offline, health, checklist, account and collaboration share the same flat
+   progress/list language. */
+html body .ready-content,html body .health-content{padding:var(--space-4)}
+html body .ready-content .offline-summary,html body .health-content .health-summary{margin:0 0 var(--space-4);padding:var(--space-4);border:0;border-radius:var(--radius-hero);background:var(--activity-soft);box-shadow:none}
+html body .ready-content .info-card,html body .health-content .health-card{min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+html body .health-content .list-stack{padding:0}
+html body .cl-progress{border-radius:var(--radius-hero);box-shadow:none}
+html body .cl-section{padding:0;border:0}
+html body .cl-list{border-top:0}
+html body .cl-row{min-height:var(--row-height);border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .account-v2 .account-signin,html body .account-v2 .account-card{border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .account-v2 .simple-row{min-height:var(--row-height);border-bottom:1px solid var(--line)}
+html body .collab-hero{border-radius:var(--radius-hero);background:var(--activity-soft);box-shadow:none}
+html body .collab-signin{padding:var(--space-4) 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
+html body .collab-benefit{min-height:var(--row-height);padding:var(--space-3) 0}
+html body .collab-benefit__icon{width:40px;height:40px;border-radius:var(--radius-control)}
+
+/* Form grammar: labels and underline controls are shared across add/edit flows. */
+html body .form-screen .form-field input,html body .form-screen .form-field select,html body .form-screen .form-field textarea,
+html body .day-plan-form-screen .form-field input,html body .day-plan-form-screen .form-field select,html body .day-plan-form-screen .form-field textarea,
+html body .collection-form-page .form-field input,html body .collection-form-page .form-field select,html body .collection-form-page .form-field textarea{border:0;border-bottom:1px solid var(--line-strong);border-radius:0;background:transparent;box-shadow:none}
+html body .form-screen .form-field input:focus,html body .form-screen .form-field select:focus,html body .form-screen .form-field textarea:focus,
+html body .day-plan-form-screen .form-field input:focus,html body .day-plan-form-screen .form-field select:focus,html body .day-plan-form-screen .form-field textarea:focus{border-color:var(--accent);box-shadow:var(--ds-focus)}
+html body .form-screen .form-field>span,html body .day-plan-form-screen .form-field>span{font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.04em;text-transform:uppercase}
+
+/* Intentional exceptions: the bottom sheet, FAB and picker overlays need depth
+   to separate from the page. Everything else is explicitly shadow-free. */
+html body .trip-option-card,html body .add-intent-row,html body .day-plan-row,html body .save-later-row,html body .planning-row,html body .planning-add-card,html body .travel-row,html body .document-row,html body .booking-card,html body .info-card,html body .health-card,html body .cl-row,html body .fd-row{box-shadow:none!important}
+@media(prefers-reduced-motion:reduce){html body .ds-loading-state__mark{animation:none}}
+@media(max-width:374px){
+  html body .phone-app>.screen>.mobile-page,html body .phone-app>.screen>.focused-page{padding-inline:var(--space-4)}
+  html body .ds-flat-row,html body .day-plan-page .day-plan-row,html body .add-intent-page .add-intent-row{grid-template-columns:36px minmax(0,1fr) 18px;gap:var(--space-2)}
+  html body .ds-flat-row__icon,html body .day-plan-page .day-plan-row__icon,html body .add-intent-page .add-intent-row__icon{width:36px;height:36px;flex-basis:36px}
+}

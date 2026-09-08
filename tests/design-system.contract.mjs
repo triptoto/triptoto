@@ -1,0 +1,57 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const js = fs.readFileSync("public/mobile-app.js", "utf8");
+const css = fs.readFileSync("public/mobile-app.css", "utf8");
+
+for (const token of [
+  "--space-1:4px",
+  "--space-8:40px",
+  "--radius-control:12px",
+  "--radius-regular:16px",
+  "--radius-hero:22px",
+  "--control-height:52px",
+  "--row-height:74px",
+  "--ds-shadow:none",
+]) {
+  assert.ok(css.includes(token), `missing unified design token ${token}`);
+}
+
+for (const primitive of [
+  "function PageShell(",
+  "function AppHeader(",
+  "function FlatList(",
+  "function FlatRow(",
+  "function PastelIcon(",
+  "function ChoiceTile(",
+  "function HeroSummary(",
+  "function TimelineRow(",
+  "function FormField(",
+  "function PrimaryButton(",
+  "function SecondaryButton(",
+  "function StatusLabel(",
+  "function ProgressSummary(",
+  "function BottomNavigation(",
+  "function EmptyState(",
+  "function LoadingState(",
+  "function ErrorState(",
+]) {
+  assert.ok(js.includes(primitive), `missing shared primitive ${primitive}`);
+}
+
+for (const routeMarkup of [
+  "ds-flat-row trip-option-card",
+  "ds-flat-row add-intent-row",
+  "ds-flat-row day-plan-row",
+  "ds-flat-row travel-row",
+]) {
+  assert.ok(js.includes(routeMarkup), `route is not using the shared flat-row grammar: ${routeMarkup}`);
+}
+
+assert.match(css, /trip-options-page[^{]*trip-options-grid\{[^}]*grid-template-columns:1fr!important/);
+assert.match(css, /trip-options-page[^{]*trip-option-card\{[^}]*background:transparent!important/);
+assert.match(css, /add-intent-page[^{]*add-intent-row\{[^}]*border-bottom:1px solid var\(--line\)/);
+assert.match(css, /save-later-page[^{]*save-later-row\{[^}]*background:transparent/);
+assert.match(css, /dark-detail[^{]*fd-list\{[^}]*box-shadow:none/);
+
+console.log("Unified Tripto Flat Travel design-system contract passed.");
