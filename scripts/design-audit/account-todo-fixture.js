@@ -1,5 +1,11 @@
 // Served only by the loopback audit server after preview data initialization.
 // Select with ?preview=1&qaState=account-signed-in (or the states below).
+if (QA_STATE === "account-compact") {
+  state.account = { mode: "account", user: {
+    display_name: "Alex Morgan",
+    primary_email: "a.morgan@example.test",
+  }};
+}
 if (QA_STATE === "account-signed-in") {
   state.account = { mode: "account", user: {
     display_name: "Alexandra Montgomery-Wellington",
