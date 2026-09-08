@@ -3959,6 +3959,15 @@ html body .form-screen .form-field input:focus,html body .form-screen .form-fiel
 html body .day-plan-form-screen .form-field input:focus,html body .day-plan-form-screen .form-field select:focus,html body .day-plan-form-screen .form-field textarea:focus{border-color:var(--accent);box-shadow:var(--ds-focus)}
 html body .form-screen .form-field>span,html body .day-plan-form-screen .form-field>span{font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.04em;text-transform:uppercase}
 
+/* Neighborhood scheduling is one semantic group: date, its explanation, then
+   the optional time. Keeping the helper inside this full-width group prevents
+   the two-column form grid from squeezing it into an unrelated half-column. */
+html body .collection-form-screen .collection-schedule{display:grid;grid-column:1/-1;gap:var(--space-3);min-width:0}
+html body .collection-form-screen .collection-schedule .date-range-field,
+html body .collection-form-screen .collection-schedule .form-field{grid-column:1/-1}
+html body .collection-form-screen .collection-schedule__helper{max-width:none;margin:calc(-1 * var(--space-2)) 0 0;color:var(--muted);font-size:var(--type-meta);font-weight:var(--weight-regular);line-height:1.4}
+html body .collection-form-screen .collection-schedule .form-field{margin-top:var(--space-1)}
+
 /* Intentional exceptions: the bottom sheet, FAB and picker overlays need depth
    to separate from the page. Everything else is explicitly shadow-free. */
 html body .trip-option-card,html body .add-intent-row,html body .day-plan-row,html body .save-later-row,html body .planning-row,html body .planning-add-card,html body .travel-row,html body .document-row,html body .booking-card,html body .info-card,html body .health-card,html body .cl-row,html body .fd-row{box-shadow:none!important}

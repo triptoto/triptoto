@@ -57,5 +57,7 @@ assert.ok(js.includes('fd-list--flight'), 'flight detail must use the shared fla
 assert.ok(js.includes('fdSection("Actions"'), 'flight detail must group actions by intent');
 assert.match(css, /flight-detail-screen[^{]*fd-list--flight\{[^}]*border:0!important/);
 assert.match(css, /flight-detail-screen[^{]*fd-row\{[^}]*min-height:60px!important/);
+assert.ok(js.includes('collection-schedule__helper'), 'neighborhood schedule explanation must stay with the date field');
+assert.match(css, /collection-form-screen[^{]*collection-schedule\{[^}]*grid-column:1\/-1/);
 
 console.log("Unified Tripto Flat Travel design-system contract passed.");
