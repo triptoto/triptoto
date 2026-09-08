@@ -3488,8 +3488,6 @@ button.mini-stop__hit:active{background:var(--surface)}
 }
 /* Adding a place is an immediate page action, so it sits beside edit/delete
    in the header instead of pushing the first stop down with a large row. */
-html body .collection-page .app-bar .collection-header-add{color:var(--accent)}
-html body .collection-page .app-bar .collection-header-add:active{background:var(--activity-soft)}
 @media(max-width:359px){
   html body .phone-app > .collection-page > .app-bar .app-bar-title strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
@@ -4346,16 +4344,23 @@ html body .discard-dialog{
 html body .header-navigation{
   display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:0 0 auto;
 }
+/* All header icon actions use the existing Trips control treatment. */
 html body .header-navigation>.icon-button,
-html body .trip-v2-actions>.icon-button{
+html body .phone-app :is(.app-bar,.app-header,.trip-v2-header,.driver-top,.first-run-brand-row) :is(.icon-button,.header-icon),
+html body :is(.full-screen-picker__bar,.sheet-title-row,.doc-viewer__bar,.trip-create-destination.is-fullscreen .trip-create-destination__head) :is(.icon-button,.doc-viewer__back,.doc-viewer__ext){
+  display:grid;place-items:center;
   flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;
-  padding:0;border:0;border-radius:var(--radius-control);color:var(--ink);background:transparent;
+  padding:0;border:0;border-radius:var(--radius-control);color:var(--ink);background:var(--surface);
+  box-shadow:none;text-decoration:none;cursor:pointer;
 }
-html body .header-navigation .header-navigation__add{color:var(--accent)}
-html body .header-navigation>.icon-button:hover,
-html body .header-navigation>.icon-button:active,
-html body .header-navigation>.icon-button[aria-expanded="true"]{background:var(--surface)}
-html body .header-navigation>.icon-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html body .phone-app :is(.app-bar,.app-header,.trip-v2-header,.driver-top,.first-run-brand-row) :is(.icon-button,.header-icon)>svg,
+html body :is(.full-screen-picker__bar,.sheet-title-row,.doc-viewer__bar,.trip-create-destination.is-fullscreen .trip-create-destination__head) :is(.icon-button,.doc-viewer__back,.doc-viewer__ext)>svg{width:24px;height:24px}
+html body .phone-app :is(.app-bar,.app-header,.trip-v2-header,.driver-top,.first-run-brand-row) :is(.icon-button,.header-icon):hover,
+html body :is(.full-screen-picker__bar,.sheet-title-row,.doc-viewer__bar,.trip-create-destination.is-fullscreen .trip-create-destination__head) :is(.icon-button,.doc-viewer__back,.doc-viewer__ext):hover{background:var(--line)}
+html body .phone-app :is(.app-bar,.app-header,.trip-v2-header,.driver-top,.first-run-brand-row) :is(.icon-button,.header-icon):is(:active,[aria-expanded="true"]),
+html body :is(.full-screen-picker__bar,.sheet-title-row,.doc-viewer__bar,.trip-create-destination.is-fullscreen .trip-create-destination__head) :is(.icon-button,.doc-viewer__back,.doc-viewer__ext):is(:active,[aria-expanded="true"]){background:var(--activity-soft)}
+html body .phone-app :is(.app-bar,.app-header,.trip-v2-header,.driver-top,.first-run-brand-row) :is(.icon-button,.header-icon):focus-visible,
+html body :is(.full-screen-picker__bar,.sheet-title-row,.doc-viewer__bar,.trip-create-destination.is-fullscreen .trip-create-destination__head) :is(.icon-button,.doc-viewer__back,.doc-viewer__ext):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 html body .phone-app>.screen>.app-bar.app-bar--navigation{
   grid-template-columns:44px minmax(0,1fr) 92px;
   column-gap:8px;row-gap:0;padding:12px 12px;border-bottom:0;

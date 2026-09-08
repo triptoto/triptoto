@@ -74,7 +74,6 @@ assert(/VIEWER_BLOCKED_ACTIONS[\s\S]*?"add-collection"[\s\S]*?"stop-status"/.tes
 const collectionScreen=app.slice(app.indexOf('function collectionScreen()'),app.indexOf('function collectionFormScreen()'));
 assert(app.includes('function HeaderNavigation(')&&app.includes('collection-header-add')&&app.includes('data-action="collection-add-place"'),'Add place must remain available in the shared header');
 assert(!collectionScreen.includes('primaryCta(`Add ${cfg.stop}`'),'collection detail must not repeat Add place as a large body row');
-assert(css.includes('.collection-page .app-bar .collection-header-add{color:var(--accent)}'),'collection header add action must use the shared accent');
 assert(collectionScreen.includes('class="collection-timeline-scroll"')&&collectionScreen.includes('aria-label="Places timeline"'),'collection stop list must have its own labelled scrolling region');
 assert(/html body \.phone-app > \.collection-page > main\.focused-page\{[^}]*overflow:hidden/.test(css),'collection page shell must keep its context fixed while the list scrolls');
 assert(/\.collection-page \.collection-timeline-scroll\{[^}]*flex:1 1 auto[^}]*overflow-y:auto/.test(css),'only the collection timeline list must own vertical scrolling');

@@ -452,7 +452,7 @@
     overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-label", name || "Travel document");
     overlay.dataset.blobUrl = url;
-    overlay.innerHTML = `<header class="doc-viewer__bar"><button type="button" class="doc-viewer__back" data-action="close-doc-viewer">${icon("back", 20)}<span>Back to app</span></button><strong class="doc-viewer__title">${safeName}</strong><a class="doc-viewer__ext" href="${url}" download="${safeName}" target="_blank" rel="noopener" aria-label="Download ${safeName}">${icon("download", 20)}</a></header><div class="doc-viewer__body">${media}</div>`;
+    overlay.innerHTML = `<header class="doc-viewer__bar"><button type="button" class="doc-viewer__back" data-action="close-doc-viewer" aria-label="Back to app" title="Back to app">${icon("back", 24)}</button><strong class="doc-viewer__title">${safeName}</strong><a class="doc-viewer__ext" href="${url}" download="${safeName}" target="_blank" rel="noopener" aria-label="Download ${safeName}">${icon("download", 24)}</a></header><div class="doc-viewer__body">${media}</div>`;
     document.body.appendChild(overlay);
     documentViewerContext = { opener: document.activeElement, wasInert: app.hasAttribute("inert") };
     app.setAttribute("inert", "");
