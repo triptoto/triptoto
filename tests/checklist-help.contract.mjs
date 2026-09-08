@@ -1,4 +1,5 @@
 import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Checklist/Help contract failed: ${m}`)};
 const app=read('public/mobile-app.js'),css=read('public/mobile-app.css'),routes=read('public/mobile-routes.js');
 
@@ -58,10 +59,45 @@ assert(app.includes('function flushChecklistQueue('),'offline checklist replay m
 assert(app.includes('function addChecklistItem(')&&app.includes('function toggleChecklistItem(')&&app.includes('function deleteChecklistItem(')&&app.includes('function renameChecklistItem('),'checklist CRUD handlers missing');
 assert(app.includes('persistChecklistCache('),'checklist offline persistence missing');
 
+// Completed tasks stay recoverable and expansion belongs to the current trip.
+const checklistState={trip:{id:'trip-a',title:'Trip A'},checklist:[
+  {id:'todo',title:'Pack adapter',completed:false},
+  {id:'done',title:'Check passport',completed:true},
+],expandedChecklistTripId:null};
+const renderChecklist=()=>runInNewContext(`${cl}\nchecklistScreen()`,{
+  state:checklistState,esc:String,icon:()=>'',mobilePage:(_title,body)=>body,
+});
+let rendered=renderChecklist();
+assert(rendered.includes('1 task left')&&rendered.includes('Completed (1)'),'remaining and completed counts wrong');
+assert(rendered.includes('aria-label="Completed tasks" hidden')&&rendered.includes('Check passport'),'completed tasks must be collapsed, not discarded');
+checklistState.expandedChecklistTripId='trip-a';
+assert(!renderChecklist().includes('aria-label="Completed tasks" hidden'),'current trip completed tasks did not expand');
+checklistState.trip.id='trip-b';
+assert(renderChecklist().includes('aria-label="Completed tasks" hidden'),'completed expansion leaked into another trip');
+checklistState.checklist=[];
+assert(renderChecklist().includes('Add your first task')&&!renderChecklist().includes('Completed ('),'empty checklist must offer adding without an empty completed section');
+checklistState.checklist=[{id:'done',title:'Check passport',completed:true}];
+assert(renderChecklist().includes('All done')&&!renderChecklist().includes('aria-label="Tasks to do"'),'all-completed checklist must remain useful');
+
+// Disclosure changes visibility in place. Rebuilding the subtree here loses drafts.
+const disclosure=app.slice(app.indexOf('function toggleCompletedChecklist('),app.indexOf('  // Open the inline editor.'));
+const draftInput={value:'Unsaved task'},renameInput={value:'Unsaved rename'};
+const completedList={hidden:true,children:[renameInput]},toggle={setAttribute(name,value){this[name]=value;}};
+const disclosureContext={state:checklistState,document:{getElementById(id){
+  return {'checklist-completed':completedList,'checklist-completed-toggle':toggle,'checklist-new-title':draftInput}[id];
+}}};
+runInNewContext(`${disclosure}\ntoggleCompletedChecklist()`,disclosureContext);
+assert(!completedList.hidden&&toggle['aria-expanded']==='true'&&checklistState.expandedChecklistTripId==='trip-b','completed expansion failed');
+runInNewContext(`${disclosure}\ntoggleCompletedChecklist()`,disclosureContext);
+assert(completedList.hidden&&toggle['aria-expanded']==='false'&&checklistState.expandedChecklistTripId===null,'completed collapse failed');
+assert(completedList.children[0]===renameInput&&renameInput.value==='Unsaved rename'&&draftInput.value==='Unsaved task','disclosure discarded an input draft');
+checklistState.trip=null;
+runInNewContext(`${disclosure}\ntoggleCompletedChecklist()`,disclosureContext);
+
 // ---- Touch targets (>=44px) ----
 const flatCss=css.replace(/\n/g,'');
 assert(/\.cl-row__toggle\{[^}]*min-height:5\d px?|\.cl-row__toggle\{[^}]*min-height:(?:4[4-9]|5\d|6\d)px/.test(flatCss),'checklist toggle under 44px');
-assert(/\.cl-row__act\{[^}]*height:44px/.test(flatCss)&&/\.cl-chip\{[^}]*min-height:44px/.test(flatCss),'checklist controls under 44px');
+assert(/\.cl-row__act\{[^}]*height:44px/.test(flatCss)&&/\.cl-completed__toggle\{[^}]*min-height:44px/.test(flatCss),'checklist controls under 44px');
 assert(/\.faq-q\{[^}]*min-height:(?:4[4-9]|5\d|6\d)px/.test(flatCss),'FAQ question button under 44px');
 assert(/\.faq-action\{[^}]*min-height:44px/.test(flatCss),'FAQ action button under 44px');
 

@@ -139,6 +139,7 @@
     timelineDayKey: null,
     checklist: [],
     editingChecklistId: null,
+    expandedChecklistTripId: null,
     focusChecklistEdit: false,
     brain: null,
     impacts: [],
@@ -4421,6 +4422,10 @@
     tmp.innerHTML = checklistScreen();
     const fresh = tmp.querySelector(".cl-screen");
     if (!fresh) return false;
+    // Keep the add form (and its draft) while another task is being changed.
+    const addForm = cur.querySelector("#checklist-add-form");
+    const freshAddForm = fresh.querySelector("#checklist-add-form");
+    if (addForm && freshAddForm) freshAddForm.replaceWith(addForm);
     cur.replaceWith(fresh);
     bindDynamic();
     return true;
@@ -5836,28 +5841,25 @@
           : `<div class="health-card ${top.kind === "good" ? "good" : "info"}"><span>${icon(top.kind === "good" ? "check" : "info", 26)}</span><span><strong>${top.kind === "good" ? "No known issues" : "Not enough information"}</strong><p>${esc(top.subtitle)}</p></span></div>`;
     return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 24)}</button>`)}<main class="health-content"><div class="health-summary"><div class="health-shield ${shieldClass} ${setup ? "setup" : ""}">${icon(issues.length ? "warning" : setup ? "plus" : top.kind === "good" ? "check" : "info", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><div class="list-stack">${rows}${setup ? "" : `<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button>`}</div></main>${bottomNav("home")}</section></div>`;
   }
-  const CHECKLIST_SUGGESTIONS = ["Passport", "Wallet", "Phone charger", "Medication", "Tickets", "Headphones"];
   function checklistScreen() {
     if (!state.trip)
       return mobilePage("To-do", `<div class="cl-screen"><section class="mobile-empty"><span class="mobile-empty__icon">${icon("checklist", 28)}</span><h1>No trip open</h1><p>Open a trip to see its checklist.</p><button class="mobile-secondary-action" data-screen="trips">${icon("trips", 20)} My trips</button></section></div>`, "checklist");
     const rows = state.checklist || [];
     const total = rows.length;
-    const done = rows.filter((r) => r.completed).length;
-    const toPack = rows.filter((r) => !r.completed);
-    const packed = rows.filter((r) => r.completed);
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    const progressHint = !total ? "Add tasks and things to pack for this trip." : done === total ? "Everything is ready" : `${total - done} left to do`;
-    const summary = `<section class="cl-progress ds-grouped-card${total && done === total ? " cl-progress--done" : ""}"><div class="cl-progress__heading">${PastelIcon(total && done === total ? "check" : "checklist", total && done === total ? "stay" : "activity")}<div><span class="cl-trip-label">Trip checklist</span><h1>${esc(state.trip.title || "Your trip")}</h1></div></div><div class="cl-progress__summary"><span>${progressHint}</span>${total ? `<strong>${done} of ${total} done</strong>` : ""}</div>${total ? `<span class="cl-bar" role="progressbar" aria-label="Checklist progress" aria-valuenow="${done}" aria-valuemin="0" aria-valuemax="${total}"><span class="cl-bar__fill" style="width:${pct}%"></span></span>` : ""}</section>`;
-    const addForm = `<form class="cl-add" id="checklist-add-form" novalidate><label for="checklist-new-title">Add a task</label><div class="cl-add__controls"><input id="checklist-new-title" type="text" name="title" class="cl-add__input" placeholder="e.g. Pack a phone charger" maxlength="160" autocomplete="off" enterkeyhint="done" aria-label="Add a checklist item"><button type="submit" class="cl-add__btn" aria-label="Add item">${icon("plus", 22)}</button></div></form>`;
+    const pending = rows.filter((r) => !r.completed);
+    const completed = rows.filter((r) => r.completed);
+    const expanded = state.expandedChecklistTripId === state.trip.id;
+    const summary = `<header class="cl-heading"><h1>${esc(state.trip.title || "Your trip")}</h1>${total ? `<p class="${pending.length ? "" : "cl-all-done"}">${pending.length ? `${pending.length} task${pending.length === 1 ? "" : "s"} left` : `${icon("check",16)} All done`}</p>` : ""}</header>`;
+    const addForm = `<form class="cl-add" id="checklist-add-form" novalidate><label class="sr-only" for="checklist-new-title">Add a task</label><input id="checklist-new-title" type="text" name="title" class="cl-add__input" placeholder="Add a task…" maxlength="160" autocomplete="off" enterkeyhint="done" aria-label="Add a checklist item"><button type="submit" class="cl-add__btn" aria-label="Add task" disabled>Add</button></form>`;
     const rowHtml = (item) => state.editingChecklistId === item.id
       ? `<li class="cl-row cl-row--editing"><form class="cl-edit" data-checklist-edit data-id="${esc(item.id)}" novalidate><input type="text" name="title" class="cl-edit__input" value="${esc(item.title)}" maxlength="160" autocomplete="off" enterkeyhint="done" aria-label="Rename item"><div class="cl-edit__actions"><button type="button" class="cl-row__act cl-row__del" data-action="delete-checklist" data-id="${esc(item.id)}" aria-label="Delete ${esc(item.title)}">${icon("trash", 18)}</button><button type="button" class="cl-edit__act cl-edit__cancel" data-action="cancel-edit-checklist">Cancel</button><button type="submit" class="cl-edit__act cl-edit__save" aria-label="Save name">Save</button></div></form></li>`
       : `<li class="cl-row ${item.completed ? "is-complete" : ""}"><button type="button" class="cl-row__toggle" data-action="toggle-checklist" data-id="${esc(item.id)}" aria-pressed="${item.completed}"><span class="cl-check" aria-hidden="true">${item.completed ? icon("check", 16) : ""}</span><span class="cl-row__title">${esc(item.title)}</span></button><button type="button" class="cl-row__act" data-action="edit-checklist" data-id="${esc(item.id)}" aria-label="Edit ${esc(item.title)}">${icon("edit", 18)}</button></li>`;
     let body = `<div class="cl-screen">${summary}${addForm}`;
     if (total === 0) {
-      body += `<section class="cl-suggest"><p class="cl-suggest__label">Suggestions</p><div class="cl-chips">${CHECKLIST_SUGGESTIONS.map((s) => `<button type="button" class="cl-chip" data-action="add-checklist-suggested" data-title="${esc(s)}">${icon("plus", 14)} ${esc(s)}</button>`).join("")}</div></section>`;
+      body += `<p class="cl-empty">Nothing here yet. Add your first task above.</p>`;
     } else {
-      if (toPack.length) body += `<section class="cl-section"><h2>To do <span>${toPack.length}</span></h2><ul class="cl-list ds-grouped-card ds-grouped-card--list">${toPack.map(rowHtml).join("")}</ul></section>`;
-      if (packed.length) body += `<section class="cl-section cl-section--packed"><h2>Completed <span>${packed.length}</span></h2><ul class="cl-list ds-grouped-card ds-grouped-card--list">${packed.map(rowHtml).join("")}</ul></section>`;
+      if (pending.length) body += `<ul class="cl-list ds-grouped-card ds-grouped-card--list" aria-label="Tasks to do">${pending.map(rowHtml).join("")}</ul>`;
+      if (completed.length) body += `<section class="cl-completed"><button type="button" id="checklist-completed-toggle" class="cl-completed__toggle" data-action="toggle-completed-checklist" aria-expanded="${expanded}" aria-controls="checklist-completed"><span>Completed (${completed.length})</span>${icon("chevron",18)}</button><ul id="checklist-completed" class="cl-list ds-grouped-card ds-grouped-card--list" aria-label="Completed tasks"${expanded ? "" : " hidden"}>${completed.map(rowHtml).join("")}</ul></section>`;
     }
     body += `</div>`;
     return mobilePage("To-do", body, "checklist");
@@ -5881,7 +5883,7 @@
     ] },
     { title: "Your trip", questions: [
       { id: "timeline", q: "What is the Timeline?", a: "The Timeline is the main view of your trip. Flights, stays, restaurants, activities and other bookings are shown in travel order so you can see what is coming next.", keywords: "timeline schedule order plans main view" },
-      { id: "checklist", q: "How does the checklist work?", a: "Use the To-do tab in the bottom bar for things you do not want to forget, such as your passport, wallet or charger. Add your own items and tap one when it is packed. Tap it again to undo.", keywords: "checklist packing list passport wallet charger pack", action: { label: "Open checklist", screen: "checklist" } },
+      { id: "checklist", q: "How does the checklist work?", a: "Open To-do in the bottom bar. Type a task and tap Add, then tick it when it is done. Open Completed to find finished tasks and untick one to return it to your list. Use the pencil to rename or delete a task.", keywords: "checklist packing list passport wallet charger pack completed tasks", action: { label: "Open checklist", screen: "checklist" } },
       { id: "documents", q: "Where are my tickets and documents?", a: "Documents attached to a booking open from that booking. You can also open the trip menu and choose Documents to see your trip files. Some files are stored only on this device.", keywords: "tickets documents files pdf storage device" },
       { id: "trip-map", q: "When can I use Trip Map?", a: "Open the trip menu and choose Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
       { id: "offline", q: "What works offline?", a: "Your cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and opening directions need a connection.", keywords: "offline internet connection cached without wifi directions" },
@@ -9420,11 +9422,15 @@
     const checklistAddForm = document.getElementById("checklist-add-form");
     if (checklistAddForm && !checklistAddForm.dataset.bound) {
       checklistAddForm.dataset.bound = "1";
+      checklistAddForm.addEventListener("input", () => {
+        const submit = checklistAddForm.querySelector('button[type="submit"]');
+        if (submit) submit.disabled = !String(checklistAddForm.elements.title?.value || "").trim();
+      });
       checklistAddForm.addEventListener("submit", (event) => {
         event.preventDefault();
         const input = checklistAddForm.elements.title;
         const title = String(input?.value || "").trim();
-        if (!title) return;
+        if (!title) { input?.focus(); return; }
         input.value = "";
         state.focusChecklistAdd = true;
         addChecklistItem(title).catch((error) =>
@@ -10060,6 +10066,17 @@
       }
     }
   }
+  function toggleCompletedChecklist() {
+    if (!state.trip) return;
+    const expanded = state.expandedChecklistTripId !== state.trip.id;
+    state.expandedChecklistTripId = expanded ? state.trip.id : null;
+    // Change only visibility so opening/closing completed tasks preserves
+    // text in both the add field and an in-progress inline editor.
+    const list = document.getElementById("checklist-completed");
+    const toggle = document.getElementById("checklist-completed-toggle");
+    if (list) list.hidden = !expanded;
+    if (toggle) toggle.setAttribute("aria-expanded", String(expanded));
+  }
   // Open the inline editor. window.prompt() is unreliable in installed PWAs
   // (iOS standalone silently suppresses it), so rename happens inside the row.
   function startEditChecklistItem(id) {
@@ -10115,7 +10132,7 @@
     const idx = state.checklist.findIndex((row) => String(row.id) === String(id));
     if (idx < 0) return;
     const [removed] = state.checklist.splice(idx, 1);
-    render();
+    renderChecklist();
     persistChecklistCache();
     // Defer the server delete for the undo window so undo is a pure local
     // re-insert (no fragile server re-create with a new id).
@@ -10129,7 +10146,7 @@
       checklistDeleteTimers.delete(id);
       const at = Math.min(idx, state.checklist.length);
       state.checklist.splice(at, 0, removed);
-      render();
+      renderChecklist();
       persistChecklistCache();
     });
   }
@@ -10399,6 +10416,9 @@
         break;
       case "edit-checklist":
         startEditChecklistItem(target.dataset.id);
+        break;
+      case "toggle-completed-checklist":
+        toggleCompletedChecklist();
         break;
       case "cancel-edit-checklist":
         cancelEditChecklistItem();

@@ -1730,7 +1730,7 @@ html .bottom-nav .nav-add>span{
 html .bottom-nav .nav-add:active>span{opacity:1;transform:scale(.94)}
 html .bottom-nav .nav-item__badge{box-shadow:0 0 0 2px var(--paper)}
 /* Standalone blocks read as sections via a trailing divider */
-html .cl-progress,html .help-quickstart{
+html .help-quickstart{
   border-bottom:1px solid var(--line);border-radius:0
 }
 
@@ -2003,31 +2003,24 @@ html .trips-bg-screen .trip-group .trip-row{
 html .trips-bg-screen .trip-group .trip-row:last-child{border-bottom:0}
 html .trips-bg-screen .trip-group+.trip-group{border-top:0;margin-top:20px}
 
-/* To-do: shared cards and controls, with compact task-specific rows. */
-.cl-screen{display:flex;flex-direction:column;gap:var(--space-6);padding-bottom:var(--space-2)}
-.cl-progress{display:flex;flex-direction:column;gap:var(--space-3)}
-.cl-progress__heading{display:flex;align-items:center;gap:var(--space-3)}
-.cl-progress__heading>div{min-width:0}
-html body .phone-app>.screen>.mobile-page .cl-progress h1{margin:2px 0 0;font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.3;letter-spacing:-.02em;overflow-wrap:anywhere}
-.cl-trip-label{color:var(--muted);font-size:var(--type-meta);line-height:1.4}
-.cl-progress__summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);font-size:var(--type-meta);line-height:1.4;color:var(--muted)}
-html body .cl-progress__summary strong{font-size:var(--type-meta);font-weight:var(--weight-semibold);color:var(--accent);white-space:nowrap}
-.cl-bar{display:block;height:6px;border-radius:999px;background:var(--activity-soft);overflow:hidden}
-.cl-bar__fill{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .2s var(--ease)}
-.cl-progress--done .cl-bar{background:var(--stay-soft)}
-.cl-progress--done .cl-bar__fill{background:var(--green)}
-html body .cl-progress--done .cl-progress__summary strong{color:var(--green)}
-.cl-add{display:grid;gap:var(--space-2)}
-.cl-add>label{font-size:var(--type-body);font-weight:var(--weight-semibold);color:var(--ink)}
-.cl-add__controls{display:flex;align-items:center;gap:var(--space-2)}
+/* To-do keeps the trip context, quick entry and unfinished tasks together. */
+.cl-screen{display:flex;flex-direction:column;gap:var(--space-4);padding-bottom:var(--space-2)}
+.cl-heading{min-width:0;padding:var(--space-1) 0}
+html body .phone-app>.screen>.mobile-page .cl-heading h1{margin:0;font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.3;letter-spacing:-.02em;overflow-wrap:anywhere}
+.cl-heading p{display:flex;align-items:center;gap:var(--space-1);margin:var(--space-1) 0 0;color:var(--muted);font-size:var(--type-meta);line-height:1.4}
+.cl-heading p.cl-all-done{color:var(--green)}
+.cl-add{display:flex;align-items:center;gap:var(--space-2)}
 .cl-add__input{flex:1 1 auto;min-width:0;width:100%;height:var(--control-height);padding:0 var(--space-3);border-radius:var(--radius-control);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
 .cl-add__input::placeholder{color:var(--muted)}
-.cl-add__btn{flex:0 0 auto;display:grid;place-items:center;width:var(--control-height);height:var(--control-height);border:0;border-radius:var(--radius-control);background:var(--accent);color:var(--accent-ink);cursor:pointer}
-.cl-section{display:flex;flex-direction:column;gap:var(--space-2)}
-.cl-section>h2{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin:0;font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.4;color:var(--ink)}
-.cl-section>h2>span{display:grid;place-items:center;min-width:28px;min-height:28px;padding:0 var(--space-2);border-radius:var(--radius-control);background:var(--surface);color:var(--muted);font-size:var(--type-meta);font-weight:var(--weight-medium);font-variant-numeric:tabular-nums}
+.cl-add__btn{flex:0 0 auto;display:grid;place-items:center;min-width:64px;height:var(--control-height);padding:0 var(--space-3);border:0;border-radius:var(--radius-control);background:var(--accent);color:var(--accent-ink);font:inherit;font-size:var(--type-body);font-weight:var(--weight-semibold);cursor:pointer}
+.cl-add__btn:disabled{background:var(--surface);color:var(--muted);cursor:default}
+.cl-empty{margin:var(--space-2) 0;color:var(--muted);font-size:var(--type-body);line-height:1.5}
+.cl-completed{display:grid;gap:var(--space-2)}
+.cl-completed__toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);width:100%;min-height:44px;padding:0 var(--space-1);border:0;border-radius:var(--radius-control);background:transparent;color:var(--muted);font:inherit;font-size:var(--type-meta);font-weight:var(--weight-medium);text-align:left;cursor:pointer}
+.cl-completed__toggle[aria-expanded="true"]>.ph-svg{transform:rotate(90deg)}
+.cl-completed>.cl-list[hidden]{display:none}
 .cl-list{list-style:none;margin:0;display:flex;flex-direction:column}
-.cl-row{display:flex;align-items:center;min-height:64px;padding:var(--space-1) 0;border-bottom:1px solid var(--line)}
+.cl-row{display:flex;align-items:center;min-height:56px;padding:0;border-bottom:1px solid var(--line)}
 .cl-row:last-child{border-bottom:0}
 .cl-row__toggle{flex:1 1 auto;display:flex;align-items:center;gap:var(--space-3);min-height:56px;min-width:0;padding:var(--space-2) 0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:var(--type-body);line-height:1.4;text-align:left;cursor:pointer}
 .cl-check{flex:0 0 auto;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;border:1.5px solid var(--line-strong);background:var(--card);color:transparent}
@@ -2045,14 +2038,8 @@ html body .cl-progress--done .cl-progress__summary strong{color:var(--green)}
 .cl-edit__act{flex:0 0 auto;display:grid;place-items:center;min-width:64px;height:44px;padding:0 var(--space-3);border:0;border-radius:var(--radius-control);font:inherit;font-size:var(--type-meta);font-weight:var(--weight-semibold);cursor:pointer}
 .cl-edit__save{background:var(--accent);color:var(--accent-ink)}
 .cl-edit__cancel{background:transparent;color:var(--muted)}
-.cl-suggest{display:flex;flex-direction:column;gap:var(--space-3)}
-.cl-suggest__label{margin:0;font-size:var(--type-section);font-weight:var(--weight-semibold);color:var(--ink)}
-.cl-chips{display:flex;flex-wrap:wrap;gap:var(--space-2)}
-.cl-chip{display:inline-flex;align-items:center;gap:var(--space-1);min-height:44px;padding:0 var(--space-3);border-radius:var(--radius-control);border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:var(--type-meta);cursor:pointer}
-.cl-chip .ph-svg{color:var(--accent)}
 .cl-screen button:focus-visible,.cl-screen input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:359px){.cl-row__toggle{gap:var(--space-2)}}
-@media(prefers-reduced-motion:reduce){.cl-bar__fill{transition:none}}
 
 /* === Help & FAQ === */
 .help-screen{display:flex;flex-direction:column;gap:22px;padding-bottom:8px}
@@ -2431,8 +2418,7 @@ html .manual-form-heading h1,
 html .manual-attachments>header h2,
 html .booking-documents>h2,
 html .document-list>.mobile-empty h1,
-html .help-support h2,
-html .cl-progress strong{
+html .help-support h2{
   font-size:var(--type-section);font-weight:var(--weight-semibold);line-height:1.2
 }
 html .fd-title{font-weight:var(--weight-bold)}
