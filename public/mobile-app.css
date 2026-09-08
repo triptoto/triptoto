@@ -3999,6 +3999,251 @@ html body .bottom-sheet .sheet-action-list--danger .sheet-action-row{padding-inl
 html body .bottom-sheet .sheet-options-group:not(.manual-v2-options)>.sheet-option--danger{margin-top:var(--space-1);padding-inline:var(--space-2)!important;border-radius:var(--radius-control)!important;background:color-mix(in srgb,var(--red) 7%,var(--surface))!important}
 html body .bottom-sheet .sheet-action-row[disabled]{opacity:.48;cursor:default}
 html body .bottom-sheet .sheet-action-row[disabled] .sheet-action-row__chev{display:none!important}
+/* Keep keyboard focus visible without reviving the heavy grey rails that the
+   browser default drew across full-width sheet actions. */
+html body .bottom-sheet :is(button,a,[role="button"]):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html body .bottom-sheet .sheet-action-row:focus-visible{outline:0;outline-offset:0;border-radius:var(--radius-control);box-shadow:inset 3px 0 0 var(--accent)!important}
+
+/* Plan Together uses the same compact hero, flat rows and sheet grammar as
+   the rest of the trip. Its earlier standalone card system made sharing feel
+   like a separate product and made member controls needlessly tall. */
+html body .collaboration-screen .focused-page.collab-page{
+  display:grid;
+  align-content:start;
+  gap:var(--ds-section-gap);
+  min-height:0;
+  padding:var(--space-4)
+}
+html body .collaboration-screen .collab-page>*{flex-shrink:initial}
+html body .collaboration-screen .collab-hero{
+  position:static;
+  display:grid;
+  gap:0;
+  min-height:0;
+  padding:var(--space-4);
+  overflow:visible;
+  border-radius:var(--radius-hero);
+  background:var(--activity-soft);
+  color:var(--ink);
+  box-shadow:none
+}
+html body .collaboration-screen .collab-hero::after{display:none}
+html body .collaboration-screen .collab-hero h1{margin:0 0 var(--space-2)}
+html body .collaboration-screen .collab-hero p{max-width:36ch;color:var(--muted)}
+html body .collaboration-screen .collab-hero__promise{
+  display:block;
+  margin-top:var(--space-3);
+  color:var(--accent);
+  font-size:var(--type-label);
+  font-weight:var(--weight-semibold);
+  line-height:1.35;
+  letter-spacing:.04em
+}
+html body .collaboration-screen .collab-benefits{
+  display:grid;
+  gap:var(--space-2);
+  padding:0
+}
+html body .collaboration-screen .collab-benefit{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr);
+  align-items:center;
+  gap:var(--space-3);
+  min-height:var(--row-height);
+  padding:var(--space-3) 0;
+  border:0;
+  border-bottom:1px solid var(--line)
+}
+html body .collaboration-screen .collab-benefit+.collab-benefit{border-top:0}
+html body .collaboration-screen .collab-benefit:last-child{border-bottom:0}
+html body .collaboration-screen .collab-benefit .ds-flat-row__copy small{
+  overflow:visible;
+  text-overflow:clip;
+  white-space:normal
+}
+html body .collaboration-screen .collab-signin{
+  display:grid;
+  gap:var(--space-2);
+  padding:var(--space-4) 0 0;
+  border:0;
+  border-top:1px solid var(--line);
+  border-radius:0;
+  background:transparent
+}
+html body .collaboration-screen .collab-signin h2{
+  margin:0;
+  color:var(--ink);
+  font-size:var(--type-section);
+  line-height:1.25
+}
+html body .collaboration-screen .collab-signin p{
+  max-width:38ch;
+  margin:0;
+  color:var(--muted);
+  font-size:var(--type-meta);
+  line-height:1.45
+}
+html body .collaboration-screen .collab-signin small{
+  color:var(--muted);
+  font-size:var(--type-label);
+  text-align:center
+}
+html body .collaboration-screen .collab-invite-cta,
+html body .collaboration-screen .collab-leave{width:100%}
+html body .collaboration-screen .collab-section{
+  display:grid;
+  gap:var(--space-2);
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none
+}
+html body .collaboration-screen .collab-member,
+html body .collaboration-screen .collab-invite{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 44px;
+  align-items:center;
+  gap:var(--space-3);
+  min-height:var(--row-height);
+  padding:var(--space-3) 0;
+  border:0;
+  border-bottom:1px solid var(--line)
+}
+html body .collaboration-screen .collab-member:last-child,
+html body .collaboration-screen .collab-invite:last-child{border-bottom:0}
+html body .collaboration-screen .collab-member__icon,
+html body .collaboration-screen .collab-invite__icon{flex:0 0 40px}
+html body .collaboration-screen .collab-member__text,
+html body .collaboration-screen .collab-invite__text{min-width:0}
+html body .collaboration-screen .collab-member__manage,
+html body .collaboration-screen .collab-invite__revoke{
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  padding:0;
+  border:0;
+  border-radius:var(--radius-control);
+  background:transparent;
+  color:var(--muted)
+}
+html body .collaboration-screen .collab-member__manage:active,
+html body .collaboration-screen .collab-invite__revoke:active{background:var(--surface);color:var(--accent)}
+html body .collaboration-screen .collab-member__manage:focus-visible,
+html body .collaboration-screen .collab-invite__revoke:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html body .collaboration-screen .collab-member__trailing{display:block;width:44px;height:44px}
+html body .collaboration-screen .collab-note{
+  margin:0;
+  color:var(--muted);
+  font-size:var(--type-meta);
+  line-height:1.45
+}
+
+/* Invite setup is a compact picker inside the shared bottom-sheet system. */
+html body .bottom-sheet--share .sheet-note{
+  margin:var(--space-1) 0 var(--space-3);
+  color:var(--muted);
+  font-size:var(--type-meta);
+  line-height:1.4;
+  text-align:left
+}
+html body .bottom-sheet--share .share-role-picker{display:grid;gap:var(--space-2);margin:0 0 var(--space-3)}
+html body .bottom-sheet--share .share-role-picker h3{
+  margin:0;
+  color:var(--ink);
+  font-size:var(--type-meta);
+  font-weight:var(--weight-semibold)
+}
+html body .bottom-sheet--share .share-roles{display:grid;gap:var(--space-1);margin:0}
+html body .bottom-sheet--share .share-role{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:var(--space-3);
+  width:100%;
+  min-height:60px;
+  padding:var(--space-2);
+  border:0;
+  border-radius:var(--radius-control);
+  background:transparent;
+  color:var(--ink);
+  text-align:left;
+  box-shadow:none
+}
+html body .bottom-sheet--share .share-role.is-active{border:0;background:var(--activity-soft);box-shadow:none}
+html body .bottom-sheet--share .share-role:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html body .bottom-sheet--share .share-role__copy{display:grid;gap:2px;min-width:0}
+html body .bottom-sheet--share .share-role__copy strong{font-size:var(--type-body);font-weight:var(--weight-semibold);line-height:1.2}
+html body .bottom-sheet--share .share-role__copy small{color:var(--muted);font-size:var(--type-meta);line-height:1.25}
+html body .bottom-sheet--share .share-role__indicator{display:grid;place-items:center;color:var(--accent)}
+html body .bottom-sheet--share .share-link{
+  display:grid;
+  gap:var(--space-2);
+  margin:0 0 var(--space-3);
+  padding:var(--space-3);
+  border:0;
+  border-radius:var(--radius-control);
+  background:var(--surface);
+  box-shadow:none
+}
+html body .bottom-sheet--share .share-link__label{margin:0;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold)}
+html body .bottom-sheet--share .share-link__url{
+  overflow:hidden;
+  padding:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--ink);
+  font-size:var(--type-meta);
+  line-height:1.4;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+html body .bottom-sheet--share .share-link__actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}
+html body .bottom-sheet--share .share-link__actions .ds-primary-button,
+html body .bottom-sheet--share .share-link__actions .ds-secondary-button{
+  min-height:44px;
+  min-width:0;
+  padding-inline:var(--space-2);
+  border-radius:var(--radius-control);
+  font-size:var(--type-meta)
+}
+html body .bottom-sheet--share .share-create{width:100%}
+
+/* Invitation links use the same page rhythm as task and booking routes. */
+html body .join-screen .focused-page{
+  display:grid;
+  align-content:start;
+  gap:var(--ds-section-gap);
+  padding:var(--space-4)
+}
+html body .join-screen .join-hero{
+  display:grid;
+  align-items:start;
+  gap:0;
+  padding:var(--space-4);
+  text-align:left
+}
+html body .join-screen .join-hero h1{margin:0 0 var(--space-2)}
+html body .join-screen .join-hero p{max-width:36ch;color:var(--muted)}
+html body .join-screen .join-signin,
+html body .join-screen .join-accept{
+  display:grid;
+  align-items:stretch;
+  gap:var(--space-2);
+  padding:0;
+  text-align:left
+}
+html body .join-screen .join-signin h2{margin:0;color:var(--ink);font-size:var(--type-section);line-height:1.25}
+html body .join-screen .join-signin p,
+html body .join-screen .join-accept p{max-width:38ch;margin:0;color:var(--muted);font-size:var(--type-meta);line-height:1.45}
+html body .join-screen .join-accept .ds-primary-button,
+html body .join-screen .join-accept .ds-secondary-button{max-width:none}
+@media(max-width:359px){
+  html body .collaboration-screen .collab-hero,
+  html body .join-screen .join-hero{padding:var(--space-3)}
+  html body .bottom-sheet--share .share-link__actions{grid-template-columns:1fr}
+}
 
 /* Confirmation dialogs use the same compact, line-free modal rhythm. */
 html body .discard-dialog{width:min(calc(100% - 32px),340px);padding:var(--space-4);border:0;border-radius:var(--radius-hero);background:var(--card);box-shadow:0 18px 44px color-mix(in srgb,var(--ink) 22%,transparent)}

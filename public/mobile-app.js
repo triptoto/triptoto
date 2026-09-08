@@ -193,6 +193,7 @@
     shareRole: "editor",
     shareInvite: null,
     shareBusy: false,
+    memberMenu: null,
     joinToken: null,
     joinPreview: null,
     joinCheckedToken: null,
@@ -7252,6 +7253,7 @@
     state.collabLoading = false;
     state.collabError = null;
     state.shareInvite = null;
+    state.memberMenu = null;
   }
   function viewOnlyBlocked() {
     if (canEditCurrentTrip()) return false;
@@ -7269,12 +7271,29 @@
     const count = Number(state.sharing?.activeMembers || state.members.length || 0);
     return count > 1 ? `${count} people on this trip` : "Invite people to plan with you";
   }
-  function collabScaffold(sub, body) {
-    return `<div class="phone-app"><section class="screen collaboration-screen">${appBar("Plan together", sub, true)}<main class="collab-page">${body}</main></section></div>`;
+  function collabScaffold(_sub, body) {
+    // Use the same task shell, header height, page padding and typography as
+    // the rest of Tripto's operational pages. The trip context lives in the
+    // compact hero instead of creating a second, special header treatment.
+    return PageShell({
+      title: "Plan together",
+      body,
+      extraClass: "focused-task collaboration-screen",
+      task: true,
+    });
+  }
+  function collabRoleTone(role) {
+    const value = String(role || "").toLowerCase();
+    if (value === "owner") return "activity";
+    if (value === "editor") return "stay";
+    return "neutral";
+  }
+  function collabHero(tripTitle, intro) {
+    return `<section class="ds-hero-summary ds-hero-summary--activity collab-hero"><span class="ds-hero-summary__eyebrow">Shared trip</span><h1>${esc(tripTitle || "Your trip")}</h1><p>${intro}</p><span class="collab-hero__promise">One trip.<br>Everyone in sync.</span></section>`;
   }
   function collabBenefits() {
-    const benefit = (iconName, title, body) => `<div class="collab-benefit"><span class="collab-benefit__icon">${icon(iconName, 21)}</span><span><strong>${esc(title)}</strong><small>${esc(body)}</small></span></div>`;
-    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><h2 id="collab-benefits-title">Why plan together?</h2>${benefit("edit", "Build one plan", "Editors can add and update bookings.")}${benefit("bell", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</section>`;
+    const benefit = (iconName, tone, title, body) => `<div class="collab-benefit"><span class="ds-pastel-icon ds-pastel-icon--${esc(tone)}">${icon(iconName, 21)}</span><span class="ds-flat-row__copy"><strong>${esc(title)}</strong><small>${esc(body)}</small></span></div>`;
+    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><div class="ds-section-header"><h2 id="collab-benefits-title">Why plan together?</h2></div><div class="ds-flat-list">${benefit("edit", "flight", "Build one plan", "Editors can add and update bookings.")}${benefit("bell", "stay", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "food", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</div></section>`;
   }
   function collaborationScreen() {
     if (!state.trip)
@@ -7283,19 +7302,19 @@
     if (!isSignedIn())
       return collabScaffold(
         sub,
-        `<header class="collab-hero"><span class="collab-hero__icon">${icon("users", 30)}</span><span class="collab-hero__eyebrow">Shared planning</span><h1>One trip.<br>Everyone in sync.</h1><p>Invite the people travelling with you so the whole group can follow one clear plan.</p></header>${collabBenefits()}<section class="collab-signin"><h2>Ready to plan together?</h2><p>Sign in with your free account. Everyone uses their own login — no shared passwords.</p><button type="button" class="mobile-primary-action" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button><small>Free for every trip.</small></section>`,
+        `${collabHero(sub, "Invite the people travelling with you so the whole group can follow one clear plan.")}${collabBenefits()}<section class="collab-signin"><h2>Ready to plan together?</h2><p>Sign in with your free account. Everyone uses their own login — no shared passwords.</p><button type="button" class="ds-primary-button" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button><small>Free for every trip.</small></section>`,
       );
     if (state.collabLoading || String(state.collabTripId || "") !== String(state.trip.id))
-      return collabScaffold(sub, `${thinkingPanel("Loading your travel companions…")}`);
+      return collabScaffold(sub, LoadingState("Loading your travel companions…"));
     if (state.collabError)
       return collabScaffold(
         sub,
-        `<section class="collab-empty"><span class="collab-empty__icon">${icon("warning", 32)}</span><h1>Couldn’t load collaboration</h1><p>${esc(state.collabError)}</p><button type="button" class="mobile-secondary-action" data-action="reload-collaboration">${icon("refresh", 18)} Try again</button></section>`,
+        ErrorState("Couldn’t load collaboration", state.collabError, "reload-collaboration", "Try again"),
       );
     if (state.sharing && state.sharing.enabled === false)
       return collabScaffold(
         sub,
-        `<section class="collab-empty"><span class="collab-empty__icon">${icon("users", 32)}</span><h1>Sharing is off right now</h1><p>Trip collaboration isn’t available at the moment. Your trip stays private and safe on this device.</p></section>`,
+        EmptyState("Sharing is off right now", "Trip collaboration isn’t available at the moment. Your trip stays private and safe on this device.", "users"),
       );
     const manage = canManageSharing();
     const myId = currentUserId();
@@ -7304,15 +7323,11 @@
         const meta = roleMeta(member.role);
         const isYou = myId && String(member.user_id) === String(myId);
         const isOwner = String(member.role).toLowerCase() === "owner";
-        const controls =
+        const manageButton =
           manage && !isOwner
-            ? `<div class="collab-member__actions">${
-                member.role === "editor"
-                  ? `<button type="button" class="collab-chip" data-action="member-role" data-id="${esc(member.user_id)}" data-role="viewer">Make view only</button>`
-                  : `<button type="button" class="collab-chip" data-action="member-role" data-id="${esc(member.user_id)}" data-role="editor">Make editor</button>`
-              }<button type="button" class="collab-chip" data-action="member-transfer" data-id="${esc(member.user_id)}" data-name="${esc(member.display_name || "this person")}">${icon("owner", 15)} Make owner</button><button type="button" class="icon-button collab-member__remove" data-action="member-remove" data-id="${esc(member.user_id)}" data-name="${esc(member.display_name || "this person")}" aria-label="Remove ${esc(member.display_name || "member")}">${icon("trash", 18)}</button></div>`
-            : "";
-        return `<div class="collab-member"><span class="collab-member__icon">${icon(meta.icon, 22)}</span><span class="collab-member__text"><strong>${esc(member.display_name || "Traveler")}${isYou ? " (You)" : ""}</strong><small>${esc(meta.label)}</small></span>${controls}</div>`;
+            ? `<button type="button" class="icon-button collab-member__manage" data-action="open-member-actions" data-id="${esc(member.user_id)}" aria-label="Manage access for ${esc(member.display_name || "traveler")}">${icon("edit", 20)}</button>`
+            : `<span class="collab-member__trailing" aria-hidden="true"></span>`;
+        return `<article class="collab-member">${PastelIcon(meta.icon, collabRoleTone(member.role), 22, "collab-member__icon")}<span class="ds-flat-row__copy collab-member__text"><strong>${esc(member.display_name || "Traveler")}${isYou ? " (You)" : ""}</strong><small>${esc(meta.label)}</small></span>${manageButton}</article>`;
       })
       .join("");
     const pending = state.invites.filter((invite) => String(invite.status).toLowerCase() === "invited");
@@ -7321,20 +7336,20 @@
         const meta = roleMeta(invite.role);
         const who = invite.invited_email || "Anyone with the link";
         const expires = invite.expires_at ? `expires ${esc(formatDateOnly(invite.expires_at))}` : "no expiry";
-        return `<div class="collab-invite"><span class="collab-invite__icon">${icon("invite", 20)}</span><span class="collab-invite__text"><strong>${esc(who)}</strong><small>${esc(meta.label)} · pending · ${expires}</small></span><button type="button" class="icon-button" data-action="invite-revoke" data-id="${esc(invite.id)}" aria-label="Revoke invitation">${icon("close", 18)}</button></div>`;
+        return `<article class="collab-invite">${PastelIcon("invite", "transfer", 20, "collab-invite__icon")}<span class="ds-flat-row__copy collab-invite__text"><strong>${esc(who)}</strong><small>${esc(meta.label)} · pending · ${expires}</small></span><button type="button" class="icon-button collab-invite__revoke" data-action="invite-revoke" data-id="${esc(invite.id)}" aria-label="Revoke invitation">${icon("close", 18)}</button></article>`;
       })
       .join("");
     const inviteBtn = state.sharing?.enabled && manage
-      ? `<button type="button" class="mobile-primary-action collab-invite-cta" data-action="open-share">${icon("invite", 18)} Invite people</button>`
+      ? `<button type="button" class="ds-primary-button collab-invite-cta" data-action="open-share">${icon("invite", 18)} Invite people</button>`
       : "";
     const inviteContent = state.inviteLoadError
       ? `<div role="alert"><p class="collab-note">Pending invitations couldn’t be loaded.</p><button type="button" class="collab-chip" data-action="reload-collaboration">Try again</button></div>`
       : inviteRows || `<p class="collab-note">No pending invitations.</p>`;
     const invitesSection = manage
-      ? `<section class="collab-section"><h2 class="collab-section__title">Pending invitations</h2>${inviteContent}</section>`
+      ? `<section class="collab-section">${SectionHeader("Pending invitations")}${inviteContent}</section>`
       : "";
     const leaveBtn = state.sharing?.role && state.sharing.role !== "owner"
-      ? `<button type="button" class="mobile-secondary-action collab-leave" data-action="leave-trip">Leave this trip</button>`
+      ? `<button type="button" class="ds-secondary-button collab-leave" data-action="leave-trip">Leave this trip</button>`
       : "";
     const intro = manage
       ? `Invite people to view or edit <strong>${esc(sub)}</strong>. You stay the owner and can change roles or remove people at any time.`
@@ -7344,48 +7359,61 @@
     const cap = state.sharing?.maxMembers ? `<p class="collab-note">Up to ${esc(state.sharing.maxMembers)} people per trip.</p>` : "";
     return collabScaffold(
       sub,
-      `<header class="collab-hero"><span class="collab-hero__icon">${icon("users", 30)}</span><span class="collab-hero__eyebrow">Shared planning</span><h1>One trip.<br>Everyone in sync.</h1><p>${intro}</p></header>${collabBenefits()}${inviteBtn}<section class="collab-section"><h2 class="collab-section__title">People on this trip</h2><div class="collab-members">${memberRows || `<p class="collab-note">Just you so far. Invite someone when you’re ready.</p>`}</div>${cap}</section>${invitesSection}${leaveBtn}`,
+      `${collabHero(sub, intro)}${collabBenefits()}${inviteBtn}<section class="collab-section">${SectionHeader("People on this trip")}<div class="ds-flat-list collab-members">${memberRows || `<p class="collab-note">Just you so far. Invite someone when you’re ready.</p>`}</div>${cap}</section>${invitesSection}${leaveBtn}`,
+    );
+  }
+  function collabMemberSheet() {
+    const member = state.members.find((item) => String(item.user_id) === String(state.memberMenu));
+    if (!member || !canManageSharing() || String(member.role).toLowerCase() === "owner")
+      return bottomSheet("member-actions", "Manage access", `<p class="sheet-note">This person’s access can’t be changed from here.</p>`);
+    const displayName = member.display_name || "Traveler";
+    const nextRole = String(member.role).toLowerCase() === "editor" ? "viewer" : "editor";
+    const nextMeta = roleMeta(nextRole);
+    return bottomSheet(
+      "member-actions",
+      `Manage ${displayName}`,
+      `<p class="sheet-context">${esc(roleMeta(member.role).label)} access to ${esc(state.trip?.title || "this trip")}</p><div class="sheet-action-list">${sheetActionRow("member-role", nextMeta.icon, nextRole === "viewer" ? "Make view only" : "Make editor", ` data-id="${esc(member.user_id)}" data-role="${nextRole}"`, nextRole === "viewer" ? "They can see the plan but can’t change it." : "They can add and update the trip.")}${sheetActionRow("member-transfer", "owner", "Make owner", ` data-id="${esc(member.user_id)}" data-name="${esc(displayName)}"`, "You’ll become an editor and lose sharing controls.")}</div><div class="sheet-action-list sheet-action-list--danger">${sheetActionRow("member-remove", "trash", "Remove from trip", ` data-id="${esc(member.user_id)}" data-name="${esc(displayName)}"`, "They’ll no longer have access to this trip.", true)}</div>`,
     );
   }
   function shareSheet() {
     if (!state.trip) return "";
     const role = state.shareRole === "viewer" ? "viewer" : "editor";
-    const seg = (value, label, sub) =>
-      `<button type="button" class="share-role${role === value ? " is-active" : ""}" data-action="share-role" data-role="${value}" aria-pressed="${role === value}">${icon(roleMeta(value).icon, 20)}<span><strong>${esc(label)}</strong><small>${esc(sub)}</small></span></button>`;
+    const seg = (value, label, sub, tone) =>
+      `<button type="button" class="share-role${role === value ? " is-active" : ""}" data-action="share-role" data-role="${value}" aria-pressed="${role === value}">${PastelIcon(roleMeta(value).icon, tone, 20, "share-role__icon")}<span class="share-role__copy"><strong>${esc(label)}</strong><small>${esc(sub)}</small></span><span class="share-role__indicator" aria-hidden="true">${role === value ? icon("check", 18) : ""}</span></button>`;
     const invite = state.shareInvite;
     const linkBlock = invite?.inviteUrl
-      ? `<div class="share-link" role="group" aria-label="Invitation link"><p class="share-link__label">${esc(roleMeta(invite.role).label)} link ready${invite.expiresAt ? ` · expires ${esc(formatDateOnly(invite.expiresAt))}` : ""}</p><div class="share-link__url">${esc(invite.inviteUrl)}</div><div class="share-link__actions"><button type="button" class="mobile-primary-action" data-action="share-invite-link">${icon("share", 18)} Share link</button><button type="button" class="mobile-secondary-action" data-action="copy-invite-link">${icon("copy", 18)} Copy link</button></div></div>`
+      ? `<div class="share-link" role="group" aria-label="Invitation link"><p class="share-link__label">${esc(roleMeta(invite.role).label)} link ready${invite.expiresAt ? ` · expires ${esc(formatDateOnly(invite.expiresAt))}` : ""}</p><div class="share-link__url" title="${esc(invite.inviteUrl)}">${esc(invite.inviteUrl)}</div><div class="share-link__actions"><button type="button" class="ds-primary-button" data-action="share-invite-link">${icon("share", 18)} Share link</button><button type="button" class="ds-secondary-button" data-action="copy-invite-link">${icon("copy", 18)} Copy link</button></div></div>`
       : "";
     const createLabel = invite?.inviteUrl ? "Create another link" : "Create invitation link";
     return bottomSheet(
       "share",
       "Invite to this trip",
-      `<p class="sheet-note">Anyone you invite signs in with their own free account to join. The link works once and you can revoke it anytime.</p><div class="share-roles">${seg("editor", "Can edit", "Add and change bookings")}${seg("viewer", "View only", "See the trip, can’t change it")}</div>${linkBlock}<button type="button" class="mobile-${invite?.inviteUrl ? "secondary" : "primary"}-action share-create" data-action="create-invite"${state.shareBusy ? " disabled" : ""}>${icon("invite", 18)} ${state.shareBusy ? "Creating…" : esc(createLabel)}</button>`,
+      `<p class="sheet-note">Anyone you invite signs in with their own free account to join. The link works once and you can revoke it anytime.</p><section class="share-role-picker" aria-labelledby="share-role-title"><h3 id="share-role-title">Choose access</h3><div class="share-roles">${seg("editor", "Can edit", "Add and change bookings", "stay")}${seg("viewer", "View only", "See the trip, can’t change it", "neutral")}</div></section>${linkBlock}<button type="button" class="ds-${invite?.inviteUrl ? "secondary" : "primary"}-button share-create" data-action="create-invite"${state.shareBusy ? " disabled" : ""}>${icon("invite", 18)} ${state.shareBusy ? "Creating…" : esc(createLabel)}</button>`,
     );
   }
   function joinScreen() {
     const token = state.selectedId || state.joinToken || "";
     if (!token)
-      return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("invite", 32)}</span><h1>Invitation link incomplete</h1><p>Open the full invitation link you were sent to join a trip.</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
+      return focusedTaskPage("Join trip", EmptyState("Invitation link incomplete", "Open the full invitation link you were sent to join a trip.", "invite", "join-home", "Go to my trips"), "join-screen");
     if (state.joinCheckedToken !== token || (state.joinLoading && !state.joinPreview))
-      return focusedTaskPage("Join trip", `${thinkingPanel("Checking your invitation…")}`, "join-screen");
+      return focusedTaskPage("Join trip", LoadingState("Checking your invitation…"), "join-screen");
     if (state.joinError && !state.joinPreview)
-      return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("warning", 32)}</span><h1>Invitation unavailable</h1><p>${esc(state.joinError)}</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
+      return focusedTaskPage("Join trip", ErrorState("Invitation unavailable", state.joinError, "join-home", "Go to my trips"), "join-screen");
     const preview = state.joinPreview || {};
     const roleLabel = roleMeta(preview.role).label;
     const title = preview.tripTitle || "a trip";
     if (preview.sharingEnabled === false)
-      return focusedTaskPage("Join trip", `<section class="collab-empty"><span class="collab-empty__icon">${icon("invite", 32)}</span><h1>Invitations are paused</h1><p>Trip sharing isn’t available right now. Please ask the trip owner to send a new link later.</p><button type="button" class="mobile-secondary-action" data-action="join-home">Go to my trips</button></section>`, "join-screen");
-    const hero = `<section class="join-hero"><span class="collab-empty__icon">${icon("invite", 34)}</span><h1>You’re invited to<br><strong>${esc(title)}</strong></h1><p>Join as <strong>${esc(roleLabel.toLowerCase())}</strong>. Collaboration is free.</p></section>`;
+      return focusedTaskPage("Join trip", EmptyState("Invitations are paused", "Trip sharing isn’t available right now. Please ask the trip owner to send a new link later.", "invite", "join-home", "Go to my trips"), "join-screen");
+    const hero = `<section class="ds-hero-summary ds-hero-summary--activity join-hero"><span class="ds-hero-summary__eyebrow">Trip invitation</span><h1>Join ${esc(title)}</h1><p>Join as <strong>${esc(roleLabel.toLowerCase())}</strong>. Collaboration is free.</p></section>`;
     if (!isSignedIn())
       return focusedTaskPage(
         "Join trip",
-        `${hero}<section class="join-signin"><p>Sign in with your free account to accept this invitation.</p><div id="google-signin-button" class="google-signin-button"></div><p class="signin-error" role="alert" hidden></p><p class="collab-note">We only use your Google account to sign you in. Your invitation is kept until you finish.</p></section>`,
+        `${hero}<section class="join-signin"><h2>Sign in to join</h2><p>Sign in with your free account to accept this invitation.</p><div id="google-signin-button" class="google-signin-button"></div><p class="signin-error" role="alert" hidden></p><p class="collab-note">We only use your Google account to sign you in. Your invitation is kept until you finish.</p></section>`,
         "join-screen",
       );
     return focusedTaskPage(
       "Join trip",
-      `${hero}<section class="join-accept"><button type="button" class="mobile-primary-action" data-action="join-accept"${state.joinLoading ? " disabled" : ""}>${state.joinLoading ? "Joining…" : "Accept invitation"}</button><button type="button" class="mobile-secondary-action" data-action="join-home">Not now</button></section>`,
+      `${hero}<section class="join-accept"><p>You’ll get access to this shared trip on your own account.</p><button type="button" class="ds-primary-button" data-action="join-accept"${state.joinLoading ? " disabled" : ""}>${state.joinLoading ? "Joining…" : "Accept invitation"}</button><button type="button" class="ds-secondary-button" data-action="join-home">Not now</button></section>`,
       "join-screen",
     );
   }
@@ -8343,6 +8371,7 @@
     if (state.sheet === "trip-setup-ready") html += tripSetupReadyScreen();
     if (state.sheet === "booking-email-trip") html += bookingEmailTripSheet();
     if (state.sheet === "share") html += shareSheet();
+    if (state.sheet === "member-actions") html += collabMemberSheet();
     if (state.sheet === "currency-picker") html += currencyPickerSheet();
     if (state.sheet === "collection-stop") html += collectionStopSheet();
     if (state.sheet === "idea") html += ideaSheet();
@@ -8552,6 +8581,7 @@
         state.dateRange = null;
         state.tripSetupPreview = null;
         state.moveBooking = null;
+        state.memberMenu = null;
         state.currencyPickerField = null;
         render();
         restoreSheetFocus();
@@ -8580,6 +8610,7 @@
     }
     state.sheet = null;
     state.dateRange = null;
+    state.memberMenu = null;
     restoreSheetFocus();
   }
   function setupSheet() {
@@ -10389,6 +10420,10 @@
         state.shareRole = state.shareRole === "viewer" ? "viewer" : "editor";
         openSheet("share", target);
         break;
+      case "open-member-actions":
+        state.memberMenu = target.dataset.id || null;
+        openSheet("member-actions", target);
+        break;
       case "share-role":
         state.shareRole = target.dataset.role === "viewer" ? "viewer" : "editor";
         render();
@@ -10406,12 +10441,24 @@
         await revokeInvite(target.dataset.id);
         break;
       case "member-role":
+        state.memberMenu = null;
+        state.sheet = null;
+        render();
+        restoreSheetFocus();
         await updateMemberRole(target.dataset.id, target.dataset.role);
         break;
       case "member-remove":
+        state.memberMenu = null;
+        state.sheet = null;
+        render();
+        restoreSheetFocus();
         await removeMember(target.dataset.id, target.dataset.name);
         break;
       case "member-transfer":
+        state.memberMenu = null;
+        state.sheet = null;
+        render();
+        restoreSheetFocus();
         await transferOwnership(target.dataset.id, target.dataset.name);
         break;
       case "leave-trip":

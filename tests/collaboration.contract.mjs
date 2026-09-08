@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 const read=p=>readFileSync(p,'utf8'),assert=(v,m)=>{if(!v)throw new Error(`Collaboration contract failed: ${m}`)};
-const sharing=read('apps/worker/src/routes/sharing.ts'),access=read('apps/worker/src/access.ts'),trips=read('apps/worker/src/routes/trips.ts'),readiness=read('apps/worker/src/routes/readiness.ts'),worker=read('apps/worker/src/index.ts'),members=read('migrations/0002_trips.sql'),invites=read('migrations/0012_accounts_sharing.sql'),wrangler=read('wrangler.jsonc'),app=read('public/mobile-app.js');
+const sharing=read('apps/worker/src/routes/sharing.ts'),access=read('apps/worker/src/access.ts'),trips=read('apps/worker/src/routes/trips.ts'),readiness=read('apps/worker/src/routes/readiness.ts'),worker=read('apps/worker/src/index.ts'),members=read('migrations/0002_trips.sql'),invites=read('migrations/0012_accounts_sharing.sql'),wrangler=read('wrangler.jsonc'),app=read('public/mobile-app.js'),css=read('public/mobile-app.css');
 
 // --- Endpoints wired ---
 assert(worker.includes("from './routes/sharing.ts'")&&['sharingStatus','previewInvite','listMembers','listInvites','createInvite','revokeInvite','acceptInvite','updateMemberRole','removeMember','leaveTrip','transferOwnership'].every(fn=>worker.includes(fn)),'sharing routes not imported/wired');
@@ -59,6 +59,9 @@ assert(app.includes('!["tour", "join"].includes(state.screen)'),'direct invitati
 assert(app.includes('Pending invitations couldn’t be loaded.')&&app.includes('state.inviteLoadError'),'pending-invitation errors must not render as an empty list');
 assert(app.includes("never trusts or sends 'owner' as an assignable role"),'frontend owner-escalation guard comment missing');
 for(const copy of ['Why plan together?','Build one plan','Keep everyone aligned','You stay in control','One trip.<br>Everyone in sync.'])assert(app.includes(copy),`informative collaboration UX missing: ${copy}`);
+assert(app.includes('class="ds-hero-summary ds-hero-summary--activity collab-hero"')&&app.includes('class="ds-flat-list collab-members"'),'Plan Together must use the shared hero and flat-list primitives');
+assert(app.includes('function collabMemberSheet()')&&app.includes('data-action="open-member-actions"')&&['member-role','member-transfer','member-remove'].every(action=>app.includes(`sheetActionRow("${action}"`)),'member management must retain every role and removal action inside the compact sheet');
+for(const selector of ['.collaboration-screen .focused-page.collab-page','.bottom-sheet--share .share-role','.bottom-sheet--share .share-link','.join-screen .join-hero'])assert(css.includes(selector),`Plan Together surface is missing shared compact styling: ${selector}`);
 assert(app.includes('POST_AUTH_DESTINATION_KEY')&&app.includes('rememberPostAuthDestination("collaboration", state.trip?.id || null)'),'Plan Together sign-in must remember the intended destination');
 assert((app.match(/await resumePostAuthDestination\(\)/g)||[]).length>=2,'popup and redirect Google sign-in must resume Plan Together');
 assert(app.includes('Date.now() - Number(destination.savedAt) <= 30 * 60 * 1000'),'post-auth destination must expire instead of becoming a stale redirect');
