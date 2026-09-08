@@ -3615,17 +3615,17 @@ html .ready-content .download-action{padding:16px 0 4px}
 .planning-add-card__copy strong{font-size:15px;font-weight:600}
 .planning-add-card__copy small{font-size:12px;color:var(--muted);line-height:1.35}
 
-/* Neighborhood: quiet overview and a continuous numbered route. */
-.collection-hero{padding:4px 0 18px;border-bottom:1px solid var(--line)}
-.collection-hero__eyebrow{font-size:11px;letter-spacing:.12em;font-weight:var(--weight-semibold);color:var(--accent)}
-.collection-hero h1{font-size:30px;line-height:1.13;margin:10px 0 14px;color:var(--ink);overflow-wrap:anywhere}
-.collection-hero__meta{display:flex;align-items:flex-start;gap:8px;margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+/* Neighborhood: the same intro, rows and color tokens used by Day Plan. */
+.collection-hero{padding:0 0 22px;border:0}
+.collection-hero__eyebrow{display:block;font-size:var(--type-label);letter-spacing:.1em;font-weight:var(--weight-semibold);color:var(--accent);text-transform:uppercase}
+.collection-hero h1{font-size:var(--type-screen);line-height:1.08;letter-spacing:-.035em;margin:7px 0 10px;color:var(--ink);overflow-wrap:anywhere}
+.collection-hero__meta{display:flex;align-items:flex-start;gap:8px;margin:0;color:var(--muted);font-size:var(--type-meta);line-height:1.45}
 .collection-hero__meta svg{flex-shrink:0;margin-top:2px}
-.collection-hero__notes{color:var(--muted);font-size:14px;line-height:1.5;margin:14px 0 0;overflow-wrap:anywhere}
-.collection-stops{margin-top:18px}
+.collection-hero__notes{color:var(--muted);font-size:var(--type-meta);line-height:1.45;margin:12px 0 0;overflow-wrap:anywhere}
+.collection-page>.collection-stops{margin-top:25px}
 .collection-stops__heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.collection-stops__heading h2{display:flex;align-items:center;gap:8px;font-size:16px;margin:0}
-.collection-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:7px;background:var(--surface);color:var(--accent);font-size:12px}
+.collection-stops__heading h2{display:flex;align-items:center;gap:8px;margin:0;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.06em;text-transform:uppercase}
+.collection-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--surface);color:var(--accent);font-size:11px;letter-spacing:0}
 .collection-progress{color:var(--muted);font-size:12px}
 .collection-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 20px;color:var(--muted);margin:0 0 16px}
 .collection-empty__badge{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:var(--surface);color:var(--accent);margin-bottom:4px}
@@ -3638,7 +3638,7 @@ button.mini-stop__hit:active{background:var(--surface)}
 .mini-stop__rail{position:relative;display:flex;justify-content:center;align-self:stretch;padding-top:2px}
 .mini-stop__rail::before{content:"";position:absolute;top:34px;bottom:-12px;left:50%;width:2px;transform:translateX(-50%);background:var(--accent);opacity:.24}
 .mini-stop:last-child .mini-stop__rail::before{display:none}
-.mini-stop__dot{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;box-sizing:border-box;background:var(--paper);border:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:var(--weight-semibold);font-variant-numeric:tabular-nums}
+.mini-stop__dot{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;box-sizing:border-box;background:var(--activity-soft);border:0;color:var(--accent);font-size:11px;font-weight:var(--weight-semibold);font-variant-numeric:tabular-nums}
 .mini-stop__content{display:flex;flex-direction:column;min-width:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
 .mini-stop:last-child .mini-stop__content{border-bottom:0;padding-bottom:0}
 .mini-stop:last-child .mini-stop__hit{padding-bottom:0;min-height:64px}
@@ -3651,12 +3651,17 @@ button.mini-stop__hit:active{background:var(--surface)}
 .mini-stop__more{display:flex;align-self:center;color:var(--muted);padding-bottom:8px}
 .mini-stop--next .mini-stop__dot{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .mini-stop--next .mini-stop__status{padding:0 7px;border-radius:5px;background:var(--surface);color:var(--accent);font-weight:var(--weight-semibold)}
-.mini-stop--future .mini-stop__dot{background:var(--surface);border-color:var(--accent);color:var(--accent)}
-.mini-stop--past .mini-stop__dot{background:var(--blue-soft);border-color:var(--blue-soft);color:var(--ink)}
+.mini-stop--future .mini-stop__dot{background:var(--activity-soft);border-color:transparent;color:var(--accent)}
+.mini-stop--past .mini-stop__dot{background:var(--green-soft);border-color:transparent;color:var(--green)}
 .mini-stop--past .mini-stop__name{color:var(--muted)}
-.mini-stop--skipped .mini-stop__dot{background:transparent;border-style:dashed}
+.mini-stop--skipped .mini-stop__dot{background:var(--red-soft);border:0;color:var(--red)}
 .mini-stop--skipped .mini-stop__name{color:var(--muted);text-decoration:line-through}
-.collection-page .collection-stops .primary-cta{width:100%;max-width:none;min-height:48px;margin:0;border-radius:14px;box-shadow:none;font-size:16px}
+.collection-page .focused-page>.primary-cta{display:grid;grid-template-columns:36px minmax(0,1fr) 20px;align-items:center;gap:10px;width:100%;max-width:none;min-height:64px;margin:0;padding:8px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card);color:var(--ink);box-shadow:none;text-align:left}
+.collection-page .focused-page>.primary-cta:active{background:var(--surface);transform:scale(.99)}
+.collection-page .focused-page>.primary-cta .cta-left{display:contents}
+.collection-page .focused-page>.primary-cta .cta-left>.app-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--activity-soft);color:var(--accent)}
+.collection-page .focused-page>.primary-cta .cta-left>span{font-size:15px;font-weight:var(--weight-semibold)}
+.collection-page .focused-page>.primary-cta>.app-icon{justify-self:end;color:var(--muted)}
 
 /* Plan-your-days cards on the Add screen + form intros */
 .manual-add-card--plan{background:var(--surface)}
