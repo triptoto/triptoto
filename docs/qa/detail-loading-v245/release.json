@@ -1,0 +1,75 @@
+{
+  "url": "https://tripto.to",
+  "version": "ee1b87a9-4bac-4610-8ec1-026658d5a31d",
+  "previous_version": "2c5ac89c-8e0d-4f2d-b031-e86271747634",
+  "commit": "d3e4db4fb69cb2c2caece32183a7b85af78361a9",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v245-detail-loading",
+  "asset_version": "flat-design-system-v167",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788875122787
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "8879b34090c7242959c6f475cbbf4b62e324e7ebb986558e3dd8dd9fade1cf74",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "6bd839147ba7a191c55976a15c7767fcfb41ca41cf60c79b751c3344d67f9a95",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "bb384cd9667faa31fae081fb9320107634f981535b0680dae13b0bf530b973e3",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "bb09340f84c92f4c99e63896eaa7656b735b2b5633a0e7ec0d07fc4d54b5d0a7",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "1689c3fd8cadffc0e8fb9fc90b3b80700d28a215a7286c07803c0e1ec3416aab",
+      "matches_local": true
+    }
+  },
+  "validate_v2": "PASS",
+  "dry_run": "PASS",
+  "local_browser": {
+    "viewport": [
+      390,
+      844
+    ],
+    "previous_build_reproduced": true,
+    "corrected_full_cache_unavailable_observations": 0,
+    "corrected_partial_cache_unavailable_observations": 0,
+    "place_menu_edit_back": "PASS",
+    "partial_cache_eventually_opens_plan": true,
+    "final_build_partial_cache_repeat": "PASS"
+  },
+  "public_browser": {
+    "path": "/trips",
+    "shell_url_version_observed": "flat-design-system-v167",
+    "console_errors": [],
+    "horizontal_overflow": false
+  },
+  "physical_iphone_tested": false,
+  "production_data_modified": false
+}
