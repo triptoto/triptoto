@@ -4400,3 +4400,10 @@ html body .trip-create-screen .trip-create-destination:not(.is-fullscreen) .form
 html body .trip-create-screen .trip-create-details .date-range-trigger{height:auto;min-height:68px;padding-block:12px;gap:16px}
 html body .trip-create-screen .trip-create-fields{gap:16px}
 html body .trip-create-screen .trip-create-head__sub:empty{display:none}
+
+/* Fullscreen destination search tracks Safari's visible area above the keyboard. */
+html.place-search-open body .trip-create-screen>.app-bar,
+html.place-search-open body .trip-create-screen .form-page-actions{visibility:hidden;pointer-events:none}
+html.place-search-open body .trip-create-destination.is-fullscreen{top:var(--app-viewport-offset,0px);height:var(--app-viewport-height,100svh);max-height:var(--app-viewport-height,100svh);padding-bottom:max(12px,env(safe-area-inset-bottom));box-sizing:border-box}
+html.place-search-open body .trip-create-destination.is-fullscreen .trip-create-destination__head{flex-shrink:0}
+html.place-search-open body .trip-create-destination.is-fullscreen .place-suggestions{min-height:0;overscroll-behavior:contain}

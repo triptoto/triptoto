@@ -6366,7 +6366,7 @@
         closeSearchButton?.setAttribute("aria-hidden", "true");
         closeSearchButton?.setAttribute("tabindex", "-1");
       }
-      [...(form.closest(".focused-task") || form).querySelectorAll(".app-bar,.mobile-alert,.trip-create-head,.trip-create-fields>*")]
+      [...(form.closest(".focused-task") || form).querySelectorAll(".app-bar,.mobile-alert,.form-page-actions,.trip-create-head,.trip-create-fields>*")]
         .filter((element) => element !== fullScreenPanel && !element.contains(fullScreenPanel))
         .forEach((element) => {
           if (open) {
