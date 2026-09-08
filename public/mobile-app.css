@@ -3623,11 +3623,16 @@ html .ready-content .download-action{padding:16px 0 4px}
 .collection-hero__meta{display:flex;align-items:flex-start;gap:8px;margin:0;color:var(--muted);font-size:var(--type-meta);line-height:1.45}
 .collection-hero__meta svg{flex-shrink:0;margin-top:2px}
 .collection-hero__notes{color:var(--muted);font-size:var(--type-meta);line-height:1.45;margin:12px 0 0;overflow-wrap:anywhere}
+/* Keep the plan context in place. Only the numbered stop list moves, so a long
+   neighborhood never hides its title, date or progress while it is browsed. */
+html body .phone-app > .collection-page > main.focused-page{display:flex;flex-direction:column;gap:0;min-height:0;padding:16px 16px 0;overflow:hidden}
 .collection-page>.collection-stops{margin-top:25px}
+.collection-page>.focused-page>.collection-stops{display:flex;flex:1 1 auto;flex-direction:column;min-height:0}
 .collection-stops__heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .collection-stops__heading h2{display:flex;align-items:center;gap:8px;margin:0;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.06em;text-transform:uppercase}
 .collection-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--surface);color:var(--accent);font-size:11px;letter-spacing:0}
 .collection-progress{color:var(--muted);font-size:12px}
+.collection-page .collection-timeline-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-block:8px 16px}
 .collection-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 20px;color:var(--muted);margin:0 0 16px}
 .collection-empty__badge{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:var(--surface);color:var(--accent);margin-bottom:4px}
 .collection-empty strong{color:var(--ink);font-size:16px}

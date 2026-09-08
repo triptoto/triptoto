@@ -75,6 +75,9 @@ const collectionScreen=app.slice(app.indexOf('function collectionScreen()'),app.
 assert(collectionScreen.includes('class="icon-button collection-header-add"')&&collectionScreen.includes('data-action="collection-add-place"'),'Add place must be a labelled header action');
 assert(!collectionScreen.includes('primaryCta(`Add ${cfg.stop}`'),'collection detail must not repeat Add place as a large body row');
 assert(css.includes('.collection-page .app-bar .collection-header-add{color:var(--accent)}'),'collection header add action must use the shared accent');
+assert(collectionScreen.includes('class="collection-timeline-scroll"')&&collectionScreen.includes('aria-label="Places timeline"'),'collection stop list must have its own labelled scrolling region');
+assert(/html body \.phone-app > \.collection-page > main\.focused-page\{[^}]*overflow:hidden/.test(css),'collection page shell must keep its context fixed while the list scrolls');
+assert(/\.collection-page \.collection-timeline-scroll\{[^}]*flex:1 1 auto[^}]*overflow-y:auto/.test(css),'only the collection timeline list must own vertical scrolling');
 
 // --- Client routes: planning + collection + forms, forms matched first ---
 assert(clientRoutes.includes('planning: "/planning"')&&clientRoutes.includes('collection: "/collections"'),'planning/collection routes missing');
