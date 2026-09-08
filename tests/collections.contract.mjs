@@ -45,6 +45,8 @@ for(const retired of ['day_trip:','walking_route:','places_to_visit:','food_and_
 assert(app.includes('const TIMELINE_COLLECTION_TYPES = new Set(["neighborhood"])'),'only neighborhood is timeline-capable');
 assert(app.includes('function isTimelineVisibleItem')&&app.includes('if (!isTimelineVisibleItem(item)) continue;'),'main timeline must hide wishlists and unscheduled collections');
 assert(app.includes('function collectionSummary')&&app.includes('places')&&app.includes('.join(" · ")'),'parent summary must be computed from children (N places · start–end)');
+assert(/function collectionForItem\(id\)[\s\S]{0,260}trip_item_id[\s\S]{0,260}c\.id/.test(app),'collection lookup must accept both collection id and trip item id');
+assert(/function collectionStopsFor\(id\)[\s\S]{0,500}collection_item_id/.test(app),'stop lookup must resolve the collection id aliases');
 // Mini-timeline is dots-only: no category icons, no card class, no shadow.
 assert(app.includes('class="mini-stop__dot"')&&app.includes('mini-stop__time')&&app.includes('mini-stop__name')&&app.includes('mini-stop__rail'),'mini-timeline must render time · dot · name');
 assert(!app.includes('mini-stop__icon'),'mini-timeline stops must not render category icons');

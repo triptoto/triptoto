@@ -4825,8 +4825,18 @@
   const PLACE_TYPE_OPTIONS = [["", "No type"], ["cafe", "Cafe"], ["restaurant", "Restaurant"], ["attraction", "Attraction"], ["museum", "Museum"], ["shop", "Shop"], ["market", "Market"], ["park", "Park"], ["activity", "Activity"], ["viewpoint", "Viewpoint"], ["monument", "Monument"], ["street", "Street"], ["other", "Other"]];
   const STOP_STATE_LABEL = { next: "Next", future: "Upcoming", past: "Visited", skipped: "Skipped" };
   function collectionConfig(type) { return COLLECTION_TYPE_CONFIG[String(type || "")] || null; }
-  function collectionForItem(id) { return (state.collections || []).find((c) => String(c.trip_item_id || c.id) === String(id)) || null; }
-  function collectionStopsFor(id) { return (state.collectionStops || []).filter((s) => String(s.collection_item_id) === String(id) && !s.deleted_at); }
+  function collectionForItem(id) {
+    const key = String(id || "");
+    return (state.collections || []).find((c) => String(c.trip_item_id || "") === key || String(c.id || "") === key) || null;
+  }
+  function collectionStopsFor(id) {
+    const collection = collectionForItem(id), keys = new Set([String(id || "")]);
+    if (collection) {
+      keys.add(String(collection.id || ""));
+      keys.add(String(collection.trip_item_id || ""));
+    }
+    return (state.collectionStops || []).filter((s) => keys.has(String(s.collection_item_id || "")) && !s.deleted_at);
+  }
   function isCollectionItem(item) { return Boolean(collectionForItem(itemId(item))); }
   // A collection is shown on the MAIN timeline only when it is a timeline-capable
   // type AND it has been scheduled (starts_at_utc set). Wishlists and any
