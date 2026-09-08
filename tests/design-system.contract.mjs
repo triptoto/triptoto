@@ -65,7 +65,11 @@ assert.ok(js.includes('collection-schedule__helper'), 'neighborhood schedule exp
 assert.match(css, /collection-form-screen[^{]*collection-schedule\{[^}]*grid-column:1\/-1/);
 assert.ok(js.includes('function sheetActionRow('), 'item action sheets must share one row primitive');
 assert.ok(!js.includes('class="stop-action'), 'legacy nested-card action rows must not survive in item sheets');
-assert.match(css, /bottom-sheet[^{]*sheet-action-row\{[^}]*grid-template-columns:40px minmax\(0,1fr\) 20px!important/);
+assert.match(css, /bottom-sheet[^{]*sheet-action-row\{[^}]*grid-template-columns:36px minmax\(0,1fr\) 20px!important/);
+assert.match(css, /bottom-sheet[^{]*sheet-action-list\{[^}]*gap:var\(--space-1\)[^}]*border:0!important/);
+assert.match(css, /bottom-sheet[^{]*sheet-option\.sheet-action-row\{[^}]*border-bottom:0!important/);
+assert.match(css, /bottom-sheet[^{]*sheet-options-group:not\(\.manual-v2-options\)>\.sheet-option:not\(\.sheet-action-row\)[^{]*\{[^}]*border-bottom:0!important/);
+assert.match(css, /bottom-sheet\{[^}]*max-height:min\(72dvh,580px\)[^}]*border:0/);
 assert.ok(js.includes('[["", "Choose a type"]'), 'an unset place type must read as a clear choice');
 assert.ok(js.includes('field("status", "Status", "", { type: "select", choices: statusChoices })'), 'place status must use the full-width shared control');
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*quick-primary-fields[^{]*\{[^}]*grid-template-columns:minmax\(0,1fr\)!important/);
