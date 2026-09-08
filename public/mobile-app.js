@@ -1052,7 +1052,10 @@
   function manageBookingSheet() {
     const menu = state.manageBooking;
     if (!menu) return "";
-    return bottomSheet("manage-booking", "Manage booking", `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="edit-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("edit", 22)}</span><span><strong>Edit</strong><small>Update the details of this booking</small></span>${icon("chevron", 22)}</button><button class="sheet-option" data-action="move-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("calendar", 22)}</span><span><strong>Move to another day</strong><small>Keep the times, change the day</small></span>${icon("chevron", 22)}</button><button class="sheet-option sheet-option--danger" data-action="delete-booking" data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"><span class="info-icon">${icon("trash", 22)}</span><span><strong>Delete</strong><small>Remove this booking from the trip</small></span>${icon("chevron", 22)}</button></div>`);
+    const attrs = ` data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"`;
+    const actions = `${sheetActionRow("edit-booking", "edit", "Edit", attrs, "Update the details of this booking")}${sheetActionRow("move-booking", "calendar", "Move to another day", attrs, "Keep the times, change the day")}`;
+    const destructive = sheetActionRow("delete-booking", "trash", "Delete", attrs, "Remove this booking from the trip", true);
+    return bottomSheet("manage-booking", "Manage booking", `${sheetActionList(actions)}${sheetActionList(destructive, { danger: true })}`);
   }
   function bookingAnchorDate(record) {
     const e = record.entity;
@@ -5404,26 +5407,10 @@
     const skipRow = status !== "skipped"
       ? opt("stop-status", "eye-off", "Skip this place", "Keep it, but grey it out", ` data-status="skipped"`)
       : opt("stop-status", "eye", "Un-skip", "Bring it back into the plan", ` data-status="planned"`);
-    const meta = stopSheetMeta(stop);
-    const body = `${meta}<div class="sheet-options-group sheet-action-list">${opt("edit-stop", "edit", "Edit place", "Name, time, address and notes")}${moveRows}${visitedRow}${skipRow}</div><div class="sheet-options-group sheet-action-list sheet-action-list--danger">${opt("delete-stop", "delete", "Delete place", "Remove from this plan", "", true)}</div>`;
+    // The row itself already carries time, type and status in the timeline.
+    // Keep this menu strictly action-focused so it opens as a compact sheet.
+    const body = `${sheetActionList(`${opt("edit-stop", "edit", "Edit place", "Name, time, address and notes")}${moveRows}${visitedRow}${skipRow}`)}${sheetActionList(opt("delete-stop", "delete", "Delete place", "Remove from this plan", "", true), { danger: true })}`;
     return bottomSheet("collection-stop", stop.title || "Place", body);
-  }
-
-  // A muted context line keeps the chosen place identifiable without turning
-  // the top of the sheet into a second card.
-  function stopSheetMeta(stop) {
-    const status = String(stop.status || "planned");
-    const bits = [];
-    if (stop.scheduled_time) bits.push(esc(String(stop.scheduled_time)));
-    const typeLabel = stop.place_type ? (PLACE_TYPE_OPTIONS.find(([v]) => v === String(stop.place_type))?.[1]) || "" : "";
-    if (typeLabel) bits.push(esc(typeLabel));
-    const statusChip = status === "visited"
-      ? `<span class="stop-meta__chip stop-meta__chip--done">${icon("check", 13)}Visited</span>`
-      : status === "skipped"
-        ? `<span class="stop-meta__chip stop-meta__chip--skip">Skipped</span>`
-        : "";
-    if (!bits.length && !statusChip) return "";
-    return `<p class="sheet-context">${bits.length ? `<span>${bits.join(" · ")}</span>` : ""}${statusChip}</p>`;
   }
 
   // Generic confirm dialog (reuses the discard-dialog visual language).
@@ -7101,14 +7088,20 @@
         "Address unavailable";
     return `<div class="phone-app"><section class="driver-screen"><header class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close">${icon("close", 26)}</button><strong>Show to Driver</strong><span aria-hidden="true"></span></header><main class="driver-main"><div class="driver-label">${icon("car", 24)} <span>Please drive to</span></div><section class="driver-pass" aria-labelledby="driver-destination-name"><span class="driver-pass__eyebrow">Destination</span><h1 class="driver-name" id="driver-destination-name">${esc(name)}</h1>${showLocalName ? `<p class="driver-local">${esc(localName)}</p>` : ""}<div class="driver-address">${icon("pin", 26)}<span><small>Address</small><strong>${esc(address)}</strong></span></div></section><p class="driver-hint">Show this screen to your driver. The destination is saved with your trip.</p></main><footer class="driver-cta">${primaryCta("Open directions", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</footer></section></div>`;
   }
-  // One action-row primitive for the menus that operate on an existing item.
-  // It keeps a real 40px leading target, a readable two-line copy column and a
-  // consistently aligned chevron, instead of each sheet inventing a card.
+  // One action-row primitive for every compact popup that performs a choice.
+  // One-line rows stay at least 48px; rows with explanatory copy stay 56px.
+  // This keeps touch targets, icon geometry and trailing affordances consistent.
   function sheetActionRow(action, iconName, label, attrs = "", sub = "", danger = false) {
     return `<button type="button" class="sheet-option sheet-action-row${danger ? " sheet-option--danger" : ""}" data-action="${esc(action)}"${attrs}><span class="info-icon">${icon(iconName, 20)}</span><span class="sheet-action-row__copy"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="sheet-action-row__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`;
   }
+  function sheetActionLink(iconName, label, sub, href, attrs = "") {
+    return `<a class="sheet-option sheet-action-row" href="${esc(href)}"${attrs}><span class="info-icon">${icon(iconName, 20)}</span><span class="sheet-action-row__copy"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="sheet-action-row__chev" aria-hidden="true">${icon("chevron", 18)}</span></a>`;
+  }
+  function sheetActionList(rows, { danger = false } = {}) {
+    return `<div class="sheet-options-group sheet-action-list${danger ? " sheet-action-list--danger" : ""}">${rows}</div>`;
+  }
   function bottomSheet(id, title, content) {
-    return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
+    return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet compact-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
   }
   function currencyPickerSheet() {
     const currency = initCurrency();
@@ -7172,10 +7165,11 @@
     return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Plan your trip</strong></div><button type="button" class="trip-setup-ready__create" data-action="complete-trip-setup">Create trip</button></header><main class="trip-setup-ready__main"><section class="trip-create-head trip-setup-ready__hero"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">Your journey</span><h1 id="trip-setup-ready-title">Bring your trip together</h1><div class="trip-create-head__sub"><p>Keep your bookings and travel details in one clear timeline.</p></div></div><div class="trip-plan-fields"><div class="trip-plan-field">${icon("location",22)}<span><small>Destination</small><strong>${esc(destination === "Your destination" ? "Not selected" : destination)}</strong></span></div><div class="trip-plan-field">${icon("calendar",22)}<span><small>Travel dates</small><strong>${esc(dates)}</strong></span></div></div></section><section class="trip-setup-ready__tools" aria-labelledby="trip-setup-extras-title"><h2 id="trip-setup-extras-title" class="trip-setup-ready__extras-title">Anything else you need?</h2>${tool("trip-setup-tool--flight","flight","Still haven't booked the flights?","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${tool("trip-setup-tool--stay","bed","Still looking for a place to stay?","Browse stays on Booking.com",bookingUrl,true,"trip-setup-stay-link")}${tool("trip-setup-tool--esim","sim","Need an eSIM?","Get connected before you land",routeUrl("esim"))}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost.</p></main></section>`;
   }
   function addSheet() {
+    const tripTitle = state.trip?.title || "your trip";
     return bottomSheet(
       "add",
       "What would you like to do?",
-      `<div class="sheet-options-group sheet-options-group--v2"><button class="sheet-option" data-action="open-add-booking"><span class="info-icon">${icon("plus",22)}</span><span><strong>Add Booking</strong><small>Add something to ${esc(state.trip?.title || "your trip")}</small></span>${icon("chevron",22)}</button><button class="sheet-option" data-action="create-trip"><span class="info-icon">${icon("plane",22)}</span><span><strong>Create New Trip</strong><small>Start planning another trip</small></span>${icon("chevron",22)}</button></div>`,
+      sheetActionList(`${sheetActionRow("open-add-booking", "plus", "Add Booking", "", `Add something to ${tripTitle}`)}${sheetActionRow("create-trip", "plane", "Create New Trip", "", "Start planning another trip")}`),
     );
   }
   function tripOptionsScreen() {
@@ -8193,7 +8187,8 @@
   }
   function manualBookingSheet() {
     const options = Object.entries(MANUAL_BOOKING_TYPES).filter(([type]) => !BOOKING_PICKER_HIDDEN.has(type));
-    return bottomSheet("manual-booking","ADD NEW BOOKING",`<div class="sheet-options-group manual-v2-options" data-manual-category-list>${options.map(([type,config])=>`<button type="button" class="sheet-option" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}"><span class="info-icon">${icon(config.icon,21)}</span><span><strong>${esc(config.label)}</strong></span>${icon("chevron",20)}</button>`).join("")}</div>`);
+    const rows = options.map(([type, config]) => sheetActionRow("add-type", config.icon, config.label, ` data-type="${esc(type)}" data-manual-label="${esc(config.label)}"`)).join("");
+    return bottomSheet("manual-booking", "Add new booking", `<div data-manual-category-list>${sheetActionList(rows)}</div>`);
   }
   function documentSheet() {
     const travelers = state.travelers
@@ -8216,20 +8211,14 @@
         String(trip.id) === String(state.trip?.id)
       );
     });
-    return bottomSheet(
-      "trip",
-      "Choose trip",
-      `<div class="sheet-options-group sheet-options-group--v2">${shown
-        .map(
-          (trip) =>
-            `<button class="sheet-option" data-action="select-trip" data-id="${esc(trip.id)}"><span class="info-icon">${icon("trips", 22)}</span><span><strong>${esc(trip.title)}</strong><small>${esc(formatTripDates(trip))}</small>${tripSharedBadge(trip)}</span></button>`,
-        )
-        .join("")}</div>`,
-    );
+    const rows = shown.map((trip) => sheetActionRow("select-trip", "trips", trip.title, ` data-id="${esc(trip.id)}"${String(trip.id) === String(state.trip?.id) ? ' aria-current="true"' : ""}`, formatTripDates(trip))).join("");
+    return bottomSheet("trip", "Choose trip", sheetActionList(rows));
   }
   function bookingEmailTripSheet() {
-    const email=state.bookingEmails.find((row)=>String(row.id)===String(state.bookingEmailSelectionId));
-    return bottomSheet("booking-email-trip","Choose trip",`<p class="sheet-note booking-email-trip-note">${esc(email?.subject||"Booking confirmation")}</p><div class="sheet-options-group">${state.trips.map((trip)=>`<button type="button" class="sheet-option" data-action="assign-booking-email" data-email-id="${esc(email?.id||"")}" data-trip-id="${esc(trip.id)}"><span class="info-icon">${icon("trips",21)}</span><span><strong>${esc(trip.title||"Untitled trip")}</strong><small>${esc(formatTripDates(trip))}</small></span>${icon("chevron",20,"chevron")}</button>`).join("")||`<p class="sheet-note">Create a trip before assigning this confirmation.</p><button type="button" class="mobile-primary-action" data-action="create-trip">Create trip</button>`}</div>`);
+    const email = state.bookingEmails.find((row) => String(row.id) === String(state.bookingEmailSelectionId));
+    const rows = state.trips.map((trip) => sheetActionRow("assign-booking-email", "trips", trip.title || "Untitled trip", ` data-email-id="${esc(email?.id || "")}" data-trip-id="${esc(trip.id)}"`, formatTripDates(trip))).join("");
+    const empty = `<p class="sheet-note">Create a trip before assigning this confirmation.</p><button type="button" class="mobile-primary-action" data-action="create-trip">Create trip</button>`;
+    return bottomSheet("booking-email-trip", "Choose trip", `<p class="sheet-note booking-email-trip-note">${esc(email?.subject || "Booking confirmation")}</p>${rows ? sheetActionList(rows) : empty}`);
   }
   function firstRunHowSheet() {
     const steps = [
@@ -8251,12 +8240,12 @@
   }
   function helpSheet() {
     const hasTrip = Boolean(state.trip && !PREVIEW_MODE);
-    const rowLink = (ic, title, sub, href) => `<a class="sheet-option" href="${href}"><span class="info-icon">${icon(ic, 21)}</span><span><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 20, "chevron")}</a>`;
-    const rowAct = (ic, title, sub, action) => `<button class="sheet-option" data-action="${action}"><span class="info-icon">${icon(ic, 21)}</span><span><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 20, "chevron")}</button>`;
+    const rowLink = (ic, title, sub, href) => sheetActionLink(ic, title, sub, href);
+    const rowAct = (ic, title, sub, action) => sheetActionRow(action, ic, title, "", sub);
     return bottomSheet(
       "help",
       "Help, privacy & terms",
-      `<div class="sheet-options-group sheet-options-group--v2">${rowAct("info", "How tripto.to works", "A quick tour of the basics", "open-first-run-how")}${rowAct("mail", "Booking email", "Forward confirmations to go@tripto.to", "booking-email-info")}${rowLink("shield", "Privacy Policy", "How your trip data is handled", "/privacy")}${rowLink("document", "Terms of Service", "The agreement for using tripto.to", "/terms")}${hasTrip ? rowAct("download", "Download support bundle", "Diagnostics for this trip — no private details", "export-support") : ""}</div><p class="sheet-note">tripto.to Product V2</p>`,
+      `${sheetActionList(`${rowAct("info", "How tripto.to works", "A quick tour of the basics", "open-first-run-how")}${rowAct("mail", "Booking email", "Forward confirmations to go@tripto.to", "booking-email-info")}${rowLink("shield", "Privacy Policy", "How your trip data is handled", "/privacy")}${rowLink("document", "Terms of Service", "The agreement for using tripto.to", "/terms")}${hasTrip ? rowAct("download", "Download support bundle", "Diagnostics for this trip — no private details", "export-support") : ""}`)}<p class="sheet-note">tripto.to Product V2</p>`,
     );
   }
 

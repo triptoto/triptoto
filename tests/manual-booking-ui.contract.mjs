@@ -121,10 +121,9 @@ assert(
   "category sheet must render from the shared category registry",
 );
 for (const token of [
-  "<button",
-  'data-action="add-type"',
+  'sheetActionRow("add-type"',
   "data-type=",
-  "sheet-option",
+  "sheetActionList(rows)",
 ]) {
   assert(manualSheet.includes(token), `manual category control missing ${token}`);
 }

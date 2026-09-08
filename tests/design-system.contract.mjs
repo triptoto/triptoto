@@ -64,12 +64,34 @@ assert.match(css, /flight-detail-screen[^{]*fd-row\{[^}]*min-height:60px!importa
 assert.ok(js.includes('collection-schedule__helper'), 'neighborhood schedule explanation must stay with the date field');
 assert.match(css, /collection-form-screen[^{]*collection-schedule\{[^}]*grid-column:1\/-1/);
 assert.ok(js.includes('function sheetActionRow('), 'item action sheets must share one row primitive');
+assert.ok(js.includes('function sheetActionLink('), 'popup links must use the shared action-row grammar');
+assert.ok(js.includes('function sheetActionList('), 'popup action groups must use the shared compact list primitive');
 assert.ok(!js.includes('class="stop-action'), 'legacy nested-card action rows must not survive in item sheets');
 assert.match(css, /bottom-sheet[^{]*sheet-action-row\{[^}]*grid-template-columns:36px minmax\(0,1fr\) 20px!important/);
 assert.match(css, /bottom-sheet[^{]*sheet-action-list\{[^}]*gap:var\(--space-1\)[^}]*border:0!important/);
 assert.match(css, /bottom-sheet[^{]*sheet-option\.sheet-action-row\{[^}]*border-bottom:0!important/);
 assert.match(css, /bottom-sheet[^{]*sheet-options-group:not\(\.manual-v2-options\)>\.sheet-option:not\(\.sheet-action-row\)[^{]*\{[^}]*border-bottom:0!important/);
-assert.match(css, /bottom-sheet\{[^}]*max-height:min\(72dvh,580px\)[^}]*border:0/);
+assert.match(css, /bottom-sheet\.compact-sheet\{[\s\S]*?--compact-sheet-max-height:min\(calc\(var\(--app-viewport-height,100dvh\) - 12px\),560px\)/, 'every bottom sheet needs the compact viewport cap');
+assert.match(css, /bottom-sheet\.compact-sheet \.sheet-scroll\{[\s\S]*?max-height:calc\(var\(--compact-sheet-max-height\) - 54px/, 'long popup content must scroll inside the compact shell');
+assert.match(css, /bottom-sheet\.compact-sheet \.sheet-option\.sheet-action-row\{[\s\S]*?min-height:48px!important/, 'one-line popup actions must keep one shared touch-safe height');
+assert.match(css, /sheet-action-row:has\(\.sheet-action-row__copy small\)\{[\s\S]*?min-height:56px!important/, 'two-line popup actions must keep one shared compact height');
+assert.match(css, /sheet-action-row:focus-visible\{[\s\S]*?outline:2px solid var\(--accent\)!important[\s\S]*?box-shadow:none!important/, 'keyboard focus must use the shared visible outline, not an inset rail');
+assert.match(css, /discard-dialog\{[\s\S]*?max-height:calc\(var\(--app-viewport-height,100dvh\) - 32px\)[\s\S]*?overflow-y:auto/, 'confirmation popups must stay compact and scroll safely on short screens');
+const popupMenu = (start, end) => js.slice(js.indexOf(start), js.indexOf(end, js.indexOf(start)));
+for (const [start, end, name] of [
+  ['function manageBookingSheet()', 'function bookingAnchorDate(', 'booking actions'],
+  ['function addSheet()', 'function tripOptionsScreen(', 'add actions'],
+  ['function manualBookingSheet()', 'function documentSheet(', 'manual booking chooser'],
+  ['function tripSwitchSheet()', 'function bookingEmailTripSheet(', 'trip chooser'],
+  ['function bookingEmailTripSheet()', 'function firstRunHowSheet(', 'email trip chooser'],
+  ['function helpSheet()', 'function skeletonRows(', 'help menu'],
+]) {
+  const source = popupMenu(start, end);
+  assert.ok(source.includes('sheetActionList') && source.includes('sheetActionRow'), `${name} must use the compact popup action system`);
+  assert.ok(!source.includes('sheet-options-group--v2'), `${name} must not fall back to legacy popup rows`);
+}
+const collectionActionMenu = popupMenu('function collectionStopSheet()', '// Generic confirm dialog');
+assert.ok(collectionActionMenu.includes('sheetActionList') && !collectionActionMenu.includes('stopSheetMeta'), 'Neighborhood place actions must stay compact and action-focused');
 assert.ok(js.includes('[["", "Choose a type"]'), 'an unset place type must read as a clear choice');
 assert.ok(js.includes('field("status", "Status", "", { type: "select", choices: statusChoices })'), 'place status must use the full-width shared control');
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*quick-primary-fields[^{]*\{[^}]*grid-template-columns:minmax\(0,1fr\)!important/);
