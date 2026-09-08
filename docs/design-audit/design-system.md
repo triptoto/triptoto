@@ -41,8 +41,8 @@ Cards are used to group a meaningful unit such as a summary, a choice set, a con
 
 | Primitive | Required behavior |
 | --- | --- |
-| PageShell / AppHeader | Shared 68px navigation row, 16px content alignment and safe areas. Page-specific Save, Edit and Share actions use a compact second row when needed so they cannot crowd the title or navigation. |
-| HeaderNavigation | Adjacent 44px Add and Menu buttons on app pages. Menu contains only All trips, Trip Options, To-Do List and Account. No bottom navigation or reserved bottom-bar space. All trips preserves its Account / Create trip header. Neighborhood Add continues to add a place. Closing Menu preserves forms and focus. |
+| PageShell / AppHeader | Shared 68px navigation row, 16px content alignment and safe areas. Form Save actions use a compact second row when needed. Booking details keep one header row; their Edit and Share actions live inside Menu. |
+| HeaderNavigation | Adjacent 44px Add and Menu buttons on app pages. Menu retains four global links: All trips, Trip Options, To-Do List and Account. Booking details add compact contextual Edit, Share, Move to another day and Delete actions above those links; viewers see Share only. No bottom navigation or reserved bottom-bar space. All trips preserves its Account / Create trip header. Neighborhood Add continues to add a place. Closing Menu preserves forms and focus. |
 | HeroSummary | Optional contextual summary with a single pastel background, no gradient, illustration, or heavy shadow. |
 | GroupedCard / choice tile | White or neutral-surface grouping with a 1px subtle border, 16px radius, 16–20px padding, and no nested decorative card. |
 | FlatList / FlatRow | Default operational list: one icon tile, title, optional metadata/status, and a clear touch target. Use dividers only when they help scan adjacent rows. |

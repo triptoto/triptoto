@@ -25,12 +25,47 @@ const ctx = vm.createContext({
 });
 vm.runInContext(readFileSync('public/mobile-routes.js', 'utf8'), ctx);
 ctx.routeUrl = (screen, id) => ctx.TriptoRoutes.pathFor(screen, id);
-vm.runInContext(get('HeaderNavigation', 'navigationSheet', 'appBar', 'bottomSheet', 'sheetActionLink', 'sheetActionList', 'tripsPageHeader'), ctx);
+vm.runInContext(get('HeaderNavigation', 'navigationSheet', 'bookingNavigationActions', 'appBar', 'bottomSheet', 'sheetActionRow', 'sheetActionLink', 'sheetActionList', 'tripsPageHeader', 'selectedFlight', 'selectedStay', 'selectedTrain', 'selectedPlan', 'val', 'itemId'), ctx);
+ctx.isCancelled = () => false;
 const html = ctx.navigationSheet();
 assert.deepEqual([...html.matchAll(/href="([^"]+)"/g)].map(match => match[1]), ['/trips', '/trip-options', '/before-you-go', '/account']);
 assert.equal((html.match(/<a /g) || []).length, 4, 'The menu has exactly four destinations');
 assert.match(html, /data-screen="account" aria-current="page"/);
 assert.match(ctx.HeaderNavigation(), /data-action="open-add"/);
+// Menu actions must target the record actually displayed by each detail route,
+// not a subtype label or a stale route slug. Other pages get no booking actions.
+Object.assign(ctx.state, {
+  transport: [{ id: 'flight-1', transport_type: 'flight' }, { id: 'train-1', transport_type: 'train' }, { id: 'ferry-1', transport_type: 'ferry' }, { id: 'bus-1', transport_type: 'bus' }],
+  stays: [{ id: 'hotel-1', property_name: 'QA stay' }],
+  timeline: [{ id: 'class-1', type: 'activity', activity_type: 'class' }, { id: 'idea-1', type: 'activity', activity_type: 'idea' }],
+});
+for (const [screen, id, kind] of [['flight', 'flight-1', 'flight'], ['hotel', 'hotel-1', 'hotel'], ['train', 'train-1', 'train'], ['train', 'ferry-1', 'ferry'], ['plan', 'bus-1', 'bus'], ['plan', 'class-1', 'activity']]) {
+  Object.assign(ctx.state, { screen, selectedId: id });
+  const menu = ctx.navigationSheet();
+  assert.match(menu, /aria-label="Booking actions"/);
+  for (const action of ['edit-booking', 'share-booking', 'move-booking', 'delete-booking']) {
+    assert(menu.includes('data-action="' + action + '" data-kind="' + kind + '" data-id="' + id + '"'), action + ' targets ' + id);
+  }
+  assert.equal((menu.match(/<a /g) || []).length, 4);
+  assert.doesNotMatch(ctx.appBar('Class Detail'), /app-bar--with-actions|app-bar-actions|share-booking|edit-booking/);
+}
+ctx.state.screen = 'plan'; ctx.state.selectedId = 'idea-1';
+assert.match(ctx.navigationSheet(), /data-action="edit-idea"/);
+assert.match(ctx.navigationSheet(), /data-action="delete-idea"/);
+assert.doesNotMatch(ctx.navigationSheet(), /data-action="move-booking"/);
+ctx.state.trip.role = 'viewer';
+assert.match(ctx.navigationSheet(), /data-action="share-booking"/);
+assert.doesNotMatch(ctx.navigationSheet(), /data-action="(?:edit|delete|move)-/);
+ctx.state.trip.role = 'owner';
+ctx.state.selectedId = 'missing';
+assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Booking actions"/);
+for (const screen of ['account', 'trips', 'form', 'checklist', 'trip-options', 'collection']) {
+  ctx.state.screen = screen; ctx.state.selectedId = 'class-1';
+  assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Booking actions"/, screen);
+}
+ctx.state.screen = 'plan'; ctx.state.error = 'Load failed';
+assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Booking actions"/);
+ctx.state.error = null;
 ctx.state.screen = 'collection'; ctx.state.selectedId = 'neighborhood-1';
 assert.match(ctx.HeaderNavigation(), /data-action="collection-add-place" data-id="neighborhood-1"/);
 ctx.state.trip.role = 'viewer';
@@ -126,5 +161,56 @@ ctx.state.sheet = 'navigation'; const beforeClose = renders;
 ctx.closeSheet();
 assert.equal(ctx.state.sheet, null); assert.equal(removed, 2); assert.equal(renders, beforeClose);
 assert.equal(attributes.size, 0); assert.equal(expanded.get('aria-expanded'), 'false'); assert.equal(focusRestored, 1);
+// Exercise the real detail handlers with external sharing/confirmation mocked:
+// edit goes straight to the correct populated form; sharing closes Menu before
+// invoking the native sheet, and cancellation is not reported as a failure.
+const effects = [];
+const actions = vm.createContext({
+  state: { trip: { id: 'trip-1' }, sheet: 'navigation', timeline: [{ id: 'class-1', type: 'activity', activity_type: 'class', title: 'Cooking class' }], transport: [], stays: [] },
+  VIEWER_BLOCKED_ACTIONS: new Set(['edit-booking', 'move-booking', 'delete-booking', 'edit-idea', 'delete-idea']),
+  OWNER_ONLY_ACTIONS: new Set(), viewOnlyBlocked: () => actions.state.trip.role === 'viewer',
+  route: (screen, id) => effects.push(['route', screen, id]),
+  closeSheetKeepPage: () => { actions.state.sheet = null; effects.push(['close']); },
+  closeSheet: () => { actions.state.sheet = null; },
+  openSheet: name => { actions.state.sheet = name; },
+  confirmDeleteBooking: (kind, id) => effects.push(['delete', kind, id, actions.state.sheet]),
+  confirmDeleteIdea: id => effects.push(['delete-idea', id, actions.state.sheet]),
+  locationById: () => null, statusText: text => text, manualBookingConfig: () => null,
+  showToast: text => effects.push(['toast', text]),
+  navigator: {
+    share: async data => { effects.push(['share', data.title, data.text, actions.state.sheet]); },
+    clipboard: { writeText: async text => { effects.push(['copy', text]); } },
+  },
+});
+vm.runInContext(get('handleActionTask', 'findBookingRecord', 'bookingBaseKind', 'bookingFormKind', 'bookingShareText', 'bookingRecordTitle', 'val', 'itemId'), actions);
+const classTarget = { dataset: { kind: 'activity', id: 'class-1' } };
+await actions.handleActionTask('edit-booking', classTarget);
+assert.deepEqual(effects.pop(), ['route', 'form', 'activity']);
+assert.equal(actions.state.editingEntity.id, 'class-1');
+actions.state.sheet = 'navigation';
+await actions.handleActionTask('share-booking', classTarget);
+assert.deepEqual(effects.splice(0), [['close'], ['share', 'Cooking class', 'Cooking class', null]]);
+actions.state.sheet = 'navigation';
+actions.navigator.share = async () => { throw { name: 'AbortError' }; };
+await actions.handleActionTask('share-booking', classTarget);
+assert.deepEqual(effects.splice(0), [['close']]);
+actions.navigator.share = async () => { throw new Error('Sharing failed'); };
+await assert.rejects(actions.handleActionTask('share-booking', classTarget), /Sharing failed/);
+delete actions.navigator.share;
+actions.state.sheet = 'navigation';
+await actions.handleActionTask('share-booking', classTarget);
+assert.deepEqual(effects.splice(0), [['close'], ['copy', 'Cooking class'], ['toast', 'Details copied.']]);
+actions.state.sheet = 'navigation';
+await actions.handleActionTask('delete-booking', classTarget);
+assert.deepEqual(effects.splice(0), [['close'], ['delete', 'activity', 'class-1', null]]);
+actions.state.sheet = 'navigation';
+await actions.handleActionTask('delete-idea', { dataset: { id: 'idea-1' } });
+assert.deepEqual(effects.splice(0), [['close'], ['delete-idea', 'idea-1', null]]);
+actions.state.sheet = 'navigation';
+await actions.handleActionTask('move-booking', classTarget);
+assert.equal(actions.state.sheet, 'move-booking'); assert.equal(actions.state.moveBooking.id, 'class-1');
+actions.state.trip.role = 'viewer'; actions.state.sheet = 'navigation';
+await actions.handleActionTask('edit-booking', classTarget);
+assert.equal(actions.state.sheet, 'navigation'); assert.equal(effects.length, 0);
 assert.doesNotMatch(source, /function bottomNav\(|function BottomNavigation\(|class="bottom-nav/);
-console.log('Header navigation: four real links, protected Trips, contextual Add, viewer guard, dirty form navigation, overlay preservation and focus restoration passed.');
+console.log('Header navigation: four real links, protected Trips, contextual Add and booking actions, direct Edit, native Share/cancellation/copy, Delete confirmation, viewer guard, dirty forms and focus restoration passed.');

@@ -1024,11 +1024,27 @@
     showToast(`${statusText(record.kind)} deleted.`);
     route("timeline", null, true);
   }
-  function bookingMenuButton(kind, id) {
-    return `<button class="icon-button" data-action="manage-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Edit or delete">${icon("edit", 18)}</button>`;
-  }
-  function bookingHeaderActions(kind, id) {
-    return `<button class="icon-button" data-action="share-booking" data-kind="${esc(kind)}" data-id="${esc(id)}" aria-label="Share">${icon("share", 18)}</button>${bookingMenuButton(kind, id)}`;
+  function bookingNavigationActions() {
+    if (!state.trip || state.error || state.googleAuthHandoffStatus) return "";
+    // Resolve the same record as the visible detail page, including legacy
+    // routes whose selected ID is an alias rather than the booking ID.
+    const item = state.screen === "flight" ? selectedFlight()
+      : state.screen === "hotel" ? selectedStay()
+      : state.screen === "train" ? selectedTrain()
+      : state.screen === "plan" ? selectedPlan() : null;
+    if (!item) return "";
+    const kind = state.screen === "hotel" ? "hotel"
+      : String(val(item, "transport_type", "type") || "plan"),
+      isIdea = !val(item, "transport_type") && String(val(item, "activity_type", "reservation_type", "type")).toLowerCase() === "idea",
+      attrs = ` data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"`,
+      canEdit = canEditCurrentTrip();
+    const actions = [
+      canEdit ? sheetActionRow(isIdea ? "edit-idea" : "edit-booking", "edit", "Edit", attrs) : "",
+      sheetActionRow("share-booking", "share", "Share", attrs),
+      canEdit && !isIdea ? sheetActionRow("move-booking", "calendar", "Move to another day", attrs) : "",
+      canEdit ? sheetActionRow(isIdea ? "delete-idea" : "delete-booking", "trash", "Delete", attrs, "", true) : "",
+    ].join("");
+    return `<section class="booking-navigation-actions" aria-label="Booking actions">${sheetActionList(actions)}</section>`;
   }
   function linkedBookingDocuments(item) {
     const id = itemId(item || {});
@@ -3645,7 +3661,7 @@
       glyph, label, "", routeUrl(screen),
       ` data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}`,
     )).join("");
-    return bottomSheet("navigation", "Menu", `<nav id="navigation-menu" aria-label="Primary navigation">${sheetActionList(links)}</nav>`);
+    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${bookingNavigationActions()}<nav aria-label="Primary navigation">${sheetActionList(links)}</nav></div>`);
   }
   // Header notification bell. Opens the Notifications sheet, which merges the
   // trip's /changes feed (imports, added stops, time markers, documents…) with
@@ -4704,7 +4720,7 @@
         ],
         "Flight details and actions",
       );
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main></section></div>`;
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true)}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main></section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -4750,7 +4766,7 @@
       directionsDisabled = !mapQuery,
       driverDisabled = !address,
       confirmation = val(stay, "confirmation_number");
-    return `<div class="phone-app"><section class="screen dark-detail hotel-detail-screen">${appBar("Hotel", "", false, bookingHeaderActions("hotel", itemId(stay)))}<main class="detail-content">${imageUrl ? `<div class="fd-hero-image" role="img" aria-label="Hotel property image"><img src="${esc(imageUrl)}" alt="" loading="lazy" decoding="async">${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 16)} Offline · saved details</span>` : ""}</div>` : ""}<section class="fd-card${imageUrl ? " fd-card--attached" : ""}" aria-label="Stay details"><div class="fd-card__head"><span class="fd-flight">${icon("hotel", 16)} ${esc(val(stay, "property_name", "title") || "Stay")}</span><span class="fd-status-wrap" role="status" aria-label="${esc(statusLabel)}. Scheduled booking data is never presented as live."><span class="fd-status ${statusTone === "confirmed" ? "is-confirmed" : ""}">${statusTone === "confirmed" ? checkDot() : ""}${esc(statusLabel)}</span><small>Scheduled data</small></span></div>${roomName ? `<p class="fd-sub">${esc(roomName)}</p>` : ""}<div class="fd-stay"><div class="fd-stay__col"><span class="fd-label">Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time not set")}</small></div><div class="fd-stay__mid"><span class="fd-stay__track" aria-hidden="true">${icon("night", 16)}</span><span class="fd-stay__nights">${esc(nights(stay))} ${nights(stay) === 1 ? "night" : "nights"}</span></div><div class="fd-stay__col fd-stay__col--right"><span class="fd-label">Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time not set")}</small></div></div></section>${fdList([
+    return `<div class="phone-app"><section class="screen dark-detail hotel-detail-screen">${appBar("Hotel", "", false)}<main class="detail-content">${imageUrl ? `<div class="fd-hero-image" role="img" aria-label="Hotel property image"><img src="${esc(imageUrl)}" alt="" loading="lazy" decoding="async">${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 16)} Offline · saved details</span>` : ""}</div>` : ""}<section class="fd-card${imageUrl ? " fd-card--attached" : ""}" aria-label="Stay details"><div class="fd-card__head"><span class="fd-flight">${icon("hotel", 16)} ${esc(val(stay, "property_name", "title") || "Stay")}</span><span class="fd-status-wrap" role="status" aria-label="${esc(statusLabel)}. Scheduled booking data is never presented as live."><span class="fd-status ${statusTone === "confirmed" ? "is-confirmed" : ""}">${statusTone === "confirmed" ? checkDot() : ""}${esc(statusLabel)}</span><small>Scheduled data</small></span></div>${roomName ? `<p class="fd-sub">${esc(roomName)}</p>` : ""}<div class="fd-stay"><div class="fd-stay__col"><span class="fd-label">Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time not set")}</small></div><div class="fd-stay__mid"><span class="fd-stay__track" aria-hidden="true">${icon("night", 16)}</span><span class="fd-stay__nights">${esc(nights(stay))} ${nights(stay) === 1 ? "night" : "nights"}</span></div><div class="fd-stay__col fd-stay__col--right"><span class="fd-label">Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time not set")}</small></div></div></section>${fdList([
       !driverDisabled ? fdButtonRow("car", "Show to Driver", "show-driver", `data-id="${esc(itemId(stay))}"`) : "",
       address
         ? fdButtonRow("pin", address, "directions-hotel", `data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}`, hasCoordinates ? "Open in Maps" : "Saved address")
@@ -5051,7 +5067,7 @@
         : "",
       bookingRef = val(train, "booking_reference"),
       hero = `<section class="fd-card" aria-label="Scheduled journey details"><div class="fd-card__head"><span class="fd-flight">${icon(transportIconName, 17)} ${esc(val(train, "carrier_name") || (ferry ? "Ferry" : "Train"))}</span><span class="fd-status-wrap" role="status" aria-label="${esc(status)}. Scheduled booking data is never presented as live."><span class="fd-status ${confirmed ? "is-confirmed" : ""}">${confirmed ? checkDot() : ""}${esc(status)}</span><small>Scheduled data</small></span></div><div class="fd-route"><div class="fd-route__end"><span class="fd-route__code">${esc(fromCode || "—")}</span><span class="fd-route__name">${esc(val(from, "display_name") || "Origin unavailable")}</span></div><div class="fd-route__mid"><span class="fd-route__track">${icon(transportIconName, 24)}</span></div><div class="fd-route__end fd-route__end--right"><span class="fd-route__code">${esc(toCode || "—")}</span><span class="fd-route__name">${esc(val(to, "display_name") || "Destination unavailable")}</span></div></div><div class="fd-times"><div class="fd-times__col"><span class="fd-label">Departs</span><strong>${esc(formatTime(dep, val(train, "departure_timezone")))}</strong><small>${esc(formatDay(dep, val(train, "departure_timezone")) || "—")}</small></div><div class="fd-times__mid"><span class="fd-times__track" aria-hidden="true">${icon(transportIconName, 15)}</span>${duration ? `<span class="fd-times__dur">${esc(duration)}</span>` : ""}</div><div class="fd-times__col fd-times__col--right"><span class="fd-label">Arrives</span><strong>${esc(formatTime(arr, val(train, "arrival_timezone")))}</strong><small>${esc(formatDay(arr, val(train, "arrival_timezone")) || "")}</small></div></div>${metaBand}</section>`;
-    return `<div class="phone-app"><section class="screen dark-detail train-detail-screen">${appBar(ferry ? "Ferry Detail" : "Train Detail", "", true, bookingHeaderActions(kind, itemId(train)))}<main class="detail-content">${hero}${fdList([
+    return `<div class="phone-app"><section class="screen dark-detail train-detail-screen">${appBar(ferry ? "Ferry Detail" : "Train Detail", "", true)}<main class="detail-content">${hero}${fdList([
       fdButtonRow("navigation", `Directions to ${ferry ? "port" : "station"}`, "directions-item", `data-id="${esc(itemId(train))}"`),
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
       bookingRef ? fdButtonRow("copy", bookingRef, "copy", `data-value="${esc(bookingRef)}"`, "Booking reference · tap to copy", "copy") : "",
@@ -5115,14 +5131,7 @@
       endLocationName = val(endLocation, "display_name", "formatted_address"),
       whenLabel = startsAt ? formatDateTime(startsAt, timezone) : "Time not scheduled",
       hero = `<section class="fd-card" aria-label="Scheduled plan details"><div class="fd-card__head"><span class="fd-flight">${icon(timelineIcon(timelineType(item)), 17)} ${esc(statusText(kind))}</span><span class="fd-status-wrap" role="status" aria-label="Scheduled booking data is never presented as live."><span class="fd-status"><small>Scheduled data</small></span></span></div><h1 class="fd-title">${esc(title)}</h1><p class="fd-when">${icon("calendar", 16)} ${esc(whenLabel)}</p></section>`;
-    const detailKind = transportKind || String(val(item, "type") || "plan");
-    // Ideas carry share + edit + delete in the header; other detail screens keep
-    // share + the edit/manage menu that bookings use.
-    const isIdea = String(kind).toLowerCase() === "idea";
-    const headerActions = isIdea
-      ? `<button class="icon-button" data-action="share-booking" data-kind="${esc(detailKind)}" data-id="${esc(itemId(item))}" aria-label="Share">${icon("share", 18)}</button><button class="icon-button" data-action="edit-idea" data-id="${esc(itemId(item))}" aria-label="Edit idea">${icon("edit", 18)}</button><button class="icon-button" data-action="delete-idea" data-id="${esc(itemId(item))}" aria-label="Delete idea">${icon("trash", 18)}</button>`
-      : bookingHeaderActions(detailKind, itemId(item));
-    return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen">${appBar(`${statusText(kind)} Detail`, "", true, headerActions)}<main class="detail-content">${hero}${fdList([
+    return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen">${appBar(`${statusText(kind)} Detail`, "", true)}<main class="detail-content">${hero}${fdList([
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
       locationName ? fdButtonRow("pin", locationName, "directions-item", `data-id="${esc(itemId(item))}"`, endLocationName ? "From" : "Location", "map") : "",
       endLocationName ? fdStaticRow("navigation", endLocationName, "To") : "",
@@ -10418,6 +10427,7 @@
         route("day-plan-form", target.dataset.id);
         break;
       case "delete-idea":
+        if (state.sheet === "navigation") closeSheetKeepPage();
         confirmDeleteIdea(target.dataset.id);
         break;
       case "toggle-checklist":
@@ -10813,6 +10823,7 @@
       }
       case "delete-booking": {
         const kind = target.dataset.kind, id = target.dataset.id;
+        if (state.sheet === "navigation") closeSheetKeepPage();
         if (state.sheet === "manage-booking") { state.sheet = null; state.manageBooking = null; render(); }
         confirmDeleteBooking(kind, id);
         break;
@@ -11385,8 +11396,12 @@
       case "share-booking": {
         const record = findBookingRecord(target.dataset.kind, target.dataset.id);
         if (!record) return;
+        if (state.sheet === "navigation") closeSheetKeepPage();
         const text = bookingShareText(record);
-        if (navigator.share) await navigator.share({ title: bookingRecordTitle(record), text });
+        if (navigator.share) {
+          try { await navigator.share({ title: bookingRecordTitle(record), text }); }
+          catch (error) { if (error?.name !== "AbortError") throw error; }
+        }
         else {
           await navigator.clipboard.writeText(text);
           showToast("Details copied.");
