@@ -4387,3 +4387,7 @@ html body .welcome-thread .first-run-brand-row{gap:8px;flex-wrap:wrap}
 html body .welcome-thread .first-run-brand-row>.header-navigation{margin-left:auto}
 html body .bottom-sheet--navigation .sheet-action-row[aria-current="page"]{background:var(--activity-soft);border-radius:var(--radius-control)}
 html body .bottom-sheet--navigation .sheet-action-row[aria-current="page"] .sheet-action-row__copy strong{color:var(--accent)}
+
+/* Primary form actions follow the fields in the page scroll flow. */
+html body .focused-page .form-page-actions{display:flex;gap:12px;margin-top:24px;padding-bottom:env(safe-area-inset-bottom);width:100%}
+html body .focused-page .form-page-save{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin:0;padding:12px 16px;border-radius:var(--radius-control)}

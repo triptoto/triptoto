@@ -4826,8 +4826,9 @@
   function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
     return PageShell({ title, body, active, right, extraClass });
   }
-  function focusedTaskPage(title, body, className = "", right = "") {
-    return PageShell({ title, body, right, extraClass: `focused-task ${className}`, task: true });
+  function focusedTaskPage(title, body, className = "", footer = "") {
+    const content = body + (footer ? `<div class="form-page-actions">${footer}</div>` : "");
+    return PageShell({ title, body: content, extraClass: `focused-task ${className}`, task: true });
   }
   function AppHeader(title, subtitle = "", dark = false, right = "") {
     return appBar(title, subtitle, dark, right);
@@ -4837,7 +4838,7 @@
     return `<div class="phone-app"><section class="${shellClass}">${AppHeader(title, "", false, right)}${mobileAlert()}<main class="${task ? "focused-page" : "mobile-page"}">${body}</main></section></div>`;
   }
   function formHeaderSave(formId, label) {
-    return `<button type="submit" form="${esc(formId)}" class="app-bar-save mobile-primary-action">${esc(label)}</button>`;
+    return `<button type="submit" form="${esc(formId)}" class="form-page-save mobile-primary-action">${esc(label)}</button>`;
   }
   function lifecycleLabel(value) {
     const key = String(value || "upcoming").toLowerCase();
@@ -6758,7 +6759,7 @@
     const submitLabel=kind==="trip"?(editingTrip?"Save changes":`Next ${icon("chevron",18)}`):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
     const heading=kind==="trip"?(editingTrip?"Edit trip details":"Where are you going?"):esc(cfg.title);
     const subhead=kind==="trip"?(editingTrip?"<p>Update the name or dates, or delete the trip.</p>":"<p>Pick a place, set your dates, and we’ll build the itinerary around it.</p>"):"";
-    const headerActions=`${editingTrip?`<button type="button" class="icon-button app-bar-delete" data-action="delete-trip" aria-label="Delete this trip">${icon("trash",22)}</button>`:""}<button type="submit" form="native-form" class="app-bar-save mobile-primary-action">${submitLabel}</button>`;
+    const headerActions=`<button type="submit" form="native-form" class="form-page-save mobile-primary-action">${submitLabel}</button>`;
     if (kind === "trip") {
       const tripNameField = editingTrip
         ? `<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}`

@@ -1,0 +1,5 @@
+# Form actions at page end — v256
+
+Focused task form actions now follow the body in the main scroll area, rather than occupying a second header row. Save/Create/Next/Review retain native form associations, existing submit handlers, saving states and validation. Buttons are full width and at least 48px. The duplicate trip Delete header icon is removed; the existing Delete this trip action remains in the edit form. All Trips unchanged.
+
+Validation: check:ui; header-navigation, collections, manual-booking-ui and smart-import-auth contracts passed. 36 form routes at 320/390/430px (108 checks) all have linked submit buttons after the form, no header submit, at least 44px height and no horizontal overflow. Routes cover Neighborhood create/edit, place creation, trip, traveler, todo, import, 19 booking types and 10 day-plan categories. New Neighborhood browser validation focuses the required name when blank; valid submission reaches the existing preview API guard. No real user data changed. 390px screenshot visually verified footer action.
