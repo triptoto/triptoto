@@ -2333,11 +2333,6 @@
     const body = rows.filter(Boolean).join("");
     return body ? `<section class="fd-list fd-list--detail" aria-label="${esc(label)}">${body}</section>` : "";
   }
-  function fdSection(label, rows, description = "") {
-    const body = Array.isArray(rows) ? rows.filter(Boolean).join("") : rows;
-    if (!body) return "";
-    return `<section class="fd-list__section" aria-label="${esc(label)}"><div class="fd-list__section-head"><h2>${esc(label)}</h2>${description ? `<p>${esc(description)}</p>` : ""}</div><div class="fd-list__rows">${body}</div></section>`;
-  }
   // Editable notes, shared by every booking detail screen. Notes are stored
   // either on a scoped contact (flight/hotel/train/car/transfer) or inline on
   // the activity/reservation entity; noteStorage() resolves which, so the same
@@ -4656,8 +4651,19 @@
       liveControls = state.liveFlights?.available
         ? `<button type="button" class="fd-row fd-row--button fd-row--with-meta" data-action="toggle-live-flight" data-id="${esc(itemId(flight))}" aria-pressed="${liveEnabled}"><span class="fd-row__icon">${icon("plane", 20)}</span><span class="fd-row__text"><strong>Live flight status</strong><small>${liveEnabled ? "On · beta" : "Off"}</small></span><span class="fd-row__chev">${icon(liveEnabled ? "chevronUp" : "chevron", 18)}</span></button>${liveEnabled ? fdButtonRow("refresh", "Refresh now", "refresh-live-flight", `data-id="${esc(itemId(flight))}"`, "", "chevron", "fd-row--compact") : ""}`
         : "",
-      fdList = `<section class="fd-list fd-list--flight" aria-label="Flight actions and documents">${fdSection("Actions", [directionsRow, liveControls])}${fdSection("Documents", [boardingRow, docRows, addRow])}${fdSection("Booking information", [disclosure, fdNoteRow(flight, "flight")])}</section>`;
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${fdList}</div></main>${bottomNav("bookings")}</section></div>`;
+      flightDetailsList = fdList(
+        [
+          directionsRow,
+          liveControls,
+          boardingRow,
+          docRows,
+          addRow,
+          disclosure,
+          fdNoteRow(flight, "flight"),
+        ],
+        "Flight details and actions",
+      );
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true, bookingHeaderActions("flight", itemId(flight)))}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main>${bottomNav("bookings")}</section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),

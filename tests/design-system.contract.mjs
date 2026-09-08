@@ -56,9 +56,10 @@ assert.match(css, /save-later-page[^{]*save-later-row\{[^}]*background:transpare
 assert.match(css, /dark-detail[^{]*fd-list\{[^}]*box-shadow:none/);
 assert.ok(js.includes('fd-list fd-list--detail'), 'all booking detail variants must use the compact shared detail list');
 assert.match(css, /dark-detail[^{]*fd-list--detail\{[^}]*border:0!important/);
-assert.ok(js.includes('fd-list--flight'), 'flight detail must use the shared flat-list layout');
-assert.ok(js.includes('fdSection("Actions"'), 'flight detail must group actions by intent');
-assert.match(css, /flight-detail-screen[^{]*fd-list--flight\{[^}]*border:0!important/);
+const flightDetail = js.slice(js.indexOf('function flightScreen()'), js.indexOf('function durationLabel()'));
+assert.ok(flightDetail.includes('flightDetailsList = fdList('), 'flight detail must use the shared flat-list layout');
+assert.ok(!flightDetail.includes('fdSection(') && !flightDetail.includes('fd-list__section'), 'flight detail must not insert redundant section headings');
+assert.match(css, /flight-detail-screen \.fd-list--detail\{[^}]*margin-top:0!important/);
 assert.match(css, /flight-detail-screen[^{]*fd-row\{[^}]*min-height:60px!important/);
 assert.ok(js.includes('collection-schedule__helper'), 'neighborhood schedule explanation must stay with the date field');
 assert.match(css, /collection-form-screen[^{]*collection-schedule\{[^}]*grid-column:1\/-1/);

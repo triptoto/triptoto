@@ -3869,20 +3869,13 @@ html body .dark-detail .fd-row:last-child{border-bottom:0}
 html body .dark-detail .flight-more,html body .dark-detail .flight-more-content{border:0;border-radius:0;background:transparent}
 html body .dark-detail .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface)}
 
-/* Flight detail: a compact action list, grouped by intent. These rules are
-   final and important because an older booking-detail pass used an important
-   rounded list container, which created the oversized frame. */
+/* Flight detail: the same compact, flat detail list as every other booking.
+   The booking type is already clear from the hero, so no redundant section
+   labels interrupt the traveller's scan. */
 html body .flight-detail-screen .detail-content{padding:var(--space-4) var(--ds-page-padding) calc(var(--nav-height) + var(--space-6) + env(safe-area-inset-bottom))!important}
 html body .flight-detail-screen .flight-detail-stack{display:grid;gap:var(--space-6)}
-html body .flight-detail-screen .fd-list--flight{display:grid;gap:var(--space-6);margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
-html body .flight-detail-screen .fd-list__section{display:grid;gap:var(--space-2)}
-html body .flight-detail-screen .fd-list__section-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-3);margin:0}
-html body .flight-detail-screen .fd-list__section-head h2{margin:0;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em;line-height:1.2;text-transform:uppercase}
-html body .flight-detail-screen .fd-list__section-head p{margin:0;color:var(--muted);font-size:var(--type-meta)}
-html body .flight-detail-screen .fd-list__rows{border-top:1px solid var(--line)}
 html body .flight-detail-screen .fd-row{gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 html body .flight-detail-screen .fd-row--with-meta,html body .flight-detail-screen .fd-row--note{min-height:74px!important}
-html body .flight-detail-screen .fd-row:last-child{border-bottom:1px solid var(--line)!important}
 html body .flight-detail-screen .fd-row__main{min-height:60px!important;padding:var(--space-2) 0!important}
 html body .flight-detail-screen .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface);color:var(--accent)}
 html body .flight-detail-screen .fd-row__text{gap:2px}
@@ -3964,6 +3957,7 @@ html body .trip-option-card,html body .add-intent-row,html body .day-plan-row,ht
    declaration, leaving activity, stay and transport pages with a tall empty
    frame. The shared modifier is explicit so it cannot regress by type. */
 html body .dark-detail .fd-list--detail{display:grid;gap:0;margin-top:var(--space-5)!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+html body .flight-detail-screen .fd-list--detail{margin-top:0!important}
 html body .dark-detail .fd-list--detail .fd-row:not(.fd-row--doc){grid-template-columns:40px minmax(0,1fr) 20px!important;gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important}
 html body .dark-detail .fd-list--detail .fd-row--with-meta,html body .dark-detail .fd-list--detail .fd-row--note{min-height:74px!important}
 html body .dark-detail .fd-list--detail .fd-row:last-child{border-bottom:0!important}
