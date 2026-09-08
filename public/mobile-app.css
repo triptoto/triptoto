@@ -4430,3 +4430,9 @@ html body .trip-setup-ready__create:active{transform:scale(.96);box-shadow:0 2px
 @keyframes trip-confetti{0%{opacity:0;transform:translate(0,-8px) rotate(0)}15%{opacity:.9}100%{opacity:0;transform:translate(var(--drift),180px) rotate(240deg)}}
 @keyframes trip-celebrate-pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.trip-celebration__mark{animation:none}.trip-celebration__confetti{display:none}}
+
+/* Day captions span the timeline instead of inheriting the narrow time column. */
+html .timeline-screen--ribbon .timeline-day__header{grid-template-columns:minmax(0,1fr);min-height:44px;padding:10px 0}
+html .timeline-screen--ribbon .timeline-day__header time{grid-column:1;display:flex;align-items:baseline;gap:8px;min-height:0;min-width:0;flex-wrap:wrap}
+html .timeline-screen--ribbon .timeline-day__header time strong{white-space:nowrap;letter-spacing:0}
+html .timeline-screen--ribbon .timeline-day__header :is(.timeline-day__rail,.timeline-day__separator){display:none}
