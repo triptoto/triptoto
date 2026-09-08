@@ -17,3 +17,11 @@ Opening or closing Menu preserves the underlying form DOM, scroll and unsaved in
 - Cloudflare dry run passed using the travelinkme@gmail.com production account. No backend code, schema or feature flags changed.
 
 Browser checks used the actual local UI with isolated fixtures. Production publication, served asset hashes and public browser checks are recorded separately in `release.json`. Physical iPhone keyboard behavior was not tested; reduced-height browser geometry and the existing visual-viewport regression tests passed.
+
+## Publication
+
+- Application commit: `7f85a20`, pushed to `fix/keyboard-header-20260907` without merging to main.
+- Cloudflare Worker: `2393affc-4425-4add-bbb2-1bd3ac42ea9a`, 100% traffic, tag `v250-header-navigation`.
+- Public `/health`: healthy, D1 healthy (59 tables), feature flags unchanged.
+- All 10 checked public app/legal files exactly match the local release SHA-256 hashes.
+- Public browser loaded asset version `flat-design-system-v172`; all four menu destinations, Add, Back and the protected Trips header passed. No preview mode or user data mutations were used for the public check.

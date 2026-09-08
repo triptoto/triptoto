@@ -1,0 +1,89 @@
+{
+  "url": "https://tripto.to/",
+  "version": "2393affc-4425-4add-bbb2-1bd3ac42ea9a",
+  "previous_version": "1964fb78-5341-4646-abb2-8e504552affe",
+  "commit": "7f85a20142c41f9d9d79b403af3d4534af67ebec",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v250-header-navigation",
+  "asset_version": "flat-design-system-v172",
+  "checked_at": "2026-09-08T15:55:56.999037+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788882956933
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "9cf50a0adaead675df771527b71b680ee234024c7104722caec1058e4b6263ef",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "f4a6f2fee7b0f4d71408f4c2f6fabc91970ae0a441a0b9d8689458fa63a89921",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "sha256": "e1a1f78a6aee4cc1addace0839b4c7ddc5f10a67656e9a5d24c933387a1736fd",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "fa41b90130216fe638da6992f475821dec6dbc6c096be54ebdf2222df92202c3",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "b8ae86c72fe76533678111b9cbdf26f8362b90ee481b77096db6802e279df1fa",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "48acc6995c08188f0e5b881567504990213bebd0996a709418736cbf2ffb938d",
+      "matches_local": true
+    },
+    "legal-navigation.js": {
+      "sha256": "a5ff1389383e00ac6b3ae02ece0b3e8e3977975cf89150d4091df60585597a96",
+      "matches_local": true
+    },
+    "legal-navigation.css": {
+      "sha256": "b8aac4cba737a59b4ef25535726b1a6c6e9f7b64ed134a9dd54b7831610f8c4f",
+      "matches_local": true
+    },
+    "privacy.html": {
+      "sha256": "490ed1b9c06fefefa66afc4a8af6149177f20a17a9697407fbcb2d37fedb5330",
+      "matches_local": true
+    },
+    "terms.html": {
+      "sha256": "cadfebe143634ae48bc794f6d360836718645665edee31ef955a8b0ed9fd571d",
+      "matches_local": true
+    }
+  },
+  "traffic_percent": 100,
+  "public_browser": {
+    "result": "PASS",
+    "asset_queries": "flat-design-system-v172",
+    "preview_mode": false,
+    "checked": [
+      "All trips unchanged: Account and Create trip header; no bottom navigation",
+      "Account menu opens with exactly four real links",
+      "Trip Options and To-Do List navigate from Menu",
+      "Header Add opens /add, then Back returns",
+      "Menu Account and All trips navigate correctly",
+      "No console errors in the public browser check"
+    ],
+    "data_mutations": "None; navigation and read-only UI checks only"
+  }
+}
