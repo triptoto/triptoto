@@ -75,6 +75,10 @@ assert.ok(js.includes('field("status", "Status", "", { type: "select", choices: 
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*quick-primary-fields[^{]*\{[^}]*grid-template-columns:minmax\(0,1fr\)!important/);
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*form-field :is\(input,select,textarea\)\{[^}]*border:1px solid var\(--line-strong\)!important/);
 assert.match(css, /premium-form:not\(\.trip-create-form\)[^{]*form-field select\{[^}]*background-image:url/);
+assert.match(css, /\.date-range-trigger\{[^}]*min-height:var\(--control-height\)[^}]*padding:0 var\(--space-3\)[^}]*border-radius:var\(--radius-control\)/, 'date controls must use the shared input height and control rhythm');
+assert.match(css, /\.date-range-trigger__icon\{[^}]*width:40px[^}]*height:40px[^}]*border-radius:var\(--radius-control\)/, 'date controls must use the same icon geometry as form controls');
+assert.match(css, /\.form-fields--flight-when\{[^}]*align-items:start/, 'flight date and departure-time labels must share a top edge');
+assert.match(css, /\.form-fields--flight-when>\.form-field>input\{[^}]*min-height:var\(--control-height\)/, 'flight departure time must match the shared date control height');
 assert.ok(js.includes('function tripsPageHeader(') && js.includes('class="screen trips-screen"'), 'Trips root must use the shared application shell');
 const tripsInventory = js.slice(js.indexOf('function tripsPageHeader('), js.indexOf('function meaningfulBookingStatus('));
 assert.ok(!tripsInventory.includes('trips-fab') && tripsInventory.includes('bottomNav("trips")'), 'Trips must keep navigation in flow and create from the header');
