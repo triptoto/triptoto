@@ -1,0 +1,18 @@
+{
+  "url": "/pending-changes",
+  "screen": "sync",
+  "text": "Pending Changes\nEverything is synced\nLast sync time unavailable",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "sync-top.png"
+  ]
+}

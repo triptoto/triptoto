@@ -1,0 +1,62 @@
+{
+  "url": "/ready-offline",
+  "screen": "ready",
+  "text": "Ready Offline\n5 of 9 ready\n4 items need attention before offline use.\nTrip timeline\nUpdated now\nTransport bookings\nUpdated now\nStays and addresses\nUpdated now\nLocations\nUpdated now\nPending changes\nNo unsynced local changes\nArthur \u00b7 Flight ticket / boarding pass\nRequired by the saved itinerary\nMissing\nArthur \u00b7 Train ticket\nRequired by the saved itinerary\nMissing\nMaya \u00b7 Train ticket\nRequired by the saved itinerary\nMissing\nHotel confirmation\nRequired by the saved itinerary\nMissing\nDownload Missing Items\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "ready-content",
+      "height": 705,
+      "scroll": 991
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Offline information",
+      "action": "offline-info"
+    },
+    {
+      "text": "Download Missing Items",
+      "label": null,
+      "action": "fix-offline"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "ready-missing-top.png",
+    "ready-missing-scroll-0-0.png"
+  ],
+  "trigger": "",
+  "qaState": "ready-missing"
+}

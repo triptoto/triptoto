@@ -1,0 +1,78 @@
+{
+  "url": "/trips/new",
+  "screen": "form",
+  "text": "Create Trip\nNext\nNEW JOURNEY\nWhere are you going?\n\nPick a place, set your dates, and we\u2019ll build the itinerary around it.\n\nChoose your destination\nSearch a city, region, or airport\nDESTINATION *\nTokyo\nFukuoka Prefecture \u00b7 Japan\nCity\nNarita International Airport\nTokyo \u00b7 Japan\nNRT\nTokyo Haneda International Airport\nTokyo \u00b7 Japan\nHND\nKobe\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity\nHimeji\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity\nNishinomiya\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity\nAmagasaki\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity\nAkashi\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity\nTravel dates\nSelect dates\nChoose dates\nNo date range selected.\n\nYou can change every detail later.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": "Search destination",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Next",
+      "label": null
+    },
+    {
+      "text": "",
+      "label": "Back to trip details"
+    },
+    {
+      "text": "",
+      "label": "Clear destination search"
+    },
+    {
+      "text": "Tokyo\nFukuoka Prefecture \u00b7 Japan\nCity",
+      "label": null
+    },
+    {
+      "text": "Narita International Airport\nTokyo \u00b7 Japan\nNRT",
+      "label": null
+    },
+    {
+      "text": "Tokyo Haneda International Airport\nTokyo \u00b7 Japan\nHND",
+      "label": null
+    },
+    {
+      "text": "Kobe\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity",
+      "label": null
+    },
+    {
+      "text": "Himeji\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity",
+      "label": null
+    },
+    {
+      "text": "Nishinomiya\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity",
+      "label": null
+    },
+    {
+      "text": "Amagasaki\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity",
+      "label": null
+    },
+    {
+      "text": "Akashi\nT\u014dky\u014d Prefecture \u00b7 Japan\nCity",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Travel dates. Choose start date and end date",
+      "action": "open-date-range"
+    }
+  ]
+}

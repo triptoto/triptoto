@@ -1,0 +1,14 @@
+{
+  "url": "/timeline",
+  "screen": "timeline",
+  "text": "tripto.to\nOpening your trips\u2026\nA little moment for your next adventure.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [],
+  "evidence": [
+    "loading-top.png"
+  ],
+  "trigger": "",
+  "qaState": "loading"
+}

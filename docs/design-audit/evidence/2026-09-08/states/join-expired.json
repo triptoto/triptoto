@@ -1,0 +1,25 @@
+{
+  "url": "/join/audit-token",
+  "screen": "join",
+  "text": "Join trip\nInvitation unavailable\n\nThis invitation has expired. Ask the owner for a new link.\n\nGo to my trips",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Go to my trips",
+      "label": null,
+      "action": "join-home"
+    }
+  ],
+  "evidence": [
+    "join-expired-top.png"
+  ],
+  "fixtureSetup": "s.joinCheckedToken=\"audit-token\";s.joinPreview={tripTitle:\"Rome with friends\",role:\"editor\",sharingEnabled:true};s.joinLoading=false;s.joinError=null;s.joinPreview=null;s.joinError=\"This invitation has expired. Ask the owner for a new link.\";",
+  "trigger": []
+}

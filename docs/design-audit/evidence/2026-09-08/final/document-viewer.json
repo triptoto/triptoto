@@ -1,0 +1,69 @@
+{
+  "url": "/bookings/new/activity",
+  "screen": "form",
+  "text": "Add Activity\nSave\nMANUAL BOOKING\nActivity\nEssentials\nActivity name *\nType Optional\nActivity\nTour\nConcert\nTheatre\nMuseum\nAttraction\nSports\nMeeting\nShow\nOther\nDate *\nLocal time Optional\nVenue Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\ntripto-local-audit-document.png\n6 KB\nReady to attach\nOpen\nMore Details\nBack to app\ntripto-local-audit-document.png",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 970
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": "tripto-local-audit-document.png",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Open",
+      "label": "Open tripto-local-audit-document.png",
+      "action": "manual-attachment-open",
+      "id": "local_e7083885b29f2b88fa8114b278b55fb584ad1aaa80ec10e75e2c25c49066342e"
+    },
+    {
+      "text": "",
+      "label": "Remove tripto-local-audit-document.png",
+      "action": "manual-attachment-remove",
+      "id": "local_e7083885b29f2b88fa8114b278b55fb584ad1aaa80ec10e75e2c25c49066342e"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    },
+    {
+      "text": "Back to app",
+      "label": null,
+      "action": "close-doc-viewer"
+    }
+  ],
+  "checks": {
+    "dialogSemantics": true,
+    "initialFocusInside": true,
+    "focusTrapped": true
+  },
+  "evidence": [
+    "document-viewer-top.png"
+  ]
+}

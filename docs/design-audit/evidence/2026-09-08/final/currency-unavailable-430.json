@@ -1,0 +1,62 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "Currency\nRome 2026\nTRIP RATE\nRome uses EUR\n\nYour destination currency is ready automatically.\n\nYOU PAY\nEUR\nEuro\nAmount in EUR\n10\n50\n100\n500\nUpdate to load this rate\nYOU GET\nUSD\nUS dollar\n\u2014\nUSD \u00b7 US dollar\nRate not loaded\nDaily reference rates\nUpdate\n\nReference rate only; providers may add fees. Amounts are calculated on this phone.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "From currency: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "10",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "50",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "100",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "500",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "",
+      "label": "Swap currencies",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nUS dollar",
+      "label": "To currency: USD, US dollar",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Update",
+      "label": "Update exchange rate",
+      "action": "refresh-currency"
+    }
+  ],
+  "checks": {
+    "unavailableRemainsUnavailable": true,
+    "compactNumber": true
+  },
+  "evidence": [
+    "currency-unavailable-430-top.png"
+  ]
+}

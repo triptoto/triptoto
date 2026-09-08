@@ -1,0 +1,45 @@
+{
+  "url": "/travelers/absent-id",
+  "screen": "traveler",
+  "text": "Traveler unavailable\nTraveler unavailable\n\nThis traveler is not available.\n\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "missing-traveler-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": []
+}

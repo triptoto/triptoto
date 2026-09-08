@@ -1,0 +1,89 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nInvite people\nPeople on this trip\nAlex Traveler (You)\nOwner\nSam Companion\nCan edit\nTaylor Companion\nView only\n\nUp to 10 people per trip.\n\nPending invitations\nfriend@example.test\nView only \u00b7 pending \u00b7 expires 1788955361808\nManage Sam Companion\n\nCan edit access to Rome 2026\n\nMake view only\nThey can see the plan but can\u2019t change it.\nMake owner\nYou\u2019ll become an editor and lose sharing controls.\nRemove from trip\nThey\u2019ll no longer have access to this trip.",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1024
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 523.65625,
+        "width": 390,
+        "height": 320.34375,
+        "top": 523.65625,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Invite people",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Revoke invitation",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Close Manage Sam Companion",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Make view only\nThey can see the plan but can\u2019t change it.",
+      "label": null,
+      "action": "member-role",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Make owner\nYou\u2019ll become an editor and lose sharing controls.",
+      "label": null,
+      "action": "member-transfer",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Remove from trip\nThey\u2019ll no longer have access to this trip.",
+      "label": null,
+      "action": "member-remove",
+      "id": "audit-editor"
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"open-member-actions\"]"
+  ],
+  "bottomEvidence": "member-sheet-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"icon-button collab-member__manage\" data-action=\"open-member-actions\" data-id=\"audit-editor\" aria-label=\"Manage access for Sam Companion\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:20px\"><use href=\"#edit\"></use></svg></button>"
+}

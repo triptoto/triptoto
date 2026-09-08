@@ -1,0 +1,58 @@
+{
+  "url": "/help",
+  "screen": "help",
+  "text": "Help & FAQ\nTRAVEL HELP\nHow can we help?\n\nFind a clear answer without leaving your trip.\n\nSearch help\n0 answers\nYour trip in three steps\n\nStart simple. Add details whenever you have them.\n\n1\nCreate a trip\n2\nAdd bookings\n3\nFollow the Timeline\nNo answer found\n\nTry a shorter word such as \u201cbooking\u201d, \u201cmap\u201d, or \u201coffline\u201d.\n\nHelpful links\n\nLearn the basics or review how your data is handled.\n\nTake the tour\nPrivacy\nTerms\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 705,
+      "scroll": 861
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Take the tour",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "checks": {
+    "emptySectionsHidden": true
+  },
+  "evidence": [
+    "faq-empty-top.png",
+    "faq-empty-scroll-0-0.png"
+  ]
+}

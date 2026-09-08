@@ -1,0 +1,218 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "Currency\nRome 2026\nTRIP RATE\nRome uses EUR\n\nYour destination currency is ready automatically.\n\nYOU PAY\nEUR\nEuro\nAmount in EUR\n10\n50\n100\n500\nUpdate to load this rate\nYOU GET\nUSD\nUS dollar\n\u2014\nUSD \u00b7 US dollar\nRate not loaded\nDaily reference rates\nUpdate\n\nReference rate only; providers may add fees. Amounts are calculated on this phone.\n\nYou pay in\nAUD\nAustralian dollar\nCAD\nCanadian dollar\nCHF\nSwiss franc\nCNY\nChinese yuan\nCZK\nCzech koruna\nDKK\nDanish krone\nEUR\nEuro\nGBP\nBritish pound\nHKD\nHong Kong dollar\nHUF\nHungarian forint\nILS\nIsraeli new shekel\nINR\nIndian rupee\nISK\nIcelandic kr\u00f3na\nJPY\nJapanese yen\nKRW\nSouth Korean won\nMXN\nMexican peso\nNOK\nNorwegian krone\nNZD\nNew Zealand dollar\nPLN\nPolish z\u0142oty\nRON\nRomanian leu\nSEK\nSwedish krona\nSGD\nSingapore dollar\nTHB\nThai baht\nTRY\nTurkish lira\nUSD\nUS dollar\nZAR\nSouth African rand",
+  "scroll": [
+    {
+      "class": "sheet-scroll",
+      "height": 458,
+      "scroll": 796
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 324,
+        "width": 390,
+        "height": 520,
+        "top": 324,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "From currency: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "10",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "50",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "100",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "500",
+      "label": null,
+      "action": "currency-quick"
+    },
+    {
+      "text": "",
+      "label": "Swap currencies",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nUS dollar",
+      "label": "To currency: USD, US dollar",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Update",
+      "label": "Update exchange rate",
+      "action": "refresh-currency"
+    },
+    {
+      "text": "",
+      "label": "Close You pay in",
+      "action": "close-sheet"
+    },
+    {
+      "text": "AUD\nAustralian dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CAD\nCanadian dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CHF\nSwiss franc",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CNY\nChinese yuan",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CZK\nCzech koruna",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "DKK\nDanish krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "GBP\nBritish pound",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HKD\nHong Kong dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HUF\nHungarian forint",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ILS\nIsraeli new shekel",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "INR\nIndian rupee",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ISK\nIcelandic kr\u00f3na",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "JPY\nJapanese yen",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "KRW\nSouth Korean won",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "MXN\nMexican peso",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NOK\nNorwegian krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NZD\nNew Zealand dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "PLN\nPolish z\u0142oty",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "RON\nRomanian leu",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SEK\nSwedish krona",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SGD\nSingapore dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "THB\nThai baht",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "TRY\nTurkish lira",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "USD\nUS dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ZAR\nSouth African rand",
+      "label": null,
+      "action": "select-currency"
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"open-currency-picker\"]"
+  ],
+  "bottomEvidence": "currency-picker-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"currency-select-trigger\" data-action=\"open-currency-picker\" data-field=\"from\" aria-haspopup=\"dialog\" aria-label=\"From currency: EUR, Euro\"><strong>EUR</strong><span>Euro</span><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:16px\"><use href=\"#chevron-down\"></use></svg></button>"
+}

@@ -1,0 +1,27 @@
+{
+  "url": "/bookings/new/insurance",
+  "screen": "form",
+  "text": "Add Insurance\nSave\nMANUAL BOOKING\nInsurance\nEssentials\nPolicy / provider\n*\nCoverage starts\n*\nLocal time\nOptional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "form-insurance-top.png"
+  ]
+}

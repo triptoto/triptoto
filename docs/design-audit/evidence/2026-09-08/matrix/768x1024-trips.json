@@ -1,0 +1,134 @@
+{
+  "url": "/trips",
+  "screen": "trips",
+  "text": "Trips\nYOUR JOURNEYS\nAll your trips\n\nPlans, bookings, and ideas stay together here.\n\nAll\n3\nCurrent\n0\nUpcoming\n2\nPast\n1\nUpcoming\n2\nRome 2026\nSep 9\u201315, 2026\nStarts tomorrow\nAthens Weekend\nOct 7\u201310, 2026\nStarts in 29 days\nPast trips\n1\nParis Spring\nApr 3\u20138, 2026\nCompleted\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Create trip",
+      "action": "create-trip"
+    },
+    {
+      "text": "All\n3",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Current\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Upcoming\n2",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Past\n1",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "",
+      "label": "Delete Rome 2026",
+      "action": "delete-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026\nStarts tomorrow",
+      "label": "Open trip: Rome 2026",
+      "action": "open-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "",
+      "label": "Delete Athens Weekend",
+      "action": "delete-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "Athens Weekend\nOct 7\u201310, 2026\nStarts in 29 days",
+      "label": "Open trip: Athens Weekend",
+      "action": "open-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "",
+      "label": "Delete Paris Spring",
+      "action": "delete-trip",
+      "id": "preview-trip-past"
+    },
+    {
+      "text": "Paris Spring\nApr 3\u20138, 2026\nCompleted",
+      "label": "Open trip: Paris Spring",
+      "action": "open-trip",
+      "id": "preview-trip-past"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "viewport": [
+    768,
+    1024
+  ],
+  "geometry": {
+    "header": {
+      "x": 84,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 684,
+      "bottom": 68,
+      "left": 84
+    },
+    "main": {
+      "x": 84,
+      "y": 68,
+      "width": 600,
+      "height": 885,
+      "top": 68,
+      "right": 684,
+      "bottom": 953,
+      "left": 84
+    },
+    "nav": {
+      "x": 84,
+      "y": 953,
+      "width": 600,
+      "height": 71,
+      "top": 953,
+      "right": 684,
+      "bottom": 1024,
+      "left": 84
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

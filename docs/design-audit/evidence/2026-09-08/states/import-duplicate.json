@@ -1,0 +1,39 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Import Review\nPossible duplicate\nThis document was imported before. Review the existing import or add another copy intentionally.\nFlightRecognized\n\nReview the departure time before adding.\n\nTLV\nFCO\nLY 383\nBooking type\nFlight\nHotel\nTrain\nCar\nTransfer\nFerry\nCruise\nActivity\nRestaurant\nReservation\nGeneric ticket\nAirline\nFlight number\nFrom (airport)\nTo (airport)\nDeparts\nArrives\nAdd anyway\nDiscard this booking",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 868
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add anyway",
+      "label": null,
+      "action": "add-duplicate-import",
+      "id": "audit-candidate"
+    },
+    {
+      "text": "Discard this booking",
+      "label": null,
+      "action": "reject-import",
+      "id": "audit-candidate"
+    }
+  ],
+  "evidence": [
+    "import-duplicate-top.png",
+    "import-duplicate-scroll-0-0.png"
+  ],
+  "fixtureSetup": "s.importReview={duplicate:true,candidates:[{id:\"audit-candidate\",type:\"flight\",confidence:0.7,payload:{airlineCode:\"LY\",flightNumber:\"383\",departureIata:\"TLV\",arrivalIata:\"FCO\",departureLocalDatetime:s.trip.starts_on+\"T10:00\",arrivalLocalDatetime:s.trip.starts_on+\"T12:30\",departureTimezone:\"Asia/Jerusalem\",arrivalTimezone:\"Europe/Rome\"},warnings:[\"Review the departure time before adding.\"]}]};",
+  "trigger": []
+}

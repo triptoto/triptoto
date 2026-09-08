@@ -1,0 +1,80 @@
+{
+  "url": "/day-plan",
+  "screen": "day-plan",
+  "text": "Day Plan\nDAY PLAN\nPlan your day\n\nWhat do you want to visit or do? Pick a type, then add the details.\n\nNeighborhood\nGroup several nearby places into one area to explore\nAttraction\nA landmark or must-see sight worth a visit\nMuseum & Culture\nMuseums, galleries, and cultural spots\nFood & Drink\nA cafe, bar, or restaurant you want to try\nShopping\nShops, markets, and places to browse\nTour & Experience\nA guided tour, class, or booked experience\nNature & Outdoors\nParks, gardens, hikes, and green spaces\nBeach & Relax\nA beach, pool, or somewhere to unwind\nEntertainment\nA show, concert, game, or night out\nViewpoint & Scenic\nA lookout or scenic spot for the view\nOther\nAnything else you want to do or remember",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1080
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Neighborhood\nGroup several nearby places into one area to explore",
+      "label": "Neighborhood",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Attraction\nA landmark or must-see sight worth a visit",
+      "label": "Attraction",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Museum & Culture\nMuseums, galleries, and cultural spots",
+      "label": "Museum & Culture",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Food & Drink\nA cafe, bar, or restaurant you want to try",
+      "label": "Food & Drink",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Shopping\nShops, markets, and places to browse",
+      "label": "Shopping",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Tour & Experience\nA guided tour, class, or booked experience",
+      "label": "Tour & Experience",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Nature & Outdoors\nParks, gardens, hikes, and green spaces",
+      "label": "Nature & Outdoors",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Beach & Relax\nA beach, pool, or somewhere to unwind",
+      "label": "Beach & Relax",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Entertainment\nA show, concert, game, or night out",
+      "label": "Entertainment",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Viewpoint & Scenic\nA lookout or scenic spot for the view",
+      "label": "Viewpoint & Scenic",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Other\nAnything else you want to do or remember",
+      "label": "Other",
+      "action": "day-plan-type"
+    }
+  ],
+  "evidence": [
+    "day-plan-top.png",
+    "day-plan-scroll-0-0.png"
+  ]
+}

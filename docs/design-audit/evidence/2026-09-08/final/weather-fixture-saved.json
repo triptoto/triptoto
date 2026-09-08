@@ -1,0 +1,29 @@
+{
+  "url": "/weather",
+  "screen": "weather",
+  "text": "Weather\nRome 2026\nHotel Artemide\nRome\nSaved forecast \u00b7 offline\nHourly\nNow\n22\u00b0\n0%\n4\n23\u00b0\n0%\n4\n24\u00b0\n0%\n4\n25\u00b0\n0%\n4\n26\u00b0\n0%\n4\n27\u00b0\n0%\n4\n7-day forecast\nToday\n24\u00b0\n18\u00b0\n0%\n4\nTue\n24\u00b0\n18\u00b0\n0%\n4\nWed\n24\u00b0\n18\u00b0\n0%\n4\nThu\n24\u00b0\n18\u00b0\n0%\n4\nFri\n24\u00b0\n18\u00b0\n0%\n4\nSat\n24\u00b0\n18\u00b0\n0%\n4\nSun\n24\u00b0\n18\u00b0\n0%\n4\n\nForecast for your destination. tripto.to never uses your location.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Hotel Artemide",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Rome",
+      "label": null,
+      "action": "weather-place"
+    }
+  ],
+  "checks": {},
+  "evidence": [
+    "weather-fixture-saved-top.png"
+  ]
+}

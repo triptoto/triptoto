@@ -1,0 +1,154 @@
+[
+  {
+    "case": "auth-pending",
+    "overflow": false
+  },
+  {
+    "case": "auth-expired",
+    "overflow": false
+  },
+  {
+    "case": "session-rejected",
+    "overflow": false
+  },
+  {
+    "case": "account-signed-in",
+    "overflow": false
+  },
+  {
+    "case": "signout-pending",
+    "overflow": false
+  },
+  {
+    "case": "notifications-empty",
+    "overflow": false
+  },
+  {
+    "case": "notifications-populated",
+    "overflow": false
+  },
+  {
+    "case": "welcome-tour",
+    "overflow": false
+  },
+  {
+    "case": "add-hub",
+    "overflow": false
+  },
+  {
+    "case": "manual-picker",
+    "error": "{'exceptionId': 1, 'text': 'Uncaught', 'lineNumber': 0, 'columnNumber': 72, 'scriptId': '13', 'stackTrace': {'callFrames': [{'functionName': '', 'scriptId': '13', 'url': '', 'lineNumber': 0, 'columnNumber': 72}, {'functionName': '', 'scriptId': '13', 'url': '', 'lineNumber': 0, 'columnNumber': 82}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: TriptoMobileApp.render is not a function\\n    at <anonymous>:1:73\\n    at <anonymous>:1:83', 'objectId': '8948138204560725864.2.2'}}"
+  },
+  {
+    "case": "forward-booking",
+    "overflow": false
+  },
+  {
+    "case": "faq-all",
+    "overflow": false
+  },
+  {
+    "case": "faq-search-empty",
+    "overflow": false
+  },
+  {
+    "case": "checklist-edit",
+    "overflow": false
+  },
+  {
+    "case": "checklist-complete",
+    "overflow": false
+  },
+  {
+    "case": "currency-large",
+    "overflow": false
+  },
+  {
+    "case": "currency-error",
+    "overflow": false
+  },
+  {
+    "case": "currency-loading",
+    "overflow": false
+  },
+  {
+    "case": "currency-cached",
+    "error": "{'exceptionId': 1, 'text': 'Uncaught', 'lineNumber': 0, 'columnNumber': 80, 'scriptId': '13', 'stackTrace': {'callFrames': [{'functionName': '', 'scriptId': '13', 'url': '', 'lineNumber': 0, 'columnNumber': 80}, {'functionName': '', 'scriptId': '13', 'url': '', 'lineNumber': 0, 'columnNumber': 90}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: TriptoMobileApp.render is not a function\\n    at <anonymous>:1:81\\n    at <anonymous>:1:91', 'objectId': '-3748564761438027154.2.2'}}"
+  },
+  {
+    "case": "weather-empty",
+    "overflow": false
+  },
+  {
+    "case": "weather-offline",
+    "overflow": false
+  },
+  {
+    "case": "weather-loading",
+    "overflow": false
+  },
+  {
+    "case": "weather-saved",
+    "overflow": false
+  },
+  {
+    "case": "map-no-location",
+    "overflow": false
+  },
+  {
+    "case": "missing-flight",
+    "overflow": false
+  },
+  {
+    "case": "missing-hotel",
+    "overflow": false
+  },
+  {
+    "case": "missing-train",
+    "overflow": false
+  },
+  {
+    "case": "missing-plan",
+    "overflow": false
+  },
+  {
+    "case": "idea-viewer",
+    "overflow": false
+  },
+  {
+    "case": "idea-edit",
+    "overflow": false
+  },
+  {
+    "case": "collection-rtl-content",
+    "overflow": false
+  },
+  {
+    "case": "collection-viewer",
+    "overflow": false
+  },
+  {
+    "case": "long-confirm",
+    "overflow": false
+  },
+  {
+    "case": "long-stop-menu",
+    "overflow": false
+  },
+  {
+    "case": "import-final",
+    "overflow": false
+  },
+  {
+    "case": "timeline-empty-final",
+    "overflow": false
+  },
+  {
+    "case": "toast-status",
+    "overflow": false
+  },
+  {
+    "case": "toast-alert",
+    "overflow": false
+  }
+]

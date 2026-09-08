@@ -204,6 +204,7 @@
   let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
   let toastTimer = null,
+    documentViewerContext = null,
     sessionRefreshPromise = null,
     sheetReturnFocus = null,
     sheetPointer = null,
@@ -401,14 +402,21 @@
   function closeDocumentViewer(fromHistory = false) {
     const el = document.getElementById("doc-viewer");
     if (!el) return;
+    if (!fromHistory && history.state?.triptoDocumentViewer) {
+      history.back();
+      return;
+    }
     const url = el.dataset.blobUrl;
     el.remove();
     document.documentElement.classList.remove("doc-viewer-open");
+    if (!documentViewerContext?.wasInert) app.removeAttribute("inert");
+    const opener = documentViewerContext?.opener;
+    documentViewerContext = null;
+    if (opener?.isConnected) opener.focus({ preventScroll: true });
     if (url) { try { URL.revokeObjectURL(url); } catch (_) {} }
-    if (!fromHistory && history.state?.triptoDocumentViewer) history.back();
   }
   function openDocumentViewer(blob, name) {
-    closeDocumentViewer();
+    if (document.getElementById("doc-viewer")) return;
     const url = URL.createObjectURL(blob),
       safeName = esc(name || "Travel document"),
       isImage =
@@ -438,14 +446,33 @@
       overlay = document.createElement("div");
     overlay.id = "doc-viewer";
     overlay.className = "doc-viewer";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", name || "Travel document");
     overlay.dataset.blobUrl = url;
     overlay.innerHTML = `<header class="doc-viewer__bar"><button type="button" class="doc-viewer__back" data-action="close-doc-viewer">${icon("back", 20)}<span>Back to app</span></button><strong class="doc-viewer__title">${safeName}</strong><a class="doc-viewer__ext" href="${url}" download="${safeName}" target="_blank" rel="noopener" aria-label="Download ${safeName}">${icon("download", 20)}</a></header><div class="doc-viewer__body">${media}</div>`;
     document.body.appendChild(overlay);
+    documentViewerContext = { opener: document.activeElement, wasInert: app.hasAttribute("inert") };
+    app.setAttribute("inert", "");
     document.documentElement.classList.add("doc-viewer-open");
     history.pushState({ ...(history.state || {}), triptoDocumentViewer: true }, "", location.href);
     overlay
       .querySelector(".doc-viewer__back")
-      ?.addEventListener("click", closeDocumentViewer);
+      ?.addEventListener("click", () => closeDocumentViewer());
+    overlay.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        closeDocumentViewer();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const controls = [...overlay.querySelectorAll("button,a[href]")].filter(control => !control.disabled);
+      const index = controls.indexOf(document.activeElement);
+      event.preventDefault();
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length]?.focus();
+    });
+    overlay.querySelector(".doc-viewer__back")?.focus();
     overlay
       .querySelector(".doc-viewer__open")
       ?.addEventListener("click", () => {
@@ -2444,6 +2471,7 @@
   // Tokens keep overlapping work independent; every caller releases in finally.
   const activeActivities = new Map();
   let activityTimer = null;
+  let awaitingConfirmation = 0;
   function thinkingPattern() {
     return '<span class="thinking-pattern" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>';
   }
@@ -2452,7 +2480,7 @@
   }
   function syncActivityPanel() {
     let node = document.getElementById("tripto-activity");
-    if (!activeActivities.size) {
+    if (!activeActivities.size || awaitingConfirmation) {
       clearTimeout(activityTimer); activityTimer = null;
       node?.remove();
       return;
@@ -2461,7 +2489,7 @@
       if (activityTimer) return;
       activityTimer = setTimeout(() => {
         activityTimer = null;
-        if (!activeActivities.size || document.querySelector("#app .thinking-panel")) return;
+        if (!activeActivities.size || awaitingConfirmation || document.querySelector("#app .thinking-panel")) return;
         node = document.createElement("div");
         node.id = "tripto-activity";
         node.className = "thinking-notice";
@@ -3661,7 +3689,7 @@
     return `<div class="ds-segmented" role="group">${items.map(([key, label]) => `<button type="button" class="${key === active ? "is-active" : ""}" data-action="${esc(action)}" data-filter="${esc(key)}" aria-pressed="${key === active}">${esc(label)}</button>`).join("")}</div>`;
   }
   function FlatList(rows, label = "") {
-    return `<div class="ds-flat-list"${label ? ` aria-label="${esc(label)}"` : ""}>${rows.join("")}</div>`;
+    return `<div class="ds-flat-list ds-grouped-card ds-grouped-card--list"${label ? ` aria-label="${esc(label)}"` : ""}>${rows.join("")}</div>`;
   }
   function FlatRow({ title, meta = "", iconName = "info", tone = "activity", action = "", screen = "", id = "", attrs = "", status = "", statusTone = "neutral", className = "", trailing = "chevron", description = "" }) {
     const target = action ? `data-action="${esc(action)}"` : screen ? `data-screen="${esc(screen)}"` : "";
@@ -4060,7 +4088,7 @@
     if (theme) theme.setAttribute("content", "#fbf8f7");
   }
   function firstRunProductPreview() {
-    return `<div class="welcome-pattern" aria-hidden="true"><i class="welcome-arc welcome-arc--one"></i><i class="welcome-arc welcome-arc--two"></i><i class="welcome-arc welcome-arc--three"></i><i class="welcome-arc welcome-arc--four"></i><i class="welcome-arc welcome-arc--five"></i><i class="welcome-orbit-dot"></i></div>`;
+    return `<ul class="welcome-features ds-grouped-card"><li><span class="row-icon">${icon("ticket",22)}</span><span>All your bookings in one place</span></li><li><span class="row-icon">${icon("calendar",22)}</span><span>A clear plan for every day</span></li><li><span class="row-icon">${icon("favorite",22)}</span><span>Ideas to save for later</span></li></ul>`;
   }
   function firstRunScreen() {
     const offline = state.offline
@@ -4072,7 +4100,7 @@
     const entryAction = state.account?.mode === "account"
       ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span>${icon("chevron", 20)}</button>`
       : googleAction;
-    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div><span class="welcome-brand-caption">Your travel companion</span>${offline}</header><main class="first-run-main">${firstRunProductPreview()}<section class="first-run-hero"><p class="first-run-eyebrow">A little less to think about</p><h1 id="first-run-title" aria-label="Your trip. In good order."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">In good order.</span></h1><p class="first-run-lede">Flights, stays, and everything between.<br>Together, wherever you go.</p></section><div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span></button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Your plans stay private.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
+    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div><span class="welcome-brand-caption">Your travel companion</span>${offline}</header><main class="first-run-main"><section class="first-run-hero"><p class="first-run-eyebrow">A little less to think about</p><h1 id="first-run-title" aria-label="Your trip. In good order."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">In good order.</span></h1><p class="first-run-lede">Flights, stays, and everything between.<br>Together, wherever you go.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span></button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Your plans stay private.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
   }
   // --- Trip change notifications (header bell) ---------------------------
   // Sourced from the existing /changes feed (change_events), so booking
@@ -4406,18 +4434,6 @@
       if (active || (starts != null && starts - Date.now() <= 6 * 60 * 60 * 1000))
         return `<section class="timeline-context timeline-context--next"><span>${active ? "Now" : "Next"}</span><h2>${esc(next.title || "Next plan")}</h2><p>${esc(starts ? `${formatTime(starts,zone)} · ${next.subtitle || statusText(next.status)}` : next.subtitle || "Time unavailable")}</p><button data-action="timeline-detail" data-id="${esc(itemId(next))}">Open${icon("chevron",16)}</button></section>`;
     }
-    const start = val(state.trip,"starts_on","startsOn");
-    if (start) {
-      const days = Math.ceil((new Date(`${start}T00:00:00`).getTime() - Date.now()) / 86400000);
-      if (days >= 0 && days <= 14) {
-        const cl = state.checklist || [];
-        // Only surface the pre-trip prompt while the packing list hasn't been started.
-        if (cl.length) return "";
-        const clTitle = "Start your packing list";
-        const clSub = "Passport, chargers and the essentials";
-        return `<section class="timeline-context timeline-context--prepare"><span>${days === 0 ? "Today" : `${days} day${days === 1 ? "" : "s"} to go`}</span><h2>Before you go</h2><p>Keep tickets and confirmations available on this device.</p><div class="timeline-context__actions"><button data-screen="checklist"><span class="tcx-act__icon">${icon("checklist",20)}</span><span class="tcx-act__body"><strong>${esc(clTitle)}</strong><small>${esc(clSub)}</small></span>${icon("chevron",18)}</button><button data-screen="documents"><span class="tcx-act__icon">${icon("document",20)}</span><span class="tcx-act__body"><strong>Review documents</strong><small>Tickets and confirmations</small></span>${icon("chevron",18)}</button></div></section>`;
-      }
-    }
     return "";
   }
 
@@ -4676,7 +4692,7 @@
     return hours ? `${hours}h ${rest ? `${rest}m` : ""}`.trim() : `${rest}m`;
   }
   function missingDetailScreen(title, body) {
-    return `<div class="phone-app"><section class="screen">${appBar(title)}<div class="empty-mobile"><div class="empty-mobile-icon">${icon("info", 30)}</div><h1>${esc(title)}</h1><p>${esc(body)}</p></div>${bottomNav("bookings")}</section></div>`;
+    return `<div class="phone-app"><section class="screen">${appBar(title)}<main class="missing-detail-content">${EmptyState(title, body)}</main>${bottomNav("bookings")}</section></div>`;
   }
   function hotelScreen() {
     const stay = selectedStay();
@@ -4758,7 +4774,7 @@
       })
       .join("");
     const verified = state.localDocs.filter((document) => document.integrity === "verified").length;
-    return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Your travel documents</h1><p>${verified} of ${state.localDocs.length} ready offline on this phone</p></div></header><section class="mobile-group"><h2>Saved documents</h2><div class="document-list">${rows || `<div class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon("document", 30)}</span><h1>No offline documents</h1><p>Add a ticket, boarding pass, or confirmation.</p></div>`}</div></section><button class="mobile-primary-action" data-action="document-sheet">${icon("plus", 20)} Add Document</button>`, "bookings");
+    return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Your travel documents</h1><p>${verified} of ${state.localDocs.length} ready offline on this phone</p></div></header><section class="mobile-group"><h2>Saved documents</h2><div class="document-list ds-grouped-card ds-grouped-card--list">${rows || `<div class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon("document", 30)}</span><h1>No offline documents</h1><p>Add a ticket, boarding pass, or confirmation.</p></div>`}</div></section><button class="mobile-primary-action" data-action="document-sheet">${icon("plus", 20)} Add Document</button>`, "bookings");
   }
 
   function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
@@ -4922,7 +4938,7 @@
       const trips = groups[label];
       if (!trips.length) return "";
       const heading = label === "Past" ? "Past trips" : label;
-      return `<section class="trip-list-group trip-list-group--${label.toLowerCase()}"><header class="trip-list-group__header"><h2>${heading}</h2><span class="trip-list-group__count">${trips.length}</span></header><ul class="trip-list">${trips.map((trip) => tripListRow(trip, label)).join("")}</ul></section>`;
+      return `<section class="trip-list-group trip-list-group--${label.toLowerCase()}"><header class="trip-list-group__header"><h2>${heading}</h2><span class="trip-list-group__count">${trips.length}</span></header><ul class="trip-list ds-grouped-card ds-grouped-card--list">${trips.map((trip) => tripListRow(trip, label)).join("")}</ul></section>`;
     }).join("");
     const emptyCopy = {current:"Trips happening now will appear here.",upcoming:"Your next adventures will appear here.",past:"Completed trips will appear here.",all:"Create your first trip and keep everything in one place."};
     const body = content || `<section class="ds-empty-state trips-empty"><span class="ds-empty-state__icon">${icon("trips", 26)}</span><h1>${!state.trips.length ? "No trips yet" : `No ${filter === "all" ? "" : filter + " "}trips`}</h1><p>${emptyCopy[filter]}</p><button type="button" class="ds-primary-button" data-action="${state.trips.length ? "filter-trips" : "create-trip"}"${state.trips.length ? ' data-filter="all"' : ""}>${state.trips.length ? "Show all trips" : "Create trip"}</button></section>`;
@@ -4952,7 +4968,7 @@
         status = meaningfulBookingStatus(item);
       return `<button class="ds-flat-row travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="ds-flat-row__icon travel-row__icon">${PastelIcon(transportIcon(kind), ["hotel"].includes(kind) ? "stay" : ["flight", "train", "ferry"].includes(kind) ? "flight" : "transfer", 22)}</span><span class="ds-flat-row__copy travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? StatusLabel(status, "attention") : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
     }).join("");
-    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add-booking" aria-label="Add booking">${icon("plus", 24)}</button>`);
+    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings", `<button class="icon-button" data-action="open-add-booking" aria-label="Add booking">${icon("plus", 24)}</button>`);
   }
   function selectedTrain() {
     const supported = new Set(["train", "ferry"]),
@@ -5295,7 +5311,7 @@
       const cfg = collectionConfig(c.collection_type);
       return `<button type="button" class="planning-row" data-action="open-collection" data-id="${esc(c.id)}"><span class="planning-row__icon">${icon(cfg ? cfg.icon : "city", 22)}</span><span class="planning-row__copy"><strong>${esc(c.title || (cfg ? cfg.label : "Plan"))}</strong><small>${esc([cfg ? cfg.label : "", collectionSummary(c)].filter(Boolean).join(" · "))}</small></span>${icon("chevron", 18)}</button>`;
     };
-    const section = (heading, items, emptyCopy) => `<section class="planning-group" aria-label="${esc(heading)}"><h2>${esc(heading)}</h2>${items.length ? `<div class="planning-list">${items.map(row).join("")}</div>` : `<p class="planning-empty">${esc(emptyCopy)}</p>`}</section>`;
+    const section = (heading, items, emptyCopy) => `<section class="planning-group" aria-label="${esc(heading)}"><h2>${esc(heading)}</h2>${items.length ? `<div class="planning-list ds-grouped-card ds-grouped-card--list">${items.map(row).join("")}</div>` : `<p class="planning-empty">${esc(emptyCopy)}</p>`}</section>`;
     const addTypes = Object.entries(COLLECTION_TYPE_CONFIG).map(([type, cfg]) => `<button type="button" class="planning-add-card" data-action="add-collection" data-collection-type="${esc(type)}" aria-label="Add ${esc(cfg.label)}"><span class="planning-add-card__icon">${icon(cfg.icon, 22)}</span><span class="planning-add-card__copy"><strong>${esc(cfg.label)}</strong><small>${esc(cfg.hint)}</small></span></button>`).join("");
     const addSection = canEdit ? `<section class="planning-group" aria-label="Start a plan"><h2>Start a plan</h2><div class="planning-add-grid">${addTypes}</div></section>` : "";
     const body = `<section class="planning-intro"><span>PLAN YOUR DAYS</span><h1>Planning</h1><p>Your neighborhood plans. A scheduled neighborhood appears on your timeline; unscheduled ones wait here.</p></section>${section("On your timeline", scheduled, "Nothing scheduled yet.")}${section("Planning", planning, "No draft plans yet.")}${addSection}`;
@@ -5413,30 +5429,52 @@
     return bottomSheet("collection-stop", stop.title || "Place", body);
   }
 
-  // Generic confirm dialog (reuses the discard-dialog visual language).
-  function openConfirmDialog({ title, body, confirmLabel = "Delete", cancelLabel = "Cancel", danger = true, onConfirm }) {
+  // One app-controlled confirmation, including typed account deletion.
+  function openConfirmDialog({ title, body, confirmLabel = "Delete", cancelLabel = "Cancel", danger = true, confirmationText = "", onConfirm, onCancel }) {
     const returnFocus = document.activeElement;
     const backdrop = document.createElement("div");
     backdrop.className = "discard-dialog-backdrop";
-    backdrop.innerHTML = `<section class="discard-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-copy"><h2 id="confirm-dialog-title">${esc(title)}</h2><p id="confirm-dialog-copy">${esc(body)}</p><div class="discard-dialog-actions"><button type="button" class="mobile-secondary-action" data-confirm-action="cancel">${esc(cancelLabel)}</button><button type="button" class="${danger ? "mobile-danger-action" : "mobile-primary-action"}" data-confirm-action="confirm">${esc(confirmLabel)}</button></div></section>`;
-    const cancel = backdrop.querySelector('[data-confirm-action="cancel"]'), confirmBtn = backdrop.querySelector('[data-confirm-action="confirm"]');
-    const close = () => { backdrop.remove(); returnFocus?.focus?.(); };
-    cancel.addEventListener("click", close);
+    const typedField = confirmationText ? `<label class="confirmation-field" for="confirm-dialog-input">Type ${esc(confirmationText)} to confirm<input id="confirm-dialog-input" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>` : "";
+    backdrop.innerHTML = `<section class="discard-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-copy"><h2 id="confirm-dialog-title">${esc(title)}</h2><p id="confirm-dialog-copy">${esc(body)}</p>${typedField}<div class="discard-dialog-actions"><button type="button" class="mobile-secondary-action" data-confirm-action="cancel">${esc(cancelLabel)}</button><button type="button" class="${danger ? "mobile-danger-action" : "mobile-primary-action"}" data-confirm-action="confirm"${confirmationText ? " disabled" : ""}>${esc(confirmLabel)}</button></div></section>`;
+    const cancel = backdrop.querySelector('[data-confirm-action="cancel"]'), confirmBtn = backdrop.querySelector('[data-confirm-action="confirm"]'), input = backdrop.querySelector("input");
+    let busy = false;
+    let closed = false;
+    const background = document.querySelector(".phone-app");
+    const wasInert = background?.hasAttribute("inert");
+    background?.setAttribute("inert", "");
+    awaitingConfirmation += 1;
+    syncActivityPanel();
+    const close = (cancelled = true) => {
+      if (busy || closed) return;
+      closed = true;
+      backdrop.remove();
+      if (!wasInert) background?.removeAttribute("inert");
+      awaitingConfirmation = Math.max(0, awaitingConfirmation - 1);
+      syncActivityPanel();
+      if (returnFocus?.isConnected) returnFocus.focus();
+      if (cancelled) onCancel?.();
+    };
+    input?.addEventListener("input", () => { confirmBtn.disabled = input.value !== confirmationText; });
+    cancel.addEventListener("click", () => close());
     backdrop.addEventListener("click", (event) => { if (event.target === backdrop) close(); });
     backdrop.addEventListener("keydown", (event) => {
       if (event.key === "Escape") { event.preventDefault(); close(); return; }
       if (event.key !== "Tab") return;
-      const controls = [cancel, confirmBtn], index = controls.indexOf(document.activeElement);
+      const controls = [...backdrop.querySelectorAll("input,button")].filter(control => !control.disabled), index = controls.indexOf(document.activeElement);
       event.preventDefault();
-      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length]?.focus();
     });
     confirmBtn.addEventListener("click", async () => {
-      confirmBtn.disabled = true; cancel.disabled = true;
-      try { await onConfirm(); backdrop.remove(); }
-      catch (error) { confirmBtn.disabled = false; cancel.disabled = false; showToast(error?.message || "That action could not be completed.", "alert"); }
+      if (busy || (input && input.value !== confirmationText)) return;
+      busy = true; confirmBtn.disabled = true; cancel.disabled = true;
+      try { await onConfirm(); busy = false; close(false); }
+      catch (error) { busy = false; confirmBtn.disabled = Boolean(input && input.value !== confirmationText); cancel.disabled = false; showToast(error?.message || "That action could not be completed.", "alert"); }
     });
     document.body.append(backdrop);
     requestAnimationFrame(() => cancel.focus());
+  }
+  function requestConfirmation(options) {
+    return new Promise(resolve => openConfirmDialog({ ...options, onConfirm: () => resolve(true), onCancel: () => resolve(false) }));
   }
 
   async function saveCollectionForm(form) {
@@ -5755,7 +5793,7 @@
     const rows = readyOfflineRows(),
       ready = rows.filter((row) => row.ready).length,
       allReady = rows.length > 0 && ready === rows.length;
-    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 24)}</button>`)}<main class="ready-content"><section class="offline-summary ${allReady ? "offline-summary--ready" : "offline-summary--attention"}"><span class="offline-summary-icon">${icon(allReady ? "check" : "warning", 27)}</span><span class="offline-summary-copy"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Your essentials are saved on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></span></section><div class="list-stack ready-list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 16)}`}</span></div>`).join("")}</div><div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}</div></main>${bottomNav("trips")}</section></div>`;
+    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 24)}</button>`)}<main class="ready-content"><section class="offline-summary ${allReady ? "offline-summary--ready" : "offline-summary--attention"}"><span class="offline-summary-icon">${icon(allReady ? "check" : "warning", 27)}</span><span class="offline-summary-copy"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Your essentials are saved on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></span></section><div class="list-stack ready-list ds-grouped-card ds-grouped-card--list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 16)}`}</span></div>`).join("")}</div><div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}</div></main>${bottomNav("trips")}</section></div>`;
   }
   function issueKind(issue) {
     return ["critical", "high"].includes(issue.severity)
@@ -5806,8 +5844,8 @@
     if (total === 0) {
       body += `<section class="cl-suggest"><p class="cl-suggest__label">Suggestions</p><div class="cl-chips">${CHECKLIST_SUGGESTIONS.map((s) => `<button type="button" class="cl-chip" data-action="add-checklist-suggested" data-title="${esc(s)}">${icon("plus", 14)} ${esc(s)}</button>`).join("")}</div></section>`;
     } else {
-      if (toPack.length) body += `<section class="cl-section"><h2>To pack <span>${toPack.length}</span></h2><ul class="cl-list">${toPack.map(rowHtml).join("")}</ul></section>`;
-      if (packed.length) body += `<section class="cl-section cl-section--packed"><h2>Packed <span>${packed.length}</span></h2><ul class="cl-list">${packed.map(rowHtml).join("")}</ul></section>`;
+      if (toPack.length) body += `<section class="cl-section"><h2>To pack <span>${toPack.length}</span></h2><ul class="cl-list ds-grouped-card ds-grouped-card--list">${toPack.map(rowHtml).join("")}</ul></section>`;
+      if (packed.length) body += `<section class="cl-section cl-section--packed"><h2>Packed <span>${packed.length}</span></h2><ul class="cl-list ds-grouped-card ds-grouped-card--list">${packed.map(rowHtml).join("")}</ul></section>`;
     }
     body += `</div>`;
     return mobilePage("Checklist", body, "checklist");
@@ -5873,13 +5911,13 @@
   }
   function travelersScreen() {
     const rows = state.travelers.map((traveler)=>{ const assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))).length; return `<button class="travel-row traveler-row" data-screen="traveler" data-id="${esc(traveler.id)}"><span class="traveler-avatar">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><span class="travel-row__body"><strong>${esc(val(traveler,"display_name") || "Traveler")}</strong><small>${esc(statusText(val(traveler,"traveler_type") || "Traveler"))} · ${assigned} booking${assigned===1?"":"s"}</small><em>${esc(travelerDocumentSummary(traveler))}</em></span>${icon("chevron",20)}</button>`; }).join("");
-    return mobilePage("Travelers", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No travelers yet</h1><p>Add a traveler to assign bookings and documents correctly.</p></section>`}</div><button class="mobile-secondary-action" data-action="open-form" data-form="traveler">${icon("plus",20)} Add traveler</button>`, "account");
+    return mobilePage("Travelers", `<div class="travel-list ds-grouped-card ds-grouped-card--list">${rows || `<section class="mobile-empty"><h1>No travelers yet</h1><p>Add a traveler to assign bookings and documents correctly.</p></section>`}</div><button class="mobile-secondary-action" data-action="open-form" data-form="traveler">${icon("plus",20)} Add traveler</button>`, "account");
   }
   function travelerScreen() {
     const traveler = state.travelers.find((t)=>String(t.id)===String(state.selectedId));
     if (!traveler) return missingDetailScreen("Traveler unavailable", "This traveler is not available.");
     const details = state.bookingDetails.filter((d)=>String(val(d,"traveler_id"))===String(traveler.id)), docs = state.localDocs.filter((d)=>d.travelerIds?.includes(String(traveler.id))), assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))), checklist = state.checklist.filter((item)=>String(val(item,"traveler_id"))===String(traveler.id));
-    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(timelineIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
+    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list ds-grouped-card ds-grouped-card--list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(timelineIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist ds-grouped-card ds-grouped-card--list">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
   }
   function importScreen() {
     // No AI guessing. You review every field before it is added.
@@ -5910,7 +5948,7 @@
     const control=([key,value])=>{const date=key.endsWith("LocalDatetime"),tz=key.toLowerCase().includes("timezone"),label=IMPORT_FIELD_LABELS[key]||statusText(key.replace(/([A-Z])/g," $1"));if(tz&&value)return `<input type="hidden" name="field-${esc(c.id)}-${esc(key)}" value="${esc(value)}" data-field-name="${esc(key)}">`;return `<label class="${tz?"review-field--muted":""}"><span>${esc(tz?"Time zone could not be determined":label)}</span><input type="${date?"datetime-local":"text"}" name="field-${esc(c.id)}-${esc(key)}" value="${esc(value)}" data-field-name="${esc(key)}"${tz?' placeholder="e.g. Europe/Rome" autocapitalize="off" autocorrect="off"':""}>${tz?'<small class="review-hint">Only needed when the airport cannot be recognized.</small>':""}</label>`;};
     const dep=String(fields.get("departureIata")||"").toUpperCase(),arr=String(fields.get("arrivalIata")||"").toUpperCase(),flightLabel=`${fields.get("airlineCode")||""} ${fields.get("flightNumber")||""}`.trim();
     const hero=type==="flight"&&(dep||arr)?`<div class="review-hero"><div class="review-hero__route"><span>${esc(dep||"—")}</span>${icon(transportIcon(type),20)}<span>${esc(arr||"—")}</span></div>${flightLabel?`<div class="review-hero__meta">${esc(flightLabel)}</div>`:""}</div>`:"";
-    return `<section class="review-card"><header><span class="review-type">${icon(transportIcon(type),19)} ${esc(statusText(type))}</span><span class="travel-state ${confidence<.7?"travel-state--attention":""}">${confidence<.7?"Check carefully":"Recognized"}</span></header>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",16)} ${esc(w)}</p>`).join("")}</div>`:""}${hero}<label><span>Booking type</span><select name="field-${esc(c.id)}-candidateType">${["flight","hotel","train","car","transfer","ferry","cruise","activity","restaurant","reservation","generic_ticket"].map(x=>`<option value="${x}" ${x===type?"selected":""}>${esc(statusText(x))}</option>`).join("")}</select></label><div class="review-fields">${entries.map(control).join("")}</div><div class="review-actions">${duplicate?`<button type="button" class="mobile-secondary-action" data-action="add-duplicate-import" data-id="${esc(c.id)}">Add anyway</button>`:`<button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">${icon("check",18)} Add to Timeline</button>`}<button type="button" class="review-reject" data-action="reject-import" data-id="${esc(c.id)}">Discard this booking</button></div></section>`;
+    return `<section class="review-card ds-grouped-card"><header><span class="review-type">${icon(transportIcon(type),19)} ${esc(statusText(type))}</span><span class="travel-state ${confidence<.7?"travel-state--attention":""}">${confidence<.7?"Check carefully":"Recognized"}</span></header>${warnings.length?`<div class="review-warnings">${warnings.map((w)=>`<p>${icon("warning",16)} ${esc(w)}</p>`).join("")}</div>`:""}${hero}<label><span>Booking type</span><select name="field-${esc(c.id)}-candidateType">${["flight","hotel","train","car","transfer","ferry","cruise","activity","restaurant","reservation","generic_ticket"].map(x=>`<option value="${x}" ${x===type?"selected":""}>${esc(statusText(x))}</option>`).join("")}</select></label><div class="review-fields">${entries.map(control).join("")}</div><div class="review-actions">${duplicate?`<button type="button" class="mobile-secondary-action" data-action="add-duplicate-import" data-id="${esc(c.id)}">Add anyway</button>`:`<button type="button" class="mobile-primary-action" data-action="confirm-import" data-id="${esc(c.id)}">${icon("check",18)} Add to Timeline</button>`}<button type="button" class="review-reject" data-action="reject-import" data-id="${esc(c.id)}">Discard this booking</button></div></section>`;
   }
   // Fills empty departure/arrival time-zone inputs from the airport IATA code so the
   // server can compute scheduled UTC times. Async: waits for the airport catalog.
@@ -5943,7 +5981,7 @@
   function importHistoryScreen() {
     const render=(row)=>{const[label,attention]=importDisplayState(row);const title=row.subject || statusText(row.candidate_type || "Booking");return `<div class="import-history-item"><button class="travel-row" data-action="review-import" data-id="${esc(row.id)}"><span class="travel-row__icon">${icon(timelineIcon(row.candidate_type),20)}</span><span class="travel-row__body"><strong>${esc(title)}</strong><small>${esc(row.created_at ? formatDateTime(Number(row.created_at)) : "Date unavailable")}</small><em class="travel-state ${attention?"travel-state--attention":""}">${esc(label)}</em></span>${icon("chevron",18)}</button><button class="import-remove" data-action="remove-import" data-id="${esc(row.id)}" aria-label="Delete ${esc(title)} everywhere">${icon("trash",18)}</button></div>`;};
     const rows = (state.imports || []).map(render).join("");
-    return mobilePage("Import History", `<div class="travel-list">${rows || `<section class="mobile-empty"><h1>No imports yet</h1><p>Forwarded bookings you review will appear here.</p></section>`}</div><button class="mobile-secondary-action" data-screen="import">${icon("plus",20)} Import booking</button>`, "account");
+    return mobilePage("Import History", `<div class="travel-list ds-grouped-card ds-grouped-card--list">${rows || `<section class="mobile-empty"><h1>No imports yet</h1><p>Forwarded bookings you review will appear here.</p></section>`}</div><button class="mobile-secondary-action" data-screen="import">${icon("plus",20)} Import booking</button>`, "account");
   }
   function bookingEmailDisplayStatus(row) {
     if (row.status === "needs_trip" && !row.import_id) return "Forward again";
@@ -5984,7 +6022,7 @@
   }
   function accountScreen() {
     const partnerRow = (ic, title, sub, href, sponsored = false) => `<a class="simple-row account-partner-row" href="${esc(href)}" target="_blank" rel="${sponsored ? "sponsored " : ""}noopener noreferrer"><span class="row-icon">${icon(ic,22)}</span><span class="row-copy"><strong>${esc(title)}</strong><span>${esc(sub)}</span></span>${icon("external",18,"chevron")}</a>`;
-    const travelServices = `<h2 class="section-label">Travel essentials</h2><div class="account-list account-partners">${partnerRow("flight","Find a flight","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${partnerRow("bed","Find a place to stay","Browse stays on Booking.com","https://www.booking.com/",true)}${partnerRow("sim","Travel eSIM","Get connected before you land",routeUrl("esim"))}</div><p class="account-partner-disclosure">Partner links may earn Tripto a commission at no extra cost.</p>`;
+    const travelServices = `<h2 class="section-label">Travel essentials</h2><div class="account-list account-partners ds-grouped-card ds-grouped-card--list">${partnerRow("flight","Find a flight","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${partnerRow("bed","Find a place to stay","Browse stays on Booking.com","https://www.booking.com/",true)}${partnerRow("sim","Travel eSIM","Get connected before you land",routeUrl("esim"))}</div><p class="account-partner-disclosure">Partner links may earn Tripto a commission at no extra cost.</p>`;
     const mode = state.account?.mode || "guest",
       name =
         state.account?.user?.display_name ||
@@ -6008,10 +6046,10 @@
       <section class="account-passport" aria-label="Your profile"><div class="account-passport__top"><span class="account-kicker">Your travel space</span>${icon("trips",24)}</div><div class="account-profile"><div class="avatar">${esc(initials)}</div><div class="account-profile__id"><h1>${esc(name)}</h1><div class="account-meta">${mode === "account" ? esc(identityEmail) : "A little closer to your next adventure"}</div></div></div><div class="account-trip-summary">${tripCounts.map(({label,count}) => `<div><strong>${count}</strong><span>${label}</span></div>`).join("")}</div>${mode === "account" ? `<button class="account-signout-btn" data-action="sign-out">Sign out ${icon("external",14)}</button>` : `<p class="account-guest-note">Guest profile</p>`}</section>
       ${authBlock}
       <div class="account-shortcuts"><button type="button" data-screen="trips">${icon("trips",24)}<span>All trips<small>${state.trips.length} trip${state.trips.length===1?"":"s"}</small></span>${icon("chevron",18)}</button><button type="button" data-action="create-trip">${icon("plus",24)}<span>New trip<small>Somewhere new</small></span>${icon("chevron",18)}</button></div>
-      <section class="account-settings-group"><h2 class="section-label">Your plans</h2><div class="account-list">${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}${pending?row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync"):""}</div></section>
+      <section class="account-settings-group"><h2 class="section-label">Your plans</h2><div class="account-list ds-grouped-card ds-grouped-card--list">${row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip")}${row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox")}${pending?row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync"):""}</div></section>
       <section class="account-settings-group account-travel-services">${travelServices}</section>
-      <section class="account-settings-group"><h2 class="section-label">A helping hand</h2><div class="account-list">${row("info","Take the tour","Get to know Tripto","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")}</div></section>
-      <section class="account-settings-group account-data-section"><h2 class="section-label">Privacy & data</h2><div class="account-list">${row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data")}${mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account"):""}</div></section>
+      <section class="account-settings-group"><h2 class="section-label">A helping hand</h2><div class="account-list ds-grouped-card ds-grouped-card--list">${row("info","Take the tour","Get to know Tripto","","open-first-run-how")}${row("info","Help, privacy & terms","Support and legal information","","open-help")}</div></section>
+      <section class="account-settings-group account-data-section"><h2 class="section-label">Privacy & data</h2><div class="account-list ds-grouped-card ds-grouped-card--list">${row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data")}${mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account"):""}</div></section>
       <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main>${bottomNav("account")}</section></div>`;
   }
 
@@ -6695,10 +6733,10 @@
       const tripNameField = editingTrip
         ? `<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}`
         : "";
-      const tripBody=`<header class="trip-create-head trip-create-intro"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
+      const tripBody=`<header class="trip-create-head trip-create-intro"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip?"Trip details":"New journey"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div></header><div class="trip-create-fields ds-grouped-card"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Choose your destination</strong><small>Search a city, region, or airport</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><p class="trip-create-destination__coverage">${icon("globe",15)} Worldwide city and airport search</p><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section><p class="trip-create-reassurance">${icon("check",16)} You can change every detail later.</p>${deleteBar}</div>`;
       return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form trip-create-form" id="native-form" data-kind="trip"${editAttrs} novalidate>${tripBody}</form>`, "form-screen trip-create-screen", headerActions);
     }
-    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);
+    return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section ds-grouped-card"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);
   }
   function zonedDateTimeParts(ms, timeZone) {
     const value = Number(ms);
@@ -7193,7 +7231,7 @@
       ? optionCard("edit", "edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)
       : "";
     const alerts = totalNotificationCount();
-    const body = `<section class="trip-options-intro"><span>Your travel companion</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>${esc(formatTripDates(state.trip))}</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${collabCard}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid">${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid">${editTripCard}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
+    const body = `<section class="trip-options-intro"><span>Your travel companion</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>${esc(formatTripDates(state.trip))}</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid ds-grouped-card ds-grouped-card--list">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${collabCard}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid ds-grouped-card ds-grouped-card--list">${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid ds-grouped-card ds-grouped-card--list">${editTripCard}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
     return mobilePage("Trip options", body, "trip-options", "", "trip-options-page");
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
@@ -7287,7 +7325,7 @@
   }
   function collabBenefits() {
     const benefit = (iconName, tone, title, body) => `<div class="collab-benefit"><span class="ds-pastel-icon ds-pastel-icon--${esc(tone)}">${icon(iconName, 21)}</span><span class="ds-flat-row__copy"><strong>${esc(title)}</strong><small>${esc(body)}</small></span></div>`;
-    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><div class="ds-section-header"><h2 id="collab-benefits-title">Why plan together?</h2></div><div class="ds-flat-list">${benefit("edit", "flight", "Build one plan", "Editors can add and update bookings.")}${benefit("bell", "stay", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "food", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</div></section>`;
+    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><div class="ds-section-header"><h2 id="collab-benefits-title">Why plan together?</h2></div><div class="ds-flat-list ds-grouped-card ds-grouped-card--list">${benefit("edit", "flight", "Build one plan", "Editors can add and update bookings.")}${benefit("bell", "stay", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "food", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</div></section>`;
   }
   function collaborationScreen() {
     if (!state.trip)
@@ -7353,7 +7391,7 @@
     const cap = state.sharing?.maxMembers ? `<p class="collab-note">Up to ${esc(state.sharing.maxMembers)} people per trip.</p>` : "";
     return collabScaffold(
       sub,
-      `${collabHero(sub, intro)}${collabBenefits()}${inviteBtn}<section class="collab-section">${SectionHeader("People on this trip")}<div class="ds-flat-list collab-members">${memberRows || `<p class="collab-note">Just you so far. Invite someone when you’re ready.</p>`}</div>${cap}</section>${invitesSection}${leaveBtn}`,
+      `${collabHero(sub, intro)}${collabBenefits()}${inviteBtn}<section class="collab-section">${SectionHeader("People on this trip")}<div class="ds-flat-list collab-members ds-grouped-card ds-grouped-card--list">${memberRows || `<p class="collab-note">Just you so far. Invite someone when you’re ready.</p>`}</div>${cap}</section>${invitesSection}${leaveBtn}`,
     );
   }
   function collabMemberSheet() {
@@ -7618,7 +7656,7 @@
   }
   async function removeMember(userId, name) {
     if (!state.trip || !userId) return;
-    if (!window.confirm(`Remove ${name || "this person"} from ${state.trip.title || "this trip"}?`)) return;
+    if (!await requestConfirmation({ title: "Remove from trip?", body: `Remove ${name || "this person"} from ${state.trip.title || "this trip"}?`, confirmLabel: "Remove" })) return;
     const tripId = state.trip.id;
     try {
       await api(`/api/v1/trips/${encodeURIComponent(tripId)}/members/${encodeURIComponent(userId)}`, { method: "DELETE" });
@@ -7630,7 +7668,7 @@
   }
   async function transferOwnership(userId, name) {
     if (!state.trip || !userId) return;
-    if (!window.confirm(`Make ${name || "this person"} the owner? You’ll become an editor and can no longer manage sharing.`)) return;
+    if (!await requestConfirmation({ title: "Transfer ownership?", body: `Make ${name || "this person"} the owner? You’ll become an editor and can no longer manage sharing.`, confirmLabel: "Make owner" })) return;
     const tripId = state.trip.id;
     try {
       await api(`/api/v1/trips/${encodeURIComponent(tripId)}/transfer-ownership`, {
@@ -7645,7 +7683,7 @@
   }
   async function leaveTrip() {
     if (!state.trip) return;
-    if (!window.confirm(`Leave ${state.trip.title || "this trip"}? You’ll lose access until someone invites you again.`)) return;
+    if (!await requestConfirmation({ title: "Leave this trip?", body: `Leave ${state.trip.title || "this trip"}? You’ll lose access until someone invites you again.`, confirmLabel: "Leave trip" })) return;
     const tripId = state.trip.id;
     try {
       await api(`/api/v1/trips/${encodeURIComponent(tripId)}/leave`, { method: "POST" });
@@ -7756,7 +7794,7 @@
         ? `<span class="currency-status">${currency.cached ? "Saved offline" : "Rate updated"}${currency.date ? ` · ${esc(currency.date)}` : ""}</span>`
         : `<span class="currency-status">Rate not loaded</span>`;
     const error = state.currencyError ? `<section class="currency-error" role="status">${icon("info",18)}<span>${esc(state.currencyError)}</span></section>` : "";
-    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><header class="currency-hero"><span class="currency-hero__icon">${icon("currency",23)}</span><div><span>TRIP RATE</span><h1 id="currency-converter-title">${esc(destination)} uses ${esc(destinationCurrency())}</h1><p>Your destination currency is ready automatically.</p></div></header><section class="currency-workspace" aria-labelledby="currency-converter-title"><section class="currency-zone currency-zone--pay"><header class="currency-zone__head"><span>You pay</span>${currencyChoice("from")}</header><label class="currency-amount"><span class="sr-only">Amount in ${esc(currency.from)}</span><input data-currency-amount type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label><div class="currency-quick" aria-label="Quick amounts">${[10,50,100,500].map((value) => `<button type="button" data-action="currency-quick" data-value="${value}"${Number(currency.amount) === value ? " class=\"is-active\"" : ""}>${value}</button>`).join("")}</div></section><div class="currency-bridge"><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",21)}</button><span class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Update to load this rate"}</span></div><section class="currency-zone currency-zone--receive"><header class="currency-zone__head"><span>You get</span>${currencyChoice("to")}</header><output class="currency-result" aria-live="polite"><strong class="currency-result__amount">${esc(result == null ? "—" : money(result, currency.to))}</strong><span>${esc(currency.to)} · ${esc(TRAVEL_CURRENCIES.find(([code]) => code === currency.to)?.[1] || "Currency")}</span></output></section><footer class="currency-update-row"><div>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${state.currencyLoading ? "Updating" : "Update"}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
+    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><header class="currency-hero"><span class="currency-hero__icon">${icon("currency",23)}</span><div><span>TRIP RATE</span><h1 id="currency-converter-title">${esc(destination)} uses ${esc(destinationCurrency())}</h1><p>Your destination currency is ready automatically.</p></div></header><section class="currency-workspace" aria-labelledby="currency-converter-title"><section class="currency-zone currency-zone--pay"><header class="currency-zone__head"><span>You pay</span>${currencyChoice("from")}</header><label class="currency-amount"><span class="sr-only">Amount in ${esc(currency.from)}</span><input data-currency-amount class="${String(currency.amount).length > 9 ? "is-long" : ""}" type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label><div class="currency-quick" aria-label="Quick amounts">${[10,50,100,500].map((value) => `<button type="button" data-action="currency-quick" data-value="${value}"${Number(currency.amount) === value ? " class=\"is-active\"" : ""}>${value}</button>`).join("")}</div></section><div class="currency-bridge"><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",21)}</button><span class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Update to load this rate"}</span></div><section class="currency-zone currency-zone--receive"><header class="currency-zone__head"><span>You get</span>${currencyChoice("to")}</header><output class="currency-result" aria-live="polite"><strong class="currency-result__amount${result != null && money(result, currency.to).length > 12 ? " is-long" : ""}">${esc(result == null ? "—" : money(result, currency.to))}</strong><span>${esc(currency.to)} · ${esc(TRAVEL_CURRENCIES.find(([code]) => code === currency.to)?.[1] || "Currency")}</span></output></section><footer class="currency-update-row"><div>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${state.currencyLoading ? "Updating" : "Update"}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
   }
   function esimScreen() {
     const dest =
@@ -7794,7 +7832,7 @@
   // the empty Timeline (an empty trip lands straight on these choices).
   function addIntentRows() {
     const row = (action, ic, title, copy, tone) => `<button type="button" class="ds-flat-row add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="ds-flat-row__icon add-intent-row__icon">${PastelIcon(ic, tone === "booking" ? "flight" : tone === "plan" ? "activity" : "food", 22)}</span><span class="ds-flat-row__copy add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
-    return `<div class="add-intent-fields">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
+    return `<div class="add-intent-fields ds-grouped-card ds-grouped-card--list">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
   }
 
   // Day Plan (spec §8/§9): pick one of ten activity types. Neighborhood is the
@@ -7803,7 +7841,7 @@
   function dayPlanScreen() {
     if (!state.trip) return missingDetailScreen("Day Plan", "Create or select a trip first.");
     const row = (t) => `<button type="button" class="ds-flat-row day-plan-row" data-action="day-plan-type" data-type="${esc(t.type)}" aria-label="${esc(t.label)}"><span class="ds-flat-row__icon day-plan-row__icon">${PastelIcon(t.icon, ["restaurant", "food_drink", "shopping"].includes(t.type) ? "food" : ["flight", "train", "ferry", "bus", "cruise"].includes(t.type) ? "flight" : ["car", "transfer", "taxi", "parking"].includes(t.type) ? "transfer" : ["hotel", "neighborhood"].includes(t.type) ? "stay" : "activity", 22)}</span><span class="ds-flat-row__copy day-plan-row__copy"><strong>${esc(t.label)}</strong><small>${esc(t.desc)}</small></span>${icon("chevron", 18)}</button>`;
-    const body = `<section class="day-plan-intro"><span>DAY PLAN</span><h1>Plan your day</h1><p>What do you want to visit or do? Pick a type, then add the details.</p></section><div class="day-plan-list">${DAY_PLAN_TYPES.map(row).join("")}</div>`;
+    const body = `<section class="day-plan-intro"><span>DAY PLAN</span><h1>Plan your day</h1><p>What do you want to visit or do? Pick a type, then add the details.</p></section><div class="day-plan-list ds-grouped-card ds-grouped-card--list">${DAY_PLAN_TYPES.map(row).join("")}</div>`;
     return focusedTaskPage("Day Plan", body, "day-plan-page");
   }
 
@@ -7999,12 +8037,12 @@
     let body;
     if (filter === "planned") {
       const plannedList = planned.length
-        ? `<div class="save-later-list" role="list">${planned.map(plannedRow).join("")}</div>`
-        : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("check", 24)}</span><strong>Nothing planned yet</strong><p>Ideas you add to a day plan or neighborhood show up here. Open an idea in the Ideas tab to place it.</p></div>`;
+        ? `<div class="save-later-list ds-grouped-card ds-grouped-card--list" role="list">${planned.map(plannedRow).join("")}</div>`
+        : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("check", 24)}</span><strong>Nothing planned yet</strong><p>Ideas you add to a day plan show up here. Open an idea in the Ideas tab to place it.</p></div>`;
       body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>${heading}</h1><p>Ideas you've added to a day plan. Open one to see it, or return it to your ideas.</p></section>${filterBar}${plannedList}`;
     } else {
       const list = ideas.length
-        ? `<div class="save-later-list" role="list">${ideas.map(ideaRow).join("")}</div>`
+        ? `<div class="save-later-list ds-grouped-card ds-grouped-card--list" role="list">${ideas.map(ideaRow).join("")}</div>`
         : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("star", 24)}</span><strong>No ideas yet</strong><p>Save places, food and things you might want to do. ${hasTripDates ? "Plan them onto a day whenever you're ready." : "Add your trip's dates to plan them onto days."}</p></div>`;
       body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>${heading}</h1><p>A running list of things you might do. ${scheduleHint}</p></section>${filterBar}${list}${addCta}`;
     }
@@ -8181,7 +8219,7 @@
     const typeRow = ([type, config]) => `<button type="button" class="day-plan-row" data-action="add-type" data-type="${esc(type)}" data-manual-label="${esc(config.label)}" aria-label="Add ${esc(config.label)}"><span class="day-plan-row__icon">${icon(config.icon,24)}</span><span class="day-plan-row__copy"><strong>${esc(config.label)}</strong><small>${esc(config.hint)}</small></span>${icon("chevron",18)}</button>`;
     // One flat list — no category headers (Getting there / around / Stay / …);
     // rows keep their definition order.
-    const groupedCategories = `<div class="day-plan-list">${bookable.map(typeRow).join("")}</div>`;
+    const groupedCategories = `<div class="day-plan-list ds-grouped-card ds-grouped-card--list">${bookable.map(typeRow).join("")}</div>`;
     const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
     return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>For travel you've already reserved. To plan what to see and do, use Day Plan.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page day-plan-page");
   }
@@ -8260,7 +8298,7 @@
   }
   function errorScreen() {
     const rejected = state.sessionRejected;
-    return `<div class="phone-app"><section class="screen">${topbar()}<div class="error-state"><div class="empty-mobile-icon">${icon(rejected ? "user" : "warning", 31)}</div><h1>${rejected ? "Reconnect your account" : "Trip data could not load"}</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta(rejected ? "Reconnect with Google" : "Try Again", rejected ? "restart-google-sign-in" : "retry", rejected ? "user" : "refresh")}</div>${bottomNav("home")}</section></div>`;
+    return `<div class="phone-app"><section class="screen">${topbar()}<main class="error-state"><div class="empty-mobile-icon">${icon(rejected ? "user" : "warning", 31)}</div><h1>${rejected ? "Reconnect your account" : "Trip data could not load"}</h1><p>${esc(state.error || "An unexpected error occurred.")}</p><p class="recovery-safe">Saved trip data on this phone remains safe.</p>${state.requestId ? `<code>Request ID: ${esc(state.requestId)}</code>` : ""}${primaryCta(rejected ? "Reconnect with Google" : "Try Again", rejected ? "restart-google-sign-in" : "retry", rejected ? "user" : "refresh")}</main>${bottomNav("home")}</section></div>`;
   }
   function googleAuthRecoveryScreen() {
     const pending = state.googleAuthHandoffStatus === "pending";
@@ -11068,7 +11106,7 @@
       case "remove-local-data": {
         const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
         if(pending){showToast("Review pending changes before removing local data.","alert");break;}
-        if(confirm("Remove locally stored documents and cached trip data from this phone? Your server trip will not be deleted.")) {
+        if(await requestConfirmation({ title: "Remove local data?", body: "Remove locally stored documents and cached trip data from this phone? Your server trip will not be deleted.", confirmLabel: "Remove" })) {
           try { await clearLocalDeviceData(); showToast("Local files and cached trip data were removed from this phone."); render(); }
           catch (error) { showToast(error.message,"alert"); }
         }
@@ -11078,7 +11116,7 @@
         try {
           const preview=await api("/api/v1/account/deletion-preview");
           const trips=Number(val(preview?.deletion||preview,"ownedTrips","owned_trips")||0);
-          if(prompt(`Permanently delete your account and ${trips} server trip${trips===1?"":"s"}? Type DELETE to confirm.`)!=="DELETE") break;
+          if(!await requestConfirmation({ title: "Delete your account?", body: `Permanently delete your account and ${trips} server trip${trips===1?"":"s"}? This cannot be undone.`, confirmLabel: "Delete account", confirmationText: "DELETE" })) break;
           await api("/api/v1/account",{method:"DELETE",body:JSON.stringify({confirm:"DELETE"})});
           await clearLocalDeviceData();
           localStorage.removeItem("tripto_token"); state.token=""; state.trip=null; state.trips=[];
@@ -11088,7 +11126,7 @@
       }
       case "sign-out": {
         const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
-        if(pending&&!confirm(`${pending} change${pending===1?" is":"s are"} still pending. Sign out anyway? The changes and local documents will stay on this phone.`))break;
+        if(pending&&!await requestConfirmation({ title: "Sign out with pending changes?", body: `${pending} change${pending===1?" is":"s are"} still pending. The changes and local documents will stay on this phone.`, confirmLabel: "Sign out", danger: false }))break;
         try{const previousIdentity=sessionIdentity();const result=await api("/api/v1/auth/signout",{method:"POST",body:"{}"});globalThis.google?.accounts?.id?.disableAutoSelect?.();clearApiCache(previousIdentity);state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed out. Local documents remain on this phone.");}catch(error){showToast(error.message,"alert");}break;
       }
       case "show-driver":
@@ -11491,13 +11529,16 @@
     const currency = initCurrency(), amount = Math.max(0, Number(input.value) || 0);
     currency.amount = amount;
     saveCurrencyPreferences();
-    const result = app.querySelector(".currency-result__amount"), note = app.querySelector(".currency-rate-note"), rate = Number(currency.rate);
+    input.classList.toggle("is-long", String(input.value).length > 9);
+    app.querySelectorAll(".currency-quick button").forEach((button) => button.classList.toggle("is-active", Number(button.dataset.value) === amount));
+    const result = app.querySelector(".currency-result__amount"), note = app.querySelector(".currency-rate-note"), rate = currency.rate == null ? NaN : Number(currency.rate);
     if (result) {
       const converted = Number.isFinite(rate) ? amount * rate : null;
       try { result.textContent = converted == null ? "—" : new Intl.NumberFormat(undefined, { style:"currency", currency:currency.to, maximumFractionDigits:2 }).format(converted); }
       catch (_) { result.textContent = converted == null ? "—" : `${converted.toFixed(2)} ${currency.to}`; }
+      result.classList.toggle("is-long", result.textContent.length > 12);
     }
-    if (note && Number.isFinite(rate)) note.textContent = `1 ${currency.from} = ${rate.toFixed(rate < 1 ? 4 : 3)} ${currency.to}`;
+    if (note) note.textContent = Number.isFinite(rate) ? `1 ${currency.from} = ${rate.toFixed(rate < 1 ? 4 : 3)} ${currency.to}` : "Update to load this rate";
   });
   window.addEventListener(
     "pointerdown",

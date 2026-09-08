@@ -1,0 +1,69 @@
+{
+  "url": "/trips",
+  "screen": "trips",
+  "text": "Trips\nYOUR JOURNEYS\nAll your trips\n\nPlans, bookings, and ideas stay together here.\n\nAll\n3\nCurrent\n0\nUpcoming\n2\nPast\n1\nNo current trips\n\nTrips happening now will appear here.\n\nShow all trips\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Create trip",
+      "action": "create-trip"
+    },
+    {
+      "text": "All\n3",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Current\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Upcoming\n2",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Past\n1",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Show all trips",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "checks": {},
+  "evidence": [
+    "trips-current-top.png"
+  ]
+}

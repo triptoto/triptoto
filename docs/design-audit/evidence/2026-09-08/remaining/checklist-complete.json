@@ -1,0 +1,122 @@
+{
+  "url": "/before-you-go",
+  "screen": "checklist",
+  "text": "Checklist\nRome 2026\nAll packed. Let's go!\n4 items ready\n100%\nPacked\n4\nPassport\nSave boarding pass offline\nPack power adapter\nPack medication\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Add item"
+    },
+    {
+      "text": "Passport",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-passport"
+    },
+    {
+      "text": "",
+      "label": "Rename Passport",
+      "action": "edit-checklist",
+      "id": "check-passport"
+    },
+    {
+      "text": "",
+      "label": "Delete Passport",
+      "action": "delete-checklist",
+      "id": "check-passport"
+    },
+    {
+      "text": "Save boarding pass offline",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-pass"
+    },
+    {
+      "text": "",
+      "label": "Rename Save boarding pass offline",
+      "action": "edit-checklist",
+      "id": "check-pass"
+    },
+    {
+      "text": "",
+      "label": "Delete Save boarding pass offline",
+      "action": "delete-checklist",
+      "id": "check-pass"
+    },
+    {
+      "text": "Pack power adapter",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "",
+      "label": "Rename Pack power adapter",
+      "action": "edit-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "",
+      "label": "Delete Pack power adapter",
+      "action": "delete-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "Pack medication",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "",
+      "label": "Rename Pack medication",
+      "action": "edit-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "",
+      "label": "Delete Pack medication",
+      "action": "delete-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "checklist-complete-top.png"
+  ],
+  "setup": "s.checklist.forEach(e=>e.completed=true)",
+  "trigger": [],
+  "after": ""
+}

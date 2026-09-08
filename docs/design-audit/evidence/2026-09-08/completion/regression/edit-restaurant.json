@@ -1,0 +1,38 @@
+{
+  "url": "/bookings/new/restaurant",
+  "screen": "form",
+  "text": "Edit Restaurant\nSave\nMANUAL BOOKING\nEdit Restaurant\nEssentials\nRestaurant name *\nReservation date *\nLocal time Optional\nGuests Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nCity / location Optional\n\nEurope/Rome \u2014 the selected location's local time\n\nStreet address Optional\nRestaurant phone Optional\nConfirmation number\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1439
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "editForm": true,
+    "moreExpanded": true
+  },
+  "evidence": [
+    "edit-restaurant-top.png",
+    "edit-restaurant-scroll-0-0.png"
+  ]
+}

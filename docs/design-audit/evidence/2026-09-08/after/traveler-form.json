@@ -1,0 +1,22 @@
+{
+  "url": "/travelers/new",
+  "screen": "form",
+  "text": "Add Traveler\nSave Traveler\nTRAVELER\nAdd Traveler\nName\n*\nTraveler type\n*\nAdult\nChild\nInfant",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save Traveler",
+      "label": null
+    }
+  ],
+  "evidence": [
+    "traveler-form-top.png"
+  ]
+}

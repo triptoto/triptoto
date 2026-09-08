@@ -1,0 +1,18 @@
+{
+  "url": "/join/sample",
+  "screen": "join",
+  "text": "Join trip\nChecking your invitation\u2026",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "join-top.png"
+  ]
+}

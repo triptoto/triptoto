@@ -1,0 +1,143 @@
+{
+  "url": "/flights/ly-383-tlv-fco",
+  "screen": "flight",
+  "text": "Flight Detail\nLY 383\nConfirmed\nScheduled data\nTLV\nBen Gurion Airport\nFCO\nRome Fiumicino\nDEPARTS\n10:00\nWed, Sep 9\n3h 30m\nARRIVES\n12:30\nWed, Sep 9\nTERMINAL\n3\nGATE\nNot assigned\nSEAT\n12A\nEconomy\nDirections\nBoarding pass\nStored and verified on this phone\nAdd document\nFlight details\nAdd note\nTrip\nTrip options\nTo-do\nAccount\nMove to another day\n1\nDay 1\nWED \u00b7 SEP 09\nCurrent\n2\nDay 2\nTHU \u00b7 SEP 10\n3\nDay 3\nFRI \u00b7 SEP 11\n4\nDay 4\nSAT \u00b7 SEP 12\n5\nDay 5\nSUN \u00b7 SEP 13\n6\nDay 6\nMON \u00b7 SEP 14\n7\nDay 7\nTUE \u00b7 SEP 15",
+  "scroll": [
+    {
+      "class": "detail-content ",
+      "height": 705,
+      "scroll": 750
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 417,
+        "width": 390,
+        "height": 427,
+        "top": 417,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Share",
+      "action": "share-booking",
+      "id": "flight"
+    },
+    {
+      "text": "",
+      "label": "Edit or delete",
+      "action": "manage-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Directions",
+      "label": null,
+      "action": "directions-flight",
+      "id": "flight"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Flight details",
+      "label": null,
+      "action": "toggle-flight-details"
+    },
+    {
+      "text": "Add note",
+      "label": null,
+      "action": "edit-note",
+      "id": "flight"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Close Move to another day",
+      "action": "close-sheet"
+    },
+    {
+      "text": "1\nDay 1\nWED \u00b7 SEP 09\nCurrent",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "2\nDay 2\nTHU \u00b7 SEP 10",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "3\nDay 3\nFRI \u00b7 SEP 11",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "4\nDay 4\nSAT \u00b7 SEP 12",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "5\nDay 5\nSUN \u00b7 SEP 13",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "6\nDay 6\nMON \u00b7 SEP 14",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "7\nDay 7\nTUE \u00b7 SEP 15",
+      "label": null,
+      "action": "apply-move"
+    }
+  ],
+  "focusInside": false,
+  "trigger": [
+    "[data-action=\"manage-booking\"]",
+    "[data-action=\"move-booking\"]"
+  ],
+  "bottomEvidence": "move-booking-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button class=\"icon-button\" data-action=\"manage-booking\" data-kind=\"flight\" data-id=\"flight\" aria-label=\"Edit or delete\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#edit\"></use></svg></button>"
+}

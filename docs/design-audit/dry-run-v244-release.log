@@ -1,0 +1,31 @@
+
+ ⛅️ wrangler 4.124.0 (update available 4.129.1)
+───────────────────────────────────────────────
+✨ Read 100 files from the assets directory /Users/arthurberlin/Documents/Codex/2026-08-20/users-arthurberlin-triptoto/work/header-fix-20260907/public
+Total Upload: 421.17 KiB / gzip: 84.42 KiB
+Your Worker has access to the following bindings:
+Binding                                                                                  Resource
+env.DB (tripto-db)                                                                       D1 Database
+env.LIVE_FLIGHTS_ENABLED ("false")                                                       Environment Variable
+env.LIVE_FLIGHT_PROVIDER ("aerodatabox")                                                 Environment Variable
+env.LIVE_FLIGHT_DAILY_REQUEST_BUDGET ("8")                                               Environment Variable
+env.LIVE_FLIGHT_MONTHLY_REQUEST_BUDGET ("240")                                           Environment Variable
+env.LIVE_FLIGHT_MIN_REFRESH_MINUTES ("60")                                               Environment Variable
+env.LIVE_FLIGHT_MAX_BATCH_SIZE ("2")                                                     Environment Variable
+env.LIVE_FLIGHT_BETA_ONLY ("true")                                                       Environment Variable
+env.LIVE_FLIGHT_BETA_USER_IDS ("")                                                       Environment Variable
+env.AERODATABOX_RAPIDAPI_HOST ("aerodatabox.p.rapidapi.com")                             Environment Variable
+env.AERODATABOX_API_TIMEOUT_MS ("7000")                                                  Environment Variable
+env.AI_ENABLED ("false")                                                                 Environment Variable
+env.GMAIL_SYNC_ENABLED ("false")                                                         Environment Variable
+env.R2_DOCUMENTS_ENABLED ("false")                                                       Environment Variable
+env.ACCOUNT_AUTH_ENABLED ("true")                                                        Environment Variable
+env.GOOGLE_CLIENT_ID ("832895442630-6enisft24gupqct0igg1uldv...")                        Environment Variable
+env.APP_BASE_URL ("https://tripto.to")                                                   Environment Variable
+env.SHARING_ENABLED ("true")                                                             Environment Variable
+env.DEMO_TOOLS_ENABLED ("false")                                                         Environment Variable
+env.BETA_RELEASE ("product-v2-production")                                               Environment Variable
+env.BETA_METRICS_ENABLED ("true")                                                        Environment Variable
+env.OPS_ENABLED ("false")                                                                Environment Variable
+
+--dry-run: exiting now.

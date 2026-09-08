@@ -1,0 +1,124 @@
+{
+  "url": "/bookings",
+  "screen": "bookings",
+  "text": "Bookings\nAll\nTransport\nStays\nPlans\nRome 2026\nBreakfast reservation\nThu, Sep 10, 08:30 AM GMT+2 \u00b7 Restaurant\nPhotography walk\nThu, Sep 10, 10:00 AM GMT+2 \u00b7 Historic centre\nCoffee & pastry\nThu, Sep 10, 12:00 PM GMT+2 \u00b7 Caf\u00e9 stop\nLunch in Rome\nThu, Sep 10, 01:00 PM GMT+2 \u00b7 Restaurant\nVatican Museums\nThu, Sep 10, 03:30 PM GMT+2 \u00b7 Entrance reservation\nSouvenir shopping\nThu, Sep 10, 06:30 PM GMT+2 \u00b7 Historic centre\nWine tasting\nThu, Sep 10, 07:30 PM GMT+2 \u00b7 Enoteca\nAdd booking\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 705,
+      "scroll": 812
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Add booking",
+      "action": "open-add-booking"
+    },
+    {
+      "text": "All",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Transport",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Stays",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Plans",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Breakfast reservation\nThu, Sep 10, 08:30 AM GMT+2 \u00b7 Restaurant",
+      "label": null,
+      "action": "booking-detail",
+      "id": "breakfast"
+    },
+    {
+      "text": "Photography walk\nThu, Sep 10, 10:00 AM GMT+2 \u00b7 Historic centre",
+      "label": null,
+      "action": "booking-detail",
+      "id": "photo-walk"
+    },
+    {
+      "text": "Coffee & pastry\nThu, Sep 10, 12:00 PM GMT+2 \u00b7 Caf\u00e9 stop",
+      "label": null,
+      "action": "booking-detail",
+      "id": "coffee"
+    },
+    {
+      "text": "Lunch in Rome\nThu, Sep 10, 01:00 PM GMT+2 \u00b7 Restaurant",
+      "label": null,
+      "action": "booking-detail",
+      "id": "lunch"
+    },
+    {
+      "text": "Vatican Museums\nThu, Sep 10, 03:30 PM GMT+2 \u00b7 Entrance reservation",
+      "label": null,
+      "action": "booking-detail",
+      "id": "activity"
+    },
+    {
+      "text": "Souvenir shopping\nThu, Sep 10, 06:30 PM GMT+2 \u00b7 Historic centre",
+      "label": null,
+      "action": "booking-detail",
+      "id": "shopping"
+    },
+    {
+      "text": "Wine tasting\nThu, Sep 10, 07:30 PM GMT+2 \u00b7 Enoteca",
+      "label": null,
+      "action": "booking-detail",
+      "id": "wine"
+    },
+    {
+      "text": "Add booking",
+      "label": null,
+      "action": "open-add-booking"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "bookings-plans-top.png",
+    "bookings-plans-scroll-0-0.png"
+  ],
+  "trigger": "[data-action=\"filter-bookings\"][data-filter=\"plans\"]",
+  "qaState": ""
+}

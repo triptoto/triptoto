@@ -1,0 +1,133 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "Account\nYOUR TRAVEL SPACE\nAT\nAlex Traveler\nGoogle identity\n0\nCurrent\n2\nUpcoming\n1\nPast\nSign out\nAll trips\n3 trips\nNew trip\nSomewhere new\nYour plans\nSwitch trip\n3 available\nEmail Inbox\n1 waiting for review\nPending changes\n2 waiting for review or sync\nTravel essentials\n\nPartner links may earn Tripto a commission at no extra cost.\n\nA helping hand\nPrivacy & data\ntripto.to\n\nProduct V2\n\nTrip\nTrip options\nTo-do\nAccount\nSign out with pending changes?\n\n2 changes are still pending. The changes and local documents will stay on this phone.\n\nCancel\nSign out",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 705,
+      "scroll": 1731
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Sign out",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "All trips\n3 trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "New trip\nSomewhere new",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Switch trip\n3 available",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Email Inbox\n1 waiting for review",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Pending changes\n2 waiting for review or sync",
+      "label": null,
+      "screen": "sync"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Open welcome screen",
+      "screen": "home"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    },
+    {
+      "text": "Cancel",
+      "label": null
+    },
+    {
+      "text": "Sign out",
+      "label": null
+    }
+  ],
+  "evidence": [
+    "signout-pending-top.png",
+    "signout-pending-scroll-0-0.png",
+    "signout-pending-scroll-0-1.png"
+  ],
+  "setup": "s.syncStatus={pendingOperations:2}",
+  "trigger": [
+    "[data-action=\"sign-out\"]"
+  ],
+  "after": ""
+}

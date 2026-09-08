@@ -1,0 +1,35 @@
+{
+  "url": "/esim",
+  "screen": "esim",
+  "text": "Travel eSIM\nPartner offer\nSTAY CONNECTED\nData for Hotel Artemide\n\nFind a travel data plan before you go.\n\n15% off\nyour first plan \u00b7 copy code\nFKWQX6ES\nReady in minutes\n200+ destinations\nKeep your number\nNo roaming bills\nHow it works\n1\n\nTap Get my eSIM below to open 7g.\n\n2\n\nPick your destination and plan \u2014 enter code FKWQX6ES for 15% off.\n\n3\n\nScan the QR to install it, then land connected.\n\nGet my eSIM \u2014 15% off\n\ntripto.to partners with 7g. This opens 7g in a new tab and we may earn a commission \u2014 it never changes your price. tripto.to never uses your location.",
+  "scroll": [
+    {
+      "class": "esim-page",
+      "height": 776,
+      "scroll": 795
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "FKWQX6ES",
+      "label": "Copy code FKWQX6ES",
+      "action": "copy-esim-code"
+    },
+    {
+      "text": "Get my eSIM \u2014 15% off",
+      "label": null,
+      "action": "esim-signup"
+    }
+  ],
+  "evidence": [
+    "esim-top.png",
+    "esim-scroll-0-0.png"
+  ]
+}

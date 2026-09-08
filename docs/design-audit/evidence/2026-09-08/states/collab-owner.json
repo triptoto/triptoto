@@ -1,0 +1,50 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nInvite people\nPeople on this trip\nAlex Traveler (You)\nOwner\nSam Companion\nCan edit\nTaylor Companion\nView only\n\nUp to 10 people per trip.\n\nPending invitations\nfriend@example.test\nView only \u00b7 pending \u00b7 expires 1788955873257",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 950
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Invite people",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Revoke invitation",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    }
+  ],
+  "evidence": [
+    "collab-owner-top.png",
+    "collab-owner-scroll-0-0.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": []
+}

@@ -1,0 +1,100 @@
+{
+  "url": "/trip-options",
+  "screen": "trip-options",
+  "text": "Trip options\nYOUR TRAVEL COMPANION\nRome 2026\n\nSep 9\u201315, 2026\n\nPLAN & EXPLORE\nWeather\nForecast for your destination\nCurrency converter\nConvert trip costs offline\nPlan together\nInvite people to plan with you\nTravel eSIM\nData abroad, no roaming\nTRAVEL TOOLS\nTrip Map\nSee this trip's places on a map\nAlerts\nImportant trip updates\n1\nBooking imports\n1 booking to review\nDocuments\nTickets and confirmations\nMANAGE TRIP\nEdit trip\nName, dates and trip details\nHelp & FAQ\nGuides, privacy, and answers\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 705,
+      "scroll": 1030
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Weather\nForecast for your destination",
+      "label": null,
+      "action": "open-weather"
+    },
+    {
+      "text": "Currency converter\nConvert trip costs offline",
+      "label": null,
+      "action": "open-currency"
+    },
+    {
+      "text": "Plan together\nInvite people to plan with you",
+      "label": null,
+      "action": "open-collaboration"
+    },
+    {
+      "text": "Travel eSIM\nData abroad, no roaming",
+      "label": null,
+      "action": "open-esim"
+    },
+    {
+      "text": "Trip Map\nSee this trip's places on a map",
+      "label": null,
+      "action": "open-trip-map"
+    },
+    {
+      "text": "Alerts\nImportant trip updates",
+      "label": null,
+      "action": "open-notifications"
+    },
+    {
+      "text": "1\nBooking imports\n1 booking to review",
+      "label": null,
+      "screen": "import-history"
+    },
+    {
+      "text": "Documents\nTickets and confirmations",
+      "label": "Tickets and documents",
+      "screen": "documents"
+    },
+    {
+      "text": "Edit trip\nName, dates and trip details",
+      "label": null,
+      "action": "edit-trip"
+    },
+    {
+      "text": "Help & FAQ\nGuides, privacy, and answers",
+      "label": null,
+      "screen": "help"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "options-top.png",
+    "options-scroll-0-0.png"
+  ]
+}

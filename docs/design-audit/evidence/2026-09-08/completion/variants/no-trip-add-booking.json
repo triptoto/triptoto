@@ -1,0 +1,24 @@
+{
+  "url": "/bookings/add",
+  "screen": "add-booking",
+  "text": "Add Booking\nChoose a trip first\n\nThis booking needs a trip so it cannot become an orphan booking.\n\nCreate trip",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Create trip",
+      "label": null,
+      "action": "create-trip"
+    }
+  ],
+  "checks": {},
+  "evidence": [
+    "no-trip-add-booking-top.png"
+  ]
+}

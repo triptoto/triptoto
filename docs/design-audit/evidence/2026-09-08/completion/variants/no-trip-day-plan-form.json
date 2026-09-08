@@ -1,0 +1,44 @@
+{
+  "url": "/day-plan/new/museum_culture",
+  "screen": "day-plan-form",
+  "text": "Day Plan\nDay Plan\n\nCreate or select a trip first.\n\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "checks": {},
+  "evidence": [
+    "no-trip-day-plan-form-top.png"
+  ]
+}

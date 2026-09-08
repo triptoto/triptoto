@@ -1,0 +1,34 @@
+{
+  "url": "/bookings/new/bus",
+  "screen": "form",
+  "text": "Add Bus\nSave\nMANUAL BOOKING\nBus\nEssentials\nBus operator\nOptional\nDeparture stop\n*\nArrival stop\n*\nDeparture date\n*\nDeparture time\n*\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 885
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "form-bus-top.png",
+    "form-bus-scroll-0-0.png"
+  ]
+}

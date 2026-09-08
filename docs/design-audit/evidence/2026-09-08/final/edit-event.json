@@ -1,0 +1,37 @@
+{
+  "url": "/bookings/new/event",
+  "screen": "form",
+  "text": "Edit Event\nSave\nMANUAL BOOKING\nEdit Event\nEssentials\nEvent name *\nDate *\nLocal time Optional\nVenue Optional\n\nEurope/Rome \u2014 the selected location's local time\n\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 910
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "editForm": true
+  },
+  "evidence": [
+    "edit-event-top.png",
+    "edit-event-scroll-0-0.png"
+  ]
+}

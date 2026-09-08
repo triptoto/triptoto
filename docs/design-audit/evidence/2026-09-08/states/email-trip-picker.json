@@ -1,0 +1,92 @@
+{
+  "url": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "text": "Email Inbox\nForward confirmations to\ngo@tripto.to\n\nChoose the trip and confirm the extracted details before anything is added.\n\nYour travel booking confirmation\nTue, Sep 8, 03:14 PM GMT+3\nChoose a trip\nChoose trip\nRefresh inbox\nTrip\nTrip options\nTo-do\nAccount\nChoose trip\n\nYour travel booking confirmation\n\nRome 2026\nSep 9\u201315, 2026\nAthens Weekend\nOct 7\u201310, 2026\nParis Spring\nApr 3\u20138, 2026",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 570.609375,
+        "width": 390,
+        "height": 273.390625,
+        "top": 570.609375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Choose trip",
+      "label": null,
+      "action": "choose-booking-email-trip",
+      "id": "audit-email"
+    },
+    {
+      "text": "Refresh inbox",
+      "label": null,
+      "action": "refresh-booking-email-inbox"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Close Choose trip",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "Athens Weekend\nOct 7\u201310, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "Paris Spring\nApr 3\u20138, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    }
+  ],
+  "evidence": [
+    "email-trip-picker-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": [
+    "[data-action=\"choose-booking-email-trip\"]"
+  ]
+}

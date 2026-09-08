@@ -1,0 +1,26 @@
+{
+  "url": "/travelers/new",
+  "screen": "form",
+  "text": "Edit Traveler\nSave changes\nTRAVELER\nEdit Traveler\nName *\nTraveler type *\nAdult\nChild\nInfant",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save changes",
+      "label": null
+    }
+  ],
+  "evidence": [
+    "traveler-edit-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": [
+    "[data-action=\"open-form\"]"
+  ]
+}

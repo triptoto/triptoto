@@ -1,0 +1,129 @@
+{
+  "url": "/trips/rome-2026-2026-09-09",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 9\u201315, 2026\nTUE\nSEP 01\n15:27\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n13:27\nAirport to hotel\nTaxi \u00b7 Private transfer\n30m\n12:27\nHotel Artemide\nCheck-in\n0 nights\n11:27\nBreakfast reservation\nRestaurant \u00b7 Rome\n1h 30m\n10:27\nPhotography walk\nPhotography \u00b7 Rome\n2h\n09:27\nCoffee & pastry\nCoffee \u00b7 Rome\n2h 30m\n08:27\nLunch in Rome\nRestaurant \u00b7 Rome\n3h\n07:27\nVatican Museums\nMuseum \u00b7 Rome\n3h 30m\n06:27\nSouvenir shopping\nShopping \u00b7 Rome\n4h\n05:27\nWine tasting\nBar \u00b7 Rome\n4h 30m\n04:27\nTrain to Florence\n9512 \u00b7 ROM \u2192 FIR\n5h\n03:27\nTrain to Rome\n9551 \u00b7 FIR \u2192 ROM\n5h 30m\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "timeline-page timeline-page--journey",
+      "height": 697,
+      "scroll": 1021
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Notifications",
+      "action": "open-notifications"
+    },
+    {
+      "text": "15:27\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO",
+      "label": "15:27. Flight to Rome. Flight \u00b7 TLV \u2192 FCO",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:27\nAirport to hotel\nTaxi \u00b7 Private transfer\n30m",
+      "label": "13:27. Airport to hotel. Taxi \u00b7 Private transfer. 30m",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "12:27\nHotel Artemide\nCheck-in\n0 nights",
+      "label": "12:27. Hotel Artemide. Check-in. 0 nights",
+      "action": "timeline-detail",
+      "id": "stay"
+    },
+    {
+      "text": "11:27\nBreakfast reservation\nRestaurant \u00b7 Rome\n1h 30m",
+      "label": "11:27. Breakfast reservation. Restaurant \u00b7 Rome. 1h 30m",
+      "action": "timeline-detail",
+      "id": "breakfast"
+    },
+    {
+      "text": "10:27\nPhotography walk\nPhotography \u00b7 Rome\n2h",
+      "label": "10:27. Photography walk. Photography \u00b7 Rome. 2h",
+      "action": "timeline-detail",
+      "id": "photo-walk"
+    },
+    {
+      "text": "09:27\nCoffee & pastry\nCoffee \u00b7 Rome\n2h 30m",
+      "label": "09:27. Coffee & pastry. Coffee \u00b7 Rome. 2h 30m",
+      "action": "timeline-detail",
+      "id": "coffee"
+    },
+    {
+      "text": "08:27\nLunch in Rome\nRestaurant \u00b7 Rome\n3h",
+      "label": "08:27. Lunch in Rome. Restaurant \u00b7 Rome. 3h",
+      "action": "timeline-detail",
+      "id": "lunch"
+    },
+    {
+      "text": "07:27\nVatican Museums\nMuseum \u00b7 Rome\n3h 30m",
+      "label": "07:27. Vatican Museums. Museum \u00b7 Rome. 3h 30m",
+      "action": "timeline-detail",
+      "id": "activity"
+    },
+    {
+      "text": "06:27\nSouvenir shopping\nShopping \u00b7 Rome\n4h",
+      "label": "06:27. Souvenir shopping. Shopping \u00b7 Rome. 4h",
+      "action": "timeline-detail",
+      "id": "shopping"
+    },
+    {
+      "text": "05:27\nWine tasting\nBar \u00b7 Rome\n4h 30m",
+      "label": "05:27. Wine tasting. Bar \u00b7 Rome. 4h 30m",
+      "action": "timeline-detail",
+      "id": "wine"
+    },
+    {
+      "text": "04:27\nTrain to Florence\n9512 \u00b7 ROM \u2192 FIR\n5h",
+      "label": "04:27. Train to Florence. 9512 \u00b7 ROM \u2192 FIR. 5h",
+      "action": "timeline-detail",
+      "id": "train"
+    },
+    {
+      "text": "03:27\nTrain to Rome\n9551 \u00b7 FIR \u2192 ROM\n5h 30m",
+      "label": "03:27. Train to Rome. 9551 \u00b7 FIR \u2192 ROM. 5h 30m",
+      "action": "timeline-detail",
+      "id": "train-return"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "active-no-upcoming-top.png",
+    "active-no-upcoming-scroll-0-0.png"
+  ],
+  "trigger": "",
+  "qaState": "active-no-upcoming"
+}

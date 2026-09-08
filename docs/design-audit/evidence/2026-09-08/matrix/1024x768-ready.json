@@ -1,0 +1,94 @@
+{
+  "url": "/ready-offline",
+  "screen": "ready",
+  "text": "Ready Offline\n9 of 9 ready\nYour essentials are saved on this phone.\nTrip timeline\nUpdated now\nTransport bookings\nUpdated now\nStays and addresses\nUpdated now\nLocations\nUpdated now\nPending changes\nNo unsynced local changes\nArthur \u00b7 Flight ticket / boarding pass\nChecksum verified on this phone\nArthur \u00b7 Train ticket\nChecksum verified on this phone\nMaya \u00b7 Train ticket\nChecksum verified on this phone\nHotel confirmation\nChecksum verified on this phone\nRefresh Offline Data\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "ready-content",
+      "height": 629,
+      "scroll": 871
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Offline information",
+      "action": "offline-info"
+    },
+    {
+      "text": "Refresh Offline Data",
+      "label": null,
+      "action": "refresh-data"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "viewport": [
+    1024,
+    768
+  ],
+  "geometry": {
+    "header": {
+      "x": 212,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 812,
+      "bottom": 68,
+      "left": 212
+    },
+    "main": {
+      "x": 212,
+      "y": 68,
+      "width": 600,
+      "height": 629,
+      "top": 68,
+      "right": 812,
+      "bottom": 697,
+      "left": 212
+    },
+    "nav": {
+      "x": 212,
+      "y": 697,
+      "width": 600,
+      "height": 71,
+      "top": 697,
+      "right": 812,
+      "bottom": 768,
+      "left": 212
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

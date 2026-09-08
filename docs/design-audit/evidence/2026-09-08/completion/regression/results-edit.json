@@ -1,0 +1,146 @@
+[
+  {
+    "case": "edit-flight",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-hotel",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-train",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-ferry",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-bus",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-cruise",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-car-rental",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-transfer",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-taxi",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-parking",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-restaurant",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-tour",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-activity",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-attraction",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-event",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-insurance",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-other",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  },
+  {
+    "case": "edit-reservation",
+    "overflow": false,
+    "checks": {
+      "editForm": true,
+      "moreExpanded": true
+    }
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "url": "/home",
+  "screen": "home",
+  "text": "tripto.to\nFinish signing in\n\nThe secure sign-in handoff was interrupted.\n\nYour trips, offline files, and unsynced changes remain on this phone.\n\nTry Again",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Try Again",
+      "label": null,
+      "action": "retry-google-sign-in"
+    }
+  ],
+  "evidence": [
+    "auth-pending-top.png"
+  ],
+  "setup": "s.googleAuthHandoffStatus=\"pending\"",
+  "trigger": [],
+  "after": ""
+}

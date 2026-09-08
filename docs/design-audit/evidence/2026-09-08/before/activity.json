@@ -1,0 +1,77 @@
+{
+  "url": "/plans/vatican-museums",
+  "screen": "plan",
+  "text": "Activity Detail\nActivity\nScheduled data\nVatican Museums\n\nThu, Sep 10, 03:30 PM GMT+2\n\nVatican Museums\nLocation\nVAT-29184\nConfirmation \u00b7 tap to copy\nAdd document\nAdd note\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Share",
+      "action": "share-booking",
+      "id": "activity"
+    },
+    {
+      "text": "",
+      "label": "Edit or delete",
+      "action": "manage-booking",
+      "id": "activity"
+    },
+    {
+      "text": "Vatican Museums\nLocation",
+      "label": null,
+      "action": "directions-item",
+      "id": "activity"
+    },
+    {
+      "text": "VAT-29184\nConfirmation \u00b7 tap to copy",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Add note",
+      "label": null,
+      "action": "edit-note",
+      "id": "activity"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "activity-top.png"
+  ]
+}

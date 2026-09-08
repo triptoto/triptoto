@@ -1,0 +1,20 @@
+{
+  "url": "/join/audit-token",
+  "screen": "join",
+  "text": "Join trip\nTRIP INVITATION\nJoin Rome with friends\n\nJoin as can edit. Collaboration is free.\n\nSign in to join\n\nSign in with your free account to accept this invitation.\n\nPreview mode does not call the API.\n\nWe only use your Google account to sign you in. Your invitation is kept until you finish.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "join-guest-top.png"
+  ],
+  "fixtureSetup": "s.joinCheckedToken=\"audit-token\";s.joinPreview={tripTitle:\"Rome with friends\",role:\"editor\",sharingEnabled:true};s.joinLoading=false;s.joinError=null;s.account={mode:\"guest\"};",
+  "trigger": []
+}

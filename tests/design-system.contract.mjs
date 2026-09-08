@@ -53,9 +53,9 @@ assert.match(css, /trip-options-page[^{]*trip-options-grid\{[^}]*grid-template-c
 assert.match(css, /trip-options-page[^{]*trip-option-card\{[^}]*background:transparent!important/);
 assert.match(css, /add-intent-page[^{]*add-intent-row\{[^}]*border-bottom:1px solid var\(--line\)/);
 assert.match(css, /save-later-page[^{]*save-later-row\{[^}]*background:transparent/);
-assert.match(css, /dark-detail[^{]*fd-list\{[^}]*box-shadow:none/);
+assert.match(css, /dark-detail[^{]*fd-list--detail\{[^}]*box-shadow:none/);
 assert.ok(js.includes('fd-list fd-list--detail'), 'all booking detail variants must use the compact shared detail list');
-assert.match(css, /dark-detail[^{]*fd-list--detail\{[^}]*border:0!important/);
+assert.match(css, /dark-detail[^{]*fd-list--detail\{[^}]*border:1px solid var\(--line\)/);
 const flightDetail = js.slice(js.indexOf('function flightScreen()'), js.indexOf('function durationLabel()'));
 assert.ok(flightDetail.includes('flightDetailsList = fdList('), 'flight detail must use the shared flat-list layout');
 assert.ok(!flightDetail.includes('fdSection(') && !flightDetail.includes('fd-list__section'), 'flight detail must not insert redundant section headings');
@@ -67,15 +67,14 @@ assert.ok(js.includes('function sheetActionRow('), 'item action sheets must shar
 assert.ok(js.includes('function sheetActionLink('), 'popup links must use the shared action-row grammar');
 assert.ok(js.includes('function sheetActionList('), 'popup action groups must use the shared compact list primitive');
 assert.ok(!js.includes('class="stop-action'), 'legacy nested-card action rows must not survive in item sheets');
-assert.match(css, /bottom-sheet[^{]*sheet-action-row\{[^}]*grid-template-columns:36px minmax\(0,1fr\) 20px!important/);
-assert.match(css, /bottom-sheet[^{]*sheet-action-list\{[^}]*gap:var\(--space-1\)[^}]*border:0!important/);
-assert.match(css, /bottom-sheet[^{]*sheet-option\.sheet-action-row\{[^}]*border-bottom:0!important/);
-assert.match(css, /bottom-sheet[^{]*sheet-options-group:not\(\.manual-v2-options\)>\.sheet-option:not\(\.sheet-action-row\)[^{]*\{[^}]*border-bottom:0!important/);
+assert.match(css, /bottom-sheet[^{]*sheet-action-row\{[^}]*grid-template-columns:36px minmax\(0,1fr\) 20px/);
+assert.match(css, /bottom-sheet[^{]*sheet-action-list\{[^}]*gap:var\(--space-1\)[^}]*border:0/);
+assert.match(css, /bottom-sheet[^{]*sheet-option\.sheet-action-row\{[^}]*border:0/);
 assert.match(css, /bottom-sheet\.compact-sheet\{[\s\S]*?--compact-sheet-max-height:min\(calc\(var\(--app-viewport-height,100dvh\) - 12px\),560px\)/, 'every bottom sheet needs the compact viewport cap');
-assert.match(css, /bottom-sheet\.compact-sheet \.sheet-scroll\{[\s\S]*?max-height:calc\(var\(--compact-sheet-max-height\) - 54px/, 'long popup content must scroll inside the compact shell');
-assert.match(css, /bottom-sheet\.compact-sheet \.sheet-option\.sheet-action-row\{[\s\S]*?min-height:48px!important/, 'one-line popup actions must keep one shared touch-safe height');
-assert.match(css, /sheet-action-row:has\(\.sheet-action-row__copy small\)\{[\s\S]*?min-height:56px!important/, 'two-line popup actions must keep one shared compact height');
-assert.match(css, /sheet-action-row:focus-visible\{[\s\S]*?outline:2px solid var\(--accent\)!important[\s\S]*?box-shadow:none!important/, 'keyboard focus must use the shared visible outline, not an inset rail');
+assert.match(css, /bottom-sheet\.compact-sheet \.sheet-scroll\{[\s\S]*?flex:0 1 auto;[\s\S]*?max-height:none;[\s\S]*?overflow-y:auto/, 'long popup content must scroll inside the compact shell');
+assert.match(css, /bottom-sheet\.compact-sheet \.sheet-option\.sheet-action-row\{[\s\S]*?min-height:48px/, 'one-line popup actions must keep one shared touch-safe height');
+assert.match(css, /sheet-action-row:has\(\.sheet-action-row__copy small\)\{[\s\S]*?min-height:56px/, 'two-line popup actions must keep one shared compact height');
+assert.match(css, /sheet-action-row:focus-visible\{[\s\S]*?outline:2px solid var\(--accent\)[\s\S]*?box-shadow:none/, 'keyboard focus must use the shared visible outline, not an inset rail');
 assert.match(css, /discard-dialog\{[\s\S]*?max-height:calc\(var\(--app-viewport-height,100dvh\) - 32px\)[\s\S]*?overflow-y:auto/, 'confirmation popups must stay compact and scroll safely on short screens');
 const popupMenu = (start, end) => js.slice(js.indexOf(start), js.indexOf(end, js.indexOf(start)));
 for (const [start, end, name] of [
@@ -90,7 +89,7 @@ for (const [start, end, name] of [
   assert.ok(source.includes('sheetActionList') && source.includes('sheetActionRow'), `${name} must use the compact popup action system`);
   assert.ok(!source.includes('sheet-options-group--v2'), `${name} must not fall back to legacy popup rows`);
 }
-const collectionActionMenu = popupMenu('function collectionStopSheet()', '// Generic confirm dialog');
+const collectionActionMenu = popupMenu('function collectionStopSheet()', '// One app-controlled confirmation');
 assert.ok(collectionActionMenu.includes('sheetActionList') && !collectionActionMenu.includes('stopSheetMeta'), 'Neighborhood place actions must stay compact and action-focused');
 assert.ok(js.includes('[["", "Choose a type"]'), 'an unset place type must read as a clear choice');
 assert.ok(js.includes('field("status", "Status", "", { type: "select", choices: statusChoices })'), 'place status must use the full-width shared control');
@@ -108,4 +107,8 @@ assert.match(css, /trips-screen[^}]*trips-page\{[^}]*background:var\(--paper\)/)
 assert.match(css, /trip-create-screen \.trip-create-head\{[^}]*background:transparent!important/);
 assert.match(css, /trip-create-screen \.trip-create-route\{[^}]*display:none!important/);
 
-console.log("Unified Tripto Flat Travel design-system contract passed.");
+assert.match(css, /ds-grouped-card\{[^}]*padding:var\(--space-4\)[^}]*border:1px solid var\(--line\)[^}]*border-radius:var\(--radius-regular\)/, 'grouped surfaces must use shared spacing and border tokens');
+assert.ok(!/\b(?:window\.)?(?:confirm|prompt)\(/.test(js.replace(/^\s*\/\/.*$/gm, '')), 'app-owned confirmation flows must use the shared accessible dialog');
+assert.ok(js.includes('confirmationText: "DELETE"') && js.includes('input.value !== confirmationText'), 'account deletion must preserve exact typed confirmation');
+assert.ok(js.includes('awaitingConfirmation') && js.includes('if (!activeActivities.size || awaitingConfirmation)'), 'waiting for confirmation is not network activity');
+console.log("Unified Tripto Elegant Flat Cards design-system contract passed.");

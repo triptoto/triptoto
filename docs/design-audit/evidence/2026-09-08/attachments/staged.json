@@ -1,0 +1,42 @@
+{
+  "url": "/bookings/new/activity",
+  "screen": "form",
+  "text": "Add Activity\nSave\nMANUAL BOOKING\nActivity\nEssentials\nActivity name *\nType Optional\nActivity\nTour\nConcert\nTheatre\nMuseum\nAttraction\nSports\nMeeting\nShow\nOther\nDate *\nLocal time Optional\nVenue Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\ntripto-local-audit-document.png\n5 KB\nReady to attach\nOpen\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 970
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Open",
+      "label": "Open tripto-local-audit-document.png",
+      "action": "manual-attachment-open",
+      "id": "local_990409d238d2534e163d6e883d39db2a24e64a30fb8ba4e2e5a89e3b94bb90da"
+    },
+    {
+      "text": "",
+      "label": "Remove tripto-local-audit-document.png",
+      "action": "manual-attachment-remove",
+      "id": "local_990409d238d2534e163d6e883d39db2a24e64a30fb8ba4e2e5a89e3b94bb90da"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ]
+}

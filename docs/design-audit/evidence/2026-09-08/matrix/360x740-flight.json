@@ -1,0 +1,118 @@
+{
+  "url": "/flights/ly-383-tlv-fco",
+  "screen": "flight",
+  "text": "Flight Detail\nLY 383\nConfirmed\nScheduled data\nTLV\nBen Gurion Airport\nFCO\nRome Fiumicino\nDEPARTS\n10:00\nWed, Sep 9\n3h 30m\nARRIVES\n12:30\nWed, Sep 9\nTERMINAL\n3\nGATE\nNot assigned\nSEAT\n12A\nEconomy\nDirections\nBoarding pass\nStored and verified on this phone\nAdd document\nFlight details\nAdd note\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "detail-content ",
+      "height": 601,
+      "scroll": 784
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Share",
+      "action": "share-booking",
+      "id": "flight"
+    },
+    {
+      "text": "",
+      "label": "Edit or delete",
+      "action": "manage-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Directions",
+      "label": null,
+      "action": "directions-flight",
+      "id": "flight"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Flight details",
+      "label": null,
+      "action": "toggle-flight-details"
+    },
+    {
+      "text": "Add note",
+      "label": null,
+      "action": "edit-note",
+      "id": "flight"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "viewport": [
+    360,
+    740
+  ],
+  "geometry": {
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 360,
+      "height": 68,
+      "top": 0,
+      "right": 360,
+      "bottom": 68,
+      "left": 0
+    },
+    "main": {
+      "x": 0,
+      "y": 68,
+      "width": 360,
+      "height": 601,
+      "top": 68,
+      "right": 360,
+      "bottom": 669,
+      "left": 0
+    },
+    "nav": {
+      "x": 0,
+      "y": 669,
+      "width": 360,
+      "height": 71,
+      "top": 669,
+      "right": 360,
+      "bottom": 740,
+      "left": 0
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

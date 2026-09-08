@@ -1,0 +1,32 @@
+{
+  "url": "/bookings/import",
+  "screen": "import",
+  "text": "Forward Confirmation\nReview\nForward a confirmation\n\nForward to go@tripto.to from your verified Google email. Choose the trip and confirm the extracted details before anything is added.\n\ngo@tripto.to\nForward any booking confirmation from your verified Google email. Choose the trip if needed, review every extracted detail, then add it to your Timeline.\nPaste confirmation for immediate review\nOpen Email Inbox",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Review",
+      "label": null
+    },
+    {
+      "text": "Open Email Inbox",
+      "label": null,
+      "screen": "booking-email-inbox"
+    }
+  ],
+  "evidence": [
+    "forward-booking-top.png"
+  ],
+  "setup": "",
+  "trigger": [
+    "[data-action=\"open-forward-booking\"]"
+  ],
+  "after": ""
+}

@@ -1,0 +1,38 @@
+{
+  "url": "/bookings/new/insurance",
+  "screen": "form",
+  "text": "Edit Insurance\nSave\nMANUAL BOOKING\nEdit Insurance\nEssentials\nPolicy / provider *\nCoverage starts *\nLocal time Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nLocation Optional\n\nEurope/Rome \u2014 the selected location's local time\n\nEnd date\nEnd time\nConfirmation number\nContact\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1343
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "editForm": true,
+    "moreExpanded": true
+  },
+  "evidence": [
+    "edit-insurance-top.png",
+    "edit-insurance-scroll-0-0.png"
+  ]
+}

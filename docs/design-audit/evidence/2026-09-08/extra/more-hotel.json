@@ -1,0 +1,42 @@
+{
+  "url": "/bookings/new/hotel",
+  "screen": "form",
+  "text": "Add Stay\nSave\nMANUAL BOOKING\nStay\nEssentials\nProperty name *\nCity / location Optional\nStay dates\nSelect dates\nChoose dates\nNo date range selected.\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nAddress Optional\nConfirmation number\nCheck-in from\nCheck-in until\nCheck-out by\nRoom name or type\nBooking status\nHotel phone\nHotel email\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1863
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Stay dates. Choose check-in and check-out",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "more-hotel-top.png",
+    "more-hotel-scroll-0-0.png",
+    "more-hotel-scroll-0-1.png"
+  ],
+  "trigger": "[data-action=\"toggle-form-more\"]",
+  "qaState": ""
+}

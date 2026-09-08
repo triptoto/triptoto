@@ -1,0 +1,27 @@
+{
+  "url": "/bookings/import",
+  "screen": "import",
+  "text": "Upload Booking\nReview\nUpload a booking\n\nRecognition stays on this phone. Review every field before saving.\n\nBooking document\nBest accuracy: the original PDF, .eml, .ics, or .pkpass. Photos and screenshots are read with OCR and may need corrections. \u00b7 10 MB max\nImport History",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Review",
+      "label": null
+    },
+    {
+      "text": "Import History",
+      "label": null,
+      "screen": "import-history"
+    }
+  ],
+  "evidence": [
+    "import-top.png"
+  ]
+}

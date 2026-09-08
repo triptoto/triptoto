@@ -1,0 +1,56 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nYou can edit this shared trip. The owner manages who has access.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nPeople on this trip\nAlex Traveler (You)\nOwner\nSam Companion\nCan edit\nTaylor Companion\nView only\n\nUp to 10 people per trip.\n\nLeave this trip\nLeave this trip?\n\nLeave Rome 2026? You\u2019ll lose access until someone invites you again.\n\nCancel\nLeave trip",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 800
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Leave this trip",
+      "label": null,
+      "action": "leave-trip"
+    },
+    {
+      "text": "Cancel",
+      "label": null
+    },
+    {
+      "text": "Leave trip",
+      "label": null
+    }
+  ],
+  "evidence": [
+    "leave-confirm-top.png",
+    "leave-confirm-scroll-0-0.png"
+  ],
+  "fixtureSetup": "s.trip.role=\"editor\";s.sharing.role=\"editor\";s.sharing.canManage=false;",
+  "trigger": [
+    "[data-action=\"leave-trip\"]"
+  ]
+}

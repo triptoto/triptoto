@@ -1,0 +1,30 @@
+{
+  "url": "/join/audit-token",
+  "screen": "join",
+  "text": "Join trip\nTRIP INVITATION\nJoin Rome with friends\n\nJoin as can edit. Collaboration is free.\n\nYou\u2019ll get access to this shared trip on your own account.\n\nAccept invitation\nNot now",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Accept invitation",
+      "label": null,
+      "action": "join-accept"
+    },
+    {
+      "text": "Not now",
+      "label": null,
+      "action": "join-home"
+    }
+  ],
+  "evidence": [
+    "join-valid-top.png"
+  ],
+  "fixtureSetup": "s.joinCheckedToken=\"audit-token\";s.joinPreview={tripTitle:\"Rome with friends\",role:\"editor\",sharingEnabled:true};s.joinLoading=false;s.joinError=null;",
+  "trigger": []
+}

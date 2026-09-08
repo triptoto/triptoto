@@ -1,0 +1,26 @@
+[
+  {
+    "case": "320x568-collab",
+    "errors": []
+  },
+  {
+    "case": "320x568-share",
+    "errors": []
+  },
+  {
+    "case": "360x740-collab",
+    "errors": []
+  },
+  {
+    "case": "360x740-share",
+    "errors": []
+  },
+  {
+    "case": "430x932-collab",
+    "errors": []
+  },
+  {
+    "case": "430x932-share",
+    "errors": []
+  }
+]

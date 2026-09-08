@@ -1,0 +1,95 @@
+{
+  "url": "/bookings/add",
+  "screen": "add-booking",
+  "text": "Add a booking\nADD A BOOKING\nAdd a booking\n\nFor travel you've already reserved. To plan what to see and do, use Day Plan.\n\nFlight\nAir travel\nTrain\nRail journey\nFerry\nBoat or crossing\nBus / Coach\nIntercity journey\nCruise\nSailing itinerary\nCar Rental\nPickup and return\nTransfer\nBooked transport\nTaxi / Ride\nPickup and drop-off\nParking\nReserved parking\nHotel / Stay\nHotel or apartment\nTravel Insurance\nPolicy details\nOther\nAny confirmed plan\nALREADY HAVE A CONFIRMATION?\nUpload a file\nReview a ticket or confirmation\nForward an email\nSend it to go@tripto.to",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1230
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Flight\nAir travel",
+      "label": "Add Flight",
+      "action": "add-type"
+    },
+    {
+      "text": "Train\nRail journey",
+      "label": "Add Train",
+      "action": "add-type"
+    },
+    {
+      "text": "Ferry\nBoat or crossing",
+      "label": "Add Ferry",
+      "action": "add-type"
+    },
+    {
+      "text": "Bus / Coach\nIntercity journey",
+      "label": "Add Bus / Coach",
+      "action": "add-type"
+    },
+    {
+      "text": "Cruise\nSailing itinerary",
+      "label": "Add Cruise",
+      "action": "add-type"
+    },
+    {
+      "text": "Car Rental\nPickup and return",
+      "label": "Add Car Rental",
+      "action": "add-type"
+    },
+    {
+      "text": "Transfer\nBooked transport",
+      "label": "Add Transfer",
+      "action": "add-type"
+    },
+    {
+      "text": "Taxi / Ride\nPickup and drop-off",
+      "label": "Add Taxi / Ride",
+      "action": "add-type"
+    },
+    {
+      "text": "Parking\nReserved parking",
+      "label": "Add Parking",
+      "action": "add-type"
+    },
+    {
+      "text": "Hotel / Stay\nHotel or apartment",
+      "label": "Add Hotel / Stay",
+      "action": "add-type"
+    },
+    {
+      "text": "Travel Insurance\nPolicy details",
+      "label": "Add Travel Insurance",
+      "action": "add-type"
+    },
+    {
+      "text": "Other\nAny confirmed plan",
+      "label": "Add Other",
+      "action": "add-type"
+    },
+    {
+      "text": "Upload a file\nReview a ticket or confirmation",
+      "label": null,
+      "action": "open-upload-booking"
+    },
+    {
+      "text": "Forward an email\nSend it to go@tripto.to",
+      "label": null,
+      "action": "open-forward-booking"
+    }
+  ],
+  "evidence": [
+    "add-booking-top.png",
+    "add-booking-scroll-0-0.png"
+  ]
+}

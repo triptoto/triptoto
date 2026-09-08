@@ -1,0 +1,20 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Import Review\nReview before adding\nNothing is added until you confirm.\nNo booking candidates\n\nThis format could not be imported safely. Add the booking manually instead.\n\nThis document contains no supported booking details.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "import-empty-top.png"
+  ],
+  "fixtureSetup": "s.importReview={candidates:[],warnings:[\"This document contains no supported booking details.\"]};",
+  "trigger": []
+}

@@ -1,0 +1,25 @@
+{
+  "url": "/join/audit-token",
+  "screen": "join",
+  "text": "Join trip\nInvitations are paused\n\nTrip sharing isn\u2019t available right now. Please ask the trip owner to send a new link later.\n\nGo to my trips",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Go to my trips",
+      "label": null,
+      "action": "join-home"
+    }
+  ],
+  "evidence": [
+    "join-paused-top.png"
+  ],
+  "fixtureSetup": "s.joinCheckedToken=\"audit-token\";s.joinPreview={tripTitle:\"Rome with friends\",role:\"editor\",sharingEnabled:true};s.joinLoading=false;s.joinError=null;s.joinPreview.sharingEnabled=false;",
+  "trigger": []
+}

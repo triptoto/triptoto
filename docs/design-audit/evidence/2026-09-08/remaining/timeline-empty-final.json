@@ -1,0 +1,66 @@
+{
+  "url": "/trips/rome-2026-2026-09-09",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 9\u201315, 2026\n2\nSTART BUILDING\nAdd to Rome 2026\n\nBook it, plan your days, or save an idea.\n\nAdd a booking\nFlights, stays, trains, restaurants and more\nDay Plan\nPlan what you want to see and do\nSave for Later\nKeep ideas you haven't scheduled yet\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "2",
+      "label": "Notifications, 2 unread",
+      "action": "open-notifications"
+    },
+    {
+      "text": "Add a booking\nFlights, stays, trains, restaurants and more",
+      "label": null,
+      "action": "open-add-booking"
+    },
+    {
+      "text": "Day Plan\nPlan what you want to see and do",
+      "label": null,
+      "action": "open-day-plan"
+    },
+    {
+      "text": "Save for Later\nKeep ideas you haven't scheduled yet",
+      "label": null,
+      "action": "open-save-later"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "timeline-empty-final-top.png"
+  ],
+  "setup": "s.timeline=[];s.brain={...s.brain,nextItem:null}",
+  "trigger": [],
+  "after": ""
+}

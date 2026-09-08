@@ -1,0 +1,200 @@
+{
+  "cases": 24,
+  "verifiedDialogs": 22,
+  "functionalScreens": 1,
+  "blocked": 1,
+  "results": [
+    {
+      "case": "calendar",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "collection-delete",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "currency-picker",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "delete-account",
+      "dialogs": 0,
+      "overflow": false,
+      "focusTrapped": null,
+      "closedByEscape": null,
+      "status": "BLOCKED"
+    },
+    {
+      "case": "delete-booking",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "delete-document",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "delete-import",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "driver",
+      "dialogs": 0,
+      "overflow": false,
+      "focusTrapped": null,
+      "closedByEscape": null,
+      "status": "VERIFIED functional mode"
+    },
+    {
+      "case": "email-trip",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "help-sheet",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "idea-delete",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "idea-menu",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "manage-booking",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "member-remove",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "member-sheet",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "member-transfer",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "move-booking",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "notifications",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "remove-local",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "share-sheet",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "stop-delete",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "stop-menu",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "tour-sheet",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    },
+    {
+      "case": "trip-switch",
+      "dialogs": 1,
+      "overflow": false,
+      "focusTrapped": true,
+      "closedByEscape": true,
+      "status": "VERIFIED local dialog"
+    }
+  ]
+}

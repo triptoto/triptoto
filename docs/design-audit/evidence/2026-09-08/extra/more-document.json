@@ -1,0 +1,29 @@
+{
+  "url": "/bookings/new/document",
+  "screen": "form",
+  "text": "Add Document\nSave\nMANUAL BOOKING\nAdd Document\nEssentials\nChoose a file\nPDF, image, or Wallet pass \u00b7 up to 10 MB\nNo file selected\nMore Details\nRelated booking\nNo related booking\nHotel Artemide\nLY 383\nBreakfast reservation\nPhotography walk\nCoffee & pastry\nLunch in Rome\nVatican Museums\nSouvenir shopping\nWine tasting\nFrecciarossa 9512\nFrecciarossa 9551",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "more-document-top.png"
+  ],
+  "trigger": "[data-action=\"toggle-form-more\"]",
+  "qaState": ""
+}

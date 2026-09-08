@@ -1,0 +1,101 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "Account\nYOUR TRAVEL SPACE\nAT\nAlex Traveler\nGoogle identity\n0\nCurrent\n2\nUpcoming\n1\nPast\nSign out\nAll trips\n3 trips\nNew trip\nSomewhere new\nYour plans\nTravel essentials\nFind a flight\nCompare routes on Aviasales\nFind a place to stay\nBrowse stays on Booking.com\nTravel eSIM\nGet connected before you land\n\nPartner links may earn Tripto a commission at no extra cost.\n\nA helping hand\nTake the tour\nGet to know Tripto\nHelp, privacy & terms\nSupport and legal information\nPrivacy & data\nRemove local data\nClears files and cached trips from this phone only\nDelete my account\nPermanently removes your server account and trips\ntripto.to\n\nProduct V2\n\nTrip\nTrip options\nTo-do\nAccount\nPreview mode does not call the API.",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 705,
+      "scroll": 1584
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Sign out",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "All trips\n3 trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "New trip\nSomewhere new",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Take the tour\nGet to know Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Help, privacy & terms\nSupport and legal information",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Remove local data\nClears files and cached trips from this phone only",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "Delete my account\nPermanently removes your server account and trips",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Open welcome screen",
+      "screen": "home"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "focusInside": false,
+  "trigger": [
+    "[data-action=\"delete-account\"]"
+  ],
+  "bottomEvidence": "delete-account-bottom.png"
+}

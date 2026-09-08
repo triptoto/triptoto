@@ -1,0 +1,38 @@
+{
+  "url": "/collections/a-morning-in-trastevere-rome/edit",
+  "screen": "collection-form",
+  "text": "Edit Neighborhood\nSave\nEDIT PLAN\nA morning in Trastevere\n\nGroup several places in one district into one plan. It shows once on your timeline and opens its own list of places.\n\nDetails\nNeighborhood name *\nCity or area Optional\nDate on timeline\nSelected date\nSep 9, 2026\nSelected date: Sep 9, 2026.\n\nOptional \u2014 choose a date when this neighborhood belongs on your timeline. Leave it blank to keep planning it later.\n\nStart time Optional\nNotes Optional",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 947
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Selected date\nSep 9, 2026",
+      "label": "Date on timeline. Sep 9, 2026",
+      "action": "open-date-range"
+    }
+  ],
+  "evidence": [
+    "collection-edit-top.png",
+    "collection-edit-scroll-0-0.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": [
+    "[data-action=\"edit-collection\"]"
+  ]
+}

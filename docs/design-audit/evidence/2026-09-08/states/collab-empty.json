@@ -1,0 +1,25 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nInvite people\nPeople on this trip\n\nJust you so far. Invite someone when you\u2019re ready.\n\nUp to 10 people per trip.\n\nPending invitations\n\nNo pending invitations.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Invite people",
+      "label": null,
+      "action": "open-share"
+    }
+  ],
+  "evidence": [
+    "collab-empty-top.png"
+  ],
+  "fixtureSetup": "s.members=[];s.invites=[];",
+  "trigger": []
+}

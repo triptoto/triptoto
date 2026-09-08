@@ -1,0 +1,20 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nLoading your travel companions\u2026",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "collab-loading-top.png"
+  ],
+  "fixtureSetup": "s.collabLoading=true;",
+  "trigger": []
+}

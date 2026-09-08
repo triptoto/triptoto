@@ -1,0 +1,116 @@
+{
+  "url": "/trips/rome-2026-2026-09-09",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 9\u201315, 2026\nWED\nSep 9\nTHU\nSep 10\nSAT\nSep 12\n10:00\nNEXT\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n3h 30m\n13:15\nAirport to hotel\nTaxi \u00b7 Private transfer\n14:30\nHotel Artemide\nCheck-in\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Notifications",
+      "action": "open-notifications"
+    },
+    {
+      "text": "WED\nSep 9",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SAT\nSep 12",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "10:00\nNEXT\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n3h 30m",
+      "label": "10:00. Flight to Rome. Flight \u00b7 TLV \u2192 FCO. 3h 30m",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:15\nAirport to hotel\nTaxi \u00b7 Private transfer",
+      "label": "13:15. Airport to hotel. Taxi \u00b7 Private transfer",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "14:30\nHotel Artemide\nCheck-in",
+      "label": "14:30. Hotel Artemide. Check-in",
+      "action": "timeline-detail",
+      "id": "stay"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "viewport": [
+    1024,
+    768
+  ],
+  "geometry": {
+    "header": {
+      "x": 212,
+      "y": 0,
+      "width": 600,
+      "height": 78.46875,
+      "top": 0,
+      "right": 812,
+      "bottom": 78.46875,
+      "left": 212
+    },
+    "main": {
+      "x": 212,
+      "y": 145.46875,
+      "width": 600,
+      "height": 551.53125,
+      "top": 145.46875,
+      "right": 812,
+      "bottom": 697,
+      "left": 212
+    },
+    "nav": {
+      "x": 212,
+      "y": 697,
+      "width": 600,
+      "height": 71,
+      "top": 697,
+      "right": 812,
+      "bottom": 768,
+      "left": 212
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

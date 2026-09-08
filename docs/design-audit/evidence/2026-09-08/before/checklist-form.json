@@ -1,0 +1,22 @@
+{
+  "url": "/before-you-go/new",
+  "screen": "form",
+  "text": "Add Essential\nSave Checklist\nTRAVEL ESSENTIAL\nAdd Essential\nItem\n*\nGroup\n*\nDocuments\nBefore You Leave\nPacking\nPriority\n*\nNormal\nImportant\nCritical",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save Checklist",
+      "label": null
+    }
+  ],
+  "evidence": [
+    "checklist-form-top.png"
+  ]
+}

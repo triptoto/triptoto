@@ -1,0 +1,46 @@
+{
+  "url": "/trip-map",
+  "screen": "trip-map",
+  "text": "Trip Map\nTrip Map\n\nThis trip does not have enough places to map yet. Add another booking with a location and the map will appear.\n\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "map-no-location-top.png"
+  ],
+  "setup": "s.locations=[];s.timeline=[];s.stays=[];s.transport=[];",
+  "trigger": [],
+  "after": ""
+}

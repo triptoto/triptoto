@@ -1,0 +1,21 @@
+{
+  "url": "/home",
+  "screen": "home",
+  "text": "tripto.to\nSign-in link expired\n\nPlease start Google sign-in again.\n\nYour trips, offline files, and unsynced changes remain on this phone.\n\nSign in again",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Sign in again",
+      "label": null,
+      "action": "restart-google-sign-in"
+    }
+  ],
+  "evidence": [
+    "auth-expired-top.png"
+  ],
+  "setup": "s.googleAuthHandoffStatus=\"terminal\"",
+  "trigger": [],
+  "after": ""
+}

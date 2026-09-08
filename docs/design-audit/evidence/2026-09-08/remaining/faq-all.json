@@ -1,0 +1,196 @@
+{
+  "url": "/help",
+  "screen": "help",
+  "text": "Help & FAQ\nTRAVEL HELP\nHow can we help?\n\nFind a clear answer without leaving your trip.\n\nSearch help\n18 answers\nYour trip in three steps\n\nStart simple. Add details whenever you have them.\n\n1\nCreate a trip\n2\nAdd bookings\n3\nFollow the Timeline\nGetting started\n3 answers\nHow do I create a trip?\n\nOpen Account and tap Create trip, or tap + on the Trips screen. Add a name, destination and dates. Your trip opens in the Timeline.\n\nCreate trip\nHow do I edit my trip?\n\nOpen the trip and tap the menu button in the top right, then choose Edit trip to change its name, dates or details.\n\nHow do I switch between trips?\n\nOpen Account and tap Switch trip to pick another one. Your upcoming and past trips are listed there too.\n\nMy trips\nBookings\n5 answers\nHow do I add a booking?\n\nTap + at the bottom, then choose how to add it: Upload Booking or ADD NEW BOOKING. Everything you add appears in the Timeline.\n\nHow does Upload Booking work?\n\nTap + then Upload Booking and choose a ticket or confirmation file. tripto.to reads it on this device and fills in what it can. Check the details before saving, because recognition is not always perfect.\n\nHow do I add a booking manually?\n\nTap + then Add a booking and pick a type: Flight, Hotel / Stay, Train, Ferry, Bus, Cruise, Car Rental, Transfer, Taxi, Parking, Insurance or Other. Only the essential fields are required. To plan restaurants, tours, museums and other things to see and do, use Day Plan instead.\n\nHow do I edit a booking?\n\nOpen the booking from your Timeline, then choose Edit to update its details.\n\nHow do I remove a booking?\n\nOpen the booking from your Timeline and choose Delete. Delete only when a booking was added by mistake.\n\nYour trip\n5 answers\nWhat is the Timeline?\n\nThe Timeline is the main view of your trip. Flights, stays, restaurants, activities and other bookings are shown in travel order so you can see what is coming next.\n\nHow does the checklist work?\n\nUse the To-do tab in the bottom bar for things you do not want to forget, such as your passport, wallet or charger. Add your own items and tap one when it is packed. Tap it again to undo.\n\nOpen checklist\nWhere are my tickets and documents?\n\nDocuments attached to a booking open from that booking. You can also open the trip menu and choose Documents to see your trip files. Some files are stored only on this device.\n\nWhen can I use Trip Map?\n\nOpen the trip menu and choose Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.\n\nWhat works offline?\n\nYour cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and opening directions need a connection.\n\nPlan together\n4 answers\nCan I plan a trip with other people?\n\nYes. Open the trip menu and choose Plan together to invite people. Everyone signs in with their own free account \u2014 planning together never costs anything.\n\nPlan together\nWhat can invited people do?\n\nYou choose a role for each person. Can edit lets them add and change bookings. View only lets them see the trip without changing it. As the owner you can change roles or remove people at any time.\n\nHow do invitation links work?\n\nEach invitation link works once and you can revoke it at any time. The person opens it, signs in with their own free account, and joins the trip.\n\nHow do I stop sharing or leave a trip?\n\nOwners can remove people or revoke pending invites from Plan together. If you were invited to someone else's trip, open Plan together and choose Leave this trip.\n\nAccount\n1 answer\nHow do I sign out?\n\nOpen Account and tap Sign out at the top of the page.\n\nAccount\nHelpful links\n\nLearn the basics or review how your data is handled.\n\nTake the tour\nPrivacy\nTerms\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 705,
+      "scroll": 4019
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "How do I create a trip?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "create-trip"
+    },
+    {
+      "text": "Create trip",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "How do I edit my trip?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-trip"
+    },
+    {
+      "text": "How do I switch between trips?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "switch-trip"
+    },
+    {
+      "text": "My trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "How do I add a booking?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "add-booking"
+    },
+    {
+      "text": "How does Upload Booking work?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "upload-booking"
+    },
+    {
+      "text": "How do I add a booking manually?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "manual-booking"
+    },
+    {
+      "text": "How do I edit a booking?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-booking"
+    },
+    {
+      "text": "How do I remove a booking?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "remove-booking"
+    },
+    {
+      "text": "What is the Timeline?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "timeline"
+    },
+    {
+      "text": "How does the checklist work?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "checklist"
+    },
+    {
+      "text": "Open checklist",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Where are my tickets and documents?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "documents"
+    },
+    {
+      "text": "When can I use Trip Map?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "trip-map"
+    },
+    {
+      "text": "What works offline?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "offline"
+    },
+    {
+      "text": "Can I plan a trip with other people?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-what"
+    },
+    {
+      "text": "Plan together",
+      "label": null,
+      "action": "open-collaboration"
+    },
+    {
+      "text": "What can invited people do?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-roles"
+    },
+    {
+      "text": "How do invitation links work?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-invite"
+    },
+    {
+      "text": "How do I stop sharing or leave a trip?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-leave"
+    },
+    {
+      "text": "How do I sign out?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "sign-out"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    },
+    {
+      "text": "Take the tour",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "faq-all-top.png",
+    "faq-all-scroll-0-0.png",
+    "faq-all-scroll-0-1.png",
+    "faq-all-scroll-0-2.png",
+    "faq-all-scroll-0-3.png",
+    "faq-all-scroll-0-4.png",
+    "faq-all-scroll-0-5.png"
+  ],
+  "setup": "",
+  "trigger": [],
+  "after": "document.querySelectorAll(\"[data-action=faq-toggle]\").forEach(e=>e.click())"
+}

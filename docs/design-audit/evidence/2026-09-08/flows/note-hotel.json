@@ -1,0 +1,91 @@
+{
+  "url": "/hotels/hotel-artemide-hotel-artemide",
+  "screen": "hotel",
+  "text": "Hotel\nHotel Artemide\nConfirmed\nScheduled data\nCHECK-IN\nSep 9\n15:00\n6 nights\nCHECK-OUT\nSep 15\n11:00\nShow to Driver\nVia Nazionale 22, Roma\nSaved address\n+39 06 489911\nCall hotel\ninfo@hotelartemide.it\nEmail hotel\nHTL-48291\nConfirmation \u00b7 tap to copy\nAdd document\nNotes\nCancel\nSave note\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "detail-content",
+      "height": 705,
+      "scroll": 787
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Share",
+      "action": "share-booking",
+      "id": "stay"
+    },
+    {
+      "text": "",
+      "label": "Edit or delete",
+      "action": "manage-booking",
+      "id": "stay"
+    },
+    {
+      "text": "Show to Driver",
+      "label": null,
+      "action": "show-driver",
+      "id": "stay"
+    },
+    {
+      "text": "Via Nazionale 22, Roma\nSaved address",
+      "label": null,
+      "action": "directions-hotel",
+      "id": "stay"
+    },
+    {
+      "text": "HTL-48291\nConfirmation \u00b7 tap to copy",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Cancel",
+      "label": null,
+      "action": "cancel-note"
+    },
+    {
+      "text": "Save note",
+      "label": null,
+      "action": "save-note",
+      "id": "stay"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ]
+}

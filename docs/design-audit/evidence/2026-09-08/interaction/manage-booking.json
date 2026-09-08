@@ -1,0 +1,125 @@
+{
+  "url": "/flights/ly-383-tlv-fco",
+  "screen": "flight",
+  "text": "Flight Detail\nLY 383\nConfirmed\nScheduled data\nTLV\nBen Gurion Airport\nFCO\nRome Fiumicino\nDEPARTS\n10:00\nWed, Sep 9\n3h 30m\nARRIVES\n12:30\nWed, Sep 9\nTERMINAL\n3\nGATE\nNot assigned\nSEAT\n12A\nEconomy\nDirections\nBoarding pass\nStored and verified on this phone\nAdd document\nFlight details\nAdd note\nTrip\nTrip options\nTo-do\nAccount\nManage booking\nEdit\nUpdate the details of this booking\nMove to another day\nKeep the times, change the day\nDelete\nRemove this booking from the trip",
+  "scroll": [
+    {
+      "class": "detail-content ",
+      "height": 705,
+      "scroll": 750
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 596.9375,
+        "width": 390,
+        "height": 247.0625,
+        "top": 596.9375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Share",
+      "action": "share-booking",
+      "id": "flight"
+    },
+    {
+      "text": "",
+      "label": "Edit or delete",
+      "action": "manage-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Directions",
+      "label": null,
+      "action": "directions-flight",
+      "id": "flight"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Flight details",
+      "label": null,
+      "action": "toggle-flight-details"
+    },
+    {
+      "text": "Add note",
+      "label": null,
+      "action": "edit-note",
+      "id": "flight"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Close Manage booking",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Edit\nUpdate the details of this booking",
+      "label": null,
+      "action": "edit-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Move to another day\nKeep the times, change the day",
+      "label": null,
+      "action": "move-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Delete\nRemove this booking from the trip",
+      "label": null,
+      "action": "delete-booking",
+      "id": "flight"
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"manage-booking\"]"
+  ],
+  "bottomEvidence": "manage-booking-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button class=\"icon-button\" data-action=\"manage-booking\" data-kind=\"flight\" data-id=\"flight\" aria-label=\"Edit or delete\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#edit\"></use></svg></button>"
+}

@@ -1,0 +1,36 @@
+{
+  "url": "/bookings/new/other",
+  "screen": "form",
+  "text": "Add Other\nSave\nMANUAL BOOKING\nOther\nEssentials\nBooking title *\nDate *\nLocal time Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nLocation Optional\nEnd date\nEnd time\nConfirmation number\nContact\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1285
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "more-other-top.png",
+    "more-other-scroll-0-0.png"
+  ],
+  "trigger": "[data-action=\"toggle-form-more\"]",
+  "qaState": ""
+}

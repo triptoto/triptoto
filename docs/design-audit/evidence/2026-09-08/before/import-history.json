@@ -1,0 +1,72 @@
+{
+  "url": "/bookings/import/history",
+  "screen": "import-history",
+  "text": "Import History\nYour flight to Rome\nMon, Sep 7, 02:47 PM GMT+3\nNeeds review\nHotel Artemide confirmation\nSat, Sep 5, 02:47 PM GMT+3\nAdded\nImport booking\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Your flight to Rome\nMon, Sep 7, 02:47 PM GMT+3\nNeeds review",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Delete Your flight to Rome everywhere",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "Hotel Artemide confirmation\nSat, Sep 5, 02:47 PM GMT+3\nAdded",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Delete Hotel Artemide confirmation everywhere",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Import booking",
+      "label": null,
+      "screen": "import"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "import-history-top.png"
+  ]
+}

@@ -1,0 +1,156 @@
+[
+  {
+    "case": "day-edit-attraction",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-food_drink",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-museum_culture",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-shopping",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-tour_experience",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-nature_outdoors",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-beach_relax",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-entertainment",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-viewpoint_scenic",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-other",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "day-edit-idea",
+    "overflow": false,
+    "checks": {
+      "editShown": true
+    }
+  },
+  {
+    "case": "timeline-day-0",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "timeline-day-1",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "timeline-day-2",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "timeline-day-3",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "trips-current",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "bookings-transport",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "flight-round-trip",
+    "overflow": false,
+    "checks": {
+      "returnTimeVisible": true
+    }
+  },
+  {
+    "case": "no-trip-add-trip",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "no-trip-add-booking",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "no-trip-form",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "no-trip-day-plan-form",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "no-trip-save-later",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "reflow-form",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "reflow-collection",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "reflow-popup",
+    "overflow": false,
+    "checks": {}
+  }
+]

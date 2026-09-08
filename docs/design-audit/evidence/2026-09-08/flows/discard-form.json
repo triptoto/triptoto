@@ -1,0 +1,52 @@
+{
+  "url": "/bookings/new/activity",
+  "screen": "form",
+  "text": "Add Activity\nSave\nMANUAL BOOKING\nActivity\nEssentials\nActivity name *\nType Optional\nActivity\nTour\nConcert\nTheatre\nMuseum\nAttraction\nSports\nMeeting\nShow\nOther\nDate *\nLocal time Optional\nVenue Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nDiscard changes?\n\nYour entered details will be lost.\n\nKeep editing\nDiscard",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 930
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 352.203125,
+        "width": 326,
+        "height": 139.59375,
+        "top": 352.203125,
+        "right": 358,
+        "bottom": 491.796875,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    },
+    {
+      "text": "Keep editing",
+      "label": null
+    },
+    {
+      "text": "Discard",
+      "label": null
+    }
+  ]
+}

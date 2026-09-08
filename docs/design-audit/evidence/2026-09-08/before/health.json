@@ -1,0 +1,53 @@
+{
+  "url": "/trip-health",
+  "screen": "health",
+  "text": "Trip Health\nEverything looks good\n\nNo known trip issues.\n\nNo known issues\n\nNo known trip issues.\n\nRecalculate Trip Health\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Trip Health information",
+      "action": "health-info"
+    },
+    {
+      "text": "Recalculate Trip Health",
+      "label": null,
+      "action": "recalculate-health"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "health-top.png"
+  ]
+}

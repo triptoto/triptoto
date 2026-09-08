@@ -1,0 +1,32 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nYou can view this shared trip. The owner manages who has access.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nPeople on this trip\nAlex Traveler (You)\nOwner\nSam Companion\nCan edit\nTaylor Companion\nView only\n\nUp to 10 people per trip.\n\nLeave this trip",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 800
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Leave this trip",
+      "label": null,
+      "action": "leave-trip"
+    }
+  ],
+  "evidence": [
+    "collab-viewer-top.png",
+    "collab-viewer-scroll-0-0.png"
+  ],
+  "fixtureSetup": "s.trip.role=\"viewer\";s.sharing.role=\"viewer\";s.sharing.canManage=false;",
+  "trigger": []
+}

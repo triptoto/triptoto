@@ -1,0 +1,92 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nInvite people\nPeople on this trip\nAlex Traveler (You)\nOwner\nSam Companion\nCan edit\nTaylor Companion\nView only\n\nUp to 10 people per trip.\n\nPending invitations\nfriend@example.test\nView only \u00b7 pending \u00b7 expires 2026-09-09T12:37:52.413Z",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 956,
+      "scroll": 1084
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Invite people",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Revoke invitation",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    }
+  ],
+  "viewport": [
+    768,
+    1024
+  ],
+  "geometry": {
+    "header": {
+      "x": 84,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 684,
+      "bottom": 68,
+      "left": 84
+    },
+    "main": {
+      "x": 84,
+      "y": 68,
+      "width": 600,
+      "height": 956,
+      "top": 68,
+      "right": 684,
+      "bottom": 1024,
+      "left": 84
+    },
+    "hero": {
+      "x": 100,
+      "y": 84,
+      "width": 568,
+      "height": 202.015625,
+      "top": 84,
+      "right": 668,
+      "bottom": 286.015625,
+      "left": 100
+    },
+    "heroContentBottom": 270.015625,
+    "nextHeroSibling": {
+      "x": 100,
+      "y": 310.015625,
+      "width": 568,
+      "height": 276,
+      "top": 310.015625,
+      "right": 668,
+      "bottom": 586.015625,
+      "left": 100
+    }
+  },
+  "errors": []
+}

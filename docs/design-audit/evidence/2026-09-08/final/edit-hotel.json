@@ -1,0 +1,42 @@
+{
+  "url": "/bookings/new/hotel",
+  "screen": "form",
+  "text": "Edit Stay\nSave\nMANUAL BOOKING\nEdit Stay\nEssentials\nProperty name *\nCity / location Optional\nStay dates\nSelected dates\nSep 9, 2026 \u2013 Sep 15, 2026\nSelected range: Sep 9, 2026 to Sep 15, 2026.\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 833
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Selected dates\nSep 9, 2026 \u2013 Sep 15, 2026",
+      "label": "Stay dates. Sep 9, 2026 to Sep 15, 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "editForm": true
+  },
+  "evidence": [
+    "edit-hotel-top.png",
+    "edit-hotel-scroll-0-0.png"
+  ]
+}

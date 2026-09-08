@@ -1,0 +1,66 @@
+[
+  {
+    "case": "faq-search-empty",
+    "overflow": false
+  },
+  {
+    "case": "checklist-edit",
+    "overflow": false
+  },
+  {
+    "case": "checklist-complete",
+    "overflow": false
+  },
+  {
+    "case": "currency-large",
+    "overflow": false
+  },
+  {
+    "case": "currency-error",
+    "overflow": false
+  },
+  {
+    "case": "currency-loading",
+    "overflow": false
+  },
+  {
+    "case": "currency-cached",
+    "overflow": false
+  },
+  {
+    "case": "weather-empty",
+    "overflow": false
+  },
+  {
+    "case": "weather-offline",
+    "overflow": false
+  },
+  {
+    "case": "weather-loading",
+    "overflow": false
+  },
+  {
+    "case": "weather-saved",
+    "overflow": false
+  },
+  {
+    "case": "map-no-location",
+    "overflow": false
+  },
+  {
+    "case": "missing-flight",
+    "overflow": false
+  },
+  {
+    "case": "missing-hotel",
+    "overflow": false
+  },
+  {
+    "case": "missing-train",
+    "overflow": false
+  },
+  {
+    "case": "missing-plan",
+    "overflow": false
+  }
+]

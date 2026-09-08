@@ -1,0 +1,42 @@
+{
+  "url": "/bookings/new/car-rental",
+  "screen": "form",
+  "text": "Add Car Rental\nSave\nMANUAL BOOKING\nCar Rental\nEssentials\nRental company *\nPickup location *\nDrop-off location *\nRental dates\nSelect dates\nChoose dates\nNo date range selected.\nPickup time *\nDrop-off time Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nVehicle / class\nConfirmation number\nDriver name\nRental phone\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1506
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Rental dates. Choose pickup and drop-off",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "more-car-rental-top.png",
+    "more-car-rental-scroll-0-0.png",
+    "more-car-rental-scroll-0-1.png"
+  ],
+  "trigger": "[data-action=\"toggle-form-more\"]",
+  "qaState": ""
+}

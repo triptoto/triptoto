@@ -1,0 +1,31 @@
+{
+  "url": "/bookings/new/document",
+  "screen": "form",
+  "text": "Add Document\nSave\nMANUAL BOOKING\nAdd Document\nEssentials\nChoose a file\nPDF, image, or Wallet pass \u00b7 up to 10 MB\nNo file selected\nMore Details",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "document-sheet-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": [
+    "[data-action=\"document-sheet\"]"
+  ]
+}

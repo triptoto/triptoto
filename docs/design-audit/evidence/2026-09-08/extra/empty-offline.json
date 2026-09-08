@@ -1,0 +1,25 @@
+{
+  "url": "/timeline",
+  "screen": "timeline",
+  "text": "tripto.to\nYOUR TRAVEL COMPANION\nOffline\n\nA LITTLE LESS TO THINK ABOUT\n\nYour trip.\nIn good order.\n\nFlights, stays, and everything between.\nTogether, wherever you go.\n\nAll your bookings in one place\nA clear plan for every day\nIdeas to save for later\nContinue with Google\nTake a tour\nYour plans stay private.\nPrivacy\n\u00b7\nTerms",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Continue with Google",
+      "label": "Continue with Google",
+      "action": "preview-google"
+    },
+    {
+      "text": "Take a tour",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "evidence": [
+    "empty-offline-top.png"
+  ],
+  "trigger": "",
+  "qaState": "empty-offline"
+}

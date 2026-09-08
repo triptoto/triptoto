@@ -1,0 +1,36 @@
+{
+  "url": "/bookings/new/transfer",
+  "screen": "form",
+  "text": "Add Transfer\nSave\nMANUAL BOOKING\nTransfer\nEssentials\nProvider / driver Optional\nFrom *\nTo *\nPickup date *\nPickup time *\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nConfirmation number\nDriver / provider phone\nVehicle Optional\nDriver name Optional\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1410
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "more-transfer-top.png",
+    "more-transfer-scroll-0-0.png"
+  ],
+  "trigger": "[data-action=\"toggle-form-more\"]",
+  "qaState": ""
+}

@@ -1,0 +1,48 @@
+{
+  "url": "/trips/new",
+  "screen": "form",
+  "text": "Create Trip\nNext\nNEW JOURNEY\nWhere are you going?\n\nPick a place, set your dates, and we\u2019ll build the itinerary around it.\n\nChoose your destination\nSearch a city, region, or airport\nDESTINATION *\n\nWorldwide city and airport search\n\nTravel dates\nSelected dates\nAug 30, 2026 \u2013 Oct 10, 2026\nSelected range: Aug 30, 2026 to Oct 10, 2026.\n\nYou can change every detail later.\n\nPlan your trip\nCreate trip\nYOUR JOURNEY\nBring your trip together\n\nKeep your bookings and travel details in one clear timeline.\n\nDestination\nNot selected\nTravel dates\nAug 30 \u2013 Oct 10, 2026\nAnything else you need?\nStill haven't booked the flights?\nCompare routes on Aviasales\nStill looking for a place to stay?\nBrowse stays on Booking.com\nNeed an eSIM?\nGet connected before you land\n\nPartner links may earn Tripto a commission at no extra cost.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Next",
+      "label": null
+    },
+    {
+      "text": "Selected dates\nAug 30, 2026 \u2013 Oct 10, 2026",
+      "label": "Travel dates. Aug 30, 2026 to Oct 10, 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "",
+      "label": "Back to trip details",
+      "action": "return-trip-setup"
+    },
+    {
+      "text": "Create trip",
+      "label": null,
+      "action": "complete-trip-setup"
+    }
+  ]
+}

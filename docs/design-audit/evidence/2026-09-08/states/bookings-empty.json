@@ -1,0 +1,75 @@
+{
+  "url": "/bookings",
+  "screen": "bookings",
+  "text": "Bookings\nAll\nTransport\nStays\nPlans\nRome 2026\nNo bookings here\n\nAdd transport, a stay, or a plan.\n\nAdd booking\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Add booking",
+      "action": "open-add-booking"
+    },
+    {
+      "text": "All",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Transport",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Stays",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Plans",
+      "label": null,
+      "action": "filter-bookings"
+    },
+    {
+      "text": "Add booking",
+      "label": null,
+      "action": "open-add-booking"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "bookings-empty-top.png"
+  ],
+  "fixtureSetup": "s.timeline=[];s.transport=[];s.stays=[];",
+  "trigger": []
+}

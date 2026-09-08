@@ -1,0 +1,44 @@
+{
+  "url": "/bookings/new/flight",
+  "screen": "form",
+  "text": "Edit Flight\nSave\nMANUAL BOOKING\nEdit Flight\nEssentials\nAirline *\nFlight number *\nFrom *\n\nAsia/Jerusalem \u2014 the selected airport's local time\n\nTo *\n\nEurope/Rome \u2014 the selected airport's local time\n\nTravel dates\nSelect dates\nChoose dates\nNo date range selected.\nDeparture time *\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nArrival date\nArrival local time\nOperating airline\nTerminal\nGate\nSeat\nCabin\nChecked bags\nPNR\nTicket number\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 2160
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Travel dates. Choose departure and return",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "editForm": true,
+    "moreExpanded": true
+  },
+  "evidence": [
+    "edit-flight-top.png",
+    "edit-flight-scroll-0-0.png",
+    "edit-flight-scroll-0-1.png"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Documents\nYour travel documents\n\n0 of 0 ready offline on this phone\n\nSaved documents\nNo offline documents\n\nAdd a ticket, boarding pass, or confirmation.\n\nAdd Document\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add Document",
+      "label": null,
+      "action": "document-sheet"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "documents-empty-top.png"
+  ],
+  "fixtureSetup": "s.localDocs=[];",
+  "trigger": []
+}

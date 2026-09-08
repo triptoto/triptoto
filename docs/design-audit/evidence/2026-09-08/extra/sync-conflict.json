@@ -1,0 +1,30 @@
+{
+  "url": "/pending-changes",
+  "screen": "sync",
+  "text": "Pending Changes\n1 change need review before sync can finish.\n1 change need review\nLast synced Updated 2h ago\nChanges requiring review\n\nA newer saved version exists. Nothing was overwritten.\n\nView conflict details\nPending local changes\n\nYour changes remain safely on this phone until sync succeeds.\n\nRetry",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "View conflict details",
+      "label": null,
+      "action": "sync-review"
+    },
+    {
+      "text": "Retry",
+      "label": null,
+      "action": "sync-retry"
+    }
+  ],
+  "evidence": [
+    "sync-conflict-top.png"
+  ],
+  "trigger": "",
+  "qaState": "sync-conflict"
+}

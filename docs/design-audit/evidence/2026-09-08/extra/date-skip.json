@@ -1,0 +1,283 @@
+{
+  "url": "/trips/new",
+  "screen": "form",
+  "text": "Create Trip\nNext\nNEW JOURNEY\nWhere are you going?\n\nPick a place, set your dates, and we\u2019ll build the itinerary around it.\n\nChoose your destination\nSearch a city, region, or airport\nDESTINATION *\n\nWorldwide city and airport search\n\nTravel dates\nSelect dates\nChoose dates\nNo date range selected.\n\nYou can change every detail later.\n\nSelect dates\nClear\n\nChoose your start date first.\n\nSTART DATE\nSelect\nEND DATE\nSelect\nSeptember 2026\nS\nM\nT\nW\nT\nF\nS\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n\nChoose start date\n\nConfirm dates\nI don\u2019t know my dates yet",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 0.04248187690973282,
+        "width": 390,
+        "height": 844,
+        "top": 0.04248187690973282,
+        "right": 390,
+        "bottom": 844.0424818769097,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Next",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Travel dates. Choose start date and end date",
+      "action": "open-date-range"
+    },
+    {
+      "text": "",
+      "label": "Back",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Clear",
+      "label": null,
+      "action": "clear-date-range"
+    },
+    {
+      "text": "",
+      "label": "Previous month",
+      "action": "range-month"
+    },
+    {
+      "text": "",
+      "label": "Next month",
+      "action": "range-month"
+    },
+    {
+      "text": "30",
+      "label": "Sunday, August 30, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "31",
+      "label": "Monday, August 31, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "1",
+      "label": "Tuesday, September 1, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "2",
+      "label": "Wednesday, September 2, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "3",
+      "label": "Thursday, September 3, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "4",
+      "label": "Friday, September 4, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "5",
+      "label": "Saturday, September 5, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "6",
+      "label": "Sunday, September 6, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "7",
+      "label": "Monday, September 7, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "8",
+      "label": "Tuesday, September 8, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "9",
+      "label": "Wednesday, September 9, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "10",
+      "label": "Thursday, September 10, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "11",
+      "label": "Friday, September 11, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "12",
+      "label": "Saturday, September 12, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "13",
+      "label": "Sunday, September 13, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "14",
+      "label": "Monday, September 14, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "15",
+      "label": "Tuesday, September 15, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "16",
+      "label": "Wednesday, September 16, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "17",
+      "label": "Thursday, September 17, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "18",
+      "label": "Friday, September 18, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "19",
+      "label": "Saturday, September 19, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "20",
+      "label": "Sunday, September 20, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "21",
+      "label": "Monday, September 21, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "22",
+      "label": "Tuesday, September 22, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "23",
+      "label": "Wednesday, September 23, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "24",
+      "label": "Thursday, September 24, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "25",
+      "label": "Friday, September 25, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "26",
+      "label": "Saturday, September 26, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "27",
+      "label": "Sunday, September 27, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "28",
+      "label": "Monday, September 28, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "29",
+      "label": "Tuesday, September 29, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "30",
+      "label": "Wednesday, September 30, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "1",
+      "label": "Thursday, October 1, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "2",
+      "label": "Friday, October 2, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "3",
+      "label": "Saturday, October 3, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "4",
+      "label": "Sunday, October 4, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "5",
+      "label": "Monday, October 5, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "6",
+      "label": "Tuesday, October 6, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "7",
+      "label": "Wednesday, October 7, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "8",
+      "label": "Thursday, October 8, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "9",
+      "label": "Friday, October 9, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "10",
+      "label": "Saturday, October 10, 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "Confirm dates",
+      "label": null,
+      "action": "apply-date-range"
+    },
+    {
+      "text": "I don\u2019t know my dates yet",
+      "label": null,
+      "action": "skip-date-range"
+    }
+  ],
+  "evidence": [
+    "date-skip-top.png"
+  ],
+  "trigger": "[data-action=\"open-date-range\"]",
+  "qaState": ""
+}

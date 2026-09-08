@@ -1,0 +1,52 @@
+{
+  "url": "/home",
+  "screen": "home",
+  "text": "tripto.to\nYOUR TRAVEL COMPANION\n\nA LITTLE LESS TO THINK ABOUT\n\nYour trip.\nIn good order.\n\nFlights, stays, and everything between.\nTogether, wherever you go.\n\nAll your bookings in one place\nA clear plan for every day\nIdeas to save for later\nContinue to your trips\nTake a tour\nYour plans stay private.\nPrivacy\n\u00b7\nTerms\nHow it works\n1\nCreate your trip\n2\nAdd your bookings\n3\nEverything becomes one Timeline\n4\nKnow what matters next\nGot it",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 508,
+        "width": 390,
+        "height": 336,
+        "top": 508,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Continue to your trips",
+      "label": "Continue to your trips",
+      "action": "enter-app"
+    },
+    {
+      "text": "Take a tour",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "",
+      "label": "Close How it works",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Got it",
+      "label": null,
+      "action": "finish-first-run-how"
+    }
+  ],
+  "evidence": [
+    "welcome-tour-top.png"
+  ],
+  "setup": "",
+  "trigger": [
+    "[data-action=\"open-first-run-how\"]"
+  ],
+  "after": ""
+}

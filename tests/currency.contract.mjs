@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 
 const read = (path) => readFileSync(path, "utf8");
 const app = read("public/mobile-app.js");
@@ -20,4 +21,23 @@ assert(currency.includes("api.frankfurter.dev/v2/rates") && currency.includes("i
 assert(css.includes(".currency-page") && css.includes(".currency-result") && css.includes("@media(max-width:374px)"), "Responsive converter styling is missing");
 assert(icons.includes('currency: "currency-circle-dollar"') && icons.includes('swap: "arrows-left-right"'), "Phosphor currency icons are missing");
 
-console.log("currency contract: ok");
+// Exercise the actual input handler: an unloaded rate must never turn into
+// a fictitious zero conversion when the user types an amount.
+const inputHandler = app.slice(app.indexOf('    const input = event.target.closest?.("[data-currency-amount]");'));
+const inputBody = inputHandler.slice(0, inputHandler.indexOf('\n  });'));
+for (const rate of [null, undefined, NaN, 1.25]) {
+  const currencyState = { rate, from: "EUR", to: "USD", amount: 0 };
+  const classes = () => ({ toggle() {} });
+  const input = { value: "100", classList: classes() };
+  const result = { textContent: "", classList: classes() };
+  const note = { textContent: "" };
+  const onInput = runInNewContext(`(event) => { ${inputBody} }`, {
+    initCurrency: () => currencyState,
+    saveCurrencyPreferences() {},
+    app: { querySelector: selector => selector === ".currency-result__amount" ? result : note, querySelectorAll: () => [] },
+  });
+  onInput({ target: { closest: () => input } });
+  assert.equal(result.textContent, rate === 1.25 ? "$125.00" : "—", "Missing rates must remain unavailable after editing");
+  assert.equal(note.textContent, rate === 1.25 ? "1 EUR = 1.250 USD" : "Update to load this rate");
+}
+console.log("currency contract and unloaded-rate input regression: ok");

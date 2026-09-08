@@ -1,0 +1,33 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "Save for Later\nSAVE FOR LATER\nSave ideas for \u201cRome 2026\u201d\n\nA running list of things you might do. Open one to add it to a day plan.\n\nIdeas\nPlanned\nNo ideas yet\n\nSave places, food and things you might want to do. Plan them onto a day whenever you're ready.\n\nAdd an idea",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Ideas",
+      "label": null,
+      "action": "save-later-filter"
+    },
+    {
+      "text": "Planned",
+      "label": null,
+      "action": "save-later-filter"
+    },
+    {
+      "text": "Add an idea",
+      "label": null,
+      "action": "add-save-later"
+    }
+  ],
+  "evidence": [
+    "save-later-top.png"
+  ]
+}

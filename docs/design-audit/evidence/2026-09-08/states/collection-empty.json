@@ -1,0 +1,38 @@
+{
+  "url": "/collections/a-morning-in-trastevere-rome",
+  "screen": "collection",
+  "text": "Neighborhood\nNEIGHBORHOOD\nA morning in Trastevere\n\nRome \u00b7 Wed, Sep 9, 11:00 AM GMT+2\n\nExplore at your own pace.\n\nPLACES\n0\nNo places yet\n\nAdd your first place to start this plan.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Add place",
+      "action": "collection-add-place",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "",
+      "label": "Edit Neighborhood",
+      "action": "edit-collection",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "",
+      "label": "Delete Neighborhood",
+      "action": "delete-collection",
+      "id": "audit-neighborhood"
+    }
+  ],
+  "evidence": [
+    "collection-empty-top.png"
+  ],
+  "fixtureSetup": "s.collectionStops=[]",
+  "trigger": []
+}

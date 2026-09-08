@@ -1,0 +1,37 @@
+{
+  "url": "/bookings/new/attraction",
+  "screen": "form",
+  "text": "Add Attraction\nSave\nMANUAL BOOKING\nAttraction\nEssentials\nAttraction name *\nDate *\nLocal time Optional\nVenue Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nEnd time\nConfirmation number\nProvider or contact\nSeat / section Optional\nAddress Optional\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1478
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "more-attraction-top.png",
+    "more-attraction-scroll-0-0.png",
+    "more-attraction-scroll-0-1.png"
+  ],
+  "trigger": "[data-action=\"toggle-form-more\"]",
+  "qaState": ""
+}

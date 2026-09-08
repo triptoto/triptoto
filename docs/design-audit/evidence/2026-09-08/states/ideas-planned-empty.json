@@ -1,0 +1,32 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "Save for Later\nSAVE FOR LATER\nSave ideas for \u201cRome 2026\u201d\n\nIdeas you've added to a day plan. Open one to see it, or return it to your ideas.\n\nIdeas\n1\nPlanned\nNothing planned yet\n\nIdeas you add to a day plan show up here. Open an idea in the Ideas tab to place it.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Ideas\n1",
+      "label": null,
+      "action": "save-later-filter"
+    },
+    {
+      "text": "Planned",
+      "label": null,
+      "action": "save-later-filter"
+    }
+  ],
+  "evidence": [
+    "ideas-planned-empty-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": [
+    "[data-action=\"save-later-filter\"][data-filter=\"planned\"]"
+  ]
+}

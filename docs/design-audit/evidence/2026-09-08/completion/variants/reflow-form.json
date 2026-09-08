@@ -1,0 +1,36 @@
+{
+  "url": "/trips/new",
+  "screen": "form",
+  "text": "Create Trip\nNext\nNEW JOURNEY\nWhere are you going?\n\nPick a place, set your dates, and we\u2019ll build the itinerary around it.\n\nChoose your destination\nSearch a city, region, or airport\nDESTINATION *\n\nWorldwide city and airport search\n\nTravel dates\nSelect dates\nChoose dates\nNo date range selected.\n\nYou can change every detail later.",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 272,
+      "scroll": 468
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Next",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Travel dates. Choose start date and end date",
+      "action": "open-date-range"
+    }
+  ],
+  "checks": {},
+  "evidence": [
+    "reflow-form-top.png",
+    "reflow-form-scroll-0-0.png",
+    "reflow-form-scroll-0-1.png"
+  ]
+}

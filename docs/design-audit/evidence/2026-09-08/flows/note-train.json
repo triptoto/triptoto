@@ -1,0 +1,85 @@
+{
+  "url": "/trains/frecciarossa-9512-rome-florence",
+  "screen": "train",
+  "text": "Train Detail\nTrenitalia\nConfirmed\nScheduled data\nROM\nRoma Termini\nFIR\nFirenze S. M. Novella\nDEPARTS\n09:30\nSat, Sep 12\n1h 35m\nARRIVES\n11:05\nSat, Sep 12\nPLATFORM\n8\nDirections to station\nTRN48291\nBooking reference \u00b7 tap to copy\nAdd document\nNotes\nCancel\nSave note\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "detail-content",
+      "height": 705,
+      "scroll": 749
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Share",
+      "action": "share-booking",
+      "id": "train"
+    },
+    {
+      "text": "",
+      "label": "Edit or delete",
+      "action": "manage-booking",
+      "id": "train"
+    },
+    {
+      "text": "Directions to station",
+      "label": null,
+      "action": "directions-item",
+      "id": "train"
+    },
+    {
+      "text": "TRN48291\nBooking reference \u00b7 tap to copy",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Cancel",
+      "label": null,
+      "action": "cancel-note"
+    },
+    {
+      "text": "Save note",
+      "label": null,
+      "action": "save-note",
+      "id": "train"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ]
+}

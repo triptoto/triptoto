@@ -1,0 +1,87 @@
+{
+  "url": "/collections/an-extended-morning-visiting-the-neighborhood-and-its-historic-streets-rome",
+  "screen": "collection",
+  "text": "Neighborhood\nNEIGHBORHOOD\nAn extended morning visiting the neighborhood and its historic streets\n\nRome \u00b7 Wed, Sep 9, 11:00 AM GMT+2\n\nExplore at your own pace.\n\nPLACES\n8\n1 of 8 visited\n09:30\n01\nNEXT\nMuseum of history, architecture, photography and contemporary art \u2014 a long local place name\nMuseum \u00b7 Via di San Francesco a Ripa, Trastevere, Roma, Italia\nA longer description, including accessibility arrangements and time for a break before the next booking.\n\u2014\n02\nUPCOMING\nCoffee and pastries\nCafe\n11:30\n03\nUPCOMING\nGalleria Corsini\nMuseum\nAllow time for the permanent collection.\n\u2014\n04\nUPCOMING\nLunch in the neighborhood\nRestaurant\n13:30\n05\nUPCOMING\nBotanical garden\nPark\n\u2014\n06\nUPCOMING\nA quiet walk along the river\nStreet\n15:30\n07\nVISITED\nPiazza Trilussa\nViewpoint\n\u2014\n08\nSKIPPED\nEvening gelato\nCafe",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Add place",
+      "action": "collection-add-place",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "",
+      "label": "Edit Neighborhood",
+      "action": "edit-collection",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "",
+      "label": "Delete Neighborhood",
+      "action": "delete-collection",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "09:30\n01\nNEXT\nMuseum of history, architecture, photography and contemporary art \u2014 a long local place name\nMuseum \u00b7 Via di San Francesco a Ripa, Trastevere, Roma, Italia\nA longer description, including accessibility arrangements and time for a break before the next booking.",
+      "label": "09:30, Museum of history, architecture, photography and contemporary art \u2014 a long local place name. Next",
+      "action": "stop-menu",
+      "id": "audit-stop-0"
+    },
+    {
+      "text": "\u2014\n02\nUPCOMING\nCoffee and pastries\nCafe",
+      "label": "Coffee and pastries. Upcoming",
+      "action": "stop-menu",
+      "id": "audit-stop-1"
+    },
+    {
+      "text": "11:30\n03\nUPCOMING\nGalleria Corsini\nMuseum\nAllow time for the permanent collection.",
+      "label": "11:30, Galleria Corsini. Upcoming",
+      "action": "stop-menu",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "\u2014\n04\nUPCOMING\nLunch in the neighborhood\nRestaurant",
+      "label": "Lunch in the neighborhood. Upcoming",
+      "action": "stop-menu",
+      "id": "audit-stop-3"
+    },
+    {
+      "text": "13:30\n05\nUPCOMING\nBotanical garden\nPark",
+      "label": "13:30, Botanical garden. Upcoming",
+      "action": "stop-menu",
+      "id": "audit-stop-4"
+    },
+    {
+      "text": "\u2014\n06\nUPCOMING\nA quiet walk along the river\nStreet",
+      "label": "A quiet walk along the river. Upcoming",
+      "action": "stop-menu",
+      "id": "audit-stop-5"
+    },
+    {
+      "text": "15:30\n07\nVISITED\nPiazza Trilussa\nViewpoint",
+      "label": "15:30, Piazza Trilussa. Visited",
+      "action": "stop-menu",
+      "id": "audit-stop-6"
+    },
+    {
+      "text": "\u2014\n08\nSKIPPED\nEvening gelato\nCafe",
+      "label": "Evening gelato. Skipped",
+      "action": "stop-menu",
+      "id": "audit-stop-7"
+    }
+  ],
+  "evidence": [
+    "collection-long-top.png",
+    "collection-long-scroll-1-0.png"
+  ],
+  "fixtureSetup": "s.collections[0].title=\"An extended morning visiting the neighborhood and its historic streets\";s.collectionStops[0].title=\"Museum of history, architecture, photography and contemporary art \u2014 a long local place name\";s.collectionStops[0].notes=\"A longer description, including accessibility arrangements and time for a break before the next booking.\";s.collectionStops[0].address_snapshot=\"Via di San Francesco a Ripa, Trastevere, Roma, Italia\";",
+  "trigger": []
+}

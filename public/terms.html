@@ -16,11 +16,11 @@
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%}
     body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
-    .wrap{max-width:640px;margin:0 auto;padding:24px 20px calc(48px + env(safe-area-inset-bottom))}
+    .wrap{max-width:640px;margin:0 auto;padding:16px 16px calc(48px + env(safe-area-inset-bottom))}
     .top{display:flex;align-items:center;justify-content:space-between;padding:8px 0 20px;border-bottom:1px solid var(--line)}
-    .brand{font-size:20px;font-weight:700;letter-spacing:-.03em;color:var(--ink);text-decoration:none}
+    .brand{display:inline-flex;align-items:center;min-height:44px;font-size:20px;font-weight:700;letter-spacing:-.03em;color:var(--ink);text-decoration:none}
     .brand span{color:var(--accent)}
-    .back{font-size:16px;font-weight:600;color:var(--ink);text-decoration:none;padding:8px 14px;border:1px solid var(--line);border-radius:999px}
+    .back{display:inline-flex;align-items:center;min-height:44px;font-size:16px;font-weight:600;color:var(--ink);text-decoration:none;padding:8px 14px;border:1px solid var(--line);border-radius:12px}
     h1{font-size:28px;font-weight:700;letter-spacing:-.03em;margin:28px 0 6px}
     .updated{color:var(--muted);font-size:14px;margin:0 0 8px}
     h2{font-size:20px;font-weight:600;letter-spacing:-.02em;margin:28px 0 8px}
@@ -29,7 +29,7 @@
     li{margin:5px 0}
     a{color:var(--accent)}
     footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
-    footer a{margin-right:16px;color:var(--ink)}
+    footer a{display:inline-flex;align-items:center;min-height:44px;margin-right:16px;color:var(--ink)}
   </style>
 </head>
 <body>

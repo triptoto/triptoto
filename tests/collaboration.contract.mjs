@@ -59,9 +59,9 @@ assert(app.includes('!["tour", "join"].includes(state.screen)'),'direct invitati
 assert(app.includes('Pending invitations couldn’t be loaded.')&&app.includes('state.inviteLoadError'),'pending-invitation errors must not render as an empty list');
 assert(app.includes("never trusts or sends 'owner' as an assignable role"),'frontend owner-escalation guard comment missing');
 for(const copy of ['Why plan together?','Build one plan','Keep everyone aligned','You stay in control','One trip.<br>Everyone in sync.'])assert(app.includes(copy),`informative collaboration UX missing: ${copy}`);
-assert(app.includes('class="ds-hero-summary ds-hero-summary--activity collab-hero"')&&app.includes('class="ds-flat-list collab-members"'),'Plan Together must use the shared hero and flat-list primitives');
+assert(app.includes('class="ds-hero-summary ds-hero-summary--activity collab-hero"')&&app.includes('class="ds-flat-list collab-members ds-grouped-card ds-grouped-card--list"'),'Plan Together must use the shared hero and grouped-list primitives');
 assert(app.includes('function collabMemberSheet()')&&app.includes('data-action="open-member-actions"')&&['member-role','member-transfer','member-remove'].every(action=>app.includes(`sheetActionRow("${action}"`)),'member management must retain every role and removal action inside the compact sheet');
-for(const selector of ['.collaboration-screen .focused-page.collab-page','.bottom-sheet--share .share-role','.bottom-sheet--share .share-link','.join-screen .join-hero'])assert(css.includes(selector),`Plan Together surface is missing shared compact styling: ${selector}`);
+for(const selector of ['.collaboration-screen .focused-page','.bottom-sheet--share .share-role','.bottom-sheet--share .share-link','.join-screen .join-hero'])assert(css.includes(selector),`Plan Together surface is missing shared compact styling: ${selector}`);
 assert(app.includes('POST_AUTH_DESTINATION_KEY')&&app.includes('rememberPostAuthDestination("collaboration", state.trip?.id || null)'),'Plan Together sign-in must remember the intended destination');
 assert((app.match(/await resumePostAuthDestination\(\)/g)||[]).length>=2,'popup and redirect Google sign-in must resume Plan Together');
 assert(app.includes('Date.now() - Number(destination.savedAt) <= 30 * 60 * 1000'),'post-auth destination must expire instead of becoming a stale redirect');

@@ -1,0 +1,23 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nInvite the people travelling with you so the whole group can follow one clear plan.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nReady to plan together?\n\nSign in with your free account. Everyone uses their own login \u2014 no shared passwords.\n\nSign in to continue\nFree for every trip.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Sign in to continue",
+      "label": null,
+      "action": "collab-sign-in"
+    }
+  ],
+  "evidence": [
+    "collaboration-top.png"
+  ]
+}

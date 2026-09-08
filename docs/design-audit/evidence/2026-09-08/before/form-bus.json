@@ -1,0 +1,11 @@
+{
+  "url": "/bookings/new/bus",
+  "text": "tripto.to\nOpening your trips\u2026\nA little moment for your next adventure.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [],
+  "evidence": [
+    "form-bus-top.png"
+  ]
+}

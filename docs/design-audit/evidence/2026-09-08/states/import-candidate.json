@@ -1,0 +1,32 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Import Review\nReview before adding\nNothing is added until you confirm.\nHotelRecognized\nBooking type\nFlight\nHotel\nTrain\nCar\nTransfer\nFerry\nCruise\nActivity\nRestaurant\nReservation\nGeneric ticket\nHotel\nCheck-in\nCheck-out\nAddress\nConfirmation number\nAdd to Timeline\nDiscard this booking",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add to Timeline",
+      "label": null,
+      "action": "confirm-import",
+      "id": "audit-candidate"
+    },
+    {
+      "text": "Discard this booking",
+      "label": null,
+      "action": "reject-import",
+      "id": "audit-candidate"
+    }
+  ],
+  "evidence": [
+    "import-candidate-top.png"
+  ],
+  "fixtureSetup": "s.importReview={candidates:[{id:\"audit-candidate\",type:\"hotel\",confidence:0.95,payload:{propertyName:\"Hotel from local QA fixture\",checkInDate:s.trip.starts_on,checkOutDate:s.trip.ends_on,address:\"Local preview address\",confirmationNumber:\"QA-123\"}}]};",
+  "trigger": []
+}

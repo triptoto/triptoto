@@ -1,0 +1,15 @@
+{
+  "url": "/privacy.html",
+  "text": "tripto\n.\nto\nBack to app\nPrivacy Policy\n\nLast updated 23 August 2026\n\ntripto.to turns your travel bookings into a single, calm timeline. This policy explains what we store, why, and the control you have over it.\n\nWhat we store\nTrip data you add \u2014 trips, bookings, dates, and notes you create or forward to us.\nAccount identity \u2014 if you sign in with Google, your verified email address and Google account identifier, used only to attach your trips to your account.\nDocuments you save offline \u2014 kept on your own device. File contents are not uploaded to our servers.\nHow we use it\nTo build and sync your timeline across your devices.\nTo detect changes and conflicts so nothing is silently overwritten.\nTo keep your account secure and signed in.\n\nWe do not sell your data, and we do not use your itinerary content for advertising.\n\nForwarded booking emails\n\nWhen you forward a confirmation to go@tripto.to, we parse the details in memory to create timeline entries. The raw email body is not stored after parsing.\n\nDiagnostics\nSupport bundles and internal metrics contain only coarse counts, internal IDs, and timestamps. They never include confirmation numbers, invite tokens, email bodies, addresses, traveler names, or document file bytes.\nYour controls\nSign out at any time from the Account screen. Local documents stay on your phone.\nRequest deletion of your account data \u2014 contact us and we remove your trips and devices.\nContact\n\nQuestions about privacy? Email go@tripto.to.\n\nTerms of Service Back to app",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [],
+  "evidence": [
+    "privacy-top.png",
+    "privacy-document-0.png",
+    "privacy-document-1.png"
+  ],
+  "trigger": "",
+  "qaState": ""
+}

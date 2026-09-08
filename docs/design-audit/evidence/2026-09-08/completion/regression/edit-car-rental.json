@@ -1,0 +1,44 @@
+{
+  "url": "/bookings/new/car-rental",
+  "screen": "form",
+  "text": "Edit Car Rental\nSave\nMANUAL BOOKING\nEdit Car Rental\nEssentials\nRental company *\nPickup location *\n\nEurope/Rome \u2014 the selected location's local time\n\nDrop-off location *\n\nEurope/Rome \u2014 the selected location's local time\n\nRental dates\nSelected dates\nSep 12, 2026 \u2013 Sep 12, 2026\nSelected range: Sep 12, 2026 to Sep 12, 2026.\nPickup time *\nDrop-off time Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details\nVehicle / class\nConfirmation number\nDriver name\nRental phone\nNotes",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1593
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Selected dates\nSep 12, 2026 \u2013 Sep 12, 2026",
+      "label": "Rental dates. Sep 12, 2026 to Sep 12, 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "editForm": true,
+    "moreExpanded": true
+  },
+  "evidence": [
+    "edit-car-rental-top.png",
+    "edit-car-rental-scroll-0-0.png",
+    "edit-car-rental-scroll-0-1.png"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "url": "/bookings/import/history",
+  "screen": "import-history",
+  "text": "Import History\nYour flight to Rome\nMon, Sep 7, 03:02 PM GMT+3\nNeeds review\nHotel Artemide confirmation\nSat, Sep 5, 03:02 PM GMT+3\nAdded\nImport booking\nTrip\nTrip options\nTo-do\nAccount\nDelete this booking?\n\n\u201cYour flight to Rome\u201d will be removed from your import history and the inbound email feed everywhere. This cannot be undone.\n\nKeep\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 332.609375,
+        "width": 326,
+        "height": 178.78125,
+        "top": 332.609375,
+        "right": 358,
+        "bottom": 511.390625,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Your flight to Rome\nMon, Sep 7, 03:02 PM GMT+3\nNeeds review",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Delete Your flight to Rome everywhere",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "Hotel Artemide confirmation\nSat, Sep 5, 03:02 PM GMT+3\nAdded",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Delete Hotel Artemide confirmation everywhere",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Import booking",
+      "label": null,
+      "screen": "import"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    },
+    {
+      "text": "Keep",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"remove-import\"]"
+  ],
+  "bottomEvidence": "delete-import-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button class=\"import-remove\" data-action=\"remove-import\" data-id=\"import-1\" aria-label=\"Delete Your flight to Rome everywhere\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#delete\"></use></svg></button>"
+}

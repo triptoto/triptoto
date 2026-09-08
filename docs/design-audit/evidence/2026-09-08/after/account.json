@@ -1,0 +1,91 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "Account\nYOUR TRAVEL SPACE\nGT\nGuest traveler\nA little closer to your next adventure\n0\nCurrent\n2\nUpcoming\n1\nPast\n\nGuest profile\n\nAll trips\n3 trips\nNew trip\nSomewhere new\nYour plans\nSwitch trip\n3 available\nEmail Inbox\nSign in to verify a sender\nTravel essentials\nFind a flight\nCompare routes on Aviasales\nFind a place to stay\nBrowse stays on Booking.com\nTravel eSIM\nGet connected before you land\n\nPartner links may earn Tripto a commission at no extra cost.\n\nA helping hand\nPrivacy & data\ntripto.to\n\nProduct V2\n\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 705,
+      "scroll": 1513
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "All trips\n3 trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "New trip\nSomewhere new",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Switch trip\n3 available",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Email Inbox\nSign in to verify a sender",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Open welcome screen",
+      "screen": "home"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "account-top.png",
+    "account-scroll-0-0.png",
+    "account-scroll-0-1.png"
+  ]
+}

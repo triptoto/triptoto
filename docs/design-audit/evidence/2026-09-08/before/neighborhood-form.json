@@ -1,0 +1,34 @@
+{
+  "url": "/collections/new/neighborhood",
+  "screen": "collection-form",
+  "text": "New Neighborhood\nCreate\nNEW PLAN\nNeighborhood\n\nGroup several places in one district into one plan. It shows once on your timeline and opens its own list of places.\n\nDetails\nNeighborhood name\n*\nCity or area\nOptional\nDate on timeline\nSelected date\nSep 9, 2026\nSelected date: Sep 9, 2026.\n\nOptional \u2014 choose a date when this neighborhood belongs on your timeline. Leave it blank to keep planning it later.\n\nStart time\nOptional\nNotes\nOptional",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 895
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Create",
+      "label": null
+    },
+    {
+      "text": "Selected date\nSep 9, 2026",
+      "label": "Date on timeline. Sep 9, 2026",
+      "action": "open-date-range"
+    }
+  ],
+  "evidence": [
+    "neighborhood-form-top.png",
+    "neighborhood-form-scroll-0-0.png"
+  ]
+}

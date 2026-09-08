@@ -1,0 +1,76 @@
+{
+  "url": "/trips/rome-2026-2026-09-09",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 9\u201315, 2026\nTUE\nSep 8\nWED\nSep 9\nTHU\nSep 10\nSAT\nSep 12\n14:57\nNOW\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n2h 30m\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Notifications",
+      "action": "open-notifications"
+    },
+    {
+      "text": "TUE\nSep 8",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "WED\nSep 9",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SAT\nSep 12",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "14:57\nNOW\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n2h 30m",
+      "label": "14:57. Flight to Rome. Flight \u00b7 TLV \u2192 FCO. 2h 30m",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "timeline-now-top.png"
+  ],
+  "trigger": "",
+  "qaState": "timeline-now"
+}

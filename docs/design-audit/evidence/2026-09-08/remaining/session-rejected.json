@@ -1,0 +1,56 @@
+{
+  "url": "/trips/rome-2026-2026-09-09",
+  "screen": "timeline",
+  "text": "tripto.to\nReconnect your account\n\nPlease reconnect your account to continue.\n\nSaved trip data on this phone remains safe.\n\nReconnect with Google\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "tripto.to",
+      "label": "tripto.to Home",
+      "screen": "home"
+    },
+    {
+      "text": "",
+      "label": "Account",
+      "screen": "account"
+    },
+    {
+      "text": "Reconnect with Google",
+      "label": null,
+      "action": "restart-google-sign-in"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "session-rejected-top.png"
+  ],
+  "setup": "s.sessionRejected=true;s.error=\"Please reconnect your account to continue.\"",
+  "trigger": [],
+  "after": ""
+}

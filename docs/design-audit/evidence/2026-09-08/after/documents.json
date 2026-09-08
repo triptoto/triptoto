@@ -1,0 +1,84 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Documents\nYour travel documents\n\n3 of 3 ready offline on this phone\n\nSaved documents\nLY 383 Boarding Pass\nArthur\nReady offline\nHotel Artemide Confirmation\nRome stay\nReady offline\nFrecciarossa 9512 Tickets\nArthur, Maya\nReady offline\nAdd Document\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "LY 383 Boarding Pass\nArthur\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "Delete LY 383 Boarding Pass",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "Hotel Artemide Confirmation\nRome stay\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Delete Hotel Artemide Confirmation",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "Frecciarossa 9512 Tickets\nArthur, Maya\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Delete Frecciarossa 9512 Tickets",
+      "action": "remove-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "Add Document",
+      "label": null,
+      "action": "document-sheet"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "documents-top.png"
+  ]
+}

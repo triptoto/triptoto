@@ -1,0 +1,34 @@
+{
+  "url": "/bookings/new/cruise",
+  "screen": "form",
+  "text": "Add Cruise\nSave\nMANUAL BOOKING\nCruise\nEssentials\nCruise line\n*\nDeparture port\n*\nArrival / return port\n*\nDeparture date\n*\nDeparture time\nOptional\nReturn / arrival date\nOptional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 925
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "form-cruise-top.png",
+    "form-cruise-scroll-0-0.png"
+  ]
+}

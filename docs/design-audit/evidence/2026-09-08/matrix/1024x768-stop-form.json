@@ -1,0 +1,47 @@
+{
+  "url": "/collections/a-morning-in-trastevere-rome/add-place",
+  "screen": "stop-form",
+  "text": "Add place\nSave\nADD PLACE\nNew place\nDetails\nName *\nTime Optional\nType Optional\nChoose a type\nCafe\nRestaurant\nAttraction\nMuseum\nShop\nMarket\nPark\nActivity\nViewpoint\nMonument\nStreet\nOther\nAddress Optional\nNotes Optional",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    }
+  ],
+  "viewport": [
+    1024,
+    768
+  ],
+  "geometry": {
+    "header": {
+      "x": 212,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 812,
+      "bottom": 68,
+      "left": 212
+    },
+    "main": {
+      "x": 212,
+      "y": 68,
+      "width": 600,
+      "height": 700,
+      "top": 68,
+      "right": 812,
+      "bottom": 768,
+      "left": 212
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

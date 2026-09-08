@@ -1,0 +1,104 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "Account\nYOUR TRAVEL SPACE\nAT\nAlex Traveler\nalex@example.test\n0\nCurrent\n2\nUpcoming\n1\nPast\nSign out\nAll trips\n3 trips\nNew trip\nSomewhere new\nYour plans\nSwitch trip\n3 available\nEmail Inbox\n1 waiting for review\nTravel essentials\n\nPartner links may earn Tripto a commission at no extra cost.\n\nA helping hand\nPrivacy & data\ntripto.to\n\nProduct V2\n\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 705,
+      "scroll": 1657
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Sign out",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "All trips\n3 trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "New trip\nSomewhere new",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Switch trip\n3 available",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Email Inbox\n1 waiting for review",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Open welcome screen",
+      "screen": "home"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "account-signed-in-top.png",
+    "account-signed-in-scroll-0-0.png",
+    "account-signed-in-scroll-0-1.png"
+  ],
+  "setup": "s.account.user.primary_email=\"alex@example.test\"",
+  "trigger": [],
+  "after": ""
+}

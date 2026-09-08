@@ -1,0 +1,162 @@
+[
+  {
+    "case": "missing-320",
+    "overflow": false,
+    "checks": {
+      "missingStateRendered": true,
+      "navAtBottom": true
+    }
+  },
+  {
+    "case": "stop-form-320",
+    "overflow": false,
+    "checks": {
+      "saveVisible": true
+    }
+  },
+  {
+    "case": "currency-unavailable-320",
+    "overflow": false,
+    "checks": {
+      "unavailableRemainsUnavailable": true,
+      "compactNumber": true
+    }
+  },
+  {
+    "case": "currency-long-result-320",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "missing-360",
+    "overflow": false,
+    "checks": {
+      "missingStateRendered": true,
+      "navAtBottom": true
+    }
+  },
+  {
+    "case": "stop-form-360",
+    "overflow": false,
+    "checks": {
+      "saveVisible": true
+    }
+  },
+  {
+    "case": "currency-unavailable-360",
+    "overflow": false,
+    "checks": {
+      "unavailableRemainsUnavailable": true,
+      "compactNumber": true
+    }
+  },
+  {
+    "case": "currency-long-result-360",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "missing-390",
+    "overflow": false,
+    "checks": {
+      "missingStateRendered": true,
+      "navAtBottom": true
+    }
+  },
+  {
+    "case": "stop-form-390",
+    "overflow": false,
+    "checks": {
+      "saveVisible": true
+    }
+  },
+  {
+    "case": "currency-unavailable-390",
+    "overflow": false,
+    "checks": {
+      "unavailableRemainsUnavailable": true,
+      "compactNumber": true
+    }
+  },
+  {
+    "case": "currency-long-result-390",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "missing-430",
+    "overflow": false,
+    "checks": {
+      "missingStateRendered": true,
+      "navAtBottom": true
+    }
+  },
+  {
+    "case": "stop-form-430",
+    "overflow": false,
+    "checks": {
+      "saveVisible": true
+    }
+  },
+  {
+    "case": "currency-unavailable-430",
+    "overflow": false,
+    "checks": {
+      "unavailableRemainsUnavailable": true,
+      "compactNumber": true
+    }
+  },
+  {
+    "case": "currency-long-result-430",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "missing-768",
+    "overflow": false,
+    "checks": {
+      "missingStateRendered": true,
+      "navAtBottom": true
+    }
+  },
+  {
+    "case": "missing-1024",
+    "overflow": false,
+    "checks": {
+      "missingStateRendered": true,
+      "navAtBottom": true
+    }
+  },
+  {
+    "case": "missing-844",
+    "overflow": false,
+    "checks": {
+      "missingStateRendered": true,
+      "navAtBottom": true
+    }
+  },
+  {
+    "case": "faq-empty",
+    "overflow": false,
+    "checks": {
+      "emptySectionsHidden": true
+    }
+  },
+  {
+    "case": "timeline-empty",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "weather-fixture-saved",
+    "overflow": false,
+    "checks": {}
+  },
+  {
+    "case": "background-scroll-lock",
+    "overflow": false,
+    "checks": {
+      "backgroundDidNotScroll": true
+    }
+  }
+]

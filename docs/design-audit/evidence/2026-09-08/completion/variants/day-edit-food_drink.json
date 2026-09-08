@@ -1,0 +1,37 @@
+{
+  "url": "/day-plan/item/visit-the-museum-of-contemporary-art-food-drink",
+  "screen": "day-plan-form",
+  "text": "Edit food & drink\nSave\nDAY PLAN\nVisit the museum of contemporary art\n\nA cafe, bar, or restaurant you want to try\n\nDetails\nName or place *\nDay\nSelect dates\nChoose dates\nNo date range selected.\nStart time Optional\nEnd time Optional\nAddress Optional\nNotes Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nLeave the day blank to keep this as an idea in Save for Later. Pick a day within your trip and it appears on your timeline.",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1219
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Day. Choose day and day",
+      "action": "open-date-range"
+    }
+  ],
+  "checks": {
+    "editShown": true
+  },
+  "evidence": [
+    "day-edit-food_drink-top.png",
+    "day-edit-food_drink-scroll-0-0.png"
+  ]
+}

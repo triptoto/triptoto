@@ -1,0 +1,81 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "Save for Later\nSAVE FOR LATER\nSave ideas for \u201cRome 2026\u201d\n\nA running list of things you might do. Open one to add it to a day plan.\n\nIdeas\n1\nPlanned\nVisit the museum of contemporary art\nNot scheduled\nAdd an idea\nVisit the museum of contemporary art\nAdd to a day plan\nChoose a day and an optional time\nEdit idea\nName, address and notes\nDelete idea\nRemove it from Save for Later",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 596.9375,
+        "width": 390,
+        "height": 247.0625,
+        "top": 596.9375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Ideas\n1",
+      "label": null,
+      "action": "save-later-filter"
+    },
+    {
+      "text": "Planned",
+      "label": null,
+      "action": "save-later-filter"
+    },
+    {
+      "text": "Visit the museum of contemporary art\nNot scheduled",
+      "label": null,
+      "action": "open-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Add an idea",
+      "label": null,
+      "action": "add-save-later"
+    },
+    {
+      "text": "",
+      "label": "Close Visit the museum of contemporary art",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Add to a day plan\nChoose a day and an optional time",
+      "label": null,
+      "action": "idea-add-to-plan",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Edit idea\nName, address and notes",
+      "label": null,
+      "action": "edit-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Delete idea\nRemove it from Save for Later",
+      "label": null,
+      "action": "delete-idea",
+      "id": "audit-idea"
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"open-idea\"]"
+  ],
+  "bottomEvidence": "idea-menu-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"save-later-row\" data-action=\"open-idea\" data-id=\"audit-idea\"><span class=\"save-later-row__mark\" aria-hidden=\"true\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#favorite\"></use></svg></span><span class=\"save-later-row__copy\"><strong>Visit the museum of contemporary art</strong><small>Not scheduled</small></span><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#chevron-right\"></use></svg></button>"
+}

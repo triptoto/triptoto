@@ -1,0 +1,31 @@
+{
+  "url": "/weather",
+  "screen": "weather",
+  "text": "Weather\nRome 2026\nHotel Artemide\nRome\nChecking the forecast\u2026\nA little moment for your next adventure.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Hotel Artemide",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Rome",
+      "label": null,
+      "action": "weather-place"
+    }
+  ],
+  "evidence": [
+    "weather-loading-top.png"
+  ],
+  "setup": "s.weatherByPlace={};s.weatherRefreshing=true;",
+  "trigger": [],
+  "after": ""
+}

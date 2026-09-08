@@ -1,0 +1,33 @@
+{
+  "url": "/weather",
+  "screen": "weather",
+  "text": "Weather\nRome 2026\nHotel Artemide\nRome\nNo forecast yet\n\nWe could not find a forecast for this trip's destination.\n\nTry again",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Hotel Artemide",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Rome",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Try again",
+      "label": null,
+      "action": "refresh-weather"
+    }
+  ],
+  "evidence": [
+    "weather-top.png"
+  ]
+}

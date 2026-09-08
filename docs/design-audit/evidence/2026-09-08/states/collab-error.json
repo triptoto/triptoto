@@ -1,0 +1,25 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nCouldn\u2019t load collaboration\n\nConnection interrupted. Your trip remains saved. Try again when connected.\n\nTry again",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Try again",
+      "label": null,
+      "action": "reload-collaboration"
+    }
+  ],
+  "evidence": [
+    "collab-error-top.png"
+  ],
+  "fixtureSetup": "s.collabError=\"Connection interrupted. Your trip remains saved. Try again when connected.\";",
+  "trigger": []
+}

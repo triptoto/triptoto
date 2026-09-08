@@ -1,0 +1,46 @@
+{
+  "url": "/bookings/new/activity",
+  "screen": "form",
+  "text": "Add Activity\nSave\nMANUAL BOOKING\nActivity\nEssentials\nActivity name *\nType Optional\nActivity\nTour\nConcert\nTheatre\nMuseum\nAttraction\nSports\nMeeting\nShow\nOther\nDate *\nLocal time Optional\nVenue Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 930
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "dialogSemantics": true,
+    "initialFocusInside": true,
+    "focusTrapped": true,
+    "escapeClosed": true,
+    "historyPopped": true,
+    "focusReturned": true,
+    "formPreserved": true,
+    "backClosedAndPopped": true,
+    "backgroundRestored": true,
+    "stagingRemoved": true
+  },
+  "evidence": [
+    "document-return-top.png",
+    "document-return-scroll-0-0.png"
+  ]
+}

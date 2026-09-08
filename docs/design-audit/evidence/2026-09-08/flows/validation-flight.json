@@ -1,0 +1,67 @@
+{
+  "url": "/bookings/new/flight",
+  "screen": "form",
+  "text": "Add Flight\nSave\nMANUAL BOOKING\nFlight\nEssentials\nRound trip\nChoose both dates in one calendar\nAirline *\nAegean Airlines\nAer Lingus\nAeroflot\nAerom\u00e9xico\nAir Canada\nAir China\nAir France\nAir India\nThis field is required.\nFlight number *\nFrom *\nTo *\nTravel dates\nSelected date\nSep 9, 2026\nSelected date: Sep 9, 2026.\nDeparture time *\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1159
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Aegean Airlines",
+      "label": null
+    },
+    {
+      "text": "Aer Lingus",
+      "label": null
+    },
+    {
+      "text": "Aeroflot",
+      "label": null
+    },
+    {
+      "text": "Aerom\u00e9xico",
+      "label": null
+    },
+    {
+      "text": "Air Canada",
+      "label": null
+    },
+    {
+      "text": "Air China",
+      "label": null
+    },
+    {
+      "text": "Air France",
+      "label": null
+    },
+    {
+      "text": "Air India",
+      "label": null
+    },
+    {
+      "text": "Selected date\nSep 9, 2026",
+      "label": "Travel dates. Sep 9, 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ]
+}

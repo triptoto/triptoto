@@ -1,0 +1,111 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Documents\nYour travel documents\n\n3 of 3 ready offline on this phone\n\nSaved documents\nLY 383 Boarding Pass\nArthur\nReady offline\nHotel Artemide Confirmation\nRome stay\nReady offline\nFrecciarossa 9512 Tickets\nArthur, Maya\nReady offline\nAdd Document\nTrip\nTrip options\nTo-do\nAccount\nDelete this document?\n\n\u201cLY 383 Boarding Pass\u201d will be removed from this phone. This cannot be undone.\n\nKeep document\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "LY 383 Boarding Pass\nArthur\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "Delete LY 383 Boarding Pass",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "Hotel Artemide Confirmation\nRome stay\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Delete Hotel Artemide Confirmation",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "Frecciarossa 9512 Tickets\nArthur, Maya\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Delete Frecciarossa 9512 Tickets",
+      "action": "remove-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "Add Document",
+      "label": null,
+      "action": "document-sheet"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    },
+    {
+      "text": "Keep document",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"remove-document\"]"
+  ],
+  "bottomEvidence": "delete-document-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"document-row__remove\" data-action=\"remove-document\" data-id=\"boarding\" aria-label=\"Delete LY 383 Boarding Pass\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#delete\"></use></svg></button>"
+}

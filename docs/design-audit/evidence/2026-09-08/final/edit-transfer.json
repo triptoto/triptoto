@@ -1,0 +1,37 @@
+{
+  "url": "/bookings/new/transfer",
+  "screen": "form",
+  "text": "Edit Transfer\nSave\nMANUAL BOOKING\nEdit Transfer\nEssentials\nProvider / driver Optional\nFrom *\n\nEurope/Rome \u2014 the selected location's local time\n\nTo *\n\nEurope/Rome \u2014 the selected location's local time\n\nPickup date *\nPickup time *\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 942
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "checks": {
+    "editForm": true
+  },
+  "evidence": [
+    "edit-transfer-top.png",
+    "edit-transfer-scroll-0-0.png"
+  ]
+}

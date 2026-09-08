@@ -1,0 +1,55 @@
+{
+  "url": "/trip-health",
+  "screen": "health",
+  "text": "Trip Health\n2 things need attention\n\nConnection needs attention\n\nConnection needs attention\n\nThe saved connection leaves less time than recommended. Review connection\n\nBoarding pass missing offline\n\nArthur\u2019s boarding pass is not saved on this phone. Add document\n\nRecalculate Trip Health\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Trip Health information",
+      "action": "health-info"
+    },
+    {
+      "text": "Recalculate Trip Health",
+      "label": null,
+      "action": "recalculate-health"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "health-issues-top.png"
+  ],
+  "trigger": "",
+  "qaState": "health-issues"
+}

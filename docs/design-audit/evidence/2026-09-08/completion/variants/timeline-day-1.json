@@ -1,0 +1,111 @@
+{
+  "url": "/trips/rome-2026-2026-09-09",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 9\u201315, 2026\n2\nWED\nSep 9\nTHU\nSep 10\nSAT\nSep 12\nWED\nSep 9\n08:30\nBreakfast reservation\nRestaurant \u00b7 Rome\n1h\n10:00\nPhotography walk\nPhotography \u00b7 Rome\n1h 30m\n12:00\nCoffee & pastry\nCoffee \u00b7 Rome\n30m\n13:00\nLunch in Rome\nRestaurant \u00b7 Rome\n1h 30m\n15:30\nVatican Museums\nMuseum \u00b7 Rome\n2h\n18:30\nSouvenir shopping\nShopping \u00b7 Rome\n30m\n19:30\nWine tasting\nBar \u00b7 Rome\n1h 30m\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "2",
+      "label": "Notifications, 2 unread",
+      "action": "open-notifications"
+    },
+    {
+      "text": "WED\nSep 9",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SAT\nSep 12",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "WED\nSep 9",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "08:30\nBreakfast reservation\nRestaurant \u00b7 Rome\n1h",
+      "label": "08:30. Breakfast reservation. Restaurant \u00b7 Rome. 1h",
+      "action": "timeline-detail",
+      "id": "breakfast"
+    },
+    {
+      "text": "10:00\nPhotography walk\nPhotography \u00b7 Rome\n1h 30m",
+      "label": "10:00. Photography walk. Photography \u00b7 Rome. 1h 30m",
+      "action": "timeline-detail",
+      "id": "photo-walk"
+    },
+    {
+      "text": "12:00\nCoffee & pastry\nCoffee \u00b7 Rome\n30m",
+      "label": "12:00. Coffee & pastry. Coffee \u00b7 Rome. 30m",
+      "action": "timeline-detail",
+      "id": "coffee"
+    },
+    {
+      "text": "13:00\nLunch in Rome\nRestaurant \u00b7 Rome\n1h 30m",
+      "label": "13:00. Lunch in Rome. Restaurant \u00b7 Rome. 1h 30m",
+      "action": "timeline-detail",
+      "id": "lunch"
+    },
+    {
+      "text": "15:30\nVatican Museums\nMuseum \u00b7 Rome\n2h",
+      "label": "15:30. Vatican Museums. Museum \u00b7 Rome. 2h",
+      "action": "timeline-detail",
+      "id": "activity"
+    },
+    {
+      "text": "18:30\nSouvenir shopping\nShopping \u00b7 Rome\n30m",
+      "label": "18:30. Souvenir shopping. Shopping \u00b7 Rome. 30m",
+      "action": "timeline-detail",
+      "id": "shopping"
+    },
+    {
+      "text": "19:30\nWine tasting\nBar \u00b7 Rome\n1h 30m",
+      "label": "19:30. Wine tasting. Bar \u00b7 Rome. 1h 30m",
+      "action": "timeline-detail",
+      "id": "wine"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "checks": {},
+  "evidence": [
+    "timeline-day-1-top.png"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "url": "/travelers",
+  "screen": "travelers",
+  "text": "Travelers\nA\nArthur\nAdult \u00b7 3 bookings\n2 verified documents\nM\nMaya\nAdult \u00b7 2 bookings\n1 verified document\nAdd traveler\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "A\nArthur\nAdult \u00b7 3 bookings\n2 verified documents",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "M\nMaya\nAdult \u00b7 2 bookings\n1 verified document",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Add traveler",
+      "label": null,
+      "action": "open-form"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "travelers-top.png"
+  ]
+}

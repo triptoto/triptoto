@@ -1,0 +1,55 @@
+{
+  "url": "/timeline",
+  "screen": "timeline",
+  "text": "tripto.to\nTrip data could not load\n\nTrip data could not be reached. Your saved trip data remains safe.\n\nSaved trip data on this phone remains safe.\n\nRequest ID: local-preview\nTry Again\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "tripto.to",
+      "label": "tripto.to Home",
+      "screen": "home"
+    },
+    {
+      "text": "",
+      "label": "Account",
+      "screen": "account"
+    },
+    {
+      "text": "Try Again",
+      "label": null,
+      "action": "retry"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "error-top.png"
+  ],
+  "trigger": "",
+  "qaState": "error"
+}

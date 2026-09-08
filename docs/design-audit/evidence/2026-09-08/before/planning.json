@@ -1,0 +1,23 @@
+{
+  "url": "/planning",
+  "screen": "planning",
+  "text": "Planning\nPLAN YOUR DAYS\nPlanning\n\nYour neighborhood plans. A scheduled neighborhood appears on your timeline; unscheduled ones wait here.\n\nOn your timeline\n\nNothing scheduled yet.\n\nPlanning\n\nNo draft plans yet.\n\nStart a plan\nNeighborhood\nPlan places in one area",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Neighborhood\nPlan places in one area",
+      "label": "Add Neighborhood",
+      "action": "add-collection"
+    }
+  ],
+  "evidence": [
+    "planning-top.png"
+  ]
+}

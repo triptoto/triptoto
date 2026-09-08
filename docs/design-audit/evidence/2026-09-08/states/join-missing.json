@@ -1,0 +1,25 @@
+{
+  "url": "/join",
+  "screen": "join",
+  "text": "Join trip\nInvitation link incomplete\n\nOpen the full invitation link you were sent to join a trip.\n\nGo to my trips",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Go to my trips",
+      "label": null,
+      "action": "join-home"
+    }
+  ],
+  "evidence": [
+    "join-missing-top.png"
+  ],
+  "fixtureSetup": "s.joinToken=null;s.joinPreview=null;",
+  "trigger": []
+}

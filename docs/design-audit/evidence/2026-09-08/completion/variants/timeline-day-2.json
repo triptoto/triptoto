@@ -1,0 +1,81 @@
+{
+  "url": "/trips/rome-2026-2026-09-09",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 9\u201315, 2026\n2\nWED\nSep 9\nTHU\nSep 10\nSAT\nSep 12\nWED\nSep 9\n09:30\nTrain to Florence\n9512 \u00b7 ROM \u2192 FIR\n1h 35m\n19:00\nTrain to Rome\n9551 \u00b7 FIR \u2192 ROM\n1h 35m\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 9\u201315, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "2",
+      "label": "Notifications, 2 unread",
+      "action": "open-notifications"
+    },
+    {
+      "text": "WED\nSep 9",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SAT\nSep 12",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "WED\nSep 9",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "09:30\nTrain to Florence\n9512 \u00b7 ROM \u2192 FIR\n1h 35m",
+      "label": "09:30. Train to Florence. 9512 \u00b7 ROM \u2192 FIR. 1h 35m",
+      "action": "timeline-detail",
+      "id": "train"
+    },
+    {
+      "text": "19:00\nTrain to Rome\n9551 \u00b7 FIR \u2192 ROM\n1h 35m",
+      "label": "19:00. Train to Rome. 9551 \u00b7 FIR \u2192 ROM. 1h 35m",
+      "action": "timeline-detail",
+      "id": "train-return"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "checks": {},
+  "evidence": [
+    "timeline-day-2-top.png"
+  ]
+}

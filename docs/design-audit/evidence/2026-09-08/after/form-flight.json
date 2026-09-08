@@ -1,0 +1,39 @@
+{
+  "url": "/bookings/new/flight",
+  "screen": "form",
+  "text": "Add Flight\nSave\nMANUAL BOOKING\nFlight\nEssentials\nRound trip\nChoose both dates in one calendar\nAirline\n*\nFlight number\n*\nFrom\n*\nTo\n*\nTravel dates\nSelected date\nSep 9, 2026\nSelected date: Sep 9, 2026.\nDeparture time\n*\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1058
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Selected date\nSep 9, 2026",
+      "label": "Travel dates. Sep 9, 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "evidence": [
+    "form-flight-top.png",
+    "form-flight-scroll-0-0.png"
+  ]
+}

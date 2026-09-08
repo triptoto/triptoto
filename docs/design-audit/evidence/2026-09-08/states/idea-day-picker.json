@@ -1,0 +1,64 @@
+{
+  "url": "/plan-idea/visit-the-museum-of-contemporary-art-museum-culture",
+  "screen": "add-to-plan",
+  "text": "Add to plan\nADD TO PLAN\nAdd Visit the museum of contemporary art\n\nPick a trip day and an optional time, then add it to the day plan.\n\nCHOOSE A DAY\nWED\nSEP 09\nTHU\nSEP 10\nFRI\nSEP 11\nSAT\nSEP 12\nSUN\nSEP 13\nMON\nSEP 14\nTUE\nSEP 15\nStart time\nOptional \u2014 used for the day plan\nADD TO THE DAY\nAdd to the day plan\nPut it on SEP 09",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "WED\nSEP 09",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "THU\nSEP 10",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "FRI\nSEP 11",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SAT\nSEP 12",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SUN\nSEP 13",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "MON\nSEP 14",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "TUE\nSEP 15",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "Add to the day plan\nPut it on SEP 09",
+      "label": null,
+      "action": "plan-general",
+      "id": "audit-idea"
+    }
+  ],
+  "evidence": [
+    "idea-day-picker-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": [
+    "[data-action=\"open-idea\"]",
+    "[data-action=\"idea-add-to-plan\"]"
+  ]
+}

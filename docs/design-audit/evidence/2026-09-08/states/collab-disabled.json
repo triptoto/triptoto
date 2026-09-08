@@ -1,0 +1,20 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSharing is off right now\n\nTrip collaboration isn\u2019t available at the moment. Your trip stays private and safe on this device.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "collab-disabled-top.png"
+  ],
+  "fixtureSetup": "s.sharing.enabled=false;",
+  "trigger": []
+}

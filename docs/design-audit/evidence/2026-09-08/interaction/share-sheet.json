@@ -1,0 +1,86 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "Plan together\nSHARED TRIP\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nInvite people\nPeople on this trip\nAlex Traveler (You)\nOwner\nSam Companion\nCan edit\nTaylor Companion\nView only\n\nUp to 10 people per trip.\n\nPending invitations\nfriend@example.test\nView only \u00b7 pending \u00b7 expires 1788955359986\nInvite to this trip\n\nAnyone you invite signs in with their own free account to join. The link works once and you can revoke it anytime.\n\nChoose access\nCan edit\nAdd and change bookings\nView only\nSee the trip, can\u2019t change it\nCreate invitation link",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1024
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 480.921875,
+        "width": 390,
+        "height": 363.078125,
+        "top": 480.921875,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Invite people",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Revoke invitation",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Close Invite to this trip",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Can edit\nAdd and change bookings",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "View only\nSee the trip, can\u2019t change it",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Create invitation link",
+      "label": null,
+      "action": "create-invite"
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"open-share\"]"
+  ],
+  "bottomEvidence": "share-sheet-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"ds-primary-button collab-invite-cta\" data-action=\"open-share\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#invite\"></use></svg> Invite people</button>"
+}

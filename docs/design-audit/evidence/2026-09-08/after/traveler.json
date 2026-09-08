@@ -1,0 +1,68 @@
+{
+  "url": "/travelers/arthur",
+  "screen": "traveler",
+  "text": "Traveler\nA\nArthur\n\nAdult\n\nEdit traveler\nAssignments\nFlight\nLY 383\nTrain\nFrecciarossa 9512\nTrain\nFrecciarossa 9551\nTravel details\nSEAT\n12A\nCABIN\nEconomy\nBAGGAGE\n1 checked\nTICKET\n114-1234567890\nDocuments\nChecklist\nPassport\nDocuments\nSave boarding pass offline\nDocuments\nPack medication\nPacking\nTrip\nTrip options\nTo-do\nAccount",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 705,
+      "scroll": 1154
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Edit traveler",
+      "label": null,
+      "action": "open-form",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "Trip",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Trip options",
+      "label": null,
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Add",
+      "action": "open-add"
+    },
+    {
+      "text": "To-do",
+      "label": null,
+      "screen": "checklist"
+    },
+    {
+      "text": "Account",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "traveler-top.png",
+    "traveler-scroll-0-0.png"
+  ]
+}

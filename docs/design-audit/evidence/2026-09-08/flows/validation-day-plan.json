@@ -1,0 +1,30 @@
+{
+  "url": "/day-plan/new/museum_culture",
+  "screen": "day-plan-form",
+  "text": "Add museum & culture\nSave\nDAY PLAN\nMuseum & Culture\n\nMuseums, galleries, and cultural spots\n\nDetails\nName or place *\nThis field is required.\nDay\nSelect dates\nChoose dates\nNo date range selected.\nStart time Optional\nEnd time Optional\nAddress Optional\nNotes Optional\nTickets & Documents\n\nOptional \u00b7 Stored on this device\n\nAdd files\nPDF, images, or passes \u00b7 up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nLeave the day blank to keep this as an idea in Save for Later. Pick a day within your trip and it appears on your timeline.",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1219
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Day. Choose day and day",
+      "action": "open-date-range"
+    }
+  ]
+}
