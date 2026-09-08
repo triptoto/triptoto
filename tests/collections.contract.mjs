@@ -50,6 +50,8 @@ assert(/function collectionStopsFor\(id\)[\s\S]{0,500}collection_item_id/.test(a
 // Mini-timeline uses the main timeline's time · rail · marker · copy roles;
 // the marker is a stop number rather than a category icon.
 assert(app.includes('class="mini-stop__dot"')&&app.includes('mini-stop__time')&&app.includes('mini-stop__marker')&&app.includes('mini-stop__name')&&app.includes('mini-stop__rail'),'mini-timeline must render time · rail · numbered marker · name');
+assert(app.includes('function collectionStopTimelineMeta')&&app.includes('mini-stop__secondary')&&app.includes('mini-stop__detail'),'mini-timeline rows must expose the same contextual metadata hierarchy as the main timeline');
+assert(app.includes('linked_trip_item_id')&&app.includes('linkedSummary && linkedSummary !== secondary')&&app.includes('Linked to ${String(linked.title).trim()}'),'linked booking or idea context must remain visible in its neighborhood row');
 assert(!app.includes('mini-stop__icon'),'mini-timeline stops must not render category icons');
 assert(/class="mini-timeline"[\s\S]{0,900}?mini-stop__dot/.test(app),'mini-timeline list must contain dots');
 
@@ -59,7 +61,7 @@ const markerSize=Number((marker.match(/width:(\d+)px/)||[])[1]);
 assert(markerSize===44,`mini-timeline numbered marker must be 44px (got ${markerSize||'none'})`);
 assert(!/\.collection-page \.mini-stop__(?:marker|content|name)[^{]*\{[^}]*box-shadow/.test(css),'mini-timeline content and numbered markers must have no shadow');
 assert(/\.collection-page \.mini-stop__hit\{[^}]*display:grid[^}]*grid-template-columns:48px 26px 50px minmax\(0,1fr\)/.test(css),'mini-timeline must use the main timeline time · rail · numbered marker · copy grid');
-assert(css.includes('.collection-page .mini-stop__name{display:block;color:var(--ink);font-size:19px')&&css.includes('.collection-page .mini-stop__detail{display:-webkit-box;-webkit-line-clamp:2')&&css.includes('.collection-page .mini-stop__time{grid-column:1'),'mini-timeline typography must match main timeline roles');
+assert(css.includes('.collection-page .mini-stop__name{display:block;color:var(--ink);font-size:var(--timeline-booking-title-size)')&&css.includes('.collection-page .mini-stop__secondary{display:-webkit-box;-webkit-line-clamp:2')&&css.includes('.collection-page .mini-stop__detail{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;color:var(--muted-soft);font-size:12.5px')&&css.includes('.collection-page .mini-stop__time{grid-column:1;justify-self:end;padding-right:10px;color:var(--ink);font-size:var(--timeline-time-size)'),'mini-timeline typography must match main timeline roles');
 // Dot state communicated by shape/tone, plus strikethrough for skipped (never color alone).
 for(const st of ['next','future','past','skipped'])assert(css.includes(`.mini-stop--${st} .mini-stop__dot`),`missing dot state style: ${st}`);
 assert(css.includes('.collection-page .mini-stop--skipped .mini-stop__name{color:var(--muted);text-decoration:line-through}'),'skipped stop must be struck through, not only recolored');
@@ -99,6 +101,25 @@ assert(routes.indexOf('deduped:true')<routes.indexOf('INSERT INTO planning_stops
   assert(JSON.stringify(states)===JSON.stringify(['past','next','future','skipped']),`dot-state derivation wrong: ${JSON.stringify(states)}`);
   // First non-visited/non-skipped is "next"; only one "next".
   assert(ctx.result([{status:'skipped'},{status:'planned'},{status:'planned'}]).filter(s=>s==='next').length===1,'exactly one stop may be "next"');
+}
+
+// --- Functional: a linked booking keeps its Timeline context even when the
+// stop also has local place details. This prevents a useful route/category
+// from disappearing behind an address, while a standalone stop stays concise.
+{
+  const start=app.indexOf('function collectionStopLinkedItem('),end=app.indexOf('\n\n  // The Planning Overview',start);
+  const ctx={
+    state:{timeline:[{id:'booking-1',title:'Dinner reservation'}],transport:[],stays:[]},
+    PLACE_TYPE_OPTIONS:[['','Choose a type'],['restaurant','Restaurant']],
+    itemId:item=>String(item?.id||''),timelineType:()=> 'reservation',transportForItem:()=>null,
+    timelineGlyph:()=> 'restaurant',timelineSecondary:()=> 'Reservation · Trastevere',
+  };
+  runInNewContext(`${app.slice(start,end)}\nresult=collectionStopTimelineMeta;`,ctx);
+  const linked=ctx.result({title:'Dinner reservation',linked_trip_item_id:'booking-1',place_type:'restaurant',address_snapshot:'Piazza Santa Maria',notes:'Ask for the terrace'});
+  assert(linked.secondary==='Restaurant · Piazza Santa Maria','local type and address must form the first Timeline metadata line');
+  assert(linked.detail==='Reservation · Trastevere · Ask for the terrace','linked booking context and note must remain visible after local details');
+  const standalone=ctx.result({title:'Gelato',place_type:'restaurant',address_snapshot:'Via della Scala'});
+  assert(standalone.secondary==='Restaurant · Via della Scala'&&standalone.detail==='','standalone stops must not invent booking metadata');
 }
 
 console.log('Planning-collections contract passed.');

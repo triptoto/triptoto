@@ -5137,6 +5137,42 @@
     });
   }
 
+  // Stops can be linked to an existing booking or saved idea. Keep the
+  // neighborhood row self-contained, but reuse the main Timeline's truthful
+  // description when that source is still available.
+  function collectionStopLinkedItem(stop) {
+    const linkedId = String(stop?.linked_trip_item_id || "");
+    if (!linkedId) return null;
+    return [...(state.timeline || []), ...(state.transport || []), ...(state.stays || [])]
+      .find((item) => itemId(item) === linkedId) || null;
+  }
+  function collectionStopTimelineMeta(stop) {
+    const linked = collectionStopLinkedItem(stop);
+    const typeLabel = stop.place_type
+      ? PLACE_TYPE_OPTIONS.find(([value]) => value === String(stop.place_type))?.[1] || ""
+      : "";
+    let linkedSummary = "";
+    if (linked) {
+      const type = timelineType(linked), transport = transportForItem(itemId(linked));
+      linkedSummary = timelineSecondary(linked, type, transport, timelineGlyph(linked, type, transport));
+    }
+    const address = String(stop.address_snapshot || "").trim();
+    const unique = (parts) => [...new Set(parts.map((part) => String(part || "").trim()).filter(Boolean))];
+    const secondary = address
+      ? unique([typeLabel, address]).join(" · ")
+      : linkedSummary || typeLabel;
+    const detail = unique([
+      // When the stop also has an address, retain the linked booking's own
+      // Timeline summary here instead of hiding its route/category context.
+      linkedSummary && linkedSummary !== secondary ? linkedSummary : "",
+      linked && String(linked.title || "").trim() !== String(stop.title || "").trim()
+        ? `Linked to ${String(linked.title).trim()}`
+        : "",
+      stop.notes,
+    ]).join(" · ");
+    return { secondary, detail };
+  }
+
   // The Planning Overview: every collection, grouped into "On your timeline"
   // (scheduled) and "Planning" (unscheduled + wishlists). NOT a bottom-nav tab.
   function planningScreen() {
@@ -5178,10 +5214,10 @@
     const miniTimeline = stops.length
       ? `<ol class="mini-timeline" aria-label="${esc(cfg.stops)} in ${esc(c.title || cfg.label)}">${stops.map((s, i) => {
           const st = states[i], time = String(s.scheduled_time || "").trim();
-          const detail = String(s.address_snapshot || s.notes || "").trim();
+          const { secondary, detail } = collectionStopTimelineMeta(s);
           const number = String(i + 1).padStart(2, "0");
-          const inner = `<span class="mini-stop__time">${time ? esc(time) : "—"}</span><span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot"></span></span><span class="mini-stop__marker" aria-hidden="true">${number}</span><span class="mini-stop__content"><span class="mini-stop__meta"><span class="mini-stop__status">${esc(STOP_STATE_LABEL[st] || "Upcoming")}</span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>${detail ? `<span class="mini-stop__detail">${esc(detail)}</span>` : ""}</span>${canEdit ? `<span class="mini-stop__more" aria-hidden="true">${icon("chevron", 16)}</span>` : ""}`;
-          return `<li class="mini-stop mini-stop--${esc(st)}">${hit(s, st, inner)}</li>`;
+          const inner = `<span class="mini-stop__time">${time ? esc(time) : "—"}</span><span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot"></span></span><span class="mini-stop__marker" aria-hidden="true">${number}</span><span class="mini-stop__content"><span class="mini-stop__meta"><span class="mini-stop__status">${esc(STOP_STATE_LABEL[st] || "Upcoming")}</span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>${secondary ? `<span class="mini-stop__secondary">${esc(secondary)}</span>` : ""}${detail ? `<span class="mini-stop__detail">${esc(detail)}</span>` : ""}</span>${canEdit ? `<span class="mini-stop__more" aria-hidden="true">${icon("chevron", 16)}</span>` : ""}`;
+          return `<li class="mini-stop mini-stop--${esc(st)}${secondary || detail ? " mini-stop--rich" : ""}">${hit(s, st, inner)}</li>`;
         }).join("")}</ol>`
       : `<div class="collection-empty"><span class="collection-empty__badge" aria-hidden="true">${icon("location", 24)}</span><strong>No ${esc(cfg.stops)} yet</strong>${canEdit ? `<p>Add your first ${esc(cfg.stop)} to start this plan.</p>` : ""}</div>`;
     const visited = stops.filter((s) => s.status === "visited").length;
