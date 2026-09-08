@@ -1,0 +1,96 @@
+{
+  "url": "https://tripto.to/account",
+  "version": "42d575c5-7cd8-4022-9953-3a3069063975",
+  "previous_version": "5523e309-cd02-4ebd-abe5-c6178b3de145",
+  "traffic_percent": 100,
+  "commit": "c471e798fa786eae7dd837464dc7aee60bd86508",
+  "branch": "fix/keyboard-header-20260907",
+  "account": "travelinkme@gmail.com",
+  "cache": "tripto-shell-product-v248-compact-profile",
+  "asset_version": "flat-design-system-v170",
+  "checked_at": "2026-09-08T15:12:05.933782+00:00",
+  "health": {
+    "ok": true,
+    "service": "tripto-api",
+    "build": "product-v2-production",
+    "database": {
+      "ok": true,
+      "tables": 59
+    },
+    "features": {
+      "liveFlights": false,
+      "generativeAI": false,
+      "gmailSync": false,
+      "r2Documents": false,
+      "accountAuth": true,
+      "sharing": true,
+      "demoTools": false,
+      "betaMetrics": true,
+      "ops": false
+    },
+    "timestamp": 1788880325924
+  },
+  "assets": {
+    "index.html": {
+      "sha256": "81b31aad27ce89213d3eac75c954e30a76dead9d194bd766f55605c14268eacd",
+      "matches_local": true
+    },
+    "mobile-app.js": {
+      "sha256": "a3b26faba76df4deac8f9b2404c60eae7c98dbb32d8f47f8943e965b9f4a6faa",
+      "matches_local": true
+    },
+    "mobile-app.css": {
+      "sha256": "d653d86a3a9c5782903ae89d4801b1b858503ce9c77f8096fe5b18eadc25dea4",
+      "matches_local": true
+    },
+    "mobile-app.min.js": {
+      "sha256": "80144cf725e908373f63ed0fa5cd3caa63986767de14c237e554e8886166d93c",
+      "matches_local": true
+    },
+    "mobile-app.min.css": {
+      "sha256": "d4ccb3ddb5208bfd22d4d9ce0cbea3c58fc8321333a7b2978a29eb0f1855daed",
+      "matches_local": true
+    },
+    "sw.js": {
+      "sha256": "a404d8ae679c4360f98fad9712e1efb0d10bc73cdd670923fb3a55623700a4f8",
+      "matches_local": true
+    }
+  },
+  "check_ui": "PASS",
+  "smart_import_auth_contract": "PASS",
+  "dry_run": "PASS",
+  "local_browser": {
+    "widths": [
+      320,
+      390,
+      430
+    ],
+    "scrolling_main_horizontal_overflow": false,
+    "signed_in_card_height_before_at_390": 213.79,
+    "signed_in_card_height_after": 96.2,
+    "guest_card_height": 94.59,
+    "avatar_size": 40,
+    "signout_touch_height": 44,
+    "long_name_email_accessible_full_text": true,
+    "pending_changes_signout_confirmation_and_cancel": "PASS",
+    "console_errors": []
+  },
+  "public_browser": {
+    "path": "/account",
+    "viewport": [
+      390,
+      844
+    ],
+    "mode": "guest",
+    "asset_version": "flat-design-system-v170",
+    "card_height": 94.59,
+    "avatar_size": 40,
+    "stats_height": 18.2,
+    "stats_background": "transparent",
+    "main_client_and_scroll_width": 375,
+    "console_errors": [],
+    "cache_update": "New v170 shell observed on navigation; no data cleared."
+  },
+  "physical_iphone_tested": false,
+  "production_data_modified": false
+}
