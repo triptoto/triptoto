@@ -34,3 +34,21 @@ if (QA_STATE === "navigation-review") state.importReview = {
     propertyName: "QA hotel", checkInDate: state.trip.starts_on, checkOutDate: state.trip.ends_on,
   }}],
 };
+
+// Isolated coverage for the shared booking-card surface and long content.
+if (QA_STATE === "booking-cards") {
+  const train = state.transport.find(item => item.id === "train");
+  for (const kind of ["ferry", "bus", "car", "taxi", "transfer"]) {
+    const item = { ...train, id: "card-" + kind, trip_item_id: "card-" + kind, transport_type: kind, title: "QA " + kind, carrier_name: "QA transport provider" };
+    state.transport.push(item);
+    if (kind !== "ferry") state.timeline.push(item);
+  }
+  const activity = state.timeline.find(item => item.id === "wine");
+  for (const kind of ["class", "restaurant", "event", "museum", "idea"]) {
+    state.timeline.push({ ...activity, id: "card-" + kind, activity_type: kind, title: "QA " + kind, notes: "Booking notes with enough detail to check wrapping and spacing.", booking_reference: "CARD-QA-2026" });
+  }
+  state.timeline.push({ ...activity, id: "card-long", activity_type: "class", title: "A cooking class with a long name and a detailed introduction to the local cuisine", notes: "Bring comfortable shoes and arrive a little early. Meet your host near the entrance.", booking_reference: "LONG-CONFIRMATION-1234567890" });
+  const stay = state.stays.find(item => item.id === "stay");
+  state.stays.push({ ...stay, id: "card-photo", trip_item_id: "card-photo", property_name: "QA stay with cover image", property_image_url: "/assets/trips-bg.jpg" });
+  state.localDocs.push({ id: "card-document", relatedBookingId: "flight", name: "Flight confirmation with a long document name.pdf", type: "ticket", integrity: "verified" });
+}

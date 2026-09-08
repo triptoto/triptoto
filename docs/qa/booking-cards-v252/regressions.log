@@ -1,0 +1,4 @@
+Header navigation: four real links, protected Trips, contextual Add and booking actions, direct Edit, native Share/cancellation/copy, Delete confirmation, viewer guard, dirty forms and focus restoration passed.
+App viewport: visible height, keyboard reduction, restoration, pinch zoom preservation and fallback passed.
+Booking notes: bus create/update/clear/readback, taxi structured detail preservation, and existing booking routes passed.
+Smart Import + Google auth browser/security contracts passed.

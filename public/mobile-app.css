@@ -2580,14 +2580,16 @@ html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
   color:var(--icon) !important;fill:currentColor !important
 }
 
-/* Booking details share the app's compact pastel summaries and flat rows. */
+/* Booking summaries and details share the same white, outlined card surface. */
 html .dark-detail .detail-content{width:100%;max-width:400px;padding:8px 24px calc(20px + env(safe-area-inset-bottom));box-sizing:border-box}
-html .dark-detail .fd-card{padding:14px !important;border:0 !important;border-radius:18px !important;background:var(--activity-soft) !important;box-shadow:none !important}
-html .flight-detail-screen .fd-card,html .train-detail-screen .fd-card{background:var(--flight-soft) !important}
-html .hotel-detail-screen .fd-card{background:var(--stay-soft) !important}
+html .dark-detail .fd-card{padding:var(--space-4) !important;border:1px solid var(--line) !important;border-radius:var(--radius-regular) !important;background:var(--card) !important;box-shadow:none !important}
 html .dark-detail .fd-route{grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);gap:8px}
 html .dark-detail .fd-route__code{font-size:28px;font-weight:500}
 html .dark-detail .fd-card__head{align-items:flex-start;gap:12px}
+html body .dark-detail .fd-card__head .fd-flight{gap:var(--space-3)}
+html body .dark-detail .fd-card__head .fd-flight .ph-svg{width:40px !important;height:40px !important;flex-shrink:0;padding:8px;box-sizing:border-box;border-radius:var(--radius-control);background:var(--surface);color:var(--accent)}
+html .dark-detail .fd-route__track,html .dark-detail .fd-times__track,html .dark-detail .fd-stay__track{justify-content:center}
+html .dark-detail .fd-route__track::before,html .dark-detail .fd-route__track::after,html .dark-detail .fd-times__track::before,html .dark-detail .fd-times__track::after,html .dark-detail .fd-stay__track::before,html .dark-detail .fd-stay__track::after{content:none}
 html .dark-detail .fd-route{margin:12px 0 6px}
 html .dark-detail .fd-times{padding:6px 0;gap:8px}
 html .dark-detail .fd-times__col strong,html .dark-detail .fd-stay__col strong{font-size:20px}
@@ -2614,11 +2616,11 @@ html .dark-detail .fd-row--button:active,html .dark-detail .fd-row__main:active{
 html .dark-detail .fd-row--doc{padding:0 !important}
 html .dark-detail .fd-row__trail{border-radius:10px}
 html .dark-detail .fd-row__trail:active{background:var(--surface)}
-html .dark-detail .fd-hero-image{border-radius:18px 18px 0 0 !important}
-html .dark-detail .fd-card--attached{border-top-left-radius:0 !important;border-top-right-radius:0 !important;margin-top:0 !important}
+html .dark-detail .fd-hero-image{border-radius:var(--radius-regular) var(--radius-regular) 0 0 !important}
+html .dark-detail .fd-card--attached{border-top-left-radius:0 !important;border-top-right-radius:0 !important;margin-top:0 !important;border-top:0 !important}
 html .dark-detail .fd-note-edit{padding:12px 0}
 html .dark-detail .fd-note-btn{box-shadow:none;font-weight:500}
-@media(max-width:359px){html .dark-detail .detail-content{padding-inline:16px}html .dark-detail .fd-card{padding:12px !important}html .dark-detail .fd-title{font-size:24px}}
+@media(max-width:359px){html .dark-detail .detail-content{padding-inline:16px}html .dark-detail .fd-card{padding:var(--space-4) !important}html .dark-detail .fd-title{font-size:24px}}
 
 /* Final title-role lock. Traveler-authored titles use the same Apple stack as
    the interface, with weight and size providing the hierarchy. */
@@ -3686,10 +3688,8 @@ html body .segmented-control{min-height:48px;padding:3px;border:0;border-radius:
 html body .segmented-control button{min-height:42px;border-radius:10px}
 html body .segmented-control button.is-active{background:var(--card);color:var(--ink);box-shadow:none}
 
-/* Detail pages keep a single meaningful category hero; all supporting data is flat. */
-html body .dark-detail .fd-card{border:0;border-radius:var(--radius-hero);box-shadow:none}
 
-html body .dark-detail .fd-row{min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html body .dark-detail .fd-row{min-height:var(--row-height);padding:var(--space-3) 0;border:0;border-radius:0;background:transparent;box-shadow:none}
 html body .dark-detail .fd-row:last-child{border-bottom:0}
 html body .dark-detail .flight-more,html body .dark-detail .flight-more-content{border:0;border-radius:0;background:transparent}
 html body .dark-detail .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface)}
@@ -3699,7 +3699,7 @@ html body .dark-detail .fd-row__icon{width:40px;height:40px;border-radius:var(--
    labels interrupt the traveller's scan. */
 html body .flight-detail-screen .detail-content{padding:var(--space-4) var(--ds-page-padding) calc(var(--nav-height) + var(--space-6) + env(safe-area-inset-bottom))!important}
 html body .flight-detail-screen .flight-detail-stack{display:grid;gap:var(--space-6)}
-html body .flight-detail-screen .fd-row{gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html body .flight-detail-screen .fd-row{gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 html body .flight-detail-screen .fd-row--with-meta,html body .flight-detail-screen .fd-row--note{min-height:74px!important}
 html body .flight-detail-screen .fd-row__main{min-height:60px!important;padding:var(--space-2) 0!important}
 html body .flight-detail-screen .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface);color:var(--accent)}
@@ -3708,7 +3708,7 @@ html body .flight-detail-screen .fd-row__text strong{font-size:var(--type-body);
 html body .flight-detail-screen .fd-row__text small{font-size:var(--type-meta);line-height:1.35}
 html body .flight-detail-screen .fd-row--button .fd-row__chev{display:grid!important;color:var(--muted)}
 html body .flight-detail-screen .fd-row--button:focus-visible,html body .flight-detail-screen .fd-row__main:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-html body .flight-detail-screen .fd-panel{padding:var(--space-2) 0 var(--space-3);border-bottom:1px solid var(--line)}
+html body .flight-detail-screen .fd-panel{padding:var(--space-2) 0 var(--space-3)}
 html body .flight-detail-screen .fd-panel dl>div{padding:var(--space-2) 0}
 @media(max-width:359px){html body .flight-detail-screen .detail-content{padding-inline:var(--space-3)!important}}
 
@@ -3777,7 +3777,7 @@ html body .trip-option-card,html body .add-intent-row,html body .day-plan-row,ht
    frame. The shared modifier is explicit so it cannot regress by type. */
 html body .dark-detail .fd-list--detail{display:grid;gap:0;margin-top:var(--space-5)!important;padding:var(--space-1) var(--space-4);border:1px solid var(--line);border-radius:var(--radius-regular);background:var(--card);box-shadow:none;overflow:visible}
 html body .flight-detail-screen .fd-list--detail{margin-top:0!important}
-html body .dark-detail .fd-list--detail .fd-row:not(.fd-row--doc){grid-template-columns:40px minmax(0,1fr) 20px!important;gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important}
+html body .dark-detail .fd-list--detail .fd-row:not(.fd-row--doc){grid-template-columns:40px minmax(0,1fr) 20px!important;gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important;border:0!important;border-radius:0!important;background:transparent!important}
 html body .dark-detail .fd-list--detail .fd-row--with-meta,html body .dark-detail .fd-list--detail .fd-row--note{min-height:74px!important}
 html body .dark-detail .fd-list--detail .fd-row:last-child{border-bottom:0!important}
 html body .dark-detail .fd-list--detail .fd-row__icon{width:40px;height:40px;border-radius:var(--radius-control);background:var(--surface);color:var(--accent)}
@@ -3786,7 +3786,7 @@ html body .dark-detail .fd-list--detail .fd-row__text strong{font-size:var(--typ
 html body .dark-detail .fd-list--detail .fd-row__text small{font-size:var(--type-meta);line-height:1.35;white-space:normal;overflow-wrap:anywhere}
 html body .dark-detail .fd-list--detail .fd-row--button .fd-row__chev{display:grid!important;color:var(--muted)}
 html body .dark-detail .fd-list--detail .fd-row__main{grid-template-columns:40px minmax(0,1fr);gap:var(--space-3);min-height:60px!important;padding:var(--space-2) 0!important}
-html body .dark-detail .fd-list--detail .fd-row--doc{padding:0!important;border:0!important;border-bottom:1px solid var(--line)!important}
+html body .dark-detail .fd-list--detail .fd-row--doc{padding:0!important;border:0!important}
 html body .dark-detail .fd-list--detail .fd-row--doc:last-child{border-bottom:0!important}
 html body .dark-detail .fd-list--detail .fd-row--button:focus-visible,html body .dark-detail .fd-list--detail .fd-row__main:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 

@@ -1,0 +1,56 @@
+
+> tripto-to@0.9.0-beta.1 check:ui
+> npm run build:app-shell && npm run build:icons && npm run build:smart-import && npm run build:airport-timezones && npm run build:places && node --check public/mobile-app.min.js && node --check public/smart-import.js && node --check public/airport-timezones.js && node --check public/places-provider.js && node --check public/places-search-worker.js && node --check public/mobile-trip-rules.js && node --check public/mobile-app.js && node tests/airport-timezones.contract.mjs && node tests/places-browser.contract.mjs && node tests/mobile-ui.contract.mjs && node tests/button-size.contract.mjs && node tests/currency.contract.mjs && node tests/checklist-help.contract.mjs && node tests/design-system.contract.mjs
+
+
+> tripto-to@0.9.0-beta.1 build:app-shell
+> esbuild public/mobile-app.js --minify --target=es2022 --outfile=public/mobile-app.min.js && esbuild public/mobile-app.css --minify --target=chrome100,safari15 --outfile=public/mobile-app.min.css
+
+
+  public/mobile-app.min.js  431.6kb
+
+⚡ Done in 28ms
+
+  public/mobile-app.min.css  328.6kb
+
+⚡ Done in 14ms
+
+> tripto-to@0.9.0-beta.1 build:icons
+> node scripts/build-icon-sprite.mjs
+
+Built public/icons/tripto-system.svg (147 regular, 6 selected).
+
+> tripto-to@0.9.0-beta.1 build:smart-import
+> esbuild packages/document-recognition/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --external:/vendor/* --outfile=public/smart-import.js
+
+
+  public/smart-import.js  370.1kb
+
+⚡ Done in 12ms
+
+> tripto-to@0.9.0-beta.1 build:airport-timezones
+> esbuild packages/airport-timezones/src/browser.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/airport-timezones.js
+
+
+  public/airport-timezones.js  117.5kb
+
+⚡ Done in 10ms
+
+> tripto-to@0.9.0-beta.1 build:places
+> esbuild packages/places/src/browser-provider.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-provider.js && esbuild packages/places/src/worker.ts --bundle --format=iife --platform=browser --target=es2022 --minify --outfile=public/places-search-worker.js
+
+
+  public/places-provider.js  1.5kb
+
+⚡ Done in 2ms
+
+  public/places-search-worker.js  4.5kb
+
+⚡ Done in 2ms
+Airport timezone contract passed.
+Offline places browser, privacy, accessibility, form, and lazy-cache contracts passed.
+Product V2 mobile UI contract passed.
+Button sizing contract passed.
+currency contract and unloaded-rate input regression: ok
+Checklist/Help contract passed.
+Unified Tripto Elegant Flat Cards design-system contract passed.

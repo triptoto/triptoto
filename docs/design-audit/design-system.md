@@ -35,7 +35,7 @@ Status colors remain semantic and must meet readable contrast against their assi
 | Card radius | 16px; 20–22px only for a justified hero or dialog. |
 | Controls | 50–52px for ordinary fields and primary buttons; all interactive targets at least 44px in either dimension as appropriate. |
 
-Cards are used to group a meaningful unit such as a summary, a choice set, a confirmed booking, or a form section. A label, a single row, or every action is not made into a card. Internal row dividers are inset and subtle.
+Cards are used to group a meaningful unit such as a summary, a choice set, a confirmed booking, or a form section. A label, a single row, or every action is not made into a card. Booking summary and detail cards share the white card surface, 1px theme border, 16px corners and 16px horizontal inset. Their rows and decorative route tracks have no horizontal separators; spacing separates the content. Other list dividers stay inset and subtle.
 
 ## Shared primitives
 
