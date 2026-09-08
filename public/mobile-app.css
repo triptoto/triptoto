@@ -4249,7 +4249,8 @@ html body .bottom-sheet.compact-sheet .sheet-action-list{
 html body .bottom-sheet.compact-sheet .sheet-action-list+.sheet-action-list{
   margin-top:var(--space-2);
 }
-html body .bottom-sheet.compact-sheet .booking-navigation-actions{
+html body .bottom-sheet.compact-sheet .booking-navigation-actions,
+html body .bottom-sheet.compact-sheet .collection-navigation-actions{
   margin-bottom:var(--space-3);
 }
 html body .bottom-sheet.compact-sheet .sheet-option.sheet-action-row{

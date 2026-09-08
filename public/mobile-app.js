@@ -1046,6 +1046,13 @@
     ].join("");
     return `<section class="booking-navigation-actions" aria-label="Booking actions">${sheetActionList(actions)}</section>`;
   }
+  function collectionNavigationActions() {
+    if (state.screen !== "collection" || !state.trip || state.error || state.googleAuthHandoffStatus || !canEditCurrentTrip()) return "";
+    const collection = collectionForItem(state.selectedId);
+    if (!collection) return "";
+    const label = collectionConfig(collection.collection_type)?.label || "Plan";
+    return `<section class="collection-navigation-actions" aria-label="Plan actions">${sheetActionList(sheetActionRow("edit-collection", "edit", `Edit ${label}`, ` data-id="${esc(collection.id)}"`))}</section>`;
+  }
   function linkedBookingDocuments(item) {
     const id = itemId(item || {});
     if (!id) return [];
@@ -3661,7 +3668,7 @@
       glyph, label, "", routeUrl(screen),
       ` data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}`,
     )).join("");
-    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${bookingNavigationActions()}<nav aria-label="Primary navigation">${sheetActionList(links)}</nav></div>`);
+    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${bookingNavigationActions()}${collectionNavigationActions()}<nav aria-label="Primary navigation">${sheetActionList(links)}</nav></div>`);
   }
   // Header notification bell. Opens the Notifications sheet, which merges the
   // trip's /changes feed (imports, added stops, time markers, documents…) with
@@ -5358,7 +5365,6 @@
     const scheduled = Number(val(c, "starts_at_utc", "startsAtUtc")) || null;
     const zone = val(c, "start_timezone", "startTimezone");
     const metaBits = [c.city, scheduled ? formatDateTime(scheduled, zone) : ""].filter(Boolean).join(" · ");
-    const actions = canEdit ? `<button class="icon-button" data-action="edit-collection" data-id="${esc(id)}" aria-label="Edit ${esc(cfg.label)}">${icon("edit", 20)}</button><button class="icon-button" data-action="delete-collection" data-id="${esc(id)}" aria-label="Delete ${esc(cfg.label)}">${icon("trash", 20)}</button>` : "";
     const hit = (s, st, inner) => {
       const time = String(s.scheduled_time || "").trim();
       const label = `${time ? time + ", " : ""}${s.title || "Place"}. ${STOP_STATE_LABEL[st] || ""}`;
@@ -5377,7 +5383,7 @@
       : `<div class="collection-empty"><span class="collection-empty__badge" aria-hidden="true">${icon("location", 24)}</span><strong>No ${esc(cfg.stops)} yet</strong>${canEdit ? `<p>Add your first ${esc(cfg.stop)} to start this plan.</p>` : ""}</div>`;
     const visited = stops.filter((s) => s.status === "visited").length;
     const body = `<section class="collection-hero"><span class="collection-hero__eyebrow">${esc(cfg.label.toUpperCase())}</span><h1>${esc(c.title || cfg.label)}</h1>${metaBits ? `<p class="collection-hero__meta">${icon("calendar", 16)}<span>${esc(metaBits)}</span></p>` : `<p class="collection-hero__meta">No date set</p>`}${c.collection_notes ? `<p class="collection-hero__notes">${esc(c.collection_notes)}</p>` : ""}</section><section class="collection-stops" aria-label="Places"><div class="collection-stops__heading"><h2>Places <span class="collection-count">${stops.length}</span></h2>${stops.length ? `<span class="collection-progress">${visited} of ${stops.length} visited</span>` : ""}</div><div class="collection-timeline-scroll" aria-label="Places timeline">${miniTimeline}</div></section>`;
-    return focusedTaskPage(cfg.label, body, "collection-page timeline-screen--ribbon", actions);
+    return focusedTaskPage(cfg.label, body, "collection-page timeline-screen--ribbon");
   }
 
   // Create / edit a collection. state.selectedId is "new:<type>" to create, or a
@@ -10925,6 +10931,7 @@
         break;
       }
       case "edit-collection": {
+        if (state.sheet === "navigation") closeSheetKeepPage();
         state.editingEntity = { kind: "collection", id: target.dataset.id };
         formHasMeaningfulChanges = false;
         route("collection-form", target.dataset.id);

@@ -19,13 +19,13 @@ const ctx = vm.createContext({
   state: { screen: 'account', trip: { id: 'trip-1' }, selectedId: null, sheet: null },
   esc: value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;'),
   icon: name => `<svg data-icon="${name}"></svg>`,
-  collectionForItem: id => id === 'neighborhood-1' ? { id, collection_type: 'neighborhood' } : null,
-  collectionConfig: () => ({ stop: 'place' }),
+  collectionForItem: id => ['neighborhood-1', 'neighborhood-alias'].includes(id) ? { id: 'neighborhood-1', collection_type: 'neighborhood' } : null,
+  collectionConfig: () => ({ label: 'Neighborhood', stop: 'place' }),
   canEditCurrentTrip: () => ctx.state.trip?.role !== 'viewer',
 });
 vm.runInContext(readFileSync('public/mobile-routes.js', 'utf8'), ctx);
 ctx.routeUrl = (screen, id) => ctx.TriptoRoutes.pathFor(screen, id);
-vm.runInContext(get('HeaderNavigation', 'navigationSheet', 'bookingNavigationActions', 'appBar', 'bottomSheet', 'sheetActionRow', 'sheetActionLink', 'sheetActionList', 'tripsPageHeader', 'selectedFlight', 'selectedStay', 'selectedTrain', 'selectedPlan', 'val', 'itemId'), ctx);
+vm.runInContext(get('HeaderNavigation', 'navigationSheet', 'bookingNavigationActions', 'collectionNavigationActions', 'appBar', 'bottomSheet', 'sheetActionRow', 'sheetActionLink', 'sheetActionList', 'tripsPageHeader', 'selectedFlight', 'selectedStay', 'selectedTrain', 'selectedPlan', 'val', 'itemId'), ctx);
 ctx.isCancelled = () => false;
 const html = ctx.navigationSheet();
 assert.deepEqual([...html.matchAll(/href="([^"]+)"/g)].map(match => match[1]), ['/trips', '/trip-options', '/before-you-go', '/account']);
@@ -68,10 +68,31 @@ assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Booking actions"/);
 ctx.state.error = null;
 ctx.state.screen = 'collection'; ctx.state.selectedId = 'neighborhood-1';
 assert.match(ctx.HeaderNavigation(), /data-action="collection-add-place" data-id="neighborhood-1"/);
+for (const role of ['owner', 'editor']) {
+  ctx.state.trip.role = role;
+  for (const id of ['neighborhood-1', 'neighborhood-alias']) {
+    ctx.state.selectedId = id;
+    const menu = ctx.navigationSheet();
+    assert.match(menu, /data-action="edit-collection" data-id="neighborhood-1"/);
+    assert.match(menu, /Edit Neighborhood/);
+    assert.doesNotMatch(menu, /data-action="delete-/);
+    assert.equal((menu.match(/<a /g) || []).length, 4);
+  }
+}
+ctx.state.selectedId = 'missing';
+assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Plan actions"/);
+ctx.state.selectedId = 'neighborhood-1';
+for (const [key, value] of [['error', 'Load failed'], ['googleAuthHandoffStatus', 'pending']]) {
+  ctx.state[key] = value;
+  assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Plan actions"/);
+  ctx.state[key] = null;
+}
 ctx.state.trip.role = 'viewer';
+assert.doesNotMatch(ctx.navigationSheet(), /data-action="edit-collection"/);
 assert.doesNotMatch(ctx.HeaderNavigation(), /data-action="collection-add-place"/);
 assert.match(ctx.HeaderNavigation(), /data-action="open-add"/, 'View-only users still see the same header; the action guard explains the restriction');
 ctx.state.trip = null;
+assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Plan actions"/);
 assert.match(ctx.HeaderNavigation(), /aria-label="Create trip"/);
 const inventory = ctx.tripsPageHeader();
 assert.match(inventory, /data-screen="account"/);
@@ -167,7 +188,7 @@ assert.equal(attributes.size, 0); assert.equal(expanded.get('aria-expanded'), 'f
 const effects = [];
 const actions = vm.createContext({
   state: { trip: { id: 'trip-1' }, sheet: 'navigation', timeline: [{ id: 'class-1', type: 'activity', activity_type: 'class', title: 'Cooking class' }], transport: [], stays: [] },
-  VIEWER_BLOCKED_ACTIONS: new Set(['edit-booking', 'move-booking', 'delete-booking', 'edit-idea', 'delete-idea']),
+  VIEWER_BLOCKED_ACTIONS: new Set(['edit-booking', 'move-booking', 'delete-booking', 'edit-idea', 'delete-idea', 'edit-collection']),
   OWNER_ONLY_ACTIONS: new Set(), viewOnlyBlocked: () => actions.state.trip.role === 'viewer',
   route: (screen, id) => effects.push(['route', screen, id]),
   closeSheetKeepPage: () => { actions.state.sheet = null; effects.push(['close']); },
@@ -209,8 +230,15 @@ assert.deepEqual(effects.splice(0), [['close'], ['delete-idea', 'idea-1', null]]
 actions.state.sheet = 'navigation';
 await actions.handleActionTask('move-booking', classTarget);
 assert.equal(actions.state.sheet, 'move-booking'); assert.equal(actions.state.moveBooking.id, 'class-1');
+actions.state.sheet = 'navigation';
+await actions.handleActionTask('edit-collection', { dataset: { id: 'neighborhood-1' } });
+assert.deepEqual(effects.splice(0), [['close'], ['route', 'collection-form', 'neighborhood-1']]);
+assert.equal(actions.state.editingEntity.kind, 'collection');
+assert.equal(actions.state.editingEntity.id, 'neighborhood-1');
+assert.equal(actions.formHasMeaningfulChanges, false);
 actions.state.trip.role = 'viewer'; actions.state.sheet = 'navigation';
 await actions.handleActionTask('edit-booking', classTarget);
+await actions.handleActionTask('edit-collection', { dataset: { id: 'neighborhood-1' } });
 assert.equal(actions.state.sheet, 'navigation'); assert.equal(effects.length, 0);
 assert.doesNotMatch(source, /function bottomNav\(|function BottomNavigation\(|class="bottom-nav/);
-console.log('Header navigation: four real links, protected Trips, contextual Add and booking actions, direct Edit, native Share/cancellation/copy, Delete confirmation, viewer guard, dirty forms and focus restoration passed.');
+console.log('Header navigation: four real links, protected Trips, contextual Add and booking actions, Neighborhood Edit in Menu without Delete, direct Edit, native Share/cancellation/copy, Delete confirmation, viewer guard, dirty forms and focus restoration passed.');
