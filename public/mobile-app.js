@@ -2223,9 +2223,9 @@
   function addDocumentButton(id = "") {
     return detailAction("Add document", "add-document", "plus", id ? `data-id="${esc(id)}"` : "");
   }
-  // Shared "fd" design system used across every booking detail screen: a hero
-  // card (.fd-card) followed by one grouped list card (.fd-list) of consistent
-  // rows, so hotel/train/plan match the flight detail layout exactly.
+  // Shared detail grammar used across every booking screen: one category hero,
+  // then compact, flat rows. Every detail type deliberately uses the same list
+  // class so spacing cannot drift between activities, stays and transport.
   function fdRowIcon(name, warn = false) {
     return `<span class="fd-row__icon${warn ? " fd-row__icon--warn" : ""}">${icon(name, 20)}</span>`;
   }
@@ -2254,7 +2254,7 @@
   }
   function fdList(rows, label = "Booking details and documents") {
     const body = rows.filter(Boolean).join("");
-    return body ? `<section class="fd-list" aria-label="${esc(label)}">${body}</section>` : "";
+    return body ? `<section class="fd-list fd-list--detail" aria-label="${esc(label)}">${body}</section>` : "";
   }
   function fdSection(label, rows, description = "") {
     const body = Array.isArray(rows) ? rows.filter(Boolean).join("") : rows;
@@ -5254,10 +5254,7 @@
     if (!stop) return bottomSheet("collection-stop", "Place", `<p class="sheet-empty">This place is no longer available.</p>`);
     const stops = collectionStopsFor(ctx.collectionId), idx = stops.findIndex((s) => String(s.id) === String(stop.id));
     const canUp = idx > 0, canDown = idx >= 0 && idx < stops.length - 1, status = String(stop.status || "planned");
-    // Self-contained icon-led rows (not `.sheet-option`, whose cascade hides
-    // leading icons and forces a rigid 3-column grid). Data-attributes are
-    // unchanged so the existing delegated action handlers still fire.
-    const opt = (action, ic, label, sub, extra = "", danger = false) => `<button type="button" class="stop-action${danger ? " stop-action--danger" : ""}" data-action="${action}" data-collection="${esc(ctx.collectionId)}" data-id="${esc(stop.id)}"${extra}><span class="stop-action__icon">${icon(ic, 20)}</span><span class="stop-action__body"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="stop-action__chev" aria-hidden="true">${icon("chevron-right", 18)}</span></button>`;
+    const opt = (action, ic, label, sub, extra = "", danger = false) => sheetActionRow(action, ic, label, ` data-collection="${esc(ctx.collectionId)}" data-id="${esc(stop.id)}"${extra}`, sub, danger);
     const moveRows = `${canUp ? opt("stop-move", "chevron-up", "Move earlier", "", ` data-dir="up"`) : ""}${canDown ? opt("stop-move", "chevron-down", "Move later", "", ` data-dir="down"`) : ""}`;
     const visitedRow = status !== "visited"
       ? opt("stop-status", "check", "Mark visited", "Tick off once you've been", ` data-status="visited"`)
@@ -5266,12 +5263,12 @@
       ? opt("stop-status", "eye-off", "Skip this place", "Keep it, but grey it out", ` data-status="skipped"`)
       : opt("stop-status", "eye", "Un-skip", "Bring it back into the plan", ` data-status="planned"`);
     const meta = stopSheetMeta(stop);
-    const body = `${meta}<div class="stop-actions"><div class="stop-actions__group">${opt("edit-stop", "edit", "Edit place", "Name, time, address and notes")}${moveRows}${visitedRow}${skipRow}</div><div class="stop-actions__group stop-actions__group--danger">${opt("delete-stop", "delete", "Delete place", "Remove from this plan", "", true)}</div></div>`;
+    const body = `${meta}<div class="sheet-options-group sheet-action-list">${opt("edit-stop", "edit", "Edit place", "Name, time, address and notes")}${moveRows}${visitedRow}${skipRow}</div><div class="sheet-options-group sheet-action-list sheet-action-list--danger">${opt("delete-stop", "delete", "Delete place", "Remove from this plan", "", true)}</div>`;
     return bottomSheet("collection-stop", stop.title || "Place", body);
   }
 
-  // Compact context strip at the top of the stop action sheet: time · type ·
-  // status, so the sheet reads as "this place" not just a bare title.
+  // A muted context line keeps the chosen place identifiable without turning
+  // the top of the sheet into a second card.
   function stopSheetMeta(stop) {
     const status = String(stop.status || "planned");
     const bits = [];
@@ -5284,7 +5281,7 @@
         ? `<span class="stop-meta__chip stop-meta__chip--skip">Skipped</span>`
         : "";
     if (!bits.length && !statusChip) return "";
-    return `<div class="stop-meta">${bits.length ? `<span class="stop-meta__line">${bits.join(" · ")}</span>` : ""}${statusChip}</div>`;
+    return `<p class="sheet-context">${bits.length ? `<span>${bits.join(" · ")}</span>` : ""}${statusChip}</p>`;
   }
 
   // Generic confirm dialog (reuses the discard-dialog visual language).
@@ -6962,6 +6959,12 @@
         "Address unavailable";
     return `<div class="phone-app"><section class="driver-screen"><header class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close">${icon("close", 26)}</button><strong>Show to Driver</strong><span aria-hidden="true"></span></header><main class="driver-main"><div class="driver-label">${icon("car", 24)} <span>Please drive to</span></div><section class="driver-pass" aria-labelledby="driver-destination-name"><span class="driver-pass__eyebrow">Destination</span><h1 class="driver-name" id="driver-destination-name">${esc(name)}</h1>${showLocalName ? `<p class="driver-local">${esc(localName)}</p>` : ""}<div class="driver-address">${icon("pin", 26)}<span><small>Address</small><strong>${esc(address)}</strong></span></div></section><p class="driver-hint">Show this screen to your driver. The destination is saved with your trip.</p></main><footer class="driver-cta">${primaryCta("Open directions", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</footer></section></div>`;
   }
+  // One action-row primitive for the menus that operate on an existing item.
+  // It keeps a real 40px leading target, a readable two-line copy column and a
+  // consistently aligned chevron, instead of each sheet inventing a card.
+  function sheetActionRow(action, iconName, label, attrs = "", sub = "", danger = false) {
+    return `<button type="button" class="sheet-option sheet-action-row${danger ? " sheet-option--danger" : ""}" data-action="${esc(action)}"${attrs}><span class="info-icon">${icon(iconName, 20)}</span><span class="sheet-action-row__copy"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="sheet-action-row__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`;
+  }
   function bottomSheet(id, title, content) {
     return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
   }
@@ -7854,11 +7857,11 @@
     const canEdit = canEditCurrentTrip();
     const placements = ideaPlacements(item);
     const planned = placements.length > 0;
-    const opt = (action, ic, label, sub, extra = "", danger = false) => `<button type="button" class="stop-action${danger ? " stop-action--danger" : ""}" data-action="${action}" data-id="${esc(id)}"${extra}><span class="stop-action__icon">${icon(ic, 20)}</span><span class="stop-action__body"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="stop-action__chev" aria-hidden="true">${icon("chevron-right", 18)}</span></button>`;
-    const meta = planned ? `<div class="stop-meta"><span class="stop-meta__line">${esc(ideaPlacementSummary(item))}</span></div>` : "";
+    const opt = (action, ic, label, sub, extra = "", danger = false) => sheetActionRow(action, ic, label, `${String(extra).includes("data-id=") ? "" : ` data-id="${esc(id)}"`}${extra}`, sub, danger);
+    const meta = planned ? `<p class="sheet-context"><span>${esc(ideaPlacementSummary(item))}</span></p>` : "";
     if (!canEdit) {
       const openRow = planned ? opt("open-collection", "map", "Open in plan", "See where this idea sits", ` data-id="${esc(placements[0].collection.id)}"`) : "";
-      return bottomSheet("idea", val(item, "title") || "Idea", `${meta}<div class="stop-actions"><div class="stop-actions__group">${openRow || `<p class="sheet-note">You have view-only access to this trip.</p>`}</div></div>`);
+      return bottomSheet("idea", val(item, "title") || "Idea", `${meta}<div class="sheet-options-group sheet-action-list">${openRow || `<p class="sheet-note">You have view-only access to this trip.</p>`}</div>`);
     }
     const hasTripDates = tripDateDays().length > 0;
     const planRows = planned
@@ -7867,7 +7870,7 @@
           ? opt("idea-add-to-plan", "map", "Add to a day plan", "Choose a day and an optional time")
           : opt("idea-add-to-plan", "map", "Add to a day plan", "Add your trip's dates first", " disabled")}${opt("edit-idea", "edit", "Edit idea", "Name, address and notes")}`;
     const editRows = planned ? opt("edit-idea", "edit", "Edit idea", "Name, address and notes") : "";
-    const body = `${meta}<div class="stop-actions"><div class="stop-actions__group">${planRows}${editRows}</div><div class="stop-actions__group stop-actions__group--danger">${opt("delete-idea", "delete", "Delete idea", "Remove it from Save for Later", "", true)}</div></div>`;
+    const body = `${meta}<div class="sheet-options-group sheet-action-list">${planRows}${editRows}</div><div class="sheet-options-group sheet-action-list sheet-action-list--danger">${opt("delete-idea", "delete", "Delete idea", "Remove it from Save for Later", "", true)}</div>`;
     return bottomSheet("idea", val(item, "title") || "Idea", body);
   }
   // The "Add to a day plan" panel (spec §7/§8/§9). Day Trip = a day of the trip.
