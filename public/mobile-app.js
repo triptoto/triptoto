@@ -5104,14 +5104,15 @@
       ? `<ol class="mini-timeline" aria-label="${esc(cfg.stops)} in ${esc(c.title || cfg.label)}">${stops.map((s, i) => {
           const st = states[i], time = String(s.scheduled_time || "").trim();
           const detail = String(s.address_snapshot || s.notes || "").trim();
-          const inner = `<span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot">${String(i + 1).padStart(2, "0")}</span></span><span class="mini-stop__content"><span class="mini-stop__meta"><span class="mini-stop__time">${time ? esc(time) : "Any time"}</span><span class="mini-stop__status">${esc(STOP_STATE_LABEL[st] || "Upcoming")}</span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>${detail ? `<span class="mini-stop__detail">${esc(detail)}</span>` : ""}</span>${canEdit ? `<span class="mini-stop__more" aria-hidden="true">${icon("chevron", 16)}</span>` : ""}`;
+          const number = String(i + 1).padStart(2, "0");
+          const inner = `<span class="mini-stop__time">${time ? esc(time) : "—"}</span><span class="mini-stop__rail" aria-hidden="true"><span class="mini-stop__dot"></span></span><span class="mini-stop__marker" aria-hidden="true">${number}</span><span class="mini-stop__content"><span class="mini-stop__meta"><span class="mini-stop__status">${esc(STOP_STATE_LABEL[st] || "Upcoming")}</span></span><span class="mini-stop__name">${esc(s.title || "Place")}</span>${detail ? `<span class="mini-stop__detail">${esc(detail)}</span>` : ""}</span>${canEdit ? `<span class="mini-stop__more" aria-hidden="true">${icon("chevron", 16)}</span>` : ""}`;
           return `<li class="mini-stop mini-stop--${esc(st)}">${hit(s, st, inner)}</li>`;
         }).join("")}</ol>`
       : `<div class="collection-empty"><span class="collection-empty__badge" aria-hidden="true">${icon("location", 24)}</span><strong>No ${esc(cfg.stops)} yet</strong>${canEdit ? `<p>Add your first ${esc(cfg.stop)} to start this plan.</p>` : ""}</div>`;
     const addBtn = canEdit ? primaryCta(`Add ${cfg.stop}`, "collection-add-place", "plus", `data-id="${esc(id)}"`) : "";
     const visited = stops.filter((s) => s.status === "visited").length;
     const body = `<section class="collection-hero"><span class="collection-hero__eyebrow">${esc(cfg.label.toUpperCase())}</span><h1>${esc(c.title || cfg.label)}</h1>${metaBits ? `<p class="collection-hero__meta">${icon("calendar", 16)}<span>${esc(metaBits)}</span></p>` : `<p class="collection-hero__meta">No date set</p>`}${c.collection_notes ? `<p class="collection-hero__notes">${esc(c.collection_notes)}</p>` : ""}</section>${addBtn}<section class="collection-stops" aria-label="Places"><div class="collection-stops__heading"><h2>Places <span class="collection-count">${stops.length}</span></h2>${stops.length ? `<span class="collection-progress">${visited} of ${stops.length} visited</span>` : ""}</div>${miniTimeline}</section>`;
-    return focusedTaskPage(cfg.label, body, "collection-page", actions);
+    return focusedTaskPage(cfg.label, body, "collection-page timeline-screen--ribbon", actions);
   }
 
   // Create / edit a collection. state.selectedId is "new:<type>" to create, or a

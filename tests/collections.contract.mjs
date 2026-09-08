@@ -47,20 +47,22 @@ assert(app.includes('function isTimelineVisibleItem')&&app.includes('if (!isTime
 assert(app.includes('function collectionSummary')&&app.includes('places')&&app.includes('.join(" · ")'),'parent summary must be computed from children (N places · start–end)');
 assert(/function collectionForItem\(id\)[\s\S]{0,260}trip_item_id[\s\S]{0,260}c\.id/.test(app),'collection lookup must accept both collection id and trip item id');
 assert(/function collectionStopsFor\(id\)[\s\S]{0,500}collection_item_id/.test(app),'stop lookup must resolve the collection id aliases');
-// Mini-timeline is dots-only: no category icons, no card class, no shadow.
-assert(app.includes('class="mini-stop__dot"')&&app.includes('mini-stop__time')&&app.includes('mini-stop__name')&&app.includes('mini-stop__rail'),'mini-timeline must render time · dot · name');
+// Mini-timeline uses the main timeline's time · rail · marker · copy roles;
+// the marker is a stop number rather than a category icon.
+assert(app.includes('class="mini-stop__dot"')&&app.includes('mini-stop__time')&&app.includes('mini-stop__marker')&&app.includes('mini-stop__name')&&app.includes('mini-stop__rail'),'mini-timeline must render time · rail · numbered marker · name');
 assert(!app.includes('mini-stop__icon'),'mini-timeline stops must not render category icons');
 assert(/class="mini-timeline"[\s\S]{0,900}?mini-stop__dot/.test(app),'mini-timeline list must contain dots');
 
-// --- Design contract in CSS: flat, monochrome, dot size 14-18px, no shadow ---
-const dot=css.match(/\.mini-stop__dot\{[^}]*\}/g)?.join(' ')||'';
-const dotSize=Number((dot.match(/width:(\d+)px/)||[])[1]);
-assert(dotSize===32,`mini-timeline numbered marker must be 32px (got ${dotSize||'none'})`);
-assert(!/\.mini-(timeline|stop)[^{]*\{[^}]*box-shadow/.test(css)&&!/\.mini-stop__[a-z]+[^{]*\{[^}]*box-shadow/.test(css),'mini-timeline must have no shadow (flat)');
-assert(/\.mini-stop__hit\{[^}]*display:grid[^}]*grid-template-columns:32px minmax\(0,1fr\) 16px/.test(css),'mini-timeline must use the rail · content · affordance grid');
+// --- Design contract in CSS: main timeline geometry and typography, no cards.
+const marker=css.match(/\.collection-page \.mini-stop__marker\{[^}]*\}/g)?.join(' ')||'';
+const markerSize=Number((marker.match(/width:(\d+)px/)||[])[1]);
+assert(markerSize===44,`mini-timeline numbered marker must be 44px (got ${markerSize||'none'})`);
+assert(!/\.collection-page \.mini-stop__(?:marker|content|name)[^{]*\{[^}]*box-shadow/.test(css),'mini-timeline content and numbered markers must have no shadow');
+assert(/\.collection-page \.mini-stop__hit\{[^}]*display:grid[^}]*grid-template-columns:48px 26px 50px minmax\(0,1fr\)/.test(css),'mini-timeline must use the main timeline time · rail · numbered marker · copy grid');
+assert(css.includes('.collection-page .mini-stop__name{display:block;color:var(--ink);font-size:19px')&&css.includes('.collection-page .mini-stop__detail{display:-webkit-box;-webkit-line-clamp:2')&&css.includes('.collection-page .mini-stop__time{grid-column:1'),'mini-timeline typography must match main timeline roles');
 // Dot state communicated by shape/tone, plus strikethrough for skipped (never color alone).
 for(const st of ['next','future','past','skipped'])assert(css.includes(`.mini-stop--${st} .mini-stop__dot`),`missing dot state style: ${st}`);
-assert(css.includes('.mini-stop--skipped .mini-stop__name{color:var(--muted);text-decoration:line-through}'),'skipped stop must be struck through, not only recolored');
+assert(css.includes('.collection-page .mini-stop--skipped .mini-stop__name{color:var(--muted);text-decoration:line-through}'),'skipped stop must be struck through, not only recolored');
 // No blue/purple category colors, gradients, or glassmorphism introduced.
 assert(!/\.mini-stop[^{]*\{[^}]*(gradient|backdrop-filter|#[0-9a-fA-F]{3,6}\b)/.test(css),'mini-timeline must use neutral tokens, not raw colors/gradients/glass');
 
