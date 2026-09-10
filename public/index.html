@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="theme-beart">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fbf8f7">
-  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#0f1f29">
+  <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="robots" content="index, follow">
@@ -20,6 +20,7 @@
   <meta name="twitter:title" content="tripto.to · Add it once. Follow the trip.">
   <meta name="twitter:description" content="All your trips on one quiet timeline. Offline-ready, private by design.">
   <meta name="twitter:image" content="https://tripto.to/icon-512.png">
+  <link rel="canonical" href="https://tripto.to/">
   <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebSite","name":"tripto.to","url":"https://tripto.to/","description":"A calm, private travel companion for organizing bookings and plans on one timeline."}
   </script>
@@ -29,9 +30,17 @@
   <link rel="icon" href="/favicon-16.png?v=compass-v120" sizes="16x16" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=compass-v120">
   <link rel="mask-icon" href="/favicon-mask.svg?v=compass-v120" color="#5547b7">
-<link rel="stylesheet" href="/mobile-app.min.css?v=flat-design-system-v184">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="/mobile-app.min.css?v=prod-release-v348">
   <script src="/shell-update.js?v=shell-refresh-v1"></script>
-<style id="tripto-loading-critical">:root{--paper:#fbf8f7;--ink:#05152d;--card:#fff;--line:#e6e0e5;--muted:#596474;--activity-soft:#e7e1fb;--stay-soft:#d1edde;--flight-soft:#d9e4fb;--transfer-soft:#fee4cf;--accent:#5547b7}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--paper)}.thinking-stage,.thinking-panel,.thinking-pattern{box-sizing:border-box}
+  <script>/* Runs fresh from the always-network-first navigation HTML, so it can pull a
+     new service worker even when the old one is still serving stale cached JS.
+     Forces an update check that bypasses the HTTP cache and promotes any waiting
+     worker; shell-update.js handles the reload on controllerchange. */
+  (function(){if(!("serviceWorker" in navigator))return;try{navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(function(reg){reg.update();if(reg.waiting)reg.waiting.postMessage("skipWaiting");reg.addEventListener("updatefound",function(){var nw=reg.installing;if(nw)nw.addEventListener("statechange",function(){if(nw.state==="installed"&&reg.waiting)reg.waiting.postMessage("skipWaiting");});});}).catch(function(){});}catch(e){}})();</script>
+<style id="tripto-loading-critical">:root{--paper:#0f1f29;--ink:#f1f5f9;--card:#22333d;--line:#465875;--muted:#aeb9c8;--activity-soft:#39305c;--stay-soft:#21503f;--flight-soft:#2b3f5c;--transfer-soft:#4d3d28;--accent:#f59e0b}body{margin:0;font-family:"Noto Sans",-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;background:var(--paper)}.thinking-stage,.thinking-panel,.thinking-pattern{box-sizing:border-box}
 /* Shared loading pattern: no images, timers or layout-heavy animation. */
 .thinking-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;min-height:55svh;padding:28px 20px;background:var(--paper);color:var(--ink)}
 .thinking-stage--startup{min-height:100svh;gap:44px}
@@ -47,10 +56,8 @@
 .thinking-copy{display:grid;gap:8px;min-width:0}
 .thinking-copy strong{font-size:16px;font-weight:500;line-height:1.4;overflow-wrap:anywhere}
 .thinking-copy>span{font-size:14px;line-height:1.5;color:var(--muted)}
-.thinking-notice{position:fixed;z-index:10000;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(340px,calc(100% - 32px));pointer-events:none}
-.thinking-panel--compact{flex-direction:row;justify-content:flex-start;gap:16px;width:100%;padding:16px 18px;border-radius:18px;text-align:left;box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 10%,transparent)}
-.thinking-panel--compact .thinking-pattern,.place-loading .thinking-pattern{grid-template-columns:repeat(3,10px);grid-template-rows:repeat(3,10px);gap:3px;width:36px;height:36px}
-.thinking-panel--compact .thinking-pattern i,.place-loading .thinking-pattern i{border-radius:3px}
+.place-loading .thinking-pattern{grid-template-columns:repeat(3,10px);grid-template-rows:repeat(3,10px);gap:3px;width:36px;height:36px}
+.place-loading .thinking-pattern i{border-radius:3px}
 .place-loading{display:flex;align-items:center;gap:14px;min-height:64px}
 @keyframes thinking-tile{0%,100%{transform:scale(.84) rotate(0deg);opacity:.65}50%{transform:scale(1) rotate(90deg);opacity:1}}
 @media(prefers-reduced-motion:reduce){.thinking-pattern i{animation:none;opacity:1}}
@@ -217,8 +224,8 @@
   <script src="/canonical-host.js?v=canonical-apex-v1"></script>
   <script src="/mobile-routes.js?v=trip-options-routes-v4" defer></script>
   <script src="/mobile-trip-rules.js?v=optional-trip-dates-v96" defer></script>
-  <script src="/google-auth-client.js?v=google-auth-ios-v98" defer></script>
+  <script src="/google-auth-client.js?v=google-auth-ios-v100" defer></script>
   <script src="/manual-booking-attachments.js?v=manual-booking-v2c3" defer></script>
-  <script src="/mobile-app.min.js?v=flat-design-system-v184" defer></script>
+  <script src="/mobile-app.min.js?v=prod-release-v348" defer></script>
 </body>
 </html>

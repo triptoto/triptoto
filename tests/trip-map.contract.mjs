@@ -53,7 +53,12 @@ assert(!/You are here|Near you|km from you|minutes away/i.test(app),'proximity/c
 assert(app.includes('function openMaps(')&&app.includes('https://www.google.com/maps/search/?api=1&query='),'Navigate must use the Google Maps URL scheme');
 assert(!app.includes('maps.googleapis.com')&&!index.includes('maps.googleapis.com'),'embedded/paid Google Maps SDK must not be loaded — URL scheme only');
 const headers=read('public/_headers');
-assert(!headers.includes('googleapis.com')&&!headers.includes('tile')&&!headers.includes('mapbox')&&!headers.includes('openstreetmap'),'CSP must not be loosened for external map hosts');
+// Trip Map navigation uses the Google Maps URL scheme only — no embedded/paid map
+// SDK or raster tile provider is ever loaded. The stay22 map widget is a deliberate,
+// reviewed allowance (REL-002); everything else stays locked down. `fonts.googleapis.com`
+// is the font stylesheet, not a map host, so match the paid map SDK host precisely.
+assert(!headers.includes('maps.googleapis.com')&&!headers.includes('mapbox')&&!headers.includes('tile.')&&!headers.includes('openstreetmap'),'CSP must not add an embedded/paid map SDK or raster tile host');
+assert(headers.includes('https://scripts.stay22.com')&&headers.includes('https://widgets.stay22.com'),'stay22 map widget hosts must stay allow-listed in the CSP (REL-002: keep the map widget)');
 
 // --- Route wiring ---------------------------------------------------------
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;

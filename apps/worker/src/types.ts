@@ -18,6 +18,7 @@ export interface D1Database {
 
 export interface Env {
   DB: D1Database;
+  ASSETS?: { fetch(request: Request): Promise<Response> };
   SESSION_SECRET?: string;
   ALLOWED_ORIGINS?: string;
   LIVE_FLIGHTS_ENABLED?: string;

@@ -73,7 +73,7 @@ const chromeOptions = auth.buildInitializeOptions(
   "https://tripto.to",
 );
 assert.equal(chromeOptions.ux_mode, "popup");
-assert.equal(chromeOptions.use_fedcm_for_button, true);
+assert.equal("use_fedcm_for_button" in chromeOptions, false);
 assert.equal("login_uri" in chromeOptions, false);
 assert.equal("locale" in chromeOptions, false);
 const firefoxOptions = auth.buildInitializeOptions(
@@ -93,7 +93,7 @@ assert.equal(buttonOptions.type, "standard");
 assert.equal(buttonOptions.theme, "outline");
 assert.equal(buttonOptions.size, "large");
 assert.equal(buttonOptions.text, "continue_with");
-assert.equal(buttonOptions.shape, "rectangular");
+assert.equal(buttonOptions.shape, "pill");
 assert.equal(buttonOptions.logo_alignment, "left");
 assert.equal(buttonOptions.width, "400");
 assert.equal(buttonOptions.locale, "en");
@@ -203,6 +203,9 @@ function authHarness({ trips = [], storage = new Map(), mobile = false, screen =
     localStorage: { getItem: key => local.get(key) || null, setItem: (key, value) => local.set(key, value) },
     isSignedIn: () => state.account?.mode === "account",
     hydrateAppFromCache: () => false,
+    resolveRouteSelection: () => true,
+    applyRouteTripSelection: () => {},
+    canonicalizeAppRoute: () => {},
     selectRelevantTrip: rows => rows[0] || null,
     loadTripDetails: async () => {},
     render() {}, maybeLoadScreenData() {}, showToast() {},

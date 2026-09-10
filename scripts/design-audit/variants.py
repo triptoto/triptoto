@@ -36,7 +36,7 @@ for screen,id in [('add-trip',None),('add-booking',None),('form','flight'),('day
 b.viewport(512,340)
 for screen,id in [('form','trip'),('collection','audit-neighborhood')]:
  scenario(screen,id);record('reflow-'+screen)
-scenario('collection','audit-neighborhood');b.click('[data-action="stop-menu"][data-id="audit-stop-2"]');record('reflow-popup')
+scenario('collection','audit-neighborhood');b.click('longpress:[data-longpress-stop][data-id="audit-stop-2"]');record('reflow-popup')
 for i in range(0,len(flat),4):
  batch=flat[i:i+4];im=Image.new('RGB',(390*len(batch),874),'#ddd');d=ImageDraw.Draw(im)
  for x,file in enumerate(batch):

@@ -22,6 +22,7 @@ const ctx = vm.createContext({
   collectionForItem: id => ['neighborhood-1', 'neighborhood-alias'].includes(id) ? { id: 'neighborhood-1', collection_type: 'neighborhood' } : null,
   collectionConfig: () => ({ label: 'Neighborhood', stop: 'place' }),
   canEditCurrentTrip: () => ctx.state.trip?.role !== 'viewer',
+  totalNotificationCount: () => 0,
 });
 vm.runInContext(readFileSync('public/mobile-routes.js', 'utf8'), ctx);
 ctx.routeUrl = (screen, id) => ctx.TriptoRoutes.pathFor(screen, id);
@@ -31,7 +32,20 @@ const html = ctx.navigationSheet();
 assert.deepEqual([...html.matchAll(/href="([^"]+)"/g)].map(match => match[1]), ['/trips', '/trip-options', '/before-you-go', '/account']);
 assert.equal((html.match(/<a /g) || []).length, 4, 'The menu has exactly four destinations');
 assert.match(html, /data-screen="account" aria-current="page"/);
-assert.match(ctx.HeaderNavigation(), /data-action="open-add"/);
+assert.equal(ctx.HeaderNavigation(), '', 'Account is a focused destination and must not carry global header actions');
+for (const screen of ['timeline']) {
+  ctx.state.screen = screen;
+  assert.match(ctx.HeaderNavigation(), /data-action="open-add"/, `${screen} keeps its contextual Add action`);
+  assert.match(ctx.HeaderNavigation(), /data-action="open-navigation"/, `${screen} keeps global navigation`);
+}
+ctx.state.screen = 'bookings';
+assert.match(ctx.HeaderNavigation(), /data-action="open-add-booking"/, 'Bookings adds a booking directly');
+assert.match(ctx.HeaderNavigation(), /data-action="open-navigation"/, 'Bookings keeps global navigation');
+for (const screen of ['weather', 'currency', 'esim', 'trip-map', 'health', 'ready', 'documents', 'help', 'account', 'trip-options', 'checklist', 'form', 'flight', 'hotel', 'train', 'plan', 'traveler', 'import', 'import-review', 'sync', 'collaboration', 'join']) {
+  ctx.state.screen = screen;
+  assert.equal(ctx.HeaderNavigation(), '', `${screen} is focused and must not show unrelated Add or Menu actions`);
+}
+ctx.state.screen = 'account';
 // Menu actions must target the record actually displayed by each detail route,
 // not a subtype label or a stale route slug. Other pages get no booking actions.
 Object.assign(ctx.state, {
@@ -90,10 +104,11 @@ for (const [key, value] of [['error', 'Load failed'], ['googleAuthHandoffStatus'
 ctx.state.trip.role = 'viewer';
 assert.doesNotMatch(ctx.navigationSheet(), /data-action="edit-collection"/);
 assert.doesNotMatch(ctx.HeaderNavigation(), /data-action="collection-add-place"/);
-assert.match(ctx.HeaderNavigation(), /data-action="open-add"/, 'View-only users still see the same header; the action guard explains the restriction');
+assert.match(ctx.HeaderNavigation(), /data-action="open-navigation"/, 'View-only collection members can still navigate away');
+assert.doesNotMatch(ctx.HeaderNavigation(), /data-action="open-add"/, 'View-only collection members must not see an unavailable Add action');
 ctx.state.trip = null;
 assert.doesNotMatch(ctx.navigationSheet(), /aria-label="Plan actions"/);
-assert.match(ctx.HeaderNavigation(), /aria-label="Create trip"/);
+assert.match(ctx.HeaderNavigation(), /data-action="open-navigation"/, 'A collection without a selected trip keeps only navigation');
 const inventory = ctx.tripsPageHeader();
 assert.match(inventory, /data-screen="account"/);
 assert.match(inventory, /data-action="create-trip"/);

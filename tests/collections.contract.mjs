@@ -77,16 +77,18 @@ assert(!collectionScreen.includes('primaryCta(`Add ${cfg.stop}`'),'collection de
 assert(collectionScreen.includes('class="collection-timeline-scroll"')&&collectionScreen.includes('aria-label="Places timeline"'),'collection stop list must have its own labelled scrolling region');
 assert(/html body \.phone-app > \.collection-page > main\.focused-page\{[^}]*overflow:hidden/.test(css),'collection page shell must keep its context fixed while the list scrolls');
 assert(/\.collection-page \.collection-timeline-scroll\{[^}]*flex:1 1 auto[^}]*overflow-y:auto/.test(css),'only the collection timeline list must own vertical scrolling');
-assert(collectionScreen.includes('class="mini-stop__hit"')&&collectionScreen.includes('data-action="stop-menu"'),'each mini-timeline row must remain an interactive stop menu action');
+assert(collectionScreen.includes('class="mini-stop__hit"')&&collectionScreen.includes('data-action="open-stop-detail"')&&collectionScreen.includes('data-longpress-stop'),'each mini-timeline row must open details on tap and expose actions on long press');
+assert(app.includes('function collectionStopDetailScreen()')&&app.includes('case "collection-stop": html = collectionStopDetailScreen();'),'standalone Neighborhood places need a detail page');
+assert(app.includes('stop ? "stop-menu"')&&app.includes('if (linkedId) openTimelineItemDetail(linkedId)'),'long press must open place actions while linked rows reuse normal Timeline detail pages');
 assert(!collectionScreen.includes('mini-stop__more'),'mini-timeline rows must not show chevrons; the row itself remains the action');
 assert(!css.includes('.collection-page .mini-stop__more{'),'mini-timeline must not reserve a chevron affordance');
 assert(css.includes('.collection-page .mini-stop__content{grid-column:4;display:grid;align-content:center;gap:1px;min-width:0;padding:12px 0 12px 14px;border:0}'),'mini-timeline copy must use the released chevron space');
 assert(css.includes('html body .phone-app > .collection-page > .app-bar .app-bar-title strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'),'narrow Neighborhood headers must truncate instead of wrapping beside their actions');
 
-// --- Client routes: planning + collection + forms, forms matched first ---
-assert(clientRoutes.includes('planning: "/planning"')&&clientRoutes.includes('collection: "/collections"'),'planning/collection routes missing');
+// --- Client routes: collection + forms, forms matched first ---
+assert(!clientRoutes.includes('planning: "/planning"')&&clientRoutes.includes('if (path === "/planning")')&&clientRoutes.includes('collection: "/collections"'),'retired Planning route or collection routes are incorrect');
 assert(clientRoutes.indexOf('/collections\\/new\\/')<clientRoutes.indexOf("for (const [screen, base] of Object.entries(DETAIL_PATHS))"),'collection-form parse must precede generic detail loop');
-assert(app.includes('case "planning": html = planningScreen();')&&app.includes('case "collection": html = collectionScreen();')&&app.includes('case "collection-form": html = collectionFormScreen();')&&app.includes('case "stop-form": html = stopFormScreen();'),'render switch missing collection screens');
+assert(!app.includes('function planningScreen()')&&!app.includes('case "planning":')&&app.includes('case "collection": html = collectionScreen();')&&app.includes('case "collection-form": html = collectionFormScreen();')&&app.includes('case "stop-form": html = stopFormScreen();'),'retired Planning overview remains or collection screens are missing');
 
 // --- Offline-first: mutations queue and a dedicated flusher replays them ---
 assert(app.includes('function flushCollectionsQueue')&&app.includes('await flushCollectionsQueue();'),'offline queue flusher for collections missing/not wired to online');
@@ -114,7 +116,7 @@ assert(routes.indexOf('deduped:true')<routes.indexOf('INSERT INTO planning_stops
 // stop also has local place details. This prevents a useful route/category
 // from disappearing behind an address, while a standalone stop stays concise.
 {
-  const start=app.indexOf('function collectionStopLinkedItem('),end=app.indexOf('\n\n  // The Planning Overview',start);
+  const start=app.indexOf('function collectionStopLinkedItem('),end=app.indexOf('\n\n  // A collection keeps manual stop order',start);
   const ctx={
     state:{timeline:[{id:'booking-1',title:'Dinner reservation'}],transport:[],stays:[]},
     PLACE_TYPE_OPTIONS:[['','Choose a type'],['restaurant','Restaurant']],

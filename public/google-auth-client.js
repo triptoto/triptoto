@@ -58,8 +58,6 @@
       };
     }
     options.ux_mode = "popup";
-    if (supportsGoogleFedCmButton(navigatorLike))
-      options.use_fedcm_for_button = true;
     return options;
   }
 
@@ -69,7 +67,7 @@
       theme: "outline",
       size: "large",
       text: "continue_with",
-      shape: "rectangular",
+      shape: "pill",
       logo_alignment: "left",
       width: "400",
       locale: "en",

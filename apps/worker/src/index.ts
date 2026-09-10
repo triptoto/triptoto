@@ -42,6 +42,34 @@ import { assignBookingEmail, dismissBookingEmail, listBookingEmails } from './ro
 import { refreshLiveFlight, updateLiveFlightMonitoring } from './routes/live-flights.ts';
 import { runScheduledLiveFlightRefresh } from './live-flights.ts';
 
+const APP_PATHS = [
+  /^\/(?:home|timeline|trips|add|day-plan|save-later|bookings|documents|ready-offline|trip-health|account|trip-map|weather|currency|trip-options|esim|before-you-go|help|travelers|pending-changes|collaboration|plan-idea)(?:\/.*)?$/,
+  /^\/(?:flights|hotels|trains|plans|collections|join)(?:\/.*)?$/,
+];
+const STATIC_ASSET_PATH = /\.(?:css|js|json|xml|txt|webmanifest|svg|png|jpg|jpeg|webp|ico|map)$/i;
+
+export async function frontendResponse(request: Request, env: Env, path: string): Promise<Response | null> {
+  if (!env.ASSETS || !['GET', 'HEAD'].includes(request.method)) return null;
+  const url = new URL(request.url);
+  if (path === '/' || path === '/index.html') return env.ASSETS.fetch(request);
+  if (path === '/privacy' || path === '/terms') {
+    url.pathname = `${path}.html`;
+    return env.ASSETS.fetch(new Request(url, request));
+  }
+  if (STATIC_ASSET_PATH.test(path)) return env.ASSETS.fetch(request);
+  if (APP_PATHS.some((pattern) => pattern.test(path))) {
+    url.pathname = '/index.html';
+    const shell = await env.ASSETS.fetch(new Request(url, request));
+    const headers = new Headers(shell.headers);
+    headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return new Response(request.method === 'HEAD' ? null : shell.body, { status: shell.status, statusText: shell.statusText, headers });
+  }
+  return new Response('Page not found.', {
+    status: 404,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' },
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     try {
@@ -73,6 +101,10 @@ export default {
       if (request.method === 'GET' && path === '/api/v1/currency') {
         await enforcePublicRateLimit(request,env,{action:'currency',limit:120,windowMs:60*60*1000});
         return currencyRates(request, env);
+      }
+      if (!path.startsWith('/api/')) {
+        const frontend = await frontendResponse(request, env, path);
+        if (frontend) return frontend;
       }
       if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-candidate-1' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {

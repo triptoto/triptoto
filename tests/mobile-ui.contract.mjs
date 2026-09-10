@@ -7,9 +7,9 @@ assert(index.includes('/shell-update.js?v=shell-refresh-v1')&&shellUpdate.includ
 assert(!index.includes('/airport-timezones.js')&&!index.includes('/places-provider.js')&&!index.includes('/places-search-worker.js'),'flow-specific search assets must stay lazy');
 assert(!index.includes('/app.js')&&!app.includes('/legacy.html')&&!sw.includes('/legacy.html'),'legacy presentation leaked into Product V2');
 assert(css.includes('--app-width:600px')&&css.includes('env(safe-area-inset-bottom)')&&css.includes('env(safe-area-inset-top)'),'mobile sizing or safe areas missing');
-assert(css.includes('--font-ui:-apple-system')&&css.includes('BlinkMacSystemFont')&&css.includes('--font-title:var(--font-ui)')&&css.includes('--font:var(--font-ui)')&&!css.includes('Nunito')&&!css.includes('"Inter"')&&!css.includes('"Geist"')&&!css.includes('DM Serif Display'),'unified Apple system font stack changed');
+assert(css.includes('--font-ui:"Noto Sans"')&&css.includes('BlinkMacSystemFont')&&css.includes('--font-title:var(--font-ui)')&&css.includes('--font:var(--font-ui)')&&!css.includes('Nunito')&&!css.includes('"Inter"')&&!css.includes('"Geist"')&&!css.includes('DM Serif Display'),'Noto Sans application font stack changed');
 assert(!index.includes('/vendor/dm-serif-display/')&&!index.includes('/vendor/geist/')&&!sw.includes('/vendor/dm-serif-display/')&&!sw.includes('/vendor/geist/'),'obsolete webfont remains in the application shell');
-assert(!privacy.includes('/vendor/dm-serif-display/')&&!terms.includes('/vendor/dm-serif-display/')&&!privacy.includes('/vendor/geist/')&&!terms.includes('/vendor/geist/')&&privacy.includes('--font:-apple-system')&&terms.includes('--font:-apple-system')&&privacy.includes('font-family:var(--font)')&&terms.includes('font-family:var(--font)'),'legal interface pages do not use the Apple system stack');
+assert(!privacy.includes('/vendor/dm-serif-display/')&&!terms.includes('/vendor/dm-serif-display/')&&!privacy.includes('/vendor/geist/')&&!terms.includes('/vendor/geist/')&&privacy.includes('--font:"Noto Sans"')&&terms.includes('--font:"Noto Sans"')&&privacy.includes('font-family:var(--font)')&&terms.includes('font-family:var(--font)'),'legal interface pages do not use Noto Sans');
 for(const selector of ['.trip-v2-selector strong','.trip-group .trip-row__copy strong','.journey-copy strong','.fd-title','.hotel-detail-screen .fd-flight','.booking-card[data-action="booking-detail"] strong','.booking-trip-group>h2','.quick-trip-context strong'])assert(css.includes(selector),`Apple title role missing: ${selector}`);
 for(const token of ['--type-display:32px','--type-route:40px','--type-screen:28px','--type-section:20px','--type-body:16px','--type-meta:14px','--type-label:12px'])assert(css.includes(token),`typography scale missing: ${token}`);
 for(const token of ['--weight-regular:400','--weight-medium:500','--weight-semibold:600','--weight-bold:700','--weight-extrabold:800'])assert(css.includes(token),`typography weight missing: ${token}`);
@@ -22,10 +22,12 @@ const tokenHex=name=>css.match(new RegExp(`--${name}:(#[0-9a-f]{6})`,'i'))?.[1];
 const luminance=hex=>{const rgb=hex.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.03928?value/12.92:((value+.055)/1.055)**2.4);return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]};
 const contrast=(foreground,background)=>{const a=luminance(tokenHex(foreground)),b=luminance(tokenHex(background));return(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
 for(const [foreground,background] of [['muted','paper'],['muted-soft','paper'],['accent','card'],['green','green-soft'],['amber','amber-soft'],['red','red-soft']])assert(contrast(foreground,background)>=4.5,`${foreground} text fails AA contrast on ${background}`);
-assert(index.includes('<html lang="en">')&&index.includes('<meta name="theme-color" content="#fbf8f7">')&&index.includes('<meta name="color-scheme" content="light">'),'single production shell must load without a theme class and use its real light canvas');
+assert(index.includes('<html lang="en" class="theme-beart">')&&index.includes('<meta name="theme-color" content="#0f1f29">')&&index.includes('<meta name="color-scheme" content="dark">'),'production shell must declare the single Night theme before first paint');
+assert(!css.includes('.theme-toggle')&&!app.includes('use-beart-theme')&&!app.includes('tripto_theme'),'Night must be the only appearance and expose no legacy theme switcher');
+assert(app.includes('function themeChromeColor()')&&app.includes('theme.setAttribute("content", themeChromeColor())'),'Night startup and welcome presentation must share a defined browser chrome color');
 assert(!/(?:theme-(?:harbor|slate|daylight|amethyst|crimson)|set-theme|theme-picker|theme-swatch)/.test(index+css+app),'obsolete multi-theme implementation remains');
 for(const oldColor of ['#141948','#2f3bab','#febf02','#f2f4f7','#f7f8fa'])assert(!css.toLowerCase().includes(oldColor)&&!manifest.toLowerCase().includes(oldColor),`old palette remains: ${oldColor}`);
-assert(manifest.includes('"background_color": "#FBF8F7"')&&manifest.includes('"theme_color": "#FBF8F7"'),'PWA palette is stale');
+assert(manifest.includes('"background_color": "#0F1F29"')&&manifest.includes('"theme_color": "#0F1F29"'),'PWA palette is stale');
 assert(css.includes('overflow-x:hidden')&&css.includes('overflow-x:clip'),'horizontal overflow protection missing');
 assert(css.includes('@media(prefers-reduced-motion:reduce)')&&css.includes('min-height:44px'),'motion or touch safety missing');
 const navFn=app.slice(app.indexOf('function HeaderNavigation('),app.indexOf('function totalNotificationCount('));
@@ -34,7 +36,7 @@ for(const label of ['All trips','Trip Options','To-Do List','Account'])assert(na
 assert(app.includes('function selectRelevantTrip(')&&app.includes('selectRelevantTrip(state.trips)'),'relevant-trip selection missing');
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;
 assert(router&&typeof router.parsePath==='function'&&typeof router.pathFor==='function','clean route module missing');
-assert(index.includes('<meta name="robots" content="index, follow">')&&!index.includes('<link rel="canonical"')&&index.includes('application/ld+json')&&index.includes('"@type":"WebSite"'),'root shell must start with crawlable metadata and a public WebSite schema');
+assert(index.includes('<meta name="robots" content="index, follow">')&&index.includes('<link rel="canonical" href="https://tripto.to/">')&&index.includes('application/ld+json')&&index.includes('"@type":"WebSite"'),'root shell must start with crawlable metadata, a canonical URL, and a public WebSite schema');
 assert(app.includes('function updateSeoMeta()')&&app.includes('noindex, nofollow')&&app.includes('canonical = document.createElement("link")'),'app routes must update title, description, robots, and canonical metadata');
 assert(app.includes('screen === "home" && !routeId && ["/", "/app", "/index.html"].includes(location.pathname)'),'public home entry points must keep the root canonical URL');
 assert(robots.includes('Allow: /')&&robots.includes('Disallow: /trips')&&robots.includes('Disallow: /collections')&&robots.includes('Sitemap: https://tripto.to/sitemap.xml'),'private app routes must be excluded while public sitemap discovery stays enabled');
@@ -42,7 +44,7 @@ assert(sitemap.includes('<loc>https://tripto.to/</loc>')&&sitemap.includes('<loc
 assert(privacy.includes('name="description"')&&privacy.includes('rel="canonical" href="https://tripto.to/privacy"')&&terms.includes('name="description"')&&terms.includes('rel="canonical" href="https://tripto.to/terms"'),'public legal pages need unique SEO metadata');
 const routeCases=[
   ['timeline',null,'/timeline'],['account',null,'/account'],['trips',null,'/trips'],
-  ['add-booking',null,'/bookings/add'],['bookings',null,'/bookings'],
+  ['add-booking',null,'/bookings/add'],
   ['flight','flight-1','/flights/flight-1'],['hotel','stay-1','/hotels/stay-1'],
   ['train','train-1','/trains/train-1'],['plan','plan-1','/plans/plan-1'],
   ['documents',null,'/documents'],['ready',null,'/ready-offline'],
@@ -54,10 +56,11 @@ const routeCases=[
   ['import-history',null,'/bookings/import/history'],['sync',null,'/pending-changes'],
   ['form','trip','/trips/new'],['form','traveler','/travelers/new'],
   ['form','checklist','/before-you-go/new'],['form','flight','/bookings/new/flight'],
-  ['planning',null,'/planning'],['collection','col-1','/collections/col-1'],
+  ['collection','col-1','/collections/col-1'],
   ['collection-form','new:neighborhood','/collections/new/neighborhood'],
   ['collection-form','col-1','/collections/col-1/edit'],
   ['stop-form','col-1','/collections/col-1/add-place'],
+  ['collection-stop','col-1::stop-1','/collections/col-1/places/stop-1'],
   ['add-trip',null,'/add'],['day-plan',null,'/day-plan'],['save-later',null,'/save-later'],
   ['day-plan-form','new:attraction','/day-plan/new/attraction'],
   ['day-plan-form','act-1','/day-plan/item/act-1'],
@@ -66,6 +69,7 @@ assert(router.slugify('Museum & Culture — Łódź')==='museum-and-culture-lodz
 assert(router.pathFor('timeline','rome-2026')==='/trips/rome-2026','trip timelines must use readable deep links');
 const readableTripRoute=router.parsePath('/trips/rome-2026');
 assert(readableTripRoute.screen==='timeline'&&readableTripRoute.id==='rome-2026'&&readableTripRoute.tripRoute===true,'readable trip deep link must resolve as a timeline route');
+assert(router.parsePath('/planning').screen==='timeline'&&router.parsePath('/planning').redirect===true,'retired Planning overview must redirect to the trip timeline');
 for(const [screen,id,path] of routeCases){
   assert(router.pathFor(screen,id)===path,`clean path mismatch for ${screen}`);
   const parsed=router.parsePath(path);
@@ -73,6 +77,8 @@ for(const [screen,id,path] of routeCases){
 }
 const retiredLocalGuide=router.parsePath('/local-guide');
 assert(retiredLocalGuide.screen==='trip-options'&&retiredLocalGuide.redirect===true,'retired Local Guide route must redirect to Trip Options');
+const retiredBookings=router.parsePath('/bookings');
+assert(retiredBookings.screen==='timeline'&&retiredBookings.redirect===true,'retired booking inventory must redirect to the trip timeline');
 assert(!app.includes('hashchange')&&!app.includes('const hash = "#"')&&!app.includes('"#timeline"'),'active hash routing remains in the application');
 // A collection can be opened from the main timeline by its trip-item ID while
 // its canonical record has a distinct collection ID. Resolve both aliases so
@@ -87,7 +93,7 @@ for(const action of ['timeline-detail','booking-detail','notification-open'])ass
 {const start=app.indexOf('function applyTripDetails('),end=app.indexOf('  // Imports that still need',start),state={timeline:[{id:'old-timeline'}],timelineDayKey:'old',checklist:[{id:'old-checklist'}],brain:{id:'old-brain'},impacts:[{id:'old-impact'}],transport:[{id:'old-transport'}],liveFlights:{available:true},stays:[{id:'old-stay'}],locations:[{id:'old-location'}],travelers:[{id:'old-traveler'}],connections:[{id:'old-connection'}],health:{id:'old-health'},bookingDetails:[{id:'old-detail'}],contacts:[{id:'old-contact'}],syncStatus:{id:'old-sync'},imports:[{id:'old-import'}],changes:[{id:'old-change'}],collections:[{id:'old-collection'}],collectionStops:[{id:'old-stop'}]},context={state,normalizeChecklist:value=>value};runInNewContext(app.slice(start,end),context);const results=Array.from({length:17},()=>({status:'rejected'}));results[0]={status:'fulfilled',value:{items:[{id:'fresh-timeline'}]}};results[4]={status:'fulfilled',value:{transport:[{id:'fresh-transport'}],liveFlights:{available:false}}};context.applyTripDetails(results);assert(state.timeline[0].id==='fresh-timeline'&&state.transport[0].id==='fresh-transport','successful trip sections were not applied during a partial refresh');assert(state.stays[0].id==='old-stay'&&state.collections[0].id==='old-collection'&&state.syncStatus.id==='old-sync','a rejected optional section erased verified trip data');}
 assert(app.includes('listLocalDocs(tripId).catch(() => [])'),'unavailable IndexedDB must not block the trip-detail load');
 assert(app.includes('function routeHistoryState')&&app.includes('triptoIndex')&&app.includes('function goBackFromCurrentScreen'),'back navigation must use an app-owned history index');
-for(const [screen,fallback] of [['home','trips'],['trips','timeline'],['trip-options','timeline'],['travelers','account'],['traveler','travelers'],['checklist','timeline'],['import','add-booking'],['import-review','import'],['import-history','import'],['booking-email-inbox','bookings'],['sync','trip-options'],['collection','planning'],['collection-form','day-plan'],['stop-form','collection'],['day-plan-form','day-plan'],['save-later','add-trip'],['add-to-plan','save-later'],['flight','bookings'],['hotel','bookings'],['plan','bookings']]) {
+for(const [screen,fallback] of [['home','trips'],['trips','timeline'],['trip-options','timeline'],['travelers','account'],['traveler','travelers'],['checklist','timeline'],['import','add-booking'],['import-review','import'],['import-history','import'],['booking-email-inbox','bookings'],['sync','trip-options'],['collection','timeline'],['collection-form','day-plan'],['stop-form','collection'],['collection-stop','collection'],['day-plan-form','day-plan'],['save-later','add-trip'],['add-to-plan','save-later'],['flight','timeline'],['hotel','timeline'],['plan','timeline']]) {
   const entry = screen.includes('-') ? `"${screen}": "${fallback}"` : `${screen}: "${fallback}"`;
   assert(app.includes(entry),`back fallback missing for ${screen}`);
 }
@@ -97,11 +103,11 @@ assert(app.includes('startupRoute.redirect || location.hash || history.state?.tr
 for(const [action,handler] of [['close-doc-viewer','close-doc-viewer'],['close-sheet','close-sheet'],['return-trip-setup','return-trip-setup'],['close-driver','close-driver']]) {
   assert(app.includes(`data-action="${action}"`)&&app.includes(`case "${handler}"`),`special back/close affordance missing for ${action}`);
 }
-assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v262-day-caption'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
+assert(sw.includes('/canonical-host.js')&&sw.includes('/mobile-routes.js')&&!sw.includes("'/airport-timezones.js'")&&sw.includes('/google-auth-client.js')&&sw.includes('/manual-booking-attachments.js')&&sw.includes('/icons/tripto-system.svg')&&sw.includes('/mobile-app.min.css')&&sw.includes('/mobile-app.min.js')&&sw.includes('tripto-shell-product-v348-prod-release'),'clean route, canonical host, lazy search, optimized shell, manual-attachment, icon, booking-email inbox, live-flight, Google-auth, typography, currency, or shell cache contract changed');
 const welcome=app.slice(app.indexOf('function firstRunScreen('),app.indexOf('function timelineScreen('));
-for(const copy of ['Your trip.','In good order.','Flights, stays, and everything between.','Continue with Google','Take a tour','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
-assert(app.includes('welcome-features ds-grouped-card')&&!app.includes('welcome-arc')&&!app.includes('welcome-orbit-dot'),'Welcome must show the shared feature card without decorative artwork');
-assert(css.includes('background:var(--paper);color:var(--ink)')&&css.includes('.welcome-features')&&css.includes('--welcome-weight:700')&&!css.includes('--welcome-serif'),'Welcome must use the shared grouped surface and Apple interface typography');
+for(const copy of ['Your trip.','Beautifully together.','Travel feels lighter here','Keep every reservation, plan, and idea','Continue with Google','See how it works','google-signin-button','first-run-google-preview'])assert(welcome.includes(copy),`Welcome missing: ${copy}`);
+assert(app.includes('class="welcome-route"')&&app.includes('welcome-feature--bookings')&&app.includes('welcome-feature--plans')&&app.includes('welcome-feature--ideas'),'Welcome must include the themed journey and feature treatment');
+assert(css.includes('height:100svh')&&css.includes('overflow:hidden')&&css.includes('.welcome-features')&&css.includes('welcome-feature--bookings')&&css.includes('--welcome-weight:700')&&!css.includes('--welcome-serif'),'Welcome must use the compact native mobile theme and Apple interface typography');
 assert(!welcome.includes('bottomNav(')&&app.includes('(state.account?.mode || "guest") !== "account"')&&app.includes('state.trips.length === 0'),'Welcome gate/navigation invalid');
 assert(app.includes('["empty", "empty-offline", "empty-reduced-motion"].includes(QA_STATE)'),'isolated first-run visual QA state missing');
 assert(/\/google-auth-client\.js\?v=google-auth-ios-v\d+/.test(index)&&index.indexOf('/google-auth-client.js')<index.indexOf('/mobile-app.min.js')&&app.includes('/api/v1/auth/google/challenge')&&app.includes('/api/v1/auth/google')&&app.includes('/api/v1/auth/google/exchange'),'Google sign-in or secure iOS redirect handoff wiring missing');
@@ -125,7 +131,7 @@ for(const selector of ['.trip-create-head::after','.trip-create-route__plane','.
 for(const selector of ['.trips-app-bar .trips-header-add','.trip-list-row-wrap .trip-list-row','.trip-create-screen .trip-create-head','.trip-create-screen .trip-create-destination:not(.is-fullscreen) .form-field input'])assert(css.includes(selector),`Unified Trips/Create Trip visual rule missing: ${selector}`);
 for(const selector of ['.trip-create-destination.is-fullscreen','.trip-create-search-guide','.trip-create-destination.is-fullscreen .place-option','.trip-create-destination.is-fullscreen .trip-create-destination__clear'])assert(css.includes(selector),`full-screen destination design missing: ${selector}`);
 assert(css.includes('.full-screen-picker,.trip-create-destination.is-fullscreen{--picker-bg:var(--paper);--picker-surface:var(--card);--picker-ink:var(--ink);--picker-accent:var(--accent)'),'trip pickers must share the warm travel canvas, white surface, ink, and accent system');
-assert(css.includes('height:100svh;min-height:0;margin:0;padding:0 16px calc(18px + env(safe-area-inset-bottom) + var(--keyboard-offset))')&&!css.includes('calc(100svh - var(--keyboard-offset))'),'destination search must cover the complete viewport while reserving keyboard space inside the screen');
+assert(css.includes('height:100svh;min-height:0;margin:0 auto;padding:0 16px calc(18px + env(safe-area-inset-bottom) + var(--keyboard-offset))')&&!css.includes('calc(100svh - var(--keyboard-offset))'),'destination search must cover the complete viewport while reserving keyboard space inside the screen');
 assert(css.includes('.trip-create-details>.date-range-field legend{position:absolute'),'Travel dates must remain accessible without a visible label');
 assert(app.includes('function dateRangeField(')&&app.includes('data-action="open-date-range"')&&app.includes('data-action="select-range-day"')&&app.includes('data-action="apply-date-range"'),'single-calendar date range controls missing');
 assert(app.includes('full-screen-picker date-range-screen')&&app.includes('data-action="clear-date-range"')&&!app.includes('bottomSheet("date-range"'),'date selection must be a dedicated full-screen task rather than a popup');
@@ -133,7 +139,7 @@ const datePicker=app.slice(app.indexOf('function dateRangeSheet()'),app.indexOf(
 assert(datePicker.includes('range-picker__instruction')&&!datePicker.includes('range-picker__intro')&&!datePicker.includes('range-picker__arrow'),'date picker must keep one compact instruction and avoid duplicated headings or decorative color blocks');
 assert(datePicker.includes('"Select dates"')&&datePicker.includes('"Confirm dates"')&&datePicker.includes('"Your travel window is ready."'),'date picker must use concise title, guidance, and confirmation copy');
 const tripSetup=app.slice(app.indexOf('function tripSetupReadyScreen()'),app.indexOf('function addSheet()'));
-for(const copy of ['Plan your trip',"Still haven't booked the flights?",'Still looking for a place to stay?','Need an eSIM?','Compare routes on Aviasales','Browse stays on Booking.com','Get connected before you land','Partner links may earn Tripto a commission at no extra cost.'])assert(tripSetup.includes(copy),`post-dates trip setup missing: ${copy}`);
+for(const copy of ['Review your trip','Check your trip details','You can change these details later.','Plan the rest of your trip','Find a flight','Find a place to stay','Get an eSIM','Compare routes on Aviasales','Browse stays on Booking.com','Connect before you land','Partner links may earn Tripto a commission at no extra cost.'])assert(tripSetup.includes(copy),`post-dates trip setup missing: ${copy}`);
 assert(app.includes('state.sheet = "trip-setup-ready"')&&tripSetup.includes('target="_blank"')&&tripSetup.includes('routeUrl("esim")')&&tripSetup.includes('sponsored ')&&!app.includes('complete-trip-setup-partner')&&!app.includes('afterTripCreatePartner')&&!app.includes('afterTripCreateScreen'),'post-dates recommendations must open separately without creating the trip');
 assert((tripSetup.match(/tool\("trip-setup-tool--/g)||[]).length===3,'all three post-dates recommendations must use the separate-tab link component');
 assert(app.includes('if (state.sheet === "trip-setup-ready") ensureStay22().catch(() => {})'),'Stay22 must enhance the prepared stay link without blocking its direct fallback');
@@ -144,7 +150,7 @@ for(const selector of ['.full-screen-picker{','.full-screen-picker__bar{','.rang
 assert(css.includes('.full-screen-picker__back{width:44px;height:44px;')&&css.includes('.full-screen-picker__clear{min-width:52px;min-height:44px')&&css.includes('.range-day{position:relative;display:grid;place-items:center;min-width:0;min-height:44px'),'full-screen date controls must keep 44px touch targets');
 assert(app.includes('dateRangeField("startsOn", "endsOn"')&&app.includes('dateRangeField("checkInDate", "checkOutDate"'),'trip and hotel ranges are not using the shared calendar');
 assert(!app.includes('tripDateField(')&&!css.includes('.trip-date-control'),'old two-calendar presentation remains');
-assert(app.includes('kind==="trip"?"add-booking"'),'Create Trip does not continue to Add Booking');
+assert(app.includes('kind==="trip"?"timeline"'),'Create Trip must land on the new trip timeline behind its confirmation');
 assert(app.includes('sessionStorage.setItem(quickDraftKey(kind)')&&app.includes('Discard changes?'),'form recovery missing');
 const add=app.slice(app.indexOf('function addBookingScreen('),app.indexOf('function manualBookingSheet('));
 for(const copy of ['ADD A BOOKING','Add a booking','For travel you\'ve already reserved.','Already have a confirmation?','Upload a file','Forward an email'])assert(add.includes(copy),`direct manual-add page missing: ${copy}`);
@@ -215,7 +221,13 @@ assert(app.includes('function timelineContextCard('),'Timeline priority context 
 assert(app.includes('if (isEmptyTripSetup()) return "";'),'empty trip must not surface premature health warnings');
 assert(app.includes('timeline-empty__eyebrow">Start building'),'empty-trip setup hierarchy missing');
 assert(css.includes('.timeline-page--empty')&&css.includes('min-height:calc(100dvh - var(--header-h) - var(--nav-height))')&&css.includes('padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom) + 6vh)'),'empty timeline viewport sizing missing');
+assert(css.includes('.timeline-page--empty{align-content:start;padding-top:var(--space-5)'),'the empty-trip builder must start below the trip header instead of being vertically centered');
 assert(app.includes('timeline-empty--intent')&&app.includes('addIntentRows()'),'Product V2 empty-trip structure missing');
+assert(css.includes('html body .add-intent-page .trip-create-head__copy{max-width:35ch;margin-inline:auto;text-align:center}')&&css.includes('html body .add-intent-page .trip-create-head__sub{max-width:35ch;margin-inline:auto}'),'all Add to trip hero copy must be centered above its action rows');
+assert(routeSource.includes('if (path === "/bookings")\n      return { screen: "timeline", id: null, redirect: true };')&&app.includes('case "bookings":\n          html = timelineScreen();'),'the retired bookings inventory must redirect to the trip timeline');
+assert(app.includes('function timelineVisualTone(glyph)')&&app.includes('fd-card fd-card--tone-${esc(heroTone)}'),'detail hero cards must use the same semantic tone as their timeline marker');
+assert(css.includes('html body .phone-app>.screen>.app-bar .app-bar-title{visibility:hidden}')&&css.includes('.fd-card--tone-transfer{background:var(--transfer-soft)}'),'page-name removal or timeline-colour detail card system regressed');
+assert(css.includes('html body .flight-detail-screen .flight-detail-stack>.fd-card{background:var(--flight-soft)!important}')&&css.includes('html body .train-detail-screen .detail-content>.fd-card{background:var(--transfer-soft)!important}')&&css.includes('html body .hotel-detail-screen .detail-content>.fd-card{background:var(--stay-soft)!important}'),'every booking detail hero must retain its matching timeline colour after the dark-detail reset');
 for(const concept of ['need attention','Now','Next'])assert(app.includes(concept),`Timeline state missing: ${concept}`);
 assert(app.includes('timeline-day__header')&&app.includes('journey-event journey-event--${phase}')&&app.includes('timelineDay(starts, zone)'),'Timeline structure/local grouping missing');
 assert(app.includes('showTimelineStatus = !["confirmed", "booked", "complete", "completed"].includes(statusKey)')&&!css.includes('.journey-event--confirmed .journey-meta'),'confirmed Timeline events must not repeat a green status line');
@@ -231,7 +243,7 @@ assert(outbound?.departure_location_id==='termini'&&outbound?.arrival_location_i
 assert(!JSON.stringify(demo).includes('Venice'),'unreachable Venice stop leaked into the Rome demo');}
 assert(app.includes('timeline-screen--ribbon')&&app.includes('timeline-ribbon')&&css.includes('.timeline-screen--ribbon .timeline-day')&&css.includes('.header-navigation'),'selected production timeline and navigation system missing');
 assert(css.includes('.header-navigation>.icon-button')&&css.includes('min-width:44px;min-height:44px')&&css.includes('.bottom-sheet--navigation'),'navigation must use shared, accessible header controls and the compact sheet');
-for(const token of ['--timeline-trip-title-size:clamp(24px,6.7vw,28px)','--timeline-booking-title-size:clamp(15px,4vw,16px)','--timeline-metadata-size:clamp(13px,3.4vw,14px)','--timeline-status-size:clamp(11px,3.1vw,12px)','--timeline-time-size:clamp(12px,3.4vw,13px)','--timeline-day-size:clamp(14px,3.85vw,16px)'])assert(css.includes(token),`Timeline typography role missing: ${token}`);
+for(const token of ['--timeline-trip-title-size:clamp(24px,6.7vw,28px)','--timeline-booking-title-size:clamp(16px,4.3vw,17px)','--timeline-metadata-size:clamp(13px,3.4vw,14px)','--timeline-status-size:clamp(11px,3.1vw,12px)','--timeline-time-size:clamp(13px,3.6vw,14px)','--timeline-day-size:clamp(14px,3.85vw,16px)'])assert(css.includes(token),`Timeline typography role missing: ${token}`);
 const timelineFn=app.slice(app.indexOf('function timelineScreen('),app.indexOf('function patchTimelineLiveStatus('));
 assert(timelineFn.includes('data-action="switch-trip"')&&timelineFn.includes('notifyAction()')&&!timelineFn.includes('data-action="open-trip-menu"'),'Timeline header must use the trip selector and Notifications, not duplicate Trip options');
 assert(app.includes('function tripOptionsScreen(')&&app.includes('case "trip-options": html = tripOptionsScreen()')&&app.includes('route("trip-options")')&&app.includes('data-screen="documents"')&&!app.includes('data-screen="local-guide"'),'full-page trip options (weather/currency/map/eSIM/documents/collaboration/edit/help) missing or retired Local Guide still exposed');
@@ -244,6 +256,7 @@ assert(flightForm.includes('type="hidden" name="departureTimezone"')&&flightForm
 assert(!flightForm.includes('quickField("departureTimezone"')&&!flightForm.includes('quickField("arrivalTimezone"'),'traveler-facing flight timezone field remains');
 assert(app.includes('placeTimezoneForInput(')&&app.includes('Select a known airport or enter its time zone.'),'deterministic airport timezone recovery missing');
 assert(css.includes('.form-fields--date-time,.form-fields--activity-time{grid-column:1/-1')&&css.includes('.date-suggestions button{min-height:44px'),'date/time layout or touch targets regressed');
+assert(css.includes('.manual-booking-form .manual-route-card{grid-template-columns:minmax(0,1fr)!important')&&css.includes('.manual-booking-form .manual-route-card__line{display:none}')&&css.includes('.manual-booking-form .form-fields--date-time,\nhtml body .manual-booking-form .form-fields--activity-time{grid-template-columns:minmax(0,1fr)!important'),'manual booking forms must keep routes and date/time controls readable in one phone-width column');
 assert(app.includes('Nothing was overwritten.')&&app.includes('Review pending changes before removing local data.'),'sync safety missing');
 assert(app.includes('method:"POST",body:JSON.stringify({title:fd.get("title"),category:fd.get("category"),priority:fd.get("priority")})'),'native checklist creation missing');
 assert(app.includes('data-edit-version')&&app.includes('method:editId?"PATCH":"POST"'),'native traveler editing missing');

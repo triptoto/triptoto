@@ -88,6 +88,52 @@
   --ds-focus:0 0 0 3px color-mix(in srgb,var(--accent) 24%,transparent);
 }
 
+/* ============================================================================
+   TRIPTO NIGHT THEME. This is the product's single visual appearance. The
+   legacy theme-beart class name remains to avoid a risky selector migration.
+   Every screen is driven by these tokens; type, rhythm and shape stay shared.
+   ========================================================================== */
+html.theme-beart{
+  color-scheme:dark;
+  --navy:#f1f5f9;
+  --indigo:#6ea8ff;
+  --yellow:#f59e0b;
+  --paper:#0f1f29;
+  --card:#22333d;
+  --surface:#2b3f4a;
+  --ink:#f1f5f9;
+  --ink-strong:#ffffff;
+  --muted:#aeb9c8;
+  --muted-soft:#97a3b4;
+  --line:transparent;
+  --line-strong:#465875;
+  --blue-soft:#2b3f5c;
+  --icon:#cbd5e1;
+  --green:#34d399;
+  --green-soft:#21503f;
+  --amber:#fbbf24;
+  --amber-soft:#4d3d28;
+  --red:#f87171;
+  --red-soft:#4d2a36;
+  --chrome:#0f1f29;
+  --chrome-line:transparent;
+  --accent:#f59e0b;
+  --accent-ink:#0f172a;
+  --next:#f59e0b;
+  --fab:#f59e0b;
+  --fab-ink:#0f172a;
+  --flight-soft:#2b3f5c;
+  --transfer-soft:#4d3d28;
+  --stay-soft:#21503f;
+  --activity-soft:#39305c;
+  --food-soft:#4d2a36;
+  --timeline-rail:#465875;
+  --shadow-card:0 18px 40px -26px rgba(0,0,0,.6),0 2px 10px -6px rgba(0,0,0,.45);
+  --shadow-soft:0 12px 28px -22px rgba(0,0,0,.5);
+  --ds-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+html.theme-beart{background:var(--paper)}
+
 /* Offline city and airport search. The dataset loads only after this control is used. */
 .form-field:has(> [role="combobox"]){
   position: relative;
@@ -238,7 +284,7 @@
 }
 
 *{box-sizing:border-box}
-html{background:var(--paper);color-scheme:light}
+html{background:var(--paper);color-scheme:dark}
 html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-x:clip;font-family:var(--font);font-optical-sizing:auto;font-synthesis:none;color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 body{background:var(--paper);overscroll-behavior-y:none}
 body,button,input,select,textarea{font-family:var(--font)}
@@ -481,8 +527,10 @@ button:active{transform:scale(.985)}
 .section-head{display:flex;align-items:center;justify-content:space-between}
 .section-head .section-label{margin-bottom:9px}
 .text-action{min-height:44px;padding:0;border:0;background:transparent;color:var(--indigo);font-size:14px;font-weight:600}
+.text-action--danger{color:var(--red)}
+.text-action--danger:active{opacity:.6}
 .primary-cta,.mobile-primary-action,.first-run-how-done{
-  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:340px;margin-inline:auto;min-height:var(--button-primary-height);padding:0 18px;border:0;border-radius:var(--radius-md);background:var(--accent);color:var(--accent-ink);font-weight:700;text-decoration:none
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:var(--button-primary-height);padding:0 18px;border:0;border-radius:var(--radius-md);background:var(--accent);color:var(--accent-ink);font-weight:700;text-decoration:none
 }
 .primary-cta{justify-content:space-between}
 .cta-left{display:flex;align-items:center;gap:10px}
@@ -523,6 +571,10 @@ button:active{transform:scale(.985)}
 .wx-place-chip .ph-svg,.wx-place-chip .ph{color:var(--muted)}
 .wx-place-chip.is-active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .wx-place-chip.is-active .ph-svg,.wx-place-chip.is-active .ph{color:var(--accent-ink)}
+.wx-place-context{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 2px;color:var(--ink)}
+.wx-place-context>span{display:grid;place-items:center;width:32px;height:32px;border-radius:var(--radius-control);background:var(--activity-soft);color:var(--accent)}
+.wx-place-context>strong{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.wx-place-context>small{color:var(--muted);font-size:14px}
 .wx-block{flex:0 0 auto;padding:10px 0 4px;border-top:1px solid var(--line)}
 .wx-block--days{flex:0 0 auto;display:flex;flex-direction:column}
 .wx-block__title{margin:0 0 6px;padding:0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -670,7 +722,7 @@ button:active{transform:scale(.985)}
 .join-accept .mobile-primary-action,.join-accept .mobile-secondary-action{width:100%;max-width:340px}
 .sheet-option--danger strong{color:var(--ink)}
 .sheet-option--danger .info-icon{background:transparent;color:var(--red)}
-.mobile-danger-action{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:340px;margin-inline:auto;min-height:var(--button-secondary-height);padding:0 16px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:600}
+.mobile-danger-action{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:var(--button-secondary-height);padding:0 16px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:600}
 .form-save-bar .mobile-danger-action{margin-top:8px}
 .form-save-bar .mobile-primary-action{background:#fff !important;color:var(--ink) !important}
 .form-save-bar .trip-delete-text{color:#fff;opacity:.86}
@@ -687,6 +739,7 @@ button:active{transform:scale(.985)}
 .document-row__remove:active{color:var(--red)}
 .trip-v2-actions{display:flex;align-items:center;gap:2px}
 .notify-button{position:relative}
+.header-navigation__menu{position:relative}
 .import-history-item{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;border-bottom:1px solid var(--line)}
 .import-history-item:last-child{border-bottom:0}
 .import-history-item .travel-row{border-bottom:0}
@@ -834,6 +887,11 @@ button:active{transform:scale(.985)}
 /* Flight detail — one cohesive card system (hero card + grouped list card) */
 .fd-card,.fd-list{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:none}
 .fd-card{color:var(--navy);padding:12px 15px}
+.fd-card--tone-flight{background:var(--flight-soft)}
+.fd-card--tone-transfer{background:var(--transfer-soft)}
+.fd-card--tone-stay{background:var(--stay-soft)}
+.fd-card--tone-food{background:var(--food-soft)}
+.fd-card--tone-activity{background:var(--activity-soft)}
 .fd-card__head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .fd-flight{display:inline-flex;align-items:center;gap:8px;min-width:0;font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
 .fd-flight .ph,.fd-flight .ph-svg{color:var(--muted)}
@@ -1117,12 +1175,13 @@ button:active{transform:scale(.985)}
 .plan-option[disabled]{opacity:.55;cursor:default}
 .plan-option[disabled]:active{transform:none;border-color:var(--line)}
 /* Primary call-to-action: the only destination on the page reads as a solid button. */
-.plan-option--cta{grid-template-columns:44px minmax(0,1fr);min-height:64px;border:0;background:var(--accent);box-shadow:var(--ds-shadow)}
-.plan-option--cta .plan-option__icon{background:rgba(255,255,255,.18);color:var(--accent-ink)}
-.plan-option--cta .plan-option__copy strong{color:var(--accent-ink);font-size:16px;font-weight:var(--weight-bold)}
-.plan-option--cta .plan-option__copy small{color:rgba(255,255,255,.82)}
-.plan-option--cta:active{transform:scale(.99);border-color:transparent}
-.plan-option--cta:focus-visible{outline:3px solid var(--blue-soft);outline-offset:2px;border-color:transparent}
+.plan-option--cta{grid-template-columns:46px minmax(0,1fr);min-height:68px;padding:13px 16px;border:0;border-radius:var(--radius-md);background:linear-gradient(135deg,var(--amber),var(--accent) 68%);box-shadow:0 10px 26px rgba(245,158,11,.32),inset 0 1px 0 rgba(255,255,255,.28);transition:transform .16s var(--ease),box-shadow .16s var(--ease)}
+.plan-option--cta .plan-option__icon{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.94);color:var(--accent);box-shadow:0 2px 6px rgba(15,23,42,.2)}
+.plan-option--cta .plan-option__copy{gap:3px}
+.plan-option--cta .plan-option__copy strong{color:var(--accent-ink);font-size:16px;font-weight:var(--weight-bold);letter-spacing:-.01em}
+.plan-option--cta .plan-option__copy small{color:color-mix(in srgb,var(--accent-ink) 72%,transparent);font-size:12.5px;font-weight:var(--weight-medium)}
+.plan-option--cta:active{transform:scale(.985);box-shadow:0 6px 16px rgba(245,158,11,.28);border-color:transparent}
+.plan-option--cta:focus-visible{outline:3px solid rgba(245,158,11,.45);outline-offset:2px;border-color:transparent}
 .plan-option--cta[disabled]{opacity:.5;box-shadow:none}
 .plan-option--cta[disabled]:active{transform:none}
 /* Trip options — a full-page companion to Add New Booking. */
@@ -1405,9 +1464,10 @@ html.keyboard-open .form-save-bar{display:none}
 /* Tactile feedback on tappable list rows */
 .simple-row:active,.travel-row:active,.document-row:active,.trip-row:active,.journey-event:active,.v2-choice:active,.sheet-option:active,.hotel-map-panel:active,.date-range-trigger:active{background:var(--surface)}
 
-/* Empty states: balance the void by centering the block vertically in the
-   available space, with a slight upward bias, and a refined icon ring. */
-.timeline-page--empty{align-content:center;padding-top:0;padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom) + 6vh)}
+/* The empty-trip builder is work to start now, rather than an empty-state
+   illustration. Keep it directly below the trip header; vertical centering
+   created a large, misleading gap before the first available action. */
+.timeline-page--empty{align-content:start;padding-top:var(--space-5);padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom) + 6vh)}
 .timeline-empty{min-height:auto}
 .empty-mobile,.mobile-empty{min-height:auto;padding-top:11vh}
 .mobile-empty--compact{min-height:220px;padding-top:0;justify-content:center}
@@ -1497,7 +1557,7 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-create-destination .place-suggestions{top:calc(100% + 7px)}
 .trip-create-destination__close,.trip-create-search-guide{display:none}
 .place-search-open body{overflow:hidden}
-.trip-create-destination.is-fullscreen{position:fixed;z-index:120;top:0;bottom:auto;left:50%;display:flex;flex-direction:column;width:min(100%,var(--app-width));height:100svh;min-height:0;margin:0;padding:0 16px calc(18px + env(safe-area-inset-bottom) + var(--keyboard-offset));transform:translateX(-50%);animation:none;border:0;border-radius:0;background:var(--paper);--picker-accent:var(--accent);--picker-tint:color-mix(in srgb,var(--accent) 12%,var(--paper));color:var(--picker-ink);box-shadow:none;overflow:hidden}
+.trip-create-destination.is-fullscreen{position:fixed;z-index:120;top:0;bottom:auto;left:0;right:0;display:flex;flex-direction:column;width:min(100%,var(--app-width));height:100svh;min-height:0;margin:0 auto;padding:0 16px calc(18px + env(safe-area-inset-bottom) + var(--keyboard-offset));animation:none;border:0;border-radius:0;background:var(--paper);--picker-accent:var(--accent);--picker-tint:color-mix(in srgb,var(--accent) 12%,var(--paper));color:var(--picker-ink);box-shadow:none;overflow:hidden}
 .trip-create-destination.is-fullscreen .trip-create-destination__head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:10px;min-height:calc(78px + env(safe-area-inset-top));margin:0 -16px 12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border:0;background:transparent}
 .trip-create-destination.is-fullscreen .trip-create-destination__head>span{display:none}
 .trip-create-destination.is-fullscreen .trip-create-destination__head>div{grid-column:2;grid-row:1;gap:1px;text-align:center}
@@ -1548,7 +1608,7 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-setup-ready__hero::after{border-color:color-mix(in srgb,var(--accent) 20%,transparent)}
 .trip-setup-ready__hero .trip-create-head__eyebrow{color:var(--accent)}
 .trip-plan-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;position:relative;z-index:1;min-width:0}
-.trip-plan-field{display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:7px;width:100%;min-width:0;min-height:60px;padding:10px;border:1px solid color-mix(in srgb,var(--accent) 18%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--card) 75%,var(--activity-soft));color:var(--ink);font:inherit;text-align:left}
+.trip-plan-field{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:7px;width:100%;min-width:0;min-height:60px;padding:10px;border:1px solid color-mix(in srgb,var(--accent) 18%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--card) 75%,var(--activity-soft));color:var(--ink);font:inherit;text-align:left}
 .trip-plan-field>span{display:grid;gap:3px;min-width:0}
 .trip-plan-field small{font-size:12px;color:var(--muted)}
 .trip-plan-field strong{font-size:13px;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
@@ -1598,6 +1658,31 @@ input[type=file]::-webkit-file-upload-button:hover,input[type=file]::file-select
 .trip-create-reassurance{display:flex;align-items:center;justify-content:center;gap:7px;margin:0;padding:2px;color:var(--muted);font-size:13px;line-height:1.4;text-align:center}
 .trip-create-reassurance .ph-svg{color:var(--accent)}
 .trip-create-fields .trip-delete-text{align-self:center;margin-top:0;padding:12px;border:0;background:transparent;color:var(--red);font-size:15px;font-weight:600;cursor:pointer}
+
+/* Create Trip is a short, single-purpose task: two equally weighted controls,
+   no nested card, and the page action remains the visual destination. */
+html body .trip-create-screen .focused-page{display:flex;flex-direction:column;min-height:calc(100dvh - var(--header-h));padding:0 0 calc(18px + env(safe-area-inset-bottom))}
+html body .trip-create-form{display:flex;flex:1;flex-direction:column;min-height:0;padding:0}
+html body .trip-create-head{display:block;min-height:0;margin:0;padding:30px 20px 20px;overflow:visible;border:0;border-radius:0;background:transparent}
+html body .trip-create-head::after,html body .trip-create-route{display:none}
+html body .trip-create-head__copy{max-width:none}
+html body .trip-create-head__eyebrow{margin-bottom:8px;color:var(--accent);font-size:12px;letter-spacing:.12em}
+html body .trip-create-head h1{max-width:none;margin:0;color:var(--ink);font-size:clamp(32px,9vw,40px);line-height:1.04;letter-spacing:-.05em}
+html body .trip-create-head__sub{max-width:none;margin-top:8px;font-size:15px;line-height:1.4}
+html body .trip-create-fields{display:grid;gap:12px;margin:0;padding:0 20px;background:transparent;border:0}
+html body .trip-create-destination,html body .trip-create-details{padding:16px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+html body .trip-create-destination:not(.is-fullscreen){background:var(--card)}
+html body .trip-create-destination__head{margin-bottom:11px}
+html body .trip-create-destination__head>span,html body .trip-create-details .date-range-trigger__icon{background:var(--activity-soft)!important;color:var(--accent)}
+html body .trip-create-destination:not(.is-fullscreen) .form-field input{min-height:52px;padding:0 4px;border:0;border-radius:0;background:transparent;font-size:18px;font-weight:600}
+html body .trip-create-destination:not(.is-fullscreen) .form-field input:focus{box-shadow:none}
+html body .trip-create-details{padding:5px 16px}
+html body .trip-create-details>.date-range-field{padding:7px 0}
+html body .trip-create-details .date-range-trigger{min-height:54px}
+html body .trip-create-details .date-range-trigger__copy small{font-size:13px}
+html body .trip-create-details .date-range-trigger__copy strong{font-size:18px}
+html body .trip-create-screen .form-page-actions{margin-top:auto;padding:28px 20px 0}
+html body .trip-create-screen .form-page-actions .mobile-primary-action{min-height:56px;border-radius:18px;font-size:18px;box-shadow:0 12px 26px -18px color-mix(in srgb,var(--accent) 75%,transparent)}
 @media(max-width:359px){.trip-create-head{min-height:202px;margin-inline:10px;padding:20px 18px}.trip-create-head h1{font-size:29px}.trip-create-fields{padding-inline:12px}.trip-create-destination,.trip-create-details{border-radius:19px}.trip-create-destination{padding:14px}.trip-create-destination.is-fullscreen{padding-inline:14px;border-radius:0}.trip-create-destination.is-fullscreen .trip-create-destination__head{margin-inline:-14px;padding-inline:14px}}
 @media(min-height:900px){.trip-create-head{min-height:236px;padding-top:28px}.trip-create-fields{gap:16px;padding-top:18px}}
 
@@ -2148,26 +2233,156 @@ html.first-run-open .first-run-screen.welcome-thread .first-run-brand .first-run
  .welcome-thread .welcome-v2__footer{font-size:12px;padding-top:30px}
 }
 
+/* Welcome is the first moment of the product: warm, colourful and compact,
+   while still fitting entirely inside the visible mobile viewport. */
+html.first-run-open,html.first-run-open body,html.first-run-open .phone-app{background:var(--paper)}
+html body .first-run-screen.welcome-thread{
+  --welcome-x:24px;
+  height:100svh;
+  overflow:hidden;
+  padding:max(26px,env(safe-area-inset-top)) var(--welcome-x) max(16px,env(safe-area-inset-bottom));
+  background:var(--paper);
+}
+html body .welcome-thread .first-run-main{
+  flex:0 0 auto;
+  justify-content:flex-start;
+  gap:16px;
+  padding:16px 0 0;
+}
+html body .welcome-thread .first-run-hero{text-align:center}
+/* Professional welcome composition: one accent-focused journey mark, an
+   editorial hero, and a single unified feature card (no clashing per-item
+   colours). Identity is carried by the icons; the surface stays cohesive. */
+html body .welcome-thread .welcome-route{
+  display:flex;align-items:center;justify-content:center;gap:11px;
+  height:48px;margin:0 0 20px;
+}
+html body .welcome-thread .welcome-route i{width:26px;height:0;border-top:2px dotted color-mix(in srgb,var(--muted) 42%,transparent)}
+html body .welcome-thread .welcome-route__stop,
+html body .welcome-thread .welcome-route__plane{
+  display:grid;place-items:center;width:40px;height:40px;border-radius:13px;
+  background:var(--surface);color:var(--muted);
+}
+html body .welcome-thread .welcome-route__plane{
+  width:48px;height:48px;border-radius:16px;background:var(--accent);color:var(--accent-ink);
+  box-shadow:0 10px 22px -10px color-mix(in srgb,var(--accent) 65%,transparent);
+}
+html body .welcome-thread .first-run-eyebrow{
+  display:inline-flex;align-self:center;margin:0 0 16px;padding:6px 13px;border-radius:999px;
+  background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);
+  font-size:11px;font-weight:700;letter-spacing:.14em;
+}
+html body .welcome-thread .first-run-hero h1{
+  margin:0 0 14px;font-size:clamp(33px,9.2vw,42px);font-weight:700;
+  line-height:1.02;letter-spacing:-.055em;
+}
+html body .welcome-thread .first-run-title__line:last-child{color:var(--accent)}
+html body .welcome-thread .first-run-hero .first-run-lede{
+  max-width:32ch;margin:0 auto;color:var(--muted);font-size:15px;line-height:1.5;
+}
+html body .welcome-thread .welcome-features{
+  display:grid;gap:0;margin:0;padding:4px 0;list-style:none;border-radius:20px;
+  background:var(--card);border:1px solid color-mix(in srgb,var(--muted) 20%,transparent);
+  box-shadow:var(--shadow-soft);overflow:hidden;
+}
+html body .welcome-thread .welcome-features li{
+  display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;gap:14px;
+  min-height:62px;padding:11px 16px;border:0;border-radius:0;background:transparent;font-size:inherit;
+}
+html body .welcome-thread .welcome-features li+li{border-top:1px solid color-mix(in srgb,var(--muted) 15%,transparent)}
+html body .welcome-thread .welcome-features .row-icon{
+  display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:13px;
+  background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);
+}
+html body .welcome-thread .welcome-features li>span:last-child{display:grid;gap:2px;min-width:0}
+html body .welcome-thread .welcome-features strong{font-size:15px;font-weight:600;letter-spacing:-.015em}
+html body .welcome-thread .welcome-features small{color:var(--muted);font-size:13px;line-height:1.35}
+html body .welcome-thread .welcome-feature--bookings .row-icon,
+html body .welcome-thread .welcome-feature--plans .row-icon,
+html body .welcome-thread .welcome-feature--ideas .row-icon{background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
+html body .welcome-thread .first-run-actions{gap:4px;margin:0}
+html body .welcome-thread .first-run-google-preview[data-action="enter-app"]{
+  min-height:56px;border-radius:18px;padding-inline:18px;background:var(--accent);
+  box-shadow:0 12px 26px -12px color-mix(in srgb,var(--accent) 60%,transparent);
+}
+html body .welcome-thread .first-run-secondary{
+  flex-direction:row;gap:5px;min-height:40px;padding:6px 14px;font-size:14px;font-weight:600;
+}
+html body .welcome-thread .welcome-v2__footer{padding-top:8px;color:var(--muted);font-size:11px}
+html body .welcome-thread .welcome-v2__footer a{min-height:32px}
+@media(max-height:680px){
+  html body .first-run-screen.welcome-thread{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  html body .welcome-thread .first-run-main{gap:10px;padding-top:12px}
+  html body .welcome-thread .welcome-route{height:38px;margin-bottom:8px}
+  html body .welcome-thread .welcome-route__stop,html body .welcome-thread .welcome-route__plane{width:36px;height:36px;border-radius:13px}
+  html body .welcome-thread .first-run-hero h1{font-size:30px;margin-bottom:8px}
+  html body .welcome-thread .first-run-hero .first-run-lede{font-size:14px}
+  html body .welcome-thread .welcome-features li{min-height:54px;padding:7px 14px}
+  html body .welcome-thread .welcome-features .row-icon{flex-basis:40px;width:40px;height:40px;border-radius:12px}
+  html body .welcome-thread .welcome-features{gap:0}
+  html body .welcome-thread .welcome-features strong{font-size:14px}
+  html body .welcome-thread .welcome-features small{font-size:12px}
+  html body .welcome-thread .first-run-google-preview[data-action="enter-app"]{min-height:50px}
+}
+@media(max-height:620px){
+  html body .welcome-thread .welcome-route{display:none}
+}
+
+/* UI/UX system hardening: theme-aware focus, predictable mobile forms and
+   consistent scroll affordances across every document and popup surface. */
+html{
+  scrollbar-width:thin;
+  scrollbar-color:var(--line-strong) transparent
+}
+html ::-webkit-scrollbar{width:6px;height:6px}
+html ::-webkit-scrollbar-track{background:transparent}
+html ::-webkit-scrollbar-thumb{border-radius:999px;background:var(--line-strong)}
+html ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+html body :is(button,a,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid color-mix(in srgb,var(--accent) 72%,transparent);
+  outline-offset:2px
+}
+html body textarea{resize:none}
+html body :is(button,[role="button"],[data-action],[data-screen]){-webkit-user-select:none;user-select:none}
+html body :is(button,input,select,textarea)[disabled],
+html body [aria-disabled="true"]{cursor:default}
+@media(prefers-reduced-motion:reduce){
+  html:focus-within{scroll-behavior:auto}
+  html body *,html body *::before,html body *::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important
+  }
+  html body :is(button,a,[data-action],[data-screen]):active{transform:none!important}
+}
+@media(forced-colors:active){
+  html{scrollbar-color:auto}
+  html body :is(button,a,input,select,textarea,[tabindex]):focus-visible{outline:2px solid Highlight}
+}
+
 /* Notifications sheet: trip change feed (imports, stops, time markers, docs) + forwarded-booking reviews */
 .notif-list{display:flex;flex-direction:column;gap:4px;padding:0}
-.notif-item{display:flex;align-items:flex-start;gap:11px;width:100%;padding:11px 4px;border:0;border-radius:12px;background:transparent;color:var(--ink);text-align:left;font:inherit}
+.notif-item{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:9px;width:100%;min-height:54px;padding:8px;border:0;border-radius:12px;background:transparent;color:var(--ink);text-align:left;font:inherit}
 button.notif-item{cursor:pointer;transition:background .16s ease}
 button.notif-item:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 button.notif-item:active{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px}
-.notif-item__icon{flex:0 0 22px;display:inline-flex;align-items:center;justify-content:center;color:var(--accent);opacity:.8;margin-top:1px}
+.notif-item__icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:var(--surface);color:var(--accent);opacity:.8}
 .notif-item.is-unread .notif-item__icon{opacity:1}
-.notif-item__copy{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
-.notif-item__copy strong{display:flex;align-items:center;gap:7px;font-size:var(--type-body);font-weight:600;line-height:1.3;color:var(--ink)}
+.notif-item__copy{display:grid;gap:2px;min-width:0}
+.notif-item__top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
+.notif-item__copy strong{display:flex;align-items:center;gap:6px;min-width:0;font-size:14px;font-weight:600;line-height:1.25;color:var(--ink)}
 .notif-item.is-unread .notif-item__copy strong{font-weight:700;color:var(--accent)}
-.notif-item__dot{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--accent)}
-.notif-item__desc{font-size:var(--type-meta);line-height:1.38;color:var(--muted)}
-.notif-item__copy small{font-size:var(--type-meta);color:var(--muted-soft);font-variant-numeric:tabular-nums;margin-top:1px}
+.notif-item__dot{flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.notif-item__desc{display:-webkit-box;overflow:hidden;color:var(--muted);font-size:12px;line-height:1.3;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.notif-item__top small{flex:0 0 auto;color:var(--muted-soft);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .notif-item__chevron{flex:0 0 auto;align-self:center;color:var(--accent);opacity:.5}
+.notif-item.is-unread{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .notif-item--warning .notif-item__icon{color:var(--amber)}
 .notif-item--danger .notif-item__icon{color:var(--red)}
 .notif-item--good .notif-item__icon{color:var(--green)}
-.notif-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:26px 16px 30px;color:var(--muted)}
+.notif-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:18px 16px 20px;color:var(--muted)}
 .notif-empty h2{margin:6px 0 0;font-size:15px;color:var(--ink)}
 .notif-empty p{margin:0;font-size:13px;max-width:240px;line-height:1.45}
 
@@ -2187,6 +2402,8 @@ button.notif-item:focus-visible{outline:2px solid var(--accent);outline-offset:-
 .timeline-screen--ribbon .trip-v2-selector small{font-size:15px;font-weight:500;color:var(--muted)}
 .timeline-screen--ribbon .trip-v2-actions{align-self:flex-start;margin-top:1px}
 .timeline-screen--ribbon .timeline-page--journey{padding:0 16px calc(var(--nav-height) + 30px + env(safe-area-inset-bottom));scrollbar-width:none}
+.timeline-screen--ribbon .journey-event[data-longpress-booking],
+.timeline-screen--ribbon .journey-event[data-longpress-booking] *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .timeline-screen--ribbon .timeline-page--journey::-webkit-scrollbar{display:none}
 .timeline-screen--ribbon .timeline-context--next{
   display:grid;grid-template-columns:minmax(0,1fr) auto;
@@ -2583,6 +2800,18 @@ html body .trips-bg-screen .trip-group .trip-row .trip-row__mark .ph-svg{
 /* Booking summaries and details share the same white, outlined card surface. */
 html .dark-detail .detail-content{width:100%;max-width:400px;padding:8px 24px calc(20px + env(safe-area-inset-bottom));box-sizing:border-box}
 html .dark-detail .fd-card{padding:var(--space-4) !important;border:1px solid var(--line) !important;border-radius:var(--radius-regular) !important;background:var(--card) !important;box-shadow:none !important}
+/* Every detail view has one semantic hero. Its surface must repeat the colour
+   used for the matching timeline marker; grouped action/detail cards remain
+   neutral to keep the page easy to scan. These rules deliberately sit after
+   the generic dark-detail card reset, which otherwise erased the hero tone. */
+html body .dark-detail .fd-card--tone-flight,
+html body .flight-detail-screen .flight-detail-stack>.fd-card{background:var(--flight-soft)!important}
+html body .dark-detail .fd-card--tone-transfer,
+html body .train-detail-screen .detail-content>.fd-card{background:var(--transfer-soft)!important}
+html body .dark-detail .fd-card--tone-stay,
+html body .hotel-detail-screen .detail-content>.fd-card{background:var(--stay-soft)!important}
+html body .dark-detail .fd-card--tone-food{background:var(--food-soft)!important}
+html body .dark-detail .fd-card--tone-activity{background:var(--activity-soft)!important}
 html .dark-detail .fd-route{grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);gap:8px}
 html .dark-detail .fd-route__code{font-size:28px;font-weight:500}
 html .dark-detail .fd-card__head{align-items:flex-start;gap:12px}
@@ -2601,7 +2830,7 @@ html .dark-detail .fd-times__dur,html .dark-detail .fd-stay__nights{padding:4px 
 html .dark-detail .fd-label{font-size:12px;letter-spacing:.04em}
 html .dark-detail .fd-flight{font-size:16px;font-weight:500;line-height:1.3;color:var(--ink)}
 html .plan-detail-screen .fd-flight{font-size:14px;color:var(--accent);font-weight:400}
-html .dark-detail .fd-title{margin:8px 0 0 !important;color:var(--ink);font-size:24px;font-weight:500;line-height:1.15;overflow-wrap:anywhere}
+html body .dark-detail .fd-title{margin:8px 0 0 !important;color:var(--ink);font-size:20px;font-weight:var(--weight-bold);line-height:1.2;letter-spacing:-.02em;overflow-wrap:anywhere}
 html .dark-detail .fd-when{align-items:flex-start;margin-top:10px;font-size:14px;line-height:1.5}
 html .dark-detail .fd-when .ph-svg{flex-shrink:0;margin-top:2px}
 html .dark-detail .fd-status-wrap{flex-shrink:0;font-size:12px}
@@ -2620,7 +2849,7 @@ html .dark-detail .fd-hero-image{border-radius:var(--radius-regular) var(--radiu
 html .dark-detail .fd-card--attached{border-top-left-radius:0 !important;border-top-right-radius:0 !important;margin-top:0 !important;border-top:0 !important}
 html .dark-detail .fd-note-edit{padding:12px 0}
 html .dark-detail .fd-note-btn{box-shadow:none;font-weight:500}
-@media(max-width:359px){html .dark-detail .detail-content{padding-inline:16px}html .dark-detail .fd-card{padding:var(--space-4) !important}html .dark-detail .fd-title{font-size:24px}}
+@media(max-width:359px){html .dark-detail .detail-content{padding-inline:16px}html .dark-detail .fd-card{padding:var(--space-4) !important}html body .dark-detail .fd-title{font-size:20px}}
 
 /* Final title-role lock. Traveler-authored titles use the same Apple stack as
    the interface, with weight and size providing the hierarchy. */
@@ -2658,10 +2887,10 @@ html .trips-bg-screen .trip-group .trip-row__copy strong{
    widths while staying inside the approved min/max sizes. */
 .timeline-screen--ribbon{
   --timeline-trip-title-size:clamp(24px,6.7vw,28px);
-  --timeline-booking-title-size:clamp(15px,4vw,16px);
+  --timeline-booking-title-size:clamp(16px,4.3vw,17px);
   --timeline-metadata-size:clamp(13px,3.4vw,14px);
   --timeline-status-size:clamp(11px,3.1vw,12px);
-  --timeline-time-size:clamp(12px,3.4vw,13px);
+  --timeline-time-size:clamp(13px,3.6vw,14px);
   --timeline-day-size:clamp(14px,3.85vw,16px);
 }
 html .timeline-screen--ribbon .trip-v2-selector strong{
@@ -2801,7 +3030,7 @@ html .trip-map__hero>div>span,html .trip-map__list-head>div>span{display:block;c
 html .trip-map__hero h1{margin:3px 0 3px;color:var(--ink);font-family:var(--font-title);font-size:22px;font-weight:700;line-height:1.08;letter-spacing:-.03em}
 html .trip-map__hero p{margin:0;color:var(--muted);font-size:13px;font-weight:400;line-height:1.35}
 html .trip-map__hero>strong{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--card);color:var(--accent);font-size:16px;font-weight:700}
-html .trip-map__days{gap:8px;padding:0 0 2px}
+html .trip-map__days{align-items:center;gap:8px;min-height:52px;padding:4px 0 6px}
 html .trip-map__day{min-height:44px;padding:0 15px;border:1px solid var(--line) !important;border-radius:999px !important;background:var(--card) !important;color:var(--muted);font-family:var(--font-ui);font-size:13px;font-weight:600}
 html .trip-map__day.is-active{border-color:var(--accent) !important;background:var(--accent) !important;color:var(--accent-ink)}
 html .trip-map__offline{padding:12px 14px;border:1px solid var(--line);border-radius:15px;background:var(--blue-soft);color:var(--ink);font-size:13px}
@@ -3271,6 +3500,7 @@ html .esim-refresh button:focus-visible{outline:2px solid var(--accent);outline-
 html .weather-refresh .weather-page{gap:12px;padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
 html .weather-refresh .weather-page>*{flex-shrink:0}
 html .weather-refresh .wx-places{justify-content:flex-start;gap:2px;padding:4px;border-radius:14px;background:var(--surface)}
+html .weather-refresh .wx-place-context{padding:0 2px}
 html .weather-refresh .wx-place-chip{flex:1 0 auto;justify-content:center;min-height:44px;padding:8px 14px;border:0;border-radius:10px;background:transparent;font-size:14px;font-weight:400}
 html .weather-refresh .wx-place-chip.is-active{background:var(--card);color:var(--accent)}
 html .weather-refresh .wx-place-chip.is-active .ph-svg{color:var(--accent)}
@@ -3317,10 +3547,8 @@ html .weather-refresh button:focus-visible{outline:2px solid var(--accent);outli
 .thinking-copy{display:grid;gap:8px;min-width:0}
 .thinking-copy strong{font-size:16px;font-weight:500;line-height:1.4;overflow-wrap:anywhere}
 .thinking-copy>span{font-size:14px;line-height:1.5;color:var(--muted)}
-.thinking-notice{position:fixed;z-index:10000;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(340px,calc(100% - 32px));pointer-events:none}
-.thinking-panel--compact{flex-direction:row;justify-content:flex-start;gap:16px;width:100%;padding:16px 18px;border-radius:18px;text-align:left;box-shadow:var(--ds-shadow)}
-.thinking-panel--compact .thinking-pattern,.place-loading .thinking-pattern{grid-template-columns:repeat(3,10px);grid-template-rows:repeat(3,10px);gap:3px;width:36px;height:36px}
-.thinking-panel--compact .thinking-pattern i,.place-loading .thinking-pattern i{border-radius:3px}
+.place-loading .thinking-pattern{grid-template-columns:repeat(3,10px);grid-template-rows:repeat(3,10px);gap:3px;width:36px;height:36px}
+.place-loading .thinking-pattern i{border-radius:3px}
 .place-loading{display:flex;align-items:center;gap:14px;min-height:64px}
 @keyframes thinking-tile{0%,100%{transform:scale(.84) rotate(0deg);opacity:.65}50%{transform:scale(1) rotate(90deg);opacity:1}}
 @media(prefers-reduced-motion:reduce){.thinking-pattern i{animation:none;opacity:1}}
@@ -3456,9 +3684,10 @@ html body .phone-app > .collection-page > main.focused-page{display:flex;flex-di
 .collection-empty p{margin:0;font-size:14px;line-height:1.5}
 .mini-timeline{list-style:none;margin:0 0 16px;padding:0}
 .mini-stop{margin:0;padding:0}
-.collection-page .mini-timeline{position:relative;isolation:isolate;margin-top:4px}
+.collection-page .mini-timeline{position:relative;isolation:isolate;margin-top:4px;margin-inline:22px}
 .collection-page .mini-timeline::before{content:"";position:absolute;z-index:0;top:26px;bottom:26px;left:61px;width:1px;background:var(--line-strong)}
 .collection-page .mini-stop__hit{position:relative;display:grid;grid-template-columns:48px 26px 50px minmax(0,1fr);align-items:center;width:100%;min-height:68px;padding:0;text-align:left;background:transparent;border:0;color:var(--ink);border-radius:0}
+.collection-page .mini-stop__hit[data-longpress-stop],.collection-page .mini-stop__hit[data-longpress-stop] *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 button.mini-stop__hit:active{background:var(--surface)}
 .collection-page .mini-stop__time{grid-column:1;justify-self:end;padding-right:10px;color:var(--ink);font-size:var(--timeline-time-size);font-weight:500;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
 .collection-page .mini-stop__rail{grid-column:2;position:relative;z-index:1;display:grid;place-items:center;align-self:stretch;background:transparent;border:0}
@@ -3600,6 +3829,10 @@ html body .phone-app>.screen>.app-bar{min-height:68px;border-bottom:1px solid va
 html body .phone-app>.screen>.app-bar .icon-button{width:44px;height:44px;border-radius:var(--radius-control);color:var(--ink)}
 html body .phone-app>.screen>.app-bar .app-bar-title strong{font-size:18px;font-weight:var(--weight-semibold);letter-spacing:-.02em}
 html body .phone-app>.screen>.app-bar .app-bar-title span{color:var(--muted);font-size:var(--type-label)}
+/* The current page is already named by the content itself. Keep the Back
+   target in the header, but remove the repeated visual page name everywhere.
+   The title remains in the accessibility tree for screen-reader context. */
+html body .phone-app>.screen>.app-bar .app-bar-title{visibility:hidden}
 html body .phone-app>.screen>.app-bar .app-bar-save{min-height:44px;border-radius:var(--radius-control);background:var(--accent);color:var(--accent-ink)}
 html body .phone-app>.screen>.app-bar.app-bar--dark{background:var(--paper);color:var(--ink)}
 html body .phone-app>.screen>.app-bar.app-bar--dark .icon-button{color:var(--ink)}
@@ -3635,8 +3868,10 @@ html body .trip-options-page .trip-options-intro>span{color:var(--accent);font-s
 html body .phone-app>.screen.add-intent-page>.focused-page{padding:var(--space-4)!important}
 html body .add-intent-page .trip-create-head{min-height:0!important;margin:0;padding:0 0 var(--space-4);border:0;border-radius:0;background:transparent;box-shadow:none}
 html body .add-intent-page .trip-create-head::after{display:none}
+html body .add-intent-page .trip-create-head__copy{max-width:35ch;margin-inline:auto;text-align:center}
 html body .add-intent-page .trip-create-head__eyebrow{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em}
-html body .add-intent-page .trip-create-head h1{margin:var(--space-2) 0 var(--space-1);font-size:var(--type-screen);font-weight:var(--weight-bold)}
+html body .phone-app>.screen.add-intent-page .trip-create-head h1{margin:var(--space-2) 0 var(--space-1);font-size:clamp(40px,11vw,48px);font-weight:var(--weight-bold);line-height:1.06;letter-spacing:-.04em;text-wrap:balance}
+html body .add-intent-page .trip-create-head__sub{max-width:35ch;margin-inline:auto}
 html body .add-intent-page .trip-create-head__sub p{color:var(--muted);font-size:var(--type-body);line-height:1.45}
 html body .add-intent-page .trip-create-route{display:none}
 html body .add-intent-page .add-intent-fields{display:grid;gap:0}
@@ -4073,6 +4308,15 @@ html body .premium-form:not(.trip-create-form) .date-range-trigger__icon{width:4
 html body .premium-form:not(.trip-create-form) .date-range-trigger__copy{gap:2px}
 html body .premium-form:not(.trip-create-form) .form-fields--flight-when{align-items:start}
 html body .premium-form:not(.trip-create-form) .form-fields--flight-when>.form-field>input{min-height:var(--control-height)}
+/* Booking forms collect one decision at a time. On a phone, paired route and
+   date/time fields were too narrow for their labels, values and validation.
+   Keep the route readable as a vertical sequence and remove the oversized
+   nested Essentials card; the form itself already provides the grouping. */
+html body .manual-booking-form .manual-essentials{gap:var(--space-4);padding:0;border:0;border-radius:0;background:transparent}
+html body .manual-booking-form .manual-route-card{grid-template-columns:minmax(0,1fr)!important;gap:var(--space-3);padding:0;border:0}
+html body .manual-booking-form .manual-route-card__line{display:none}
+html body .manual-booking-form .form-fields--date-time,
+html body .manual-booking-form .form-fields--activity-time{grid-template-columns:minmax(0,1fr)!important;gap:var(--space-3)!important}
 @media(max-width:430px){
   html body .premium-form:not(.trip-create-form) .form-fields--flight-when,
   html body .premium-form.stop-form .form-fields--date-time{grid-template-columns:minmax(0,1fr)!important}
@@ -4135,10 +4379,10 @@ html body .trip-create-screen .trip-create-form{display:grid;align-content:start
 html body .trip-create-screen .trip-create-head{display:grid;gap:var(--space-2);min-height:0!important;margin:0;padding:0 0 var(--space-4);overflow:visible;border:0!important;border-bottom:1px solid var(--line);border-radius:0!important;background:transparent!important;box-shadow:none!important}
 html body .trip-create-screen .trip-create-head::after{display:none!important}
 html body .trip-create-screen .trip-create-route{display:none!important}
-html body .trip-create-screen .trip-create-head__copy{max-width:36ch}
+html body .trip-create-screen .trip-create-head__copy{max-width:36ch;margin-inline:auto;text-align:center}
 html body .trip-create-screen .trip-create-head__eyebrow{color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.1em}
-html body .trip-create-screen .trip-create-head h1{max-width:none;margin:0;color:var(--ink);font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.12;letter-spacing:-.03em}
-html body .trip-create-screen .trip-create-head__sub{max-width:35ch;color:var(--muted);font-size:var(--type-body);line-height:1.45}
+html body .phone-app>.screen.trip-create-screen .trip-create-head h1{max-width:none;margin:0;color:var(--ink);font-size:clamp(40px,11vw,48px);font-weight:var(--weight-bold);line-height:1.06;letter-spacing:-.04em;text-wrap:balance}
+html body .trip-create-screen .trip-create-head__sub{max-width:35ch;margin-inline:auto;color:var(--muted);font-size:var(--type-body);line-height:1.45}
 html body .trip-create-screen .trip-create-fields{display:grid;gap:var(--space-5);margin:0}
 html body .trip-create-screen .trip-create-destination:not(.is-fullscreen),
 html body .trip-create-screen .trip-create-details{padding:0;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
@@ -4232,7 +4476,7 @@ html body .bottom-sheet.compact-sheet .sheet-scroll{
   min-height:0;
   flex:0 1 auto;
   max-height:none;
-  padding-bottom:var(--space-1);
+  padding-bottom:max(var(--space-2), env(safe-area-inset-bottom));
   overflow-x:hidden;
   overflow-y:auto;
   overscroll-behavior:contain;
@@ -4332,8 +4576,79 @@ html body .bottom-sheet.compact-sheet .sheet-action-row[disabled]{opacity:.48;cu
 html body .bottom-sheet.compact-sheet .sheet-action-row[disabled] .sheet-action-row__chev{display:none}
 html body .bottom-sheet--collection-stop.compact-sheet .sheet-scroll{padding-top:0}
 html body .bottom-sheet--currency-picker.compact-sheet{--compact-sheet-max-height:min(calc(var(--app-viewport-height,100dvh) - 12px),520px)}
+html body .bottom-sheet--notifications.compact-sheet{--compact-sheet-max-height:min(calc(var(--app-viewport-height,100dvh) - 12px),440px);padding-inline:12px}
+html body .bottom-sheet--notifications.compact-sheet .sheet-scroll{padding-bottom:4px}
 html body .bottom-sheet--document.compact-sheet .sheet-scroll,
 html body .bottom-sheet--share.compact-sheet .sheet-scroll{padding-bottom:var(--space-2)}
+/* Move-day picker follows the same flat, compact sheet language as action menus. */
+html body .bottom-sheet--move-booking.compact-sheet{
+  --compact-sheet-max-height:min(calc(var(--app-viewport-height,100dvh) - 12px),560px)
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-list{
+  display:grid;
+  gap:var(--space-1);
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible
+}
+html body .bottom-sheet--move-booking.compact-sheet .sheet-option.move-day-option{
+  display:grid;
+  grid-template-columns:36px minmax(0,1fr) auto;
+  align-items:center;
+  gap:var(--space-3);
+  width:100%;
+  min-height:52px;
+  padding:6px var(--space-2);
+  border:0;
+  border-radius:var(--radius-control);
+  background:transparent;
+  color:var(--ink);
+  text-align:left
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option__index{
+  width:36px;
+  height:36px;
+  border-radius:var(--radius-control);
+  background:var(--surface);
+  color:var(--muted);
+  font-size:13px;
+  font-weight:var(--weight-semibold)
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option__body{gap:1px}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option__body strong{
+  font-size:var(--type-body);
+  font-weight:var(--weight-semibold);
+  line-height:1.25
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option__body small{
+  font-size:var(--type-meta);
+  line-height:1.25;
+  text-transform:capitalize
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option--current{
+  opacity:1;
+  background:var(--activity-soft)
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option--current .move-day-option__index{
+  background:var(--accent);
+  color:var(--accent-ink)
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option__here{
+  padding:4px 8px;
+  border-radius:999px;
+  background:var(--card);
+  color:var(--accent);
+  font-size:11px;
+  font-weight:var(--weight-semibold)
+}
+html body .bottom-sheet--move-booking.compact-sheet .move-day-option:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:-2px
+}
 html body .discard-dialog{
   box-sizing:border-box;
   max-height:calc(var(--app-viewport-height,100dvh) - 32px);
@@ -4372,12 +4687,19 @@ html body .phone-app>.screen>.app-bar.app-bar--navigation{
 }
 html body .app-bar--navigation>.header-navigation{grid-column:3;grid-row:1}
 html body .app-bar--navigation>.app-bar-title{min-width:0;text-align:center}
+html body .phone-app>.screen>.app-bar.app-bar--navigation.app-bar--minimal{grid-template-columns:44px minmax(0,1fr) 44px}
+html body .app-bar--navigation.app-bar--minimal>.app-bar-title{grid-column:2;grid-row:1}
+html body .app-bar--navigation.app-bar--minimal>.app-bar-spacer{grid-column:3;grid-row:1;width:44px;height:44px}
 html body .phone-app>.screen>.app-bar--navigation.app-bar--with-actions{padding-bottom:6px}
 html body .app-bar--navigation>.app-bar-actions{
   grid-column:2/4;grid-row:2;display:flex;justify-content:flex-end;gap:4px;
   min-height:44px;margin-top:2px;
 }
 html body .phone-app>.screen>.app-bar--navigation .app-bar-save{min-height:44px;height:44px}
+/* Minimal detail bars (Back + optional trailing action) keep the action inline
+   on the first row — never dropped to the row-2 slot used by trips save bars. */
+html body .app-bar--navigation.app-bar--minimal>.app-bar-actions{grid-column:3;grid-row:1;justify-content:flex-end;margin-top:0}
+html body .phone-app>.screen>.app-bar--navigation.app-bar--minimal.app-bar--with-actions{padding-bottom:12px}
 html body .trip-v2-header{gap:8px}
 html body .trip-v2-actions{gap:4px;align-items:center}
 html body .trip-v2-selector small{min-width:0;white-space:normal;overflow-wrap:break-word}
@@ -4389,9 +4711,26 @@ html body .welcome-thread .first-run-brand-row>.header-navigation{margin-left:au
 html body .bottom-sheet--navigation .sheet-action-row[aria-current="page"]{background:var(--activity-soft);border-radius:var(--radius-control)}
 html body .bottom-sheet--navigation .sheet-action-row[aria-current="page"] .sheet-action-row__copy strong{color:var(--accent)}
 
-/* Primary form actions follow the fields in the page scroll flow. */
-html body .focused-page .form-page-actions{display:flex;gap:12px;margin-top:24px;padding-bottom:env(safe-area-inset-bottom);width:100%}
-html body .focused-page .form-page-save{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin:0;padding:12px 16px;border-radius:var(--radius-control)}
+/* Forms finish from the header. The action remains reachable while users
+   review long fields, without a second primary button at the bottom. */
+html body .focused-task>.app-bar.app-bar--minimal.app-bar--with-actions{
+  grid-template-columns:44px minmax(0,1fr) auto;
+  grid-template-rows:44px;
+  min-height:68px;
+  max-height:68px;
+  padding:12px;
+}
+html body .focused-task>.app-bar.app-bar--minimal.app-bar--with-actions>.app-bar-spacer{display:none}
+html body .focused-task>.app-bar.app-bar--minimal.app-bar--with-actions>.app-bar-actions{
+  grid-column:3;grid-row:1;align-self:center;justify-self:end;min-height:44px;margin:0;
+}
+html body .focused-task>.app-bar .app-bar-save{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-width:68px;height:44px;margin:0;padding:0 14px;
+  border-radius:var(--radius-control);font-size:15px;line-height:1;
+  white-space:nowrap;box-shadow:none;
+}
+html body .focused-page .form-page-actions{display:none}
 
 /* Trip destination and dates share a compact inset icon control. */
 html body .trip-create-screen .trip-create-destination:not(.is-fullscreen){position:relative}
@@ -4403,8 +4742,7 @@ html body .trip-create-screen .trip-create-fields{gap:16px}
 html body .trip-create-screen .trip-create-head__sub:empty{display:none}
 
 /* Fullscreen destination search tracks Safari's visible area above the keyboard. */
-html.place-search-open body .trip-create-screen>.app-bar,
-html.place-search-open body .trip-create-screen .form-page-actions{visibility:hidden;pointer-events:none}
+html.place-search-open body .trip-create-screen>.app-bar{visibility:hidden;pointer-events:none}
 html.place-search-open body .trip-create-destination.is-fullscreen{top:var(--app-viewport-offset,0px);height:var(--app-viewport-height,100svh);max-height:var(--app-viewport-height,100svh);padding-bottom:max(12px,env(safe-area-inset-bottom));box-sizing:border-box}
 html.place-search-open body .trip-create-destination.is-fullscreen .trip-create-destination__head{flex-shrink:0}
 html.place-search-open body .trip-create-destination.is-fullscreen .place-suggestions{min-height:0;overscroll-behavior:contain}
@@ -4418,11 +4756,11 @@ html body .trip-setup-ready__create:active{transform:scale(.96);box-shadow:0 2px
 @keyframes trip-create-sheen{from{transform:translateX(-130%)}to{transform:translateX(130%)}}
 @media(prefers-reduced-motion:reduce){html body .trip-setup-ready__create{animation:none;transition:none}html body .trip-setup-ready__create::after{animation:none;display:none}html body .trip-setup-ready__create:is(:hover,:active){transform:none}}
 
-.trip-celebration{position:relative;isolation:isolate;overflow:hidden;text-align:center;padding:8px 0 4px}
+.trip-celebration{position:relative;isolation:isolate;overflow:hidden;text-align:center;padding:8px 0 max(12px,env(safe-area-inset-bottom))}
 .trip-celebration__mark{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 12px;border-radius:20px;background:var(--activity-soft);color:var(--accent);animation:trip-celebrate-pop 420ms ease-out both}
 .trip-celebration__name{margin:0;color:var(--ink);font-size:20px;font-weight:600;overflow-wrap:anywhere}
 .trip-celebration__copy{margin:6px 0 20px;color:var(--muted);font-size:15px}
-.trip-celebration .mobile-primary-action{width:100%;margin:0;min-height:48px}
+.trip-celebration .mobile-primary-action{position:sticky;bottom:0;z-index:1;width:100%;margin:0;min-height:52px;border-radius:16px}
 .trip-celebration__confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
 .trip-celebration__confetti i{position:absolute;top:-12px;left:calc(var(--piece) * 5.5%);width:6px;height:10px;border-radius:2px;background:var(--accent);opacity:0;animation:trip-confetti 1500ms ease-out calc(var(--piece) * 35ms) both}
 .trip-celebration__confetti i:nth-child(3n){background:var(--stay-soft)}
@@ -4436,3 +4774,527 @@ html .timeline-screen--ribbon .timeline-day__header{grid-template-columns:minmax
 html .timeline-screen--ribbon .timeline-day__header time{grid-column:1;display:flex;align-items:baseline;gap:8px;min-height:0;min-width:0;flex-wrap:wrap}
 html .timeline-screen--ribbon .timeline-day__header time strong{white-space:nowrap;letter-spacing:0}
 html .timeline-screen--ribbon .timeline-day__header :is(.timeline-day__rail,.timeline-day__separator){display:none}
+
+/* ============================================================================
+   Night-theme component tweaks. A few glyphs hardcode mid-tone hues that
+   sit on the dark category chips; move them to the theme accents so they stay
+   legible. The Google button keeps its required on-brand light styling.
+   ========================================================================== */
+html.theme-beart .collab-invite__icon{color:var(--amber)}
+html.theme-beart .collab-benefit:nth-of-type(1) .collab-benefit__icon{color:var(--accent)}
+html.theme-beart .collab-benefit:nth-of-type(3) .collab-benefit__icon{color:var(--red)}
+html.theme-beart .welcome-thread .first-run-google-preview[data-action="preview-google"]{background:#fff;color:#1f1f1f;border-color:#747775}
+
+/* --navy is tripto's primary text ink and is remapped to the light ink above so
+   every row/card title stays legible on the dark chips. A few components used
+   --navy the other way — as a dark fill behind white text — so pin those back
+   to real dark surfaces (or the amber accent for the primary action). */
+html.theme-beart .hotel-action--primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+html.theme-beart :is(.avatar,.traveler-avatar){background:var(--surface);color:var(--ink)}
+html.theme-beart .toast-mobile{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-card)}
+
+/* Remove hairline dividers everywhere in this theme. Most separators use --line
+   / --chrome-line (both set transparent above); the handful that hardcode other
+   tokens are cleared here so no horizontal rule survives on the dark surfaces. */
+html.theme-beart .bottom-nav{border-top:0}
+html.theme-beart .trips-bg-screen .bottom-nav{border-color:transparent}
+html.theme-beart .form-save-bar{border-top:0}
+html.theme-beart .timeline-context{border-bottom:0}
+html.theme-beart .journal-days{border-top:0}
+html.theme-beart .esim-refresh .esim-offer{border-top:0}
+
+/* Timeline markers: museum / documents / calendar glyphs are not in any
+   category colour list, so they fall back to the near-white --icon on the dark
+   chip and read as broken. Give them the activity accent (amber on the plan
+   chip) so every marker on the itinerary is coloured consistently. */
+html.theme-beart .timeline-screen--ribbon :is(.journey-marker--museum,.journey-marker--documents,.journey-marker--document,.journey-marker--calendar,.journey-marker--activity){background:var(--activity-soft)!important}
+html.theme-beart .timeline-screen--ribbon :is(.journey-marker--museum,.journey-marker--documents,.journey-marker--document,.journey-marker--calendar,.journey-marker--activity) :is(.ph,.ph-svg){color:var(--activity-ink)!important}
+
+/* --- beart: icon colour matches its tile hue everywhere --- */
+html.theme-beart{--activity-ink:#b7a4f0}
+/* Activity (purple tile) -> violet icon */
+html.theme-beart .ds-pastel-icon--activity{color:var(--activity-ink)}
+html.theme-beart .timeline-screen--ribbon :is(.journey-marker--activity,.journey-marker--landmark,.journey-marker--tour,.journey-marker--camera,.journey-marker--event) :is(.ph,.ph-svg){color:var(--activity-ink)!important}
+html.theme-beart :is(.day-plan-row[data-type="tour"],.day-plan-row[data-type="activity"],.day-plan-row[data-type="attraction"],.day-plan-row[data-type="event"],.day-plan-row[data-type="other"],.day-plan-row[data-type="museum_culture"],.day-plan-row[data-type="tour_experience"],.day-plan-row[data-type="entertainment"],.day-plan-row[data-type="viewpoint_scenic"]) .day-plan-row__icon{color:var(--activity-ink)}
+/* Food (red tile) -> red icon (was amber, mismatched) */
+html.theme-beart .timeline-screen--ribbon :is(.journey-marker--restaurant,.journey-marker--coffee,.journey-marker--bar,.journey-marker--cooking,.journey-marker--shopping,.journey-marker--reservation,.journey-marker--ticket) :is(.ph,.ph-svg){color:var(--red)!important}
+html.theme-beart :is(.day-plan-row[data-type="restaurant"],.day-plan-row[data-type="food_drink"],.day-plan-row[data-type="shopping"]) .day-plan-row__icon{color:var(--red)}
+/* Keep the amber "next / active / status" accent even though --indigo is now blue */
+html.theme-beart .timeline-day__rail{border-color:var(--accent)}
+html.theme-beart :is(.journey-event--next,.journey-event--active) .journey-marker{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+html.theme-beart :is(.timeline-flag--next,.timeline-flag--now){color:var(--accent)}
+html.theme-beart .timeline-empty__eyebrow{color:var(--accent)}
+
+/* --- beart: detail hero card uses the neutral card surface (no category tint) --- */
+html.theme-beart .fd-card--tone-flight,
+html.theme-beart .fd-card--tone-transfer,
+html.theme-beart .fd-card--tone-stay,
+html.theme-beart .fd-card--tone-food,
+html.theme-beart .fd-card--tone-activity{background:var(--card)!important}
+html.theme-beart :is(.hotel-detail-screen,.train-detail-screen,.dark-detail) .detail-content>.fd-card,
+html.theme-beart .flight-detail-screen .flight-detail-stack>.fd-card,
+html.theme-beart .dark-detail :is(.fd-card--tone-stay,.fd-card--tone-food,.fd-card--tone-activity){background:var(--card)!important}
+
+/* --- beart: neutral (not green) numbered place markers on the collection timeline --- */
+html.theme-beart .collection-page .mini-stop__marker{background:var(--surface);color:var(--ink)}
+
+/* --- beart: lift the "start building" action rows --- */
+html.theme-beart .add-intent-row{box-shadow:var(--shadow-soft)}
+
+/* Prevent the trip-create hero title from painting over the field cards */
+html body .trip-create-screen .trip-create-head{position:static}
+
+/* ============================================================================
+   Trips dashboard — elevated destination cards (first-impression page).
+   Each trip is its own raised card with a per-destination gradient thumbnail
+   (hue derived from the title), a countdown/status pill and a soft shadow.
+   Scoped to .trips-screen so shared .ds-grouped-card usage is untouched.
+   ========================================================================== */
+html body .trips-screen .trip-list{
+  display:grid;gap:var(--space-2);min-width:0;margin:0;padding:0;list-style:none;
+  background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible;
+}
+html body .trips-screen .trip-list-row-wrap{
+  position:relative;overflow:hidden;border:0;border-bottom:0;
+  border-radius:18px;box-shadow:var(--shadow-soft);
+}
+html body .trips-screen .trip-list-row-wrap .trip-list-row{
+  min-height:60px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--muted) 16%,transparent);
+  border-radius:18px;grid-template-columns:44px minmax(0,1fr) 18px;gap:12px;
+  background:var(--card);
+}
+html body .trips-screen .trip-list-row--current .trip-list-row{
+  border-color:color-mix(in srgb,var(--accent) 55%,transparent);
+}
+html body .trips-screen .trip-list-row__mark{
+  width:44px;height:44px;border-radius:13px;color:#fff;
+  background:hsl(var(--tg-h,214) 55% 52%);
+  box-shadow:none;
+}
+html body .trips-screen .trip-list-row__mark .ph{color:#fff}
+html body .trips-screen .trip-list-row--past .trip-list-row__mark,
+html body .trips-screen .trip-list-row--cancelled .trip-list-row__mark{
+  background:var(--surface);box-shadow:none;
+}
+html body .trips-screen .trip-list-row--past .trip-list-row__mark .ph{color:var(--muted)}
+html body .trips-screen .trip-list-row--cancelled .trip-list-row__mark .ph{color:var(--red)}
+html body .trips-screen .trip-list-row__copy{gap:2px}
+html body .trips-screen .trip-list-row__copy strong{font-size:16px;letter-spacing:-.015em}
+html body .trips-screen .trip-list-row__status{
+  justify-self:start;min-height:0;margin-top:2px;padding:3px 10px;border-radius:999px;
+  background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);
+  font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:.01em;
+}
+html body .trips-screen .trip-list-row--current .trip-list-row__status{
+  background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green);
+}
+html body .trips-screen .trip-list-row--past .trip-list-row__status{
+  background:color-mix(in srgb,var(--muted) 16%,transparent);color:var(--muted);
+}
+html body .trips-screen .trip-list-row--cancelled .trip-list-row__status{
+  background:color-mix(in srgb,var(--red) 13%,transparent);color:var(--red);
+}
+html body .trips-screen .trip-list-row__delete-action{border-radius:0}
+@media(prefers-reduced-motion:no-preference){
+  html body .trips-screen .trip-list-row-wrap{animation:trip-card-in 420ms var(--ease,ease-out) both}
+  html body .trips-screen .trip-list-row-wrap:nth-child(2){animation-delay:50ms}
+  html body .trips-screen .trip-list-row-wrap:nth-child(3){animation-delay:100ms}
+  html body .trips-screen .trip-list-row-wrap:nth-child(4){animation-delay:150ms}
+}
+@keyframes trip-card-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ============================================================================
+   Timeline event markers styled like the trips-dashboard thumbnails:
+   rounded gradient tiles with white glyphs; the hue carries the category.
+   Applies in both themes (uses !important to beat the ribbon soft-tile rules).
+   ========================================================================== */
+html body .timeline-screen--ribbon .journey-marker{
+  width:46px;height:46px;border-radius:15px !important;color:#fff !important;
+  background:hsl(214 58% 54%) !important;
+  box-shadow:none !important;opacity:1 !important;
+}
+html body .timeline-screen--ribbon .journey-marker :is(.ph,.ph-svg){color:#fff !important}
+html body .timeline-screen--ribbon .journey-marker--flight{background:hsl(214 58% 54%) !important}
+html body .timeline-screen--ribbon :is(.journey-marker--car,.journey-marker--taxi,.journey-marker--bus,.journey-marker--train,.journey-marker--ferry,.journey-marker--cruise){background:hsl(32 80% 52%) !important}
+html body .timeline-screen--ribbon :is(.journey-marker--hotel,.journey-marker--city){background:hsl(158 46% 46%) !important}
+html body .timeline-screen--ribbon :is(.journey-marker--activity,.journey-marker--landmark,.journey-marker--tour,.journey-marker--camera,.journey-marker--event,.journey-marker--museum,.journey-marker--documents,.journey-marker--document,.journey-marker--calendar){background:hsl(266 50% 58%) !important}
+html body .timeline-screen--ribbon :is(.journey-marker--restaurant,.journey-marker--coffee,.journey-marker--bar,.journey-marker--cooking,.journey-marker--shopping,.journey-marker--reservation,.journey-marker--ticket){background:hsl(354 66% 60%) !important}
+/* Next / active event: flat tile, distinguished only by the "Now"/"Next" flag. */
+html body .timeline-screen--ribbon :is(.journey-event--next,.journey-event--active) .journey-marker{
+  color:#fff !important;box-shadow:none !important;
+}
+html body .timeline-screen--ribbon :is(.journey-event--next,.journey-event--active) .journey-marker :is(.ph,.ph-svg){color:#fff !important}
+/* Past events keep full-opacity flat tiles and white glyphs (no dimming). */
+html body .timeline-screen--ribbon .journey-event--past .journey-marker{opacity:1 !important;color:#fff !important}
+html body .timeline-screen--ribbon .journey-event--past .journey-marker :is(.ph,.ph-svg){color:#fff !important}
+
+/* ============================================================================
+   "Add to trip" / "Start building" actions as elevated gradient cards,
+   matching the trips dashboard. Covers both the focused add-intent page and
+   the timeline empty state (both render addIntentRows() in .add-intent-fields).
+   ========================================================================== */
+html body .add-intent-page .add-intent-fields,
+html body .timeline-empty--intent .add-intent-fields{
+  display:grid;gap:12px;padding-inline:0;background:transparent;border:0;border-radius:0;box-shadow:none;
+}
+html body .add-intent-fields .add-intent-row{
+  display:grid;grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:14px;
+  min-height:76px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--muted) 16%,transparent);
+  border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--shadow-soft) !important;
+}
+html body .add-intent-fields .add-intent-row:active{transform:scale(.99);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+html body .add-intent-fields .add-intent-row__icon{width:48px;height:48px;flex-basis:48px;border-radius:14px;background:transparent}
+html body .add-intent-fields .add-intent-row .ds-pastel-icon{
+  width:48px;height:48px;flex-basis:48px;border-radius:14px;color:#fff !important;
+  box-shadow:none;
+  background:hsl(214 58% 54%) !important;
+}
+html body .add-intent-fields .add-intent-row .ds-pastel-icon .ph{color:#fff !important}
+html body .add-intent-fields .add-intent-row--booking .ds-pastel-icon{background:hsl(214 58% 54%) !important}
+html body .add-intent-fields .add-intent-row--plan .ds-pastel-icon{background:hsl(266 50% 58%) !important}
+html body .add-intent-fields .add-intent-row--later .ds-pastel-icon{background:hsl(354 66% 60%) !important}
+html body .add-intent-fields .add-intent-row__copy strong{font-size:16px;letter-spacing:-.015em}
+
+/* ============================================================================
+   Icon-glyph + card-colour corrections (flat everywhere).
+   1) Timeline food glyphs were tinted --red by an earlier beart rule
+      (html.theme-beart … --restaurant … {color:var(--red)}), which outranks
+      the plain white-glyph rule. Force white with a theme-beart-scoped selector
+      so every flat tile shows a crisp white glyph.
+   2) The Share / collaboration "Why plan together?" cards still used soft tinted
+      tiles with coloured glyphs. Make them flat saturated tiles + white glyphs,
+      matching trips / timeline / add-intent. Also flatten the hero (no gradient).
+   ========================================================================== */
+html.theme-beart body .timeline-screen--ribbon .journey-marker :is(.ph,.ph-svg),
+html.theme-beart body .timeline-screen--ribbon :is(.journey-event--next,.journey-event--active,.journey-event--past) .journey-marker :is(.ph,.ph-svg){
+  color:#fff !important;
+}
+
+/* Share screen — flat benefit icon tiles with white glyphs */
+html body .collab-benefit__icon{
+  width:44px;height:44px;border-radius:14px !important;color:#fff !important;
+  background:hsl(214 58% 54%) !important;box-shadow:none !important;
+}
+html body .collab-benefit{grid-template-columns:44px minmax(0,1fr)}
+html body .collab-benefit__icon :is(.ph,.ph-svg){color:#fff !important}
+html body .collab-benefit:nth-of-type(1) .collab-benefit__icon{background:hsl(214 58% 54%) !important}
+html body .collab-benefit:nth-of-type(2) .collab-benefit__icon{background:hsl(158 46% 46%) !important}
+html body .collab-benefit:nth-of-type(3) .collab-benefit__icon{background:hsl(266 50% 58%) !important}
+html body .collab-benefit:nth-of-type(1) .collab-benefit__icon :is(.ph,.ph-svg),
+html body .collab-benefit:nth-of-type(2) .collab-benefit__icon :is(.ph,.ph-svg),
+html body .collab-benefit:nth-of-type(3) .collab-benefit__icon :is(.ph,.ph-svg){color:#fff !important}
+/* Invite-row lead icon: flat neutral tile, white glyph */
+html body .collab-invite__icon{background:var(--surface) !important;color:#fff !important}
+/* Hero: flat solid card (no gradient), keep amber accents */
+html body .collab-hero{background:var(--card) !important;background-image:none !important}
+html body .collab-hero__icon{background:hsl(214 58% 54%) !important;color:#fff !important}
+html body .collab-hero__icon :is(.ph,.ph-svg){color:#fff !important}
+
+/* ============================================================================
+   Save feedback — make required-field failures impossible to miss.
+   Pressing Save with a missing file only surfaced tiny grey text; now the
+   file picker turns red and the validation message reads as a clear alert pill.
+   ========================================================================== */
+html body .quick-document-file:has(input[aria-invalid="true"]) .document-file-picker,
+html body .document-form:has(input[aria-invalid="true"]) .document-file-picker{
+  border-color:var(--red) !important;border-style:solid !important;
+  background:color-mix(in srgb,var(--red) 12%,transparent) !important;
+}
+html body .quick-document-file:has(input[aria-invalid="true"]) .document-file-picker strong,
+html body .quick-document-file:has(input[aria-invalid="true"]) .document-file-picker :is(.ph,.ph-svg),
+html body .document-form:has(input[aria-invalid="true"]) .document-file-picker strong,
+html body .document-form:has(input[aria-invalid="true"]) .document-file-picker :is(.ph,.ph-svg){
+  color:var(--red) !important;
+}
+html body .field-error{
+  color:var(--red) !important;font-weight:700 !important;font-size:13px !important;
+  display:flex;align-items:center;gap:6px;
+  margin-top:8px;padding:8px 12px;border-radius:10px;
+  background:color-mix(in srgb,var(--red) 15%,transparent);
+  animation:field-error-in .18s ease-out both;
+}
+@keyframes field-error-in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+
+/* ============================================================================
+   Active day tab — the amber-soft fill rendered as muddy brown on the dark
+   theme. Use a clean neutral chip with a crisp amber ring + amber weekday.
+   ========================================================================== */
+html.theme-beart .timeline-day-tab--active{
+  background:var(--surface) !important;
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent);
+}
+html.theme-beart .timeline-day-tab--active .timeline-day-tab__dow{color:var(--accent) !important}
+html.theme-beart .timeline-day-tab--active .timeline-day-tab__date{color:#fff !important}
+
+/* ============================================================================
+   App-wide flat icon language — every icon tile matches the "All your trips"
+   cards: solid saturated rounded-square + white glyph (no soft tints, no
+   coloured glyphs). Driven mostly through the .ds-pastel-icon design-system
+   primitive, which nearly every list row / option card / choice tile routes
+   its icon through (travel rows, trip-option cards, choice tiles, members,
+   partner rows, add-a-* menus, ds-timeline info rows).
+   ========================================================================== */
+html body .ds-pastel-icon{border-radius:14px !important;box-shadow:none !important;color:#fff !important}
+html body .ds-pastel-icon :is(.ph,.ph-svg){color:#fff !important}
+html body .ds-pastel-icon--flight{background:hsl(214 58% 54%) !important}
+html body .ds-pastel-icon--stay{background:hsl(158 46% 46%) !important}
+html body .ds-pastel-icon--activity{background:hsl(266 50% 58%) !important}
+html body .ds-pastel-icon--transfer{background:hsl(32 80% 52%) !important}
+html body .ds-pastel-icon--food{background:hsl(354 66% 60%) !important}
+html body .ds-pastel-icon--neutral{background:var(--surface) !important}
+html body .account-danger-row .ds-pastel-icon{background:hsl(354 66% 60%) !important;color:#fff !important}
+
+/* Welcome feature tiles → flat saturated by category */
+html body .welcome-thread .welcome-features .row-icon :is(.ph,.ph-svg){color:#fff !important}
+html body .welcome-thread .welcome-feature--bookings .row-icon{background:hsl(214 58% 54%) !important;color:#fff !important}
+html body .welcome-thread .welcome-feature--plans .row-icon{background:hsl(266 50% 58%) !important;color:#fff !important}
+html body .welcome-thread .welcome-feature--ideas .row-icon{background:hsl(354 66% 60%) !important;color:#fff !important}
+
+/* Empty / error state icons → flat blue tile, white glyph */
+html body .ds-empty-state__icon,
+html body .ds-error-state__icon{background:hsl(214 58% 54%) !important;color:#fff !important}
+html body .ds-empty-state__icon :is(.ph,.ph-svg),
+html body .ds-error-state__icon :is(.ph,.ph-svg){color:#fff !important}
+
+/* ============================================================================
+   App-wide typeface: Noto Sans (loaded from Google Fonts in index.html).
+   The original --font-ui / --font / --font-title tokens above stay intact as
+   the offline fallback tier; this later :root declaration puts Noto Sans first,
+   and because --font / --font-title resolve var(--font-ui) at use time, every
+   screen picks it up with no per-page work.
+   ========================================================================== */
+:root{
+  --font-ui:"Noto Sans",-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;
+}
+
+/* Create-trip ("Where are you going?") icons → flat saturated tiles, white glyph
+   (they were soft --activity-soft tiles with an --accent glyph). */
+html body .trip-create-screen .trip-create-destination__head>span{
+  background:hsl(214 58% 54%) !important;color:#fff !important;border-radius:14px !important;
+}
+html body .trip-create-screen .trip-create-details .date-range-trigger__icon,
+html body .trip-create-screen .date-range-trigger__icon{
+  background:hsl(266 50% 58%) !important;color:#fff !important;border-radius:14px !important;
+}
+html body .trip-create-screen .trip-create-destination__head>span :is(.ph,.ph-svg),
+html body .trip-create-screen .date-range-trigger__icon :is(.ph,.ph-svg){color:#fff !important}
+
+/* Place-search result icons (city / airport) → flat saturated tiles, white glyph,
+   matching the "All your trips" language. Covers both the inline dropdown and the
+   fullscreen destination picker. */
+html body .place-option__kind{
+  background:hsl(158 46% 46%) !important;color:#fff !important;border-radius:14px !important;box-shadow:none !important;
+}
+html body .place-option__kind--airport{background:hsl(214 58% 54%) !important}
+html body .place-option__kind :is(.ph,.ph-svg){color:#fff !important}
+
+/* Review-trip ("Your journey") page → match the "All your trips" flat language:
+   neutral surface cards + solid saturated icon tiles with a white glyph. */
+html body .trip-setup-ready .trip-plan-field{grid-template-columns:minmax(0,1fr);gap:0}
+html body .trip-setup-ready .trip-plan-field>.app-icon{display:block;width:40px;height:40px;padding:9px;border-radius:14px;color:#fff !important;background:hsl(158 46% 46%);box-sizing:border-box}
+html body .trip-setup-ready .trip-plan-field:nth-of-type(2)>.app-icon{background:hsl(266 50% 58%)}
+html body .trip-setup-ready .trip-setup-tool{background:var(--surface) !important}
+html body .trip-setup-ready .trip-setup-tool__icon{color:#fff !important;background:hsl(214 58% 54%) !important;box-shadow:none !important}
+html body .trip-setup-ready .trip-setup-tool--stay .trip-setup-tool__icon{background:hsl(158 46% 46%) !important}
+html body .trip-setup-ready .trip-setup-tool--esim .trip-setup-tool__icon{background:hsl(266 50% 58%) !important}
+html body .trip-setup-ready .trip-setup-tool__icon :is(.ph,.ph-svg){color:#fff !important}
+
+/* Add-a-booking / Day Plan type rows → flat saturated tiles + white glyph,
+   matching the "All your trips" language (were soft *-soft tiles with a
+   coloured glyph, incl. theme-beart glyph overrides). Colour grouped by type. */
+html body .day-plan-row__icon{border-radius:14px !important;box-shadow:none !important;color:#fff !important}
+html body .day-plan-row__icon :is(.ph,.ph-svg){color:#fff !important}
+html body :is(.day-plan-row[data-type="flight"],.day-plan-row[data-type="train"],.day-plan-row[data-type="ferry"],.day-plan-row[data-type="bus"],.day-plan-row[data-type="cruise"],.day-plan-row[data-type="insurance"]) .day-plan-row__icon{background:hsl(214 58% 54%) !important}
+html body :is(.day-plan-row[data-type="car"],.day-plan-row[data-type="transfer"],.day-plan-row[data-type="taxi"],.day-plan-row[data-type="parking"]) .day-plan-row__icon{background:hsl(32 80% 52%) !important}
+html body :is(.day-plan-row[data-type="hotel"],.day-plan-row[data-type="neighborhood"],.day-plan-row[data-type="nature_outdoors"],.day-plan-row[data-type="beach_relax"]) .day-plan-row__icon{background:hsl(158 46% 46%) !important}
+html body :is(.day-plan-row[data-type="restaurant"],.day-plan-row[data-type="food_drink"],.day-plan-row[data-type="shopping"]) .day-plan-row__icon{background:hsl(354 66% 60%) !important}
+html body :is(.day-plan-row[data-type="tour"],.day-plan-row[data-type="activity"],.day-plan-row[data-type="attraction"],.day-plan-row[data-type="event"],.day-plan-row[data-type="other"],.day-plan-row[data-type="museum_culture"],.day-plan-row[data-type="tour_experience"],.day-plan-row[data-type="entertainment"],.day-plan-row[data-type="viewpoint_scenic"]) .day-plan-row__icon{background:hsl(266 50% 58%) !important}
+
+/* "Already have a confirmation?" rows → flat saturated tiles + white glyph */
+html body .manual-add-secondary>span:first-child{border-radius:14px !important;color:#fff !important;background:hsl(214 58% 54%) !important}
+html body .manual-add-secondary>span:first-child :is(.ph,.ph-svg){color:#fff !important}
+html body .manual-add-secondary[data-action="open-upload-booking"]>span:first-child{background:hsl(158 46% 46%) !important}
+html body .manual-add-secondary[data-action="open-forward-booking"]>span:first-child{background:hsl(214 58% 54%) !important}
+
+/* Detail pages: tint the type label + row-icon glyphs by the item's timeline
+   category (set via .detail-tone--* on the screen root), instead of the global
+   amber accent — so a food item reads red, a flight blue, etc., matching the
+   Timeline glyph colours. Falls back to --accent if no tone is set. */
+.detail-tone--flight{--detail-accent:hsl(214 58% 54%)}
+.detail-tone--transfer{--detail-accent:hsl(32 80% 52%)}
+.detail-tone--stay{--detail-accent:hsl(158 46% 46%)}
+.detail-tone--food{--detail-accent:hsl(354 66% 60%)}
+.detail-tone--activity{--detail-accent:hsl(266 50% 58%)}
+html body .dark-detail .fd-row__icon:not(.fd-row__icon--warn){color:var(--detail-accent,var(--accent))}
+html body .dark-detail .fd-row__icon:not(.fd-row__icon--warn) :is(.ph,.ph-svg){color:var(--detail-accent,var(--accent))}
+html body .plan-detail-screen .fd-flight{color:var(--detail-accent,var(--accent))}
+html body .dark-detail .fd-flight :is(.ph,.ph-svg){color:var(--detail-accent,var(--accent))}
+html body .dark-detail .fd-card__head .fd-flight .ph-svg{color:var(--detail-accent,var(--accent))}
+html body .hotel-detail-screen .fd-card__head .fd-flight{color:var(--detail-accent,var(--accent))}
+html body .fd-note-edit__head .fd-row__icon{color:var(--detail-accent,var(--accent))}
+
+/* Currency converter — clearer single-card exchanger (redesign 2026-09).
+   One card, two labelled lines (pay/get) split by a rate+swap divider, so the
+   direction of conversion and how to change currencies are obvious at a glance. */
+html body .currency-screen .currency-page{gap:var(--space-4);padding:var(--space-4)}
+html body .currency-screen .currency-hero{grid-template-columns:44px minmax(0,1fr);border-radius:var(--radius-hero);background:var(--activity-soft)}
+html body .currency-screen .currency-hero>div>span{color:var(--accent)}
+html body .currency-screen .currency-hero h1{font-size:21px;white-space:normal;font-variant-numeric:tabular-nums}
+html body .currency-screen .currency-card{position:relative;display:grid;gap:0;border:1px solid var(--line);border-radius:var(--radius-hero);background:var(--card);overflow:hidden}
+html body .currency-screen .currency-line{display:grid;gap:6px;padding:16px 18px}
+html body .currency-screen .currency-line--to{background:var(--activity-soft)}
+html body .currency-screen .currency-line--from:focus-within{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+html body .currency-screen .currency-line__label{color:var(--muted);font-size:11px;font-weight:var(--weight-semibold);letter-spacing:.08em;text-transform:uppercase}
+html body .currency-screen .currency-line__field{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px}
+html body .currency-screen .currency-line__field .currency-select-trigger{justify-self:start;display:grid;grid-template-columns:auto minmax(0,1fr) 16px;align-items:center;gap:7px;width:auto;min-width:118px;max-width:150px;min-height:48px;padding:6px 10px 6px 12px;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);color:var(--ink);text-align:left;text-transform:none;letter-spacing:0}
+html body .currency-screen .currency-amount{justify-self:end;display:block;width:100%;min-width:0}
+html body .currency-screen .currency-amount input{width:100%;height:auto;padding:0;border:0;background:transparent;color:var(--ink);text-align:right;font:700 clamp(28px,9vw,38px)/1.05 var(--font-ui);font-variant-numeric:tabular-nums;letter-spacing:-.03em;caret-color:var(--accent)}
+html body .currency-screen .currency-amount input:focus-visible{outline:none;box-shadow:none}
+html body .currency-screen .currency-amount input.is-long{font-size:22px}
+html body .currency-screen .currency-result{justify-self:end;display:block;min-height:0;text-align:right;color:var(--ink)}
+html body .currency-screen .currency-result__amount{font-size:clamp(28px,9vw,38px);line-height:1.05;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html body .currency-screen .currency-result__amount.is-long{font-size:22px;line-height:1.2}
+html body .currency-screen .currency-divider{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+html body .currency-screen .currency-divider .currency-rate-note{padding:0;background:transparent;color:var(--muted);font-size:12px;font-weight:var(--weight-semibold);white-space:nowrap;font-variant-numeric:tabular-nums}
+html body .currency-screen .currency-divider .currency-swap{flex:0 0 40px;display:grid;place-items:center;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:var(--accent);color:var(--accent-ink)}
+html body .currency-screen .currency-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+html body .currency-screen .currency-quick button{min-height:44px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--muted);font-size:14px;font-weight:var(--weight-semibold)}
+html body .currency-screen .currency-quick button.is-active{border-color:var(--accent);background:var(--activity-soft);color:var(--accent)}
+html body .currency-screen .currency-update-row{grid-template-columns:minmax(0,1fr) auto;padding:0;border-top:0;background:transparent}
+@media(max-width:374px){
+  html body .currency-screen .currency-line{padding:13px 14px}
+  html body .currency-screen .currency-line__field{gap:8px}
+  html body .currency-screen .currency-line__field .currency-select-trigger{min-width:104px;max-width:132px}
+  html body .currency-screen .currency-divider{padding-inline:14px}
+  html body .currency-screen .currency-quick{gap:6px}
+}
+
+/* Travel eSIM — flat saturated icon language + bold offer hero (redesign 2026-09).
+   Single-viewport promo: gradient hero with the code, a 2x2 grid of flat colored
+   benefit tiles, and clean numbered steps — consistent with the trips visual language. */
+html body .esim-screen .esim-page{gap:14px;padding:14px 16px calc(16px + env(safe-area-inset-bottom))}
+html body .esim-screen .esim-hero{align-items:stretch;gap:0;padding:18px;border:0!important;border-radius:22px!important;background:linear-gradient(140deg,var(--accent),color-mix(in srgb,var(--accent) 66%,#000 6%))!important;color:var(--accent-ink);text-align:left;box-shadow:none!important}
+html body .esim-screen .esim-hero__top{margin-bottom:10px;color:var(--accent-ink)}
+html body .esim-screen .esim-hero__top>span:first-child{font-weight:600;opacity:.9}
+html body .esim-screen .esim-hero__icon{width:40px;height:40px;border-radius:12px;background:color-mix(in srgb,#fff 24%,transparent)!important;color:var(--accent-ink)!important}
+html body .esim-screen .esim-hero__icon .ph,html body .esim-screen .esim-hero__icon .ph-svg{color:var(--accent-ink)!important}
+html body .esim-screen .esim-hero h1{margin:0 0 6px;font-size:26px;font-weight:700;line-height:1.12;letter-spacing:-.03em;color:var(--accent-ink)}
+html body .esim-screen .esim-hero p{max-width:none;font-size:14px;line-height:1.45;color:color-mix(in srgb,var(--accent-ink) 82%,transparent)}
+html body .esim-screen .esim-offer{grid-template-columns:minmax(0,1fr) auto;align-items:center;margin-top:16px;padding:14px 0 0;border-top:1px solid color-mix(in srgb,var(--accent-ink) 32%,transparent)!important;border-radius:0;background:transparent!important;color:var(--accent-ink)}
+html body .esim-screen .esim-offer>strong{font-size:24px;font-weight:700;color:var(--accent-ink)}
+html body .esim-screen .esim-offer>span{color:color-mix(in srgb,var(--accent-ink) 82%,transparent)}
+html body .esim-screen .esim-code{gap:6px;min-height:44px;margin:0;padding:10px 14px;border:0;border-radius:12px;background:color-mix(in srgb,#fff 92%,transparent);color:var(--accent);font-size:14px;font-weight:700;letter-spacing:.04em}
+html body .esim-screen .esim-features{gap:12px;padding:0;border:0!important;background:transparent!important}
+html body .esim-screen .esim-feature{min-height:0;gap:10px;padding:0;border:0!important}
+html body .esim-screen .esim-feature__icon{width:38px;height:38px;border-radius:12px;color:#fff!important}
+html body .esim-screen .esim-feature__icon .ph,html body .esim-screen .esim-feature__icon .ph-svg{color:#fff!important}
+html body .esim-screen .esim-feature:nth-child(1) .esim-feature__icon{background:hsl(214 58% 54%)!important}
+html body .esim-screen .esim-feature:nth-child(2) .esim-feature__icon{background:hsl(158 46% 46%)!important}
+html body .esim-screen .esim-feature:nth-child(3) .esim-feature__icon{background:hsl(266 50% 58%)!important}
+html body .esim-screen .esim-feature:nth-child(4) .esim-feature__icon{background:hsl(32 80% 52%)!important}
+html body .esim-screen .esim-feature strong{font-size:14px;font-weight:600;color:var(--ink)}
+html body .esim-screen .esim-steps{padding:16px;border:1px solid var(--line)!important;border-radius:18px;background:var(--card)!important}
+html body .esim-screen .esim-steps h2{margin:0 0 12px;color:var(--ink)}
+html body .esim-screen .esim-steps ol{gap:12px}
+html body .esim-screen .esim-steps li{min-height:0;padding:0;border:0!important}
+html body .esim-screen .esim-steps li>span{width:26px;height:26px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+html body .esim-screen .esim-steps li p{color:var(--ink)}
+html body .esim-screen .esim-cta{min-height:52px;margin-top:2px;border-radius:14px;font-size:16px;font-weight:700}
+html body .esim-screen .esim-note{font-size:12px;line-height:1.45;text-align:center;color:var(--muted)}
+@media(max-width:359px){
+  html body .esim-screen .esim-hero{padding:16px}
+  html body .esim-screen .esim-hero h1{font-size:23px}
+  html body .esim-screen .esim-offer{grid-template-columns:1fr;gap:8px}
+  html body .esim-screen .esim-code{justify-self:start}
+}
+
+/* Delete control in booking detail headers (flight/hotel/train/plan). */
+html body .app-bar-actions .app-bar-action--danger{color:hsl(354 70% 62%)}
+html body .app-bar-actions .app-bar-action--danger:active{opacity:.6}
+
+/* Help & FAQ — flat saturated icon tiles + white glyph, matching the app-wide
+   icon language (was soft pastel tiles with a muted glyph). */
+html body .help-page .help-intro__icon,
+html body .help-page .help-quickstart__head>span,
+html body .help-page .faq-section__icon,
+html body .help-page .help-support__icon{color:#fff}
+html body .help-page .help-intro__icon :is(.ph,.ph-svg),
+html body .help-page .help-quickstart__head>span :is(.ph,.ph-svg),
+html body .help-page .faq-section__icon :is(.ph,.ph-svg),
+html body .help-page .help-support__icon :is(.ph,.ph-svg){color:#fff!important}
+html body .help-page .help-intro__icon{background:hsl(266 50% 58%)}
+html body .help-page .help-quickstart__head>span{background:hsl(214 58% 54%)}
+html body .help-page .help-support__icon{background:hsl(158 46% 46%)}
+html body .help-page .faq-section--c0 .faq-section__icon{background:hsl(214 58% 54%)}
+html body .help-page .faq-section--c1 .faq-section__icon{background:hsl(158 46% 46%)}
+html body .help-page .faq-section--c2 .faq-section__icon{background:hsl(32 80% 52%)}
+html body .help-page .faq-section--c3 .faq-section__icon{background:hsl(354 66% 60%)}
+html body .help-page .faq-section--c4 .faq-section__icon{background:hsl(266 50% 58%)}
+
+/* === Create-trip layout hard-guarantee (2026-09-09) ===================
+   The destination/date cards were painting on top of the "Where are you
+   going?" heading once the fullscreen place picker closed. Rather than
+   depend on the tangled legacy cascade, this asserts one simple invariant
+   with maximum weight: on the create-trip screen the head and the fields
+   form a single, static, top-aligned column and nothing is pulled out of
+   normal flow. Scoped with :not(.is-fullscreen) so the fullscreen picker
+   (position:fixed) and its inner icon are left alone. */
+html body .phone-app .trip-create-screen .trip-create-form{
+  display:flex!important;
+  flex-direction:column!important;
+  align-content:normal!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:var(--space-5)!important;
+  position:static!important;
+  transform:none!important;
+}
+html body .phone-app .trip-create-screen .trip-create-form>.trip-create-head{
+  order:0!important;
+  position:static!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  margin:0!important;
+  padding:0 0 var(--space-4)!important;
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  border-bottom:1px solid var(--line)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+html body .phone-app .trip-create-screen .trip-create-head>*,
+html body .phone-app .trip-create-screen .trip-create-head__copy>*{
+  position:static!important;
+  transform:none!important;
+  float:none!important;
+}
+html body .phone-app .trip-create-screen .trip-create-head::after,
+html body .phone-app .trip-create-screen .trip-create-head::before{content:none!important;display:none!important}
+html body .phone-app .trip-create-screen .trip-create-form>.trip-create-fields{
+  order:1!important;
+  position:static!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  margin:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:var(--space-4)!important;
+}
+html body .phone-app .trip-create-screen .trip-create-fields>.trip-create-destination:not(.is-fullscreen),
+html body .phone-app .trip-create-screen .trip-create-fields>.trip-create-details{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  float:none!important;
+  transform:none!important;
+  margin:0!important;
+}

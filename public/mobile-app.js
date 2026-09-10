@@ -563,6 +563,18 @@
     }
     return null;
   }
+  function themeChromeColor() {
+    return "#0f1f29";
+  }
+  function applyNightTheme() {
+    // Night is Tripto's single appearance. The legacy class name is retained
+    // because it scopes the established Night token set in the stylesheet.
+    document.documentElement.classList.add("theme-beart");
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.setAttribute("content", themeChromeColor());
+    const schemeMeta = document.querySelector('meta[name="color-scheme"]');
+    if (schemeMeta) schemeMeta.setAttribute("content", "dark");
+  }
   function itemId(item) {
     return String(val(item, "id", "trip_item_id") || "");
   }
@@ -635,9 +647,9 @@
     "collection-form", "stop-form", "day-plan-form", "add-to-plan",
   ]);
   const MISSING_ENTITY_DESTINATIONS = Object.freeze({
-    flight: "bookings", hotel: "bookings", train: "bookings", plan: "timeline",
-    traveler: "travelers", collection: "planning", "collection-form": "day-plan",
-    "stop-form": "planning", "day-plan-form": "day-plan", "add-to-plan": "save-later",
+    flight: "timeline", hotel: "timeline", train: "timeline", plan: "timeline",
+    traveler: "travelers", collection: "timeline", "collection-form": "day-plan",
+    "stop-form": "day-plan", "collection-stop": "collection", "day-plan-form": "day-plan", "add-to-plan": "save-later",
   });
   function isNewEntityRoute(screen, rawId) {
     return ["collection-form", "day-plan-form"].includes(screen) &&
@@ -850,6 +862,53 @@
     }
     showToast("Trip deleted.");
   }
+  function confirmDeleteTraveler(id) {
+    if (!canEditCurrentTrip()) return;
+    const traveler = state.travelers.find((t) => String(t.id) === String(id));
+    if (!traveler) return;
+    const name = val(traveler, "display_name") || "this traveler", returnFocus = document.activeElement;
+    const backdrop = document.createElement("div");
+    backdrop.className = "discard-dialog-backdrop";
+    backdrop.innerHTML = `<section class="discard-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-traveler-title" aria-describedby="delete-traveler-copy"><h2 id="delete-traveler-title">Remove this traveler?</h2><p id="delete-traveler-copy">“${esc(name)}” will be removed from this trip. Their bookings stay, but they will be unassigned.</p><div class="discard-dialog-actions"><button type="button" class="mobile-secondary-action" data-delete-action="cancel">Keep traveler</button><button type="button" class="mobile-danger-action" data-delete-action="confirm">Remove</button></div></section>`;
+    const cancel = backdrop.querySelector('[data-delete-action="cancel"]'),
+      confirmBtn = backdrop.querySelector('[data-delete-action="confirm"]');
+    const close = () => { backdrop.remove(); returnFocus?.focus?.(); };
+    cancel.addEventListener("click", close);
+    backdrop.addEventListener("click", (event) => { if (event.target === backdrop) close(); });
+    backdrop.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { event.preventDefault(); close(); return; }
+      if (event.key !== "Tab") return;
+      const controls = [cancel, confirmBtn], index = controls.indexOf(document.activeElement);
+      event.preventDefault();
+      controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+    });
+    confirmBtn.addEventListener("click", async () => {
+      confirmBtn.disabled = true; cancel.disabled = true;
+      try {
+        await deleteTravelerRecord(traveler);
+        backdrop.remove();
+      } catch (error) {
+        confirmBtn.disabled = false; cancel.disabled = false;
+        showToast(error?.message || "The traveler could not be removed.", "alert");
+      }
+    });
+    document.body.append(backdrop);
+    requestAnimationFrame(() => cancel.focus());
+  }
+  async function deleteTravelerRecord(traveler) {
+    if (!PREVIEW_MODE) {
+      await api(`/api/v1/trips/${encodeURIComponent(state.trip?.id || "")}/travelers/${encodeURIComponent(itemId(traveler))}`, {
+        method: "DELETE",
+        body: JSON.stringify({ version: Number(val(traveler, "version")) || 1 }),
+      });
+      await loadTripDetails();
+    } else {
+      state.travelers = state.travelers.filter((row) => row !== traveler);
+    }
+    state.editingEntity = null;
+    showToast("Traveler removed.");
+    route("travelers", null, true);
+  }
   function findBookingRecord(kind, id) {
     const wanted = String(id || "");
     const baseKind = bookingBaseKind(kind);
@@ -1008,12 +1067,24 @@
     requestAnimationFrame(() => cancel.focus());
   }
   async function deleteBookingRecord(record) {
-    const version = Number(val(record.entity, "version")) || 1;
     if (!PREVIEW_MODE) {
-      await api(`/api/v1/trips/${encodeURIComponent(state.trip?.id || "")}/${record.path}/${encodeURIComponent(itemId(record.entity))}`, {
-        method: "DELETE",
-        body: JSON.stringify({ version }),
-      });
+      const path = `/api/v1/trips/${encodeURIComponent(state.trip?.id || "")}/${record.path}/${encodeURIComponent(itemId(record.entity))}`;
+      const attempt = (version) => api(path, { method: "DELETE", body: JSON.stringify({ version: Number(version) || 1 }) });
+      try {
+        await attempt(val(record.entity, "version"));
+      } catch (error) {
+        // Self-heal a version conflict: a background sync (or another editor)
+        // bumped this item's version between load and delete, so the guard
+        // refuses the stale version with "changed on another client." Reload
+        // the trip, re-read the live version, and retry once. Access is
+        // unchanged — the concurrency guard still holds; we just delete against
+        // the current version instead of the stale one the phone had cached.
+        if (error?.status !== 409) throw error;
+        await loadTripDetails();
+        const fresh = findBookingRecord(record.kind, itemId(record.entity));
+        if (!fresh) { state.editingEntity = null; route("timeline", null, true); return; }
+        await attempt(val(fresh.entity, "version"));
+      }
       await loadTripDetails();
     } else {
       state.transport = state.transport.filter((row) => row !== record.entity);
@@ -1045,6 +1116,33 @@
       canEdit ? sheetActionRow(isIdea ? "delete-idea" : "delete-booking", "trash", "Delete", attrs, "", true) : "",
     ].join("");
     return `<section class="booking-navigation-actions" aria-label="Booking actions">${sheetActionList(actions)}</section>`;
+  }
+  // Header trash control shared by every booking detail page. Resolves the same
+  // record as bookingNavigationActions so delete-booking/delete-idea fire on the
+  // right entity; deleteBookingRecord routes back to the timeline afterwards.
+  function detailDeleteButton() {
+    if (!canEditCurrentTrip()) return "";
+    const item = state.screen === "flight" ? selectedFlight()
+      : state.screen === "hotel" ? selectedStay()
+      : state.screen === "train" ? selectedTrain()
+      : state.screen === "plan" ? selectedPlan() : null;
+    if (!item) return "";
+    const kind = state.screen === "hotel" ? "hotel" : String(val(item, "transport_type", "type") || "plan"),
+      isIdea = !val(item, "transport_type") && String(val(item, "activity_type", "reservation_type", "type")).toLowerCase() === "idea";
+    return `<button type="button" class="icon-button app-bar-action--danger" data-action="${isIdea ? "delete-idea" : "delete-booking"}" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}" aria-label="Delete">${icon("trash", 22)}</button>`;
+  }
+  // Companion Edit action for the detail header, shown beside the trash so every
+  // booking/plan detail can be edited in one tap instead of opening the menu.
+  function detailEditButton() {
+    if (!canEditCurrentTrip()) return "";
+    const item = state.screen === "flight" ? selectedFlight()
+      : state.screen === "hotel" ? selectedStay()
+      : state.screen === "train" ? selectedTrain()
+      : state.screen === "plan" ? selectedPlan() : null;
+    if (!item) return "";
+    const kind = state.screen === "hotel" ? "hotel" : String(val(item, "transport_type", "type") || "plan"),
+      isIdea = !val(item, "transport_type") && String(val(item, "activity_type", "reservation_type", "type")).toLowerCase() === "idea";
+    return `<button type="button" class="icon-button" data-action="${isIdea ? "edit-idea" : "edit-booking"}" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}" aria-label="Edit">${icon("edit", 22)}</button>`;
   }
   function collectionNavigationActions() {
     if (state.screen !== "collection" || !state.trip || state.error || state.googleAuthHandoffStatus || !canEditCurrentTrip()) return "";
@@ -1104,10 +1202,16 @@
   function manageBookingSheet() {
     const menu = state.manageBooking;
     if (!menu) return "";
-    const attrs = ` data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"`;
-    const actions = `${sheetActionRow("edit-booking", "edit", "Edit", attrs, "Update the details of this booking")}${sheetActionRow("move-booking", "calendar", "Move to another day", attrs, "Keep the times, change the day")}`;
-    const destructive = sheetActionRow("delete-booking", "trash", "Delete", attrs, "Remove this booking from the trip", true);
-    return bottomSheet("manage-booking", "Manage booking", `${sheetActionList(actions)}${sheetActionList(destructive, { danger: true })}`);
+    const record = findBookingRecord(menu.kind, menu.id);
+    if (!record) return bottomSheet("manage-booking", "Item unavailable", `<p class="sheet-note">This timeline item is no longer available.</p>`);
+    const attrs = ` data-kind="${esc(menu.kind)}" data-id="${esc(menu.id)}"`,
+      item = record.entity,
+      timelineItem = state.timeline.find((row) => itemId(row) === String(menu.id)),
+      isIdea = !val(item, "transport_type") && String(val(item, "activity_type", "reservation_type", "type")).toLowerCase() === "idea",
+      title = val(timelineItem, "title") || val(item, "title", "property_name") || bookingRecordTitle(record),
+      actions = `${sheetActionRow(isIdea ? "edit-idea" : "edit-booking", "edit", "Edit", attrs, "Update details")}${sheetActionRow("share-booking", "share", "Share", attrs, "Send the trip details")}${!isIdea ? sheetActionRow("move-booking", "calendar", "Move to another day", attrs, "Keep the same time") : ""}`,
+      destructive = sheetActionRow(isIdea ? "delete-idea" : "delete-booking", "trash", "Delete", attrs, "Remove from this trip", true);
+    return bottomSheet("manage-booking", title, `${sheetActionList(actions)}${sheetActionList(destructive, { danger: true })}`);
   }
   function bookingAnchorDate(record) {
     const e = record.entity;
@@ -1276,13 +1380,13 @@
     return true;
   }
   const BACK_FALLBACKS = Object.freeze({
-    home: "trips", trips: "timeline", timeline: "trips", bookings: "timeline", flight: "bookings", hotel: "bookings",
-    train: "bookings", plan: "bookings", documents: "bookings", ready: "bookings",
-    health: "timeline", account: "trips", collaboration: "timeline", planning: "timeline",
+    home: "trips", trips: "timeline", timeline: "trips", bookings: "timeline", flight: "timeline", hotel: "timeline",
+    train: "timeline", plan: "timeline", documents: "timeline", ready: "timeline",
+    health: "timeline", account: "trips", collaboration: "timeline",
     "trip-options": "timeline", travelers: "account", traveler: "travelers", checklist: "timeline",
     import: "add-booking", "import-review": "import", "import-history": "import",
     "booking-email-inbox": "bookings", sync: "trip-options", join: "trips",
-    collection: "planning", "collection-form": "day-plan", "stop-form": "collection",
+    collection: "timeline", "collection-form": "day-plan", "stop-form": "collection", "collection-stop": "collection",
     "add-trip": "timeline", "add-booking": "add-trip", "day-plan": "add-trip",
     "day-plan-form": "day-plan", "save-later": "add-trip", "add-to-plan": "save-later",
     "trip-map": "timeline", weather: "trip-options", currency: "trip-options", esim: "trip-options",
@@ -1299,7 +1403,7 @@
       if (id === "trip") return { screen: "trips", id: null };
       if (id === "document") return { screen: "documents", id: null };
       if (QUICK_ADD_KINDS.has(id)) return { screen: "add-booking", id: null };
-      return { screen: "bookings", id: null };
+      return { screen: "timeline", id: null };
     }
     if (screen === "stop-form" && id) return { screen: "collection", id };
     if (screen === "collection-form" && id && !id.startsWith("new:")) return { screen: "collection", id };
@@ -1891,7 +1995,7 @@
       ? `<div class="trip-map__offline" role="status">${icon("info", 18)}<span>Your places are saved on this phone. Connect for directions.</span></div>`
       : "";
     const listTitle = activeDay ? tripMapDayLabel(activeDay) : "All trip places";
-    return `<div class="phone-app"><section class="screen trip-map-screen">${appBar("Trip Map", tripDates ? `${state.trip.title || "Trip"} · ${formatTripDates(state.trip)}` : state.trip.title || "Trip", true)}<main class="trip-map"><header class="trip-map__hero"><span class="trip-map__hero-icon">${icon("map", 26)}</span><div><span>YOUR ROUTE</span><h1>Places in trip order</h1><p>Everything from your bookings, organized by day.</p></div><strong aria-label="${ordered.length} places">${ordered.length}</strong></header>${chips}${offlineNote}<div class="trip-map__list-head"><div><span>TRIP PLACES</span><h2>${esc(listTitle)}</h2></div><small>Tap for directions</small></div><section class="trip-map__list" aria-label="Trip places">${rows}</section><p class="trip-map__note">Directions open one destination at a time. tripto.to never requests your location or shares your complete itinerary with Google.</p></main></section></div>`;
+    return `<div class="phone-app"><section class="screen trip-map-screen">${appBar("Trip Map", tripDates ? `${state.trip.title || "Trip"} · ${formatTripDates(state.trip)}` : state.trip.title || "Trip", true)}<main class="trip-map"><header class="trip-map__hero"><span class="trip-map__hero-icon">${icon("map", 26)}</span><div><span>YOUR ROUTE</span><h1>Places in trip order</h1><p>Places from your trip, organized by day.</p></div><strong aria-label="${ordered.length} places">${ordered.length}</strong></header>${chips}${offlineNote}<div class="trip-map__list-head"><div><span>TRIP PLACES</span><h2>${esc(listTitle)}</h2></div><small>Tap for directions</small></div><section class="trip-map__list" aria-label="Trip places">${rows}</section><p class="trip-map__note">Directions open one destination at a time. tripto.to never requests your location or shares your complete itinerary with Google.</p></main></section></div>`;
   }
   // Short localized weekday for a "YYYY-MM-DD" date (noon avoids TZ edge cases).
   function weekdayLabel(date) {
@@ -2467,6 +2571,38 @@
     }
     return `<button type="button" class="fd-row fd-row--button fd-row--note-add" data-action="edit-note" data-id="${esc(id)}" data-kind="${esc(kind)}"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add note</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`;
   }
+  // A neighborhood place (collection stop) edits its note inline on the detail
+  // page, exactly like a booking. The row id is the same collectionId::stopId
+  // pair the route uses, so save-note can PATCH the stop without opening a form.
+  function fdStopNoteRow(collectionId, stop) {
+    const id = `${collectionId}::${stop.id}`, note = String(val(stop, "notes") || "").trim(),
+      editing = String(state.editingNote || "") === String(id);
+    if (editing) {
+      return `<form class="fd-note-edit" data-note-form data-id="${esc(id)}" data-kind="stop"><div class="fd-note-edit__head">${fdRowIcon("info")}<span class="fd-note-edit__title">Notes</span></div><textarea name="note" class="fd-note-edit__field" rows="3" maxlength="2000" placeholder="Add a note for this place" aria-label="Place note">${esc(note)}</textarea><div class="fd-note-edit__actions"><button type="button" class="fd-note-btn fd-note-btn--ghost" data-action="cancel-note">Cancel</button><button type="button" class="fd-note-btn fd-note-btn--save" data-action="save-note" data-id="${esc(id)}" data-kind="stop">Save note</button></div></form>`;
+    }
+    if (note) {
+      return `<button type="button" class="fd-row fd-row--note fd-row--note-btn" data-action="edit-note" data-id="${esc(id)}" data-kind="stop"><span class="fd-row__icon">${icon("info", 20)}</span><span class="fd-row__text"><strong>Notes</strong><small class="fd-note">${esc(note)}</small></span><span class="fd-row__chev">${icon("edit", 18)}</span></button>`;
+    }
+    return `<button type="button" class="fd-row fd-row--button fd-row--note-add" data-action="edit-note" data-id="${esc(id)}" data-kind="stop"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add note</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`;
+  }
+  async function saveStopNote(collectionId, stopId, text) {
+    if (!state.trip) throw new Error("This place is no longer available.");
+    const stop = collectionStopsFor(collectionId).find((s) => String(s.id) === String(stopId));
+    if (!stop) throw new Error("This place is no longer available.");
+    const body = {
+      title: val(stop, "title") || "Place",
+      scheduledTime: val(stop, "scheduled_time") || null,
+      timezone: val(stop, "timezone") || null,
+      addressSnapshot: val(stop, "address_snapshot") || null,
+      placeType: val(stop, "place_type") || null,
+      linkedTripItemId: val(stop, "linked_trip_item_id") || null,
+      notes: String(text || "").trim() || null,
+      status: val(stop, "status") || "planned",
+      version: Number(val(stop, "version")) || 1,
+    };
+    await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/collections/${encodeURIComponent(collectionId)}/stops/${encodeURIComponent(stopId)}`, { method: "PATCH", body: JSON.stringify(body) });
+    await loadTripDetails();
+  }
 
   function sessionExpiry(token) {
     try {
@@ -2495,7 +2631,6 @@
   // One loading language for network waits, local processing and screen startup.
   // Tokens keep overlapping work independent; every caller releases in finally.
   const activeActivities = new Map();
-  let activityTimer = null;
   let awaitingConfirmation = 0;
   function thinkingPattern() {
     return '<span class="thinking-pattern" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>';
@@ -2504,29 +2639,9 @@
     return `<div class="thinking-panel${compact ? " thinking-panel--compact" : ""}" role="status" aria-live="polite" aria-atomic="true">${thinkingPattern()}<div class="thinking-copy"><strong>${esc(label)}</strong>${compact ? "" : '<span>A little moment for your next adventure.</span>'}</div></div>`;
   }
   function syncActivityPanel() {
-    let node = document.getElementById("tripto-activity");
-    if (!activeActivities.size || awaitingConfirmation) {
-      clearTimeout(activityTimer); activityTimer = null;
-      node?.remove();
-      return;
-    }
-    if (!node) {
-      if (activityTimer) return;
-      activityTimer = setTimeout(() => {
-        activityTimer = null;
-        if (!activeActivities.size || awaitingConfirmation || document.querySelector("#app .thinking-panel")) return;
-        node = document.createElement("div");
-        node.id = "tripto-activity";
-        node.className = "thinking-notice";
-        const specific = [...activeActivities.values()].find(label => label !== "Updating your trip…");
-        node.innerHTML = thinkingPanel(specific || "Updating your trip…", true);
-        document.body.appendChild(node);
-      }, 250);
-      return;
-    }
-    const label = [...activeActivities.values()].find(value => value !== "Updating your trip…") || "Updating your trip…";
-    const text = node.querySelector("strong");
-    if (text && text.textContent !== label) text.textContent = label;
+    // Routine actions stay silent. Full-page and inline loading states remain
+    // available where navigation genuinely has to wait for content.
+    document.getElementById("tripto-activity")?.remove();
   }
   function beginActivity(label = "Updating your trip…") {
     const token = Symbol("activity");
@@ -3648,14 +3763,52 @@
     return `<header class="app-header"><button class="brand" data-screen="home" aria-label="tripto.to Home">tripto<span class="brand-dot">.</span>to</button><div class="connection-state">${state.offline ? `<span class="offline-state" role="status">${icon("info", 16)} Offline</span>` : ""}${HeaderNavigation()}</div></header>`;
   }
   function appBar(title, subtitle = "", dark = false, right = "") {
-    return `<header class="app-bar app-bar--navigation ${dark ? "app-bar--dark" : ""}${right ? " app-bar--with-actions" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 24)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div>${HeaderNavigation()}${right ? `<div class="app-bar-actions">${right}</div>` : ""}</header>`;
+    const navigation = HeaderNavigation();
+    const actions = right ? `<div class="app-bar-actions">${right}</div>` : "";
+    // Trailing slot (grid column 3). A minimal detail bar has no navigation, so
+    // its trailing element must be EITHER the actions or the spacer — never both,
+    // or the extra child wraps onto a phantom second row.
+    const trailing = navigation ? `${navigation}${actions}` : actions || '<span class="app-bar-spacer" aria-hidden="true"></span>';
+    return `<header class="app-bar app-bar--navigation${navigation ? "" : " app-bar--minimal"} ${dark ? "app-bar--dark" : ""}${right ? " app-bar--with-actions" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 24)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div>${trailing}</header>`;
   }
   function HeaderNavigation() {
     const collection = state.screen === "collection" ? collectionForItem(state.selectedId) : null;
-    const addPlace = state.trip && collection && canEditCurrentTrip();
-    const label = addPlace ? `Add ${collectionConfig(collection.collection_type)?.stop || "place"}` : !state.trip ? "Create trip" : "Add to trip";
-    const add = addPlace ? `data-action="collection-add-place" data-id="${esc(collection.id)}"` : 'data-action="open-add"';
-    return `<div class="header-navigation"><button type="button" class="icon-button header-navigation__add${addPlace ? " collection-header-add" : ""}" ${add} aria-label="${esc(label)}" title="${esc(label)}">${icon("plus", 24)}</button><button type="button" class="icon-button header-navigation__menu" data-action="open-navigation" aria-label="Menu" title="Menu" aria-haspopup="dialog" aria-expanded="${state.sheet === "navigation"}" aria-controls="navigation-menu">${icon("menu", 24)}</button></div>`;
+    // Header actions are intentional: only the trip workspaces offer global
+    // navigation or creation. Detail, utility, help, and form screens already
+    // have a focused task and a Back control, so redundant + / Menu controls
+    // would distract or suggest an unrelated action.
+    const modes = {
+      timeline: { add: true, menu: true },
+      collection: { add: Boolean(state.trip && collection && canEditCurrentTrip()), menu: true },
+      bookings: { add: true, menu: true },
+    };
+    const mode = modes[state.screen];
+    if (!mode) return "";
+    const addPlace = state.screen === "collection" && mode.add;
+    const label = addPlace
+      ? `Add ${collectionConfig(collection.collection_type)?.stop || "place"}`
+      : state.screen === "bookings"
+        ? "Add booking"
+        : !state.trip
+          ? "Create trip"
+          : "Add to trip";
+    const add = addPlace
+      ? `data-action="collection-add-place" data-id="${esc(collection.id)}"`
+      : state.screen === "bookings"
+        ? 'data-action="open-add-booking"'
+        : 'data-action="open-add"';
+    const addButton = mode.add
+      ? `<button type="button" class="icon-button header-navigation__add${addPlace ? " collection-header-add" : ""}" ${add} aria-label="${esc(label)}" title="${esc(label)}">${icon("plus", 24)}</button>`
+      : "";
+    const menuUnread = state.trip ? totalNotificationCount() : 0;
+    const menuBadge = menuUnread
+      ? `<span class="unread-badge" aria-hidden="true">${menuUnread > 9 ? "9+" : menuUnread}</span>`
+      : "";
+    const menuLabel = menuUnread ? `Menu, ${menuUnread} unread notifications` : "Menu";
+    const menuButton = mode.menu
+      ? `<button type="button" class="icon-button header-navigation__menu" data-action="open-navigation" aria-label="${esc(menuLabel)}" title="Menu" aria-haspopup="dialog" aria-expanded="${state.sheet === "navigation"}" aria-controls="navigation-menu">${icon("menu", 24)}${menuBadge}</button>`
+      : "";
+    return `<div class="header-navigation">${addButton}${menuButton}</div>`;
   }
   function navigationSheet() {
     const entries = [
@@ -3668,7 +3821,14 @@
       glyph, label, "", routeUrl(screen),
       ` data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}`,
     )).join("");
-    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${bookingNavigationActions()}${collectionNavigationActions()}<nav aria-label="Primary navigation">${sheetActionList(links)}</nav></div>`);
+    const notifUnread = state.trip ? totalNotificationCount() : 0;
+    const notifRow = state.trip
+      ? sheetActionList(sheetActionRow(
+          "open-notifications", "bell", "Notifications", "",
+          notifUnread ? `${notifUnread > 9 ? "9+" : notifUnread} unread` : "You're all caught up",
+        ))
+      : "";
+    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${notifRow}${bookingNavigationActions()}${collectionNavigationActions()}<nav aria-label="Primary navigation">${sheetActionList(links)}</nav></div>`);
   }
   // Header notification bell. Opens the Notifications sheet, which merges the
   // trip's /changes feed (imports, added stops, time markers, documents…) with
@@ -3681,15 +3841,10 @@
     return unreadNotificationCount() + pending;
   }
   function notifyAction() {
-    if (!state.trip) return "";
-    const unread = totalNotificationCount();
-    const label = unread
-      ? `Notifications, ${unread} unread`
-      : "Notifications";
-    const badge = unread
-      ? `<span class="unread-badge" aria-hidden="true">${unread > 9 ? "9+" : unread}</span>`
-      : "";
-    return `<button class="icon-button notify-button" data-action="open-notifications" aria-label="${esc(label)}">${icon("bell", 24)}${badge}</button>`;
+    // Notifications are consolidated onto the menu (hamburger) icon: the unread
+    // badge rides the menu button and a Notifications row lives inside the menu
+    // sheet. No standalone bell is rendered in the header.
+    return "";
   }
   function mobileAlert() {
     if (state.offline)
@@ -4125,10 +4280,10 @@
       active && LOCAL_QA_MODE && QA_STATE === "empty-reduced-motion",
     );
     const theme = document.querySelector('meta[name="theme-color"]');
-    if (theme) theme.setAttribute("content", "#fbf8f7");
+    if (theme) theme.setAttribute("content", themeChromeColor());
   }
   function firstRunProductPreview() {
-    return `<ul class="welcome-features ds-grouped-card"><li><span class="row-icon">${icon("ticket",22)}</span><span>All your bookings in one place</span></li><li><span class="row-icon">${icon("calendar",22)}</span><span>A clear plan for every day</span></li><li><span class="row-icon">${icon("favorite",22)}</span><span>Ideas to save for later</span></li></ul>`;
+    return `<ul class="welcome-features" aria-label="What Tripto helps with"><li class="welcome-feature--bookings"><span class="row-icon">${icon("ticket",22)}</span><span><strong>Bookings, together</strong><small>Flights, stays, and confirmations</small></span></li><li class="welcome-feature--plans"><span class="row-icon">${icon("calendar",22)}</span><span><strong>A plan for every day</strong><small>Know what is next, at a glance</small></span></li><li class="welcome-feature--ideas"><span class="row-icon">${icon("favorite",22)}</span><span><strong>Save great ideas</strong><small>Keep them ready for later</small></span></li></ul>`;
   }
   function firstRunScreen() {
     const offline = state.offline
@@ -4140,7 +4295,7 @@
     const entryAction = state.account?.mode === "account"
       ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span>${icon("chevron", 20)}</button>`
       : googleAction;
-    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div>${offline}${HeaderNavigation()}</header><main class="first-run-main"><section class="first-run-hero"><p class="first-run-eyebrow">A little less to think about</p><h1 id="first-run-title" aria-label="Your trip. In good order."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">In good order.</span></h1><p class="first-run-lede">Flights, stays, and everything between.<br>Together, wherever you go.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a tour</span></button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Your plans stay private.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
+    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div>${offline}${HeaderNavigation()}</header><main class="first-run-main"><section class="first-run-hero"><div class="welcome-route" aria-hidden="true"><span class="welcome-route__stop welcome-route__stop--start">${icon("location",20)}</span><i></i><span class="welcome-route__plane">${icon("flight",22)}</span><i></i><span class="welcome-route__stop welcome-route__stop--end">${icon("favorite",20)}</span></div><p class="first-run-eyebrow">Travel feels lighter here</p><h1 id="first-run-title" aria-label="Your trip. Beautifully together."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">Beautifully together.</span></h1><p class="first-run-lede">Keep every reservation, plan, and idea ready for the journey ahead.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>See how it works</span>${icon("chevron",18)}</button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Private by design.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
   }
   // --- Trip change notifications (header bell) ---------------------------
   // Sourced from the existing /changes feed (change_events), so booking
@@ -4256,7 +4411,7 @@
         ["needs_trip", "needs_confirmation"].includes(String(row.status || "")),
       ).length,
       pendingRow = pending
-        ? `<button class="notif-item notif-item--neutral is-unread" data-screen="booking-email-inbox"><span class="notif-item__icon">${icon("download", 22)}</span><span class="notif-item__copy"><strong>${pending} forwarded booking${pending === 1 ? "" : "s"} to review<span class="notif-item__dot" aria-hidden="true"></span></strong><span class="notif-item__desc">New ${pending === 1 ? "email is" : "emails are"} waiting to be matched to a trip and confirmed.</span><small>Tap to open Import History</small></span><span class="notif-item__chevron" aria-hidden="true">${icon("chevron", 18)}</span></button>`
+        ? `<button class="notif-item notif-item--neutral is-unread" data-screen="booking-email-inbox"><span class="notif-item__icon">${icon("download", 20)}</span><span class="notif-item__copy"><span class="notif-item__top"><strong>${pending} booking${pending === 1 ? "" : "s"} to review<span class="notif-item__dot" aria-hidden="true"></span></strong></span><span class="notif-item__desc">Match ${pending === 1 ? "it" : "them"} to a trip before adding.</span></span><span class="notif-item__chevron" aria-hidden="true">${icon("chevron", 17)}</span></button>`
         : "",
       changeRows = rows
         .map((n) => {
@@ -4264,7 +4419,8 @@
             tappable = n.entityType === "trip_item",
             tag = tappable ? "button" : "div",
             attrs = tappable ? ` data-action="notification-open" data-id="${esc(n.entityId)}"` : "";
-          return `<${tag} class="notif-item notif-item--${esc(n.tone)}${isNew ? " is-unread" : ""}"${attrs}><span class="notif-item__icon">${icon(n.icon, 22)}</span><span class="notif-item__copy"><strong>${esc(n.label)}${isNew ? `<span class="notif-item__dot" aria-hidden="true"></span>` : ""}</strong><span class="notif-item__desc">${esc(notifDescription(n))}</span><small>${esc(notifAge(n.createdAt))} · ${esc(notifWhen(n.createdAt))}</small></span>${tappable ? `<span class="notif-item__chevron" aria-hidden="true">${icon("chevron", 18)}</span>` : ""}</${tag}>`;
+          const age = notifAge(n.createdAt);
+          return `<${tag} class="notif-item notif-item--${esc(n.tone)}${isNew ? " is-unread" : ""}"${attrs}><span class="notif-item__icon">${icon(n.icon, 20)}</span><span class="notif-item__copy"><span class="notif-item__top"><strong>${esc(n.label)}${isNew ? `<span class="notif-item__dot" aria-hidden="true"></span>` : ""}</strong>${age ? `<small>${esc(age)}</small>` : ""}</span><span class="notif-item__desc">${esc(notifDescription(n))}</span></span>${tappable ? `<span class="notif-item__chevron" aria-hidden="true">${icon("chevron", 17)}</span>` : ""}</${tag}>`;
         })
         .join(""),
       body = pendingRow || rows.length
@@ -4390,7 +4546,7 @@
                     aria = [eventTime, title, subtitle, meta, exception?.label]
                       .filter(Boolean)
                       .join(". ");
-                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" aria-label="${esc(aria)}"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-dot"></span></span><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
+                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" data-longpress-booking data-kind="${esc(type)}" aria-label="${esc(aria)}. Long press for actions"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-dot"></span></span><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
                 })
                 .join("")}</div></section>`,
           )
@@ -4589,6 +4745,18 @@
     );
   }
 
+  // Detail heroes use the exact same colour family as their marker on the
+  // timeline. This prevents a traveller from learning one colour on the
+  // schedule and seeing an unrelated hero colour after opening the item.
+  function timelineVisualTone(glyph) {
+    const name = String(glyph || "").toLowerCase();
+    if (name === "flight") return "flight";
+    if (["car", "taxi", "bus", "train", "ferry", "cruise"].includes(name)) return "transfer";
+    if (["hotel", "city"].includes(name)) return "stay";
+    if (["restaurant", "coffee", "bar", "cooking", "shopping", "reservation", "ticket"].includes(name)) return "food";
+    return "activity";
+  }
+
   // Human category label for a resolved timeline glyph (used in the secondary
   // line so a row reads "Restaurant · Rome", never a bare "Tasting menu").
   const TIMELINE_GLYPH_LABEL = {
@@ -4727,7 +4895,7 @@
         ],
         "Flight details and actions",
       );
-    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen">${appBar("Flight Detail", "", true)}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main></section></div>`;
+    return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen detail-tone--flight">${appBar("Flight Detail", "", true, `${detailEditButton()}${detailDeleteButton()}`)}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main></section></div>`;
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -4773,7 +4941,7 @@
       directionsDisabled = !mapQuery,
       driverDisabled = !address,
       confirmation = val(stay, "confirmation_number");
-    return `<div class="phone-app"><section class="screen dark-detail hotel-detail-screen">${appBar("Hotel", "", false)}<main class="detail-content">${imageUrl ? `<div class="fd-hero-image" role="img" aria-label="Hotel property image"><img src="${esc(imageUrl)}" alt="" loading="lazy" decoding="async">${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 16)} Offline · saved details</span>` : ""}</div>` : ""}<section class="fd-card${imageUrl ? " fd-card--attached" : ""}" aria-label="Stay details"><div class="fd-card__head"><span class="fd-flight">${icon("hotel", 16)} ${esc(val(stay, "property_name", "title") || "Stay")}</span><span class="fd-status-wrap" role="status" aria-label="${esc(statusLabel)}. Scheduled booking data is never presented as live."><span class="fd-status ${statusTone === "confirmed" ? "is-confirmed" : ""}">${statusTone === "confirmed" ? checkDot() : ""}${esc(statusLabel)}</span><small>Scheduled data</small></span></div>${roomName ? `<p class="fd-sub">${esc(roomName)}</p>` : ""}<div class="fd-stay"><div class="fd-stay__col"><span class="fd-label">Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time not set")}</small></div><div class="fd-stay__mid"><span class="fd-stay__track" aria-hidden="true">${icon("night", 16)}</span><span class="fd-stay__nights">${esc(nights(stay))} ${nights(stay) === 1 ? "night" : "nights"}</span></div><div class="fd-stay__col fd-stay__col--right"><span class="fd-label">Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time not set")}</small></div></div></section>${fdList([
+    return `<div class="phone-app"><section class="screen dark-detail hotel-detail-screen detail-tone--stay">${appBar("Hotel", "", false, `${detailEditButton()}${detailDeleteButton()}`)}<main class="detail-content">${imageUrl ? `<div class="fd-hero-image" role="img" aria-label="Hotel property image"><img src="${esc(imageUrl)}" alt="" loading="lazy" decoding="async">${state.offline ? `<span class="hotel-offline-badge" role="status">${icon("info", 16)} Offline · saved details</span>` : ""}</div>` : ""}<section class="fd-card${imageUrl ? " fd-card--attached" : ""}" aria-label="Stay details"><div class="fd-card__head"><span class="fd-flight">${icon("hotel", 16)} ${esc(val(stay, "property_name", "title") || "Stay")}</span><span class="fd-status-wrap" role="status" aria-label="${esc(statusLabel)}. Scheduled booking data is never presented as live."><span class="fd-status ${statusTone === "confirmed" ? "is-confirmed" : ""}">${statusTone === "confirmed" ? checkDot() : ""}${esc(statusLabel)}</span><small>Scheduled data</small></span></div>${roomName ? `<p class="fd-sub">${esc(roomName)}</p>` : ""}<div class="fd-stay"><div class="fd-stay__col"><span class="fd-label">Check-in</span><strong>${esc(formatTripBoundDate(val(stay, "check_in_date"), state.trip))}</strong><small>${esc(val(stay, "check_in_from") || "Time not set")}</small></div><div class="fd-stay__mid"><span class="fd-stay__track" aria-hidden="true">${icon("night", 16)}</span><span class="fd-stay__nights">${esc(nights(stay))} ${nights(stay) === 1 ? "night" : "nights"}</span></div><div class="fd-stay__col fd-stay__col--right"><span class="fd-label">Check-out</span><strong>${esc(formatTripBoundDate(val(stay, "check_out_date"), state.trip))}</strong><small>${esc(val(stay, "check_out_by") || "Time not set")}</small></div></div></section>${fdList([
       !driverDisabled ? fdButtonRow("car", "Show to Driver", "show-driver", `data-id="${esc(itemId(stay))}"`) : "",
       address
         ? fdButtonRow("pin", address, "directions-hotel", `data-id="${esc(itemId(stay))}"${directionsDisabled ? " disabled" : ""}`, hasCoordinates ? "Open in Maps" : "Saved address")
@@ -4826,9 +4994,8 @@
   function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
     return PageShell({ title, body, active, right, extraClass });
   }
-  function focusedTaskPage(title, body, className = "", footer = "") {
-    const content = body + (footer ? `<div class="form-page-actions">${footer}</div>` : "");
-    return PageShell({ title, body: content, extraClass: `focused-task ${className}`, task: true });
+  function focusedTaskPage(title, body, className = "", headerAction = "") {
+    return PageShell({ title, body, right: headerAction, extraClass: `focused-task ${className}`, task: true });
   }
   function AppHeader(title, subtitle = "", dark = false, right = "") {
     return appBar(title, subtitle, dark, right);
@@ -4838,7 +5005,7 @@
     return `<div class="phone-app"><section class="${shellClass}">${AppHeader(title, "", false, right)}${mobileAlert()}<main class="${task ? "focused-page" : "mobile-page"}">${body}</main></section></div>`;
   }
   function formHeaderSave(formId, label) {
-    return `<button type="submit" form="${esc(formId)}" class="form-page-save mobile-primary-action">${esc(label)}</button>`;
+    return `<button type="submit" form="${esc(formId)}" class="app-bar-save">${label}</button>`;
   }
   function lifecycleLabel(value) {
     const key = String(value || "upcoming").toLowerCase();
@@ -4953,6 +5120,12 @@
   function tripsPageHeader() {
     return `<header class="app-bar app-bar--root trips-app-bar"><button type="button" class="icon-button trips-header-account" data-screen="account" aria-label="Account" title="Account">${icon("user", 24)}</button><div class="app-bar-title"><strong>Trips</strong></div><div class="app-bar-actions"><button type="button" class="icon-button trips-header-add" data-action="create-trip" aria-label="Create trip">${icon("plus", 24)}</button></div></header>`;
   }
+  function tripHue(trip) {
+    const s = String(trip.title || trip.id || "trip");
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h % 360;
+  }
   function tripListRow(trip, label) {
     const isCurrent = label === "Current";
     const isPast = label === "Past";
@@ -4967,7 +5140,7 @@
           ? "Completed"
           : tripCountdownLabel(trip) || "Upcoming";
     const iconName = isCurrent ? "directions" : isCancelled ? "close" : isPast ? "clock" : tripMarkIcon(trip);
-    return `<li class="trip-list-row-wrap" data-swipe-row><button type="button" class="trip-list-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="trip-list-row ds-flat-row${isCurrent ? " trip-list-row--current" : ""}${isPast ? " trip-list-row--past" : ""}${isCancelled ? " trip-list-row--cancelled" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}"><span class="trip-list-row__mark" aria-hidden="true">${icon(iconName, 22)}</span><span class="ds-flat-row__copy trip-list-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(dateMeta)}</small>${tripSharedBadge(trip)}<span class="trip-list-row__status">${esc(status)}</span></span>${icon("chevron", 18, "ds-flat-row__chevron")}</button></li>`;
+    return `<li class="trip-list-row-wrap" data-swipe-row><button type="button" class="trip-list-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="trip-list-row ds-flat-row${isCurrent ? " trip-list-row--current" : ""}${isPast ? " trip-list-row--past" : ""}${isCancelled ? " trip-list-row--cancelled" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}"><span class="trip-list-row__mark" style="--tg-h:${tripHue(trip)}" aria-hidden="true">${icon(iconName, 22)}</span><span class="ds-flat-row__copy trip-list-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(dateMeta)}</small>${tripSharedBadge(trip)}<span class="trip-list-row__status">${esc(status)}</span></span>${icon("chevron", 18, "ds-flat-row__chevron")}</button></li>`;
   }
   function tripListScreen() {
     const filters = [["all","All"],["current","Current"],["upcoming","Upcoming"],["past","Past"]];
@@ -5075,7 +5248,7 @@
         : "",
       bookingRef = val(train, "booking_reference"),
       hero = `<section class="fd-card" aria-label="Scheduled journey details"><div class="fd-card__head"><span class="fd-flight">${icon(transportIconName, 17)} ${esc(val(train, "carrier_name") || (ferry ? "Ferry" : "Train"))}</span><span class="fd-status-wrap" role="status" aria-label="${esc(status)}. Scheduled booking data is never presented as live."><span class="fd-status ${confirmed ? "is-confirmed" : ""}">${confirmed ? checkDot() : ""}${esc(status)}</span><small>Scheduled data</small></span></div><div class="fd-route"><div class="fd-route__end"><span class="fd-route__code">${esc(fromCode || "—")}</span><span class="fd-route__name">${esc(val(from, "display_name") || "Origin unavailable")}</span></div><div class="fd-route__mid"><span class="fd-route__track">${icon(transportIconName, 24)}</span></div><div class="fd-route__end fd-route__end--right"><span class="fd-route__code">${esc(toCode || "—")}</span><span class="fd-route__name">${esc(val(to, "display_name") || "Destination unavailable")}</span></div></div><div class="fd-times"><div class="fd-times__col"><span class="fd-label">Departs</span><strong>${esc(formatTime(dep, val(train, "departure_timezone")))}</strong><small>${esc(formatDay(dep, val(train, "departure_timezone")) || "—")}</small></div><div class="fd-times__mid"><span class="fd-times__track" aria-hidden="true">${icon(transportIconName, 15)}</span>${duration ? `<span class="fd-times__dur">${esc(duration)}</span>` : ""}</div><div class="fd-times__col fd-times__col--right"><span class="fd-label">Arrives</span><strong>${esc(formatTime(arr, val(train, "arrival_timezone")))}</strong><small>${esc(formatDay(arr, val(train, "arrival_timezone")) || "")}</small></div></div>${metaBand}</section>`;
-    return `<div class="phone-app"><section class="screen dark-detail train-detail-screen">${appBar(ferry ? "Ferry Detail" : "Train Detail", "", true)}<main class="detail-content">${hero}${fdList([
+    return `<div class="phone-app"><section class="screen dark-detail train-detail-screen detail-tone--transfer">${appBar(ferry ? "Ferry Detail" : "Train Detail", "", true, `${detailEditButton()}${detailDeleteButton()}`)}<main class="detail-content">${hero}${fdList([
       fdButtonRow("navigation", `Directions to ${ferry ? "port" : "station"}`, "directions-item", `data-id="${esc(itemId(train))}"`),
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
       bookingRef ? fdButtonRow("copy", bookingRef, "copy", `data-value="${esc(bookingRef)}"`, "Booking reference · tap to copy", "copy") : "",
@@ -5138,8 +5311,10 @@
       locationName = val(location, "display_name", "formatted_address"),
       endLocationName = val(endLocation, "display_name", "formatted_address"),
       whenLabel = startsAt ? formatDateTime(startsAt, timezone) : "Time not scheduled",
-      hero = `<section class="fd-card" aria-label="Scheduled plan details"><div class="fd-card__head"><span class="fd-flight">${icon(timelineIcon(timelineType(item)), 17)} ${esc(statusText(kind))}</span><span class="fd-status-wrap" role="status" aria-label="Scheduled booking data is never presented as live."><span class="fd-status"><small>Scheduled data</small></span></span></div><h1 class="fd-title">${esc(title)}</h1><p class="fd-when">${icon("calendar", 16)} ${esc(whenLabel)}</p></section>`;
-    return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen">${appBar(`${statusText(kind)} Detail`, "", true)}<main class="detail-content">${hero}${fdList([
+      glyph = timelineGlyph(item, timelineType(item), transportForItem(itemId(item))),
+      heroTone = timelineVisualTone(glyph),
+      hero = `<section class="fd-card fd-card--tone-${esc(heroTone)}" aria-label="Scheduled plan details"><div class="fd-card__head"><span class="fd-flight">${icon(glyph, 17)} ${esc(statusText(kind))}</span><span class="fd-status-wrap" role="status" aria-label="Scheduled booking data is never presented as live."><span class="fd-status"><small>Scheduled data</small></span></span></div><h1 class="fd-title">${esc(title)}</h1><p class="fd-when">${icon("calendar", 16)} ${esc(whenLabel)}</p></section>`;
+    return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen detail-tone--${esc(heroTone)}">${appBar(`${statusText(kind)} Detail`, "", true, `${detailEditButton()}${detailDeleteButton()}`)}<main class="detail-content">${hero}${fdList([
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
       locationName ? fdButtonRow("pin", locationName, "directions-item", `data-id="${esc(itemId(item))}"`, endLocationName ? "From" : "Location", "map") : "",
       endLocationName ? fdStaticRow("navigation", endLocationName, "To") : "",
@@ -5336,25 +5511,6 @@
     return { secondary, detail };
   }
 
-  // The Planning Overview: every collection, grouped into "On your timeline"
-  // (scheduled) and "Planning" (unscheduled + wishlists). NOT a bottom-nav tab.
-  function planningScreen() {
-    if (!state.trip) return missingDetailScreen("Planning", "Create or select a trip first.");
-    const all = (state.collections || []).slice();
-    const canEdit = canEditCurrentTrip();
-    const scheduled = all.filter((c) => TIMELINE_COLLECTION_TYPES.has(String(c.collection_type)) && (Number(val(c, "starts_at_utc", "startsAtUtc")) || null) != null);
-    const planning = all.filter((c) => !scheduled.includes(c));
-    const row = (c) => {
-      const cfg = collectionConfig(c.collection_type);
-      return `<button type="button" class="planning-row" data-action="open-collection" data-id="${esc(c.id)}"><span class="planning-row__icon">${icon(cfg ? cfg.icon : "city", 22)}</span><span class="planning-row__copy"><strong>${esc(c.title || (cfg ? cfg.label : "Plan"))}</strong><small>${esc([cfg ? cfg.label : "", collectionSummary(c)].filter(Boolean).join(" · "))}</small></span>${icon("chevron", 18)}</button>`;
-    };
-    const section = (heading, items, emptyCopy) => `<section class="planning-group" aria-label="${esc(heading)}"><h2>${esc(heading)}</h2>${items.length ? `<div class="planning-list ds-grouped-card ds-grouped-card--list">${items.map(row).join("")}</div>` : `<p class="planning-empty">${esc(emptyCopy)}</p>`}</section>`;
-    const addTypes = Object.entries(COLLECTION_TYPE_CONFIG).map(([type, cfg]) => `<button type="button" class="planning-add-card" data-action="add-collection" data-collection-type="${esc(type)}" aria-label="Add ${esc(cfg.label)}"><span class="planning-add-card__icon">${icon(cfg.icon, 22)}</span><span class="planning-add-card__copy"><strong>${esc(cfg.label)}</strong><small>${esc(cfg.hint)}</small></span></button>`).join("");
-    const addSection = canEdit ? `<section class="planning-group" aria-label="Start a plan"><h2>Start a plan</h2><div class="planning-add-grid">${addTypes}</div></section>` : "";
-    const body = `<section class="planning-intro"><span>PLAN YOUR DAYS</span><h1>Planning</h1><p>Your neighborhood plans. A scheduled neighborhood appears on your timeline; unscheduled ones wait here.</p></section>${section("On your timeline", scheduled, "Nothing scheduled yet.")}${section("Planning", planning, "No draft plans yet.")}${addSection}`;
-    return focusedTaskPage("Planning", body, "planning-page");
-  }
-
   // A collection keeps manual stop order, with one rail and optional time inside each row.
   function collectionScreen() {
     const id = String(state.selectedId || "");
@@ -5369,9 +5525,7 @@
     const hit = (s, st, inner) => {
       const time = String(s.scheduled_time || "").trim();
       const label = `${time ? time + ", " : ""}${s.title || "Place"}. ${STOP_STATE_LABEL[st] || ""}`;
-      return canEdit
-        ? `<button type="button" class="mini-stop__hit" data-action="stop-menu" data-collection="${esc(id)}" data-id="${esc(s.id)}" aria-label="${esc(label)}">${inner}</button>`
-        : `<div class="mini-stop__hit" aria-label="${esc(label)}">${inner}</div>`;
+      return `<button type="button" class="mini-stop__hit" data-action="open-stop-detail" data-longpress-stop data-collection="${esc(id)}" data-id="${esc(s.id)}" aria-label="${esc(label)}. Open details${canEdit ? ". Long press for actions" : ""}">${inner}</button>`;
     };
     const miniTimeline = stops.length
       ? `<ol class="mini-timeline" aria-label="${esc(cfg.stops)} in ${esc(c.title || cfg.label)}">${stops.map((s, i) => {
@@ -5385,6 +5539,39 @@
     const visited = stops.filter((s) => s.status === "visited").length;
     const body = `<section class="collection-hero"><span class="collection-hero__eyebrow">${esc(cfg.label.toUpperCase())}</span><h1>${esc(c.title || cfg.label)}</h1>${metaBits ? `<p class="collection-hero__meta">${icon("calendar", 16)}<span>${esc(metaBits)}</span></p>` : `<p class="collection-hero__meta">No date set</p>`}${c.collection_notes ? `<p class="collection-hero__notes">${esc(c.collection_notes)}</p>` : ""}</section><section class="collection-stops" aria-label="Places"><div class="collection-stops__heading"><h2>Places <span class="collection-count">${stops.length}</span></h2>${stops.length ? `<span class="collection-progress">${visited} of ${stops.length} visited</span>` : ""}</div><div class="collection-timeline-scroll" aria-label="Places timeline">${miniTimeline}</div></section>`;
     return focusedTaskPage(cfg.label, body, "collection-page timeline-screen--ribbon");
+  }
+
+  function collectionStopDetailScreen() {
+    const [collectionId, stopId] = String(state.selectedId || "").split("::");
+    const collection = collectionForItem(collectionId);
+    const stop = collectionStopsFor(collectionId).find((row) => String(row.id) === String(stopId));
+    if (!collection || !stop) return missingDetailScreen("Place unavailable", "This place is not available.");
+    const cfg = collectionConfig(collection.collection_type) || { label: "Neighborhood", stop: "place" };
+    const status = String(stop.status || "planned");
+    const statusLabel = status === "visited" ? "Visited" : status === "skipped" ? "Skipped" : "Planned";
+    const typeLabel = stop.place_type ? PLACE_TYPE_OPTIONS.find(([value]) => value === String(stop.place_type))?.[1] || "Place" : "Place";
+    const time = String(stop.scheduled_time || "").trim();
+    const meta = [typeLabel, collection.city].filter(Boolean).join(" · ");
+    // A place reuses the booking detail chrome so every detail page in a
+    // neighborhood reads the same way: the dark detail shell, a toned hero
+    // card, and the fd-list rows with rounded icon tiles.
+    const deleteButton = canEditCurrentTrip()
+      ? `<button type="button" class="icon-button" data-action="edit-stop" data-collection="${esc(collectionId)}" data-id="${esc(stop.id)}" aria-label="Edit place">${icon("edit", 22)}</button><button type="button" class="icon-button app-bar-action--danger" data-action="delete-stop" data-collection="${esc(collectionId)}" data-id="${esc(stop.id)}" aria-label="Delete place">${icon("trash", 22)}</button>`
+      : "";
+    const hero = `<section class="fd-card fd-card--tone-activity" aria-label="Place details"><div class="fd-card__head"><span class="fd-flight">${icon("location", 17)} ${esc(cfg.stop || "Place")}</span><span class="fd-status-wrap" role="status" aria-label="${esc(statusLabel)}"><span class="fd-status${status === "visited" ? " is-confirmed" : ""}">${status === "visited" ? checkDot() : ""}${esc(statusLabel)}</span></span></div><h1 class="fd-title">${esc(stop.title || "Place")}</h1>${meta ? `<p class="fd-sub">${esc(meta)}</p>` : ""}</section>`;
+    // Notes appear on every place, mirroring the booking detail. Editors edit
+    // the note inline right here (tap to open the field); a place cannot hold
+    // documents, so no Add document row is shown.
+    const notesRow = canEditCurrentTrip()
+      ? fdStopNoteRow(collectionId, stop)
+      : (stop.notes ? fdStaticRow("info", "Notes", stop.notes) : "");
+    const rows = [
+      time ? fdStaticRow("clock", time, "Scheduled time") : "",
+      stop.address_snapshot ? fdStaticRow("location", stop.address_snapshot, "Location") : "",
+      notesRow,
+    ];
+    if (!rows.some(Boolean)) rows.push(fdStaticRow("info", "No additional details"));
+    return `<div class="phone-app"><section class="screen dark-detail plan-detail-screen detail-tone--activity">${appBar("Place", "", true, deleteButton)}<main class="detail-content">${hero}${fdList(rows, "Place details")}</main></section></div>`;
   }
 
   // Create / edit a collection. state.selectedId is "new:<type>" to create, or a
@@ -5413,7 +5600,7 @@
     const scheduleFields = cfg.timeline
       ? `<section class="collection-schedule" aria-label="Timeline schedule">${dateRangeField("scheduleDate", "scheduleDateEnd", "Date on timeline", "Date", "Date", dateVal, "", { allowSingle: true })}<p class="field-helper collection-schedule__helper" id="${scheduleHelperId}">Optional — choose a date when this neighborhood belongs on your timeline. Leave it blank to keep planning it later.</p>${field("scheduleTime", "Start time", timeVal, { type: "time" })}</section>`
       : `<p class="field-helper">${esc(cfg.label)} lists stay in planning and never appear on the main timeline.</p>`;
-    const form = `<form class="mobile-form premium-form collection-form" id="collection-form" data-collection-type="${esc(type)}"${editId ? ` data-edit-id="${esc(editId)}"` : ""} novalidate><header class="manual-form-heading"><span>${esc(editing ? "Edit plan" : "New plan")}</span><h1>${esc(editing ? existing.title || cfg.label : cfg.label)}</h1></header><p class="collection-form__intro">${esc(cfg.intro)}</p><section class="form-section manual-essentials" aria-labelledby="collection-essentials-title"><h2 id="collection-essentials-title">Details</h2><div class="quick-primary-fields">${field("title", cfg.label + " name", editing ? existing.title : "", { required: true, placeholder: cfg.label === "Neighborhood" ? "Trastevere" : cfg.label })}${field("city", "City or area", editing ? existing.city : "", { placeholder: "Rome" })}${scheduleFields}${field("notes", "Notes", editing ? existing.collection_notes : "", { type: "textarea" })}</div><input type="hidden" name="timezone" value="${esc(tz)}"></section></form>`;
+    const form = `<form class="mobile-form premium-form collection-form" id="collection-form" data-collection-type="${esc(type)}"${editId ? ` data-edit-id="${esc(editId)}"` : ""} novalidate><header class="manual-form-heading"><span>${esc(editing ? "Edit plan" : "New plan")}</span><h1>${esc(editing ? existing.title || cfg.label : cfg.label)}</h1></header><p class="collection-form__intro">${esc(cfg.intro)}</p><section class="form-section manual-essentials" aria-labelledby="collection-essentials-title"><h2 id="collection-essentials-title">Details</h2><div class="quick-primary-fields">${field("title", cfg.label + " name", editing ? existing.title : "", { required: true, placeholder: cfg.label === "Neighborhood" ? "Trastevere" : cfg.label })}${field("city", "City or area", editing ? existing.city : "", { placeholder: "Rome" })}${scheduleFields}${field("notes", "Notes", editing ? existing.collection_notes : "", { type: "textarea" })}</div><input type="hidden" name="timezone" value="${esc(tz)}"></section>${editing ? `<button type="button" class="trip-delete-text collection-form__delete" data-action="delete-collection" data-id="${esc(editId)}">Delete this ${esc(String(cfg.label).toLowerCase())}</button>` : ""}</form>`;
     return focusedTaskPage(editing ? `Edit ${cfg.label}` : `New ${cfg.label}`, form, "form-screen collection-form-screen", formHeaderSave("collection-form", editing ? "Save" : "Create"));
   }
 
@@ -5552,7 +5739,7 @@
         return;
       }
       showToast(`${cfg ? cfg.label : "Plan"} ${editId ? "updated" : "added"}.`);
-      route(targetId ? "collection" : "planning", targetId || null, true);
+      route(targetId ? "collection" : "timeline", targetId || null, true);
     } catch (error) {
       if (!editId && !navigator.onLine) {
         // Offline: the new neighborhood is queued as a temp collection, but the
@@ -5567,7 +5754,7 @@
         queuePendingMutation({ kind: "collection", op: "create", tripId, tempId, body });
         formHasMeaningfulChanges = false; state.editingEntity = null;
         showToast(hadPendingIdea ? "Neighborhood saved on this phone. Reconnect, then add your idea to it." : "Saved on this phone. It will sync when you reconnect.");
-        route("planning", null, true);
+        route("collection", tempId, true);
         return;
       }
       showFormSubmissionError(form, error?.message || "Could not save. Try again.");
@@ -5640,7 +5827,7 @@
         await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/collections/${encodeURIComponent(id)}`, { method: "DELETE", body: JSON.stringify({ version }) });
         await loadTripDetails();
         showToast(`${cfg ? cfg.label : "Plan"} deleted.`);
-        route("planning", null, true);
+        route("timeline", null, true);
       },
     });
   }
@@ -5949,7 +6136,7 @@
     const traveler = state.travelers.find((t)=>String(t.id)===String(state.selectedId));
     if (!traveler) return missingDetailScreen("Traveler unavailable", "This traveler is not available.");
     const details = state.bookingDetails.filter((d)=>String(val(d,"traveler_id"))===String(traveler.id)), docs = state.localDocs.filter((d)=>d.travelerIds?.includes(String(traveler.id))), assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))), checklist = state.checklist.filter((item)=>String(val(item,"traveler_id"))===String(traveler.id));
-    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button></section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list ds-grouped-card ds-grouped-card--list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(timelineIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist ds-grouped-card ds-grouped-card--list">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
+    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button>${canEditCurrentTrip() ? `<button class="text-action text-action--danger" data-action="delete-traveler" data-id="${esc(traveler.id)}">Remove traveler</button>` : ""}</section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list ds-grouped-card ds-grouped-card--list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(timelineIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist ds-grouped-card ds-grouped-card--list">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
   }
   function importScreen() {
     // No AI guessing. You review every field before it is added.
@@ -6404,6 +6591,19 @@
       close();
       setFullScreen(false, restoreFocus);
       saveQuickDraft(form);
+      // iOS Safari can leave a ghost frame from the compositing layer the
+      // full-screen picker created, so the hero heading appears to paint over
+      // the field cards after closing. The picker now centres with margin (no
+      // transform) to avoid a persistent transform layer; we still nudge the
+      // whole page onto its own layer for one frame to force a clean repaint
+      // that clears any residual ghost.
+      if (fullScreenPanel) {
+        const host = form.closest(".focused-task") || form;
+        requestAnimationFrame(() => {
+          host.style.transform = "translateZ(0)";
+          requestAnimationFrame(() => { host.style.transform = ""; });
+        });
+      }
     };
     const setActive = (next) => {
       const options = [...popup.querySelectorAll('[role="option"]')];
@@ -6453,7 +6653,7 @@
         if (normalizeLabel(secondary) === normalizeLabel(place.name) || normalizeLabel(secondary) === normalizeLabel(place.displayName)) {
           secondary = place.countryName || place.cityName || "Airport";
         }
-        return `<button type="button" class="place-option" id="${listId}-${index}" role="option" aria-selected="false" data-place-index="${index}"><span class="place-option__kind" aria-hidden="true">${icon(place.type === "airport" ? "plane" : "pin", 19)}</span><span class="place-option__copy"><strong>${esc(place.name)}</strong><small>${esc(secondary || place.displayName)}</small></span>${place.iata ? `<b class="place-option__code">${esc(place.iata)}</b>` : `<em class="place-option__type">City</em>`}</button>`;
+        return `<button type="button" class="place-option" id="${listId}-${index}" role="option" aria-selected="false" data-place-index="${index}"><span class="place-option__kind place-option__kind--${place.type === "airport" ? "airport" : "city"}" aria-hidden="true">${icon(place.type === "airport" ? "plane" : "pin", 19)}</span><span class="place-option__copy"><strong>${esc(place.name)}</strong><small>${esc(secondary || place.displayName)}</small></span>${place.iata ? `<b class="place-option__code">${esc(place.iata)}</b>` : `<em class="place-option__type">City</em>`}</button>`;
       }).join("");
       open();
     };
@@ -6758,13 +6958,13 @@
     const deleteBar=editingTrip?`<button type="button" class="trip-delete-text" data-action="delete-trip">Delete this trip</button>`:"";
     const submitLabel=kind==="trip"?(editingTrip?"Save changes":`Next ${icon("chevron",18)}`):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
     const heading=kind==="trip"?(editingTrip?"Edit trip details":"Where are you going?"):esc(cfg.title);
-    const subhead=kind==="trip"?(editingTrip?"":""):"";
-    const headerActions=`<button type="submit" form="native-form" class="form-page-save mobile-primary-action">${submitLabel}</button>`;
+    const subhead=kind==="trip"?(editingTrip?"":"Choose a destination, then select your travel dates."):"";
+    const headerActions=`<button type="submit" form="native-form" class="app-bar-save">${submitLabel}</button>`;
     if (kind === "trip") {
       const tripNameField = editingTrip
         ? `<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}`
         : "";
-      const tripBody=`<header class="trip-create-head trip-create-intro"><div class="trip-create-head__copy"><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div></header><div class="trip-create-fields ds-grouped-card"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Destination</strong></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section>${deleteBar}</div>`;
+      const tripBody=`<header class="trip-create-head trip-create-intro"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip ? "Trip details" : "New trip"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Destination</strong><small>City, country, or region</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section>${deleteBar}</div>`;
       return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form trip-create-form" id="native-form" data-kind="trip"${editAttrs} novalidate>${tripBody}</form>`, "form-screen trip-create-screen", headerActions);
     }
     return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section ds-grouped-card"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);
@@ -7174,7 +7374,7 @@
   }
   function tripCreatedSheet() {
     const confetti = Array.from({length:18}, (_, i) => `<i style="--piece:${i};--drift:${(i % 5 - 2) * 16}px" aria-hidden="true"></i>`).join("");
-    return bottomSheet("trip-created", "Your trip is ready!", `<div class="trip-celebration"><div class="trip-celebration__confetti" aria-hidden="true">${confetti}</div><span class="trip-celebration__mark" aria-hidden="true">${icon("check",32)}</span><p class="trip-celebration__name">${esc(state.trip?.title || "Your new trip")}</p><p class="trip-celebration__copy">Let the adventure begin.</p><button type="button" class="mobile-primary-action" data-screen="timeline">Open trip</button></div>`);
+    return bottomSheet("trip-created", "Trip created", `<div class="trip-celebration"><div class="trip-celebration__confetti" aria-hidden="true">${confetti}</div><span class="trip-celebration__mark" aria-hidden="true">${icon("check",32)}</span><p class="trip-celebration__name">${esc(state.trip?.title || "Your new trip")}</p><p class="trip-celebration__copy">Add bookings and plans whenever you’re ready.</p><button type="button" class="mobile-primary-action" data-screen="timeline">Open timeline</button></div>`);
   }
   function currencyPickerSheet() {
     const currency = initCurrency();
@@ -7235,7 +7435,7 @@
       hasDates = Boolean(preview.startsOn && preview.endsOn);
     const bookingUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(destination)}${preview.startsOn ? `&checkin=${encodeURIComponent(preview.startsOn)}` : ""}${preview.endsOn ? `&checkout=${encodeURIComponent(preview.endsOn)}` : ""}`;
     const tool = (className, iconName, title, copy, href, sponsored = false, id = "") => `<a${id ? ` id="${id}"` : ""} class="trip-setup-tool ${className}" href="${esc(href)}" target="_blank" rel="${sponsored ? "sponsored " : ""}noopener noreferrer"><span class="trip-setup-tool__icon">${icon(iconName,22)}</span><span class="trip-setup-tool__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span><span class="trip-setup-tool__external" aria-hidden="true">${icon("external",17)}</span></a>`;
-    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Plan your trip</strong></div><button type="button" class="trip-setup-ready__create" data-action="complete-trip-setup">Create trip</button></header><main class="trip-setup-ready__main"><section class="trip-create-head trip-setup-ready__hero"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">Your journey</span><h1 id="trip-setup-ready-title">Bring your trip together</h1><div class="trip-create-head__sub"><p>Keep your bookings and travel details in one clear timeline.</p></div></div><div class="trip-plan-fields"><div class="trip-plan-field">${icon("location",22)}<span><small>Destination</small><strong>${esc(destination === "Your destination" ? "Not selected" : destination)}</strong></span></div><div class="trip-plan-field">${icon("calendar",22)}<span><small>Travel dates</small><strong>${esc(dates)}</strong></span></div></div></section><section class="trip-setup-ready__tools" aria-labelledby="trip-setup-extras-title"><h2 id="trip-setup-extras-title" class="trip-setup-ready__extras-title">Anything else you need?</h2>${tool("trip-setup-tool--flight","flight","Still haven't booked the flights?","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${tool("trip-setup-tool--stay","bed","Still looking for a place to stay?","Browse stays on Booking.com",bookingUrl,true,"trip-setup-stay-link")}${tool("trip-setup-tool--esim","sim","Need an eSIM?","Get connected before you land",routeUrl("esim"))}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost.</p></main></section>`;
+    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Review your trip</strong></div><button type="button" class="trip-setup-ready__create" data-action="complete-trip-setup">Create trip</button></header><main class="trip-setup-ready__main"><section class="trip-create-head trip-setup-ready__hero"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">Your journey</span><h1 id="trip-setup-ready-title">Check your trip details</h1><div class="trip-create-head__sub"><p>You can change these details later.</p></div></div><div class="trip-plan-fields"><div class="trip-plan-field"><span><small>Destination</small><strong>${esc(destination === "Your destination" ? "Not selected" : destination)}</strong></span></div><div class="trip-plan-field"><span><small>Travel dates</small><strong>${esc(dates)}</strong></span></div></div></section><section class="trip-setup-ready__tools" aria-labelledby="trip-setup-extras-title"><h2 id="trip-setup-extras-title" class="trip-setup-ready__extras-title">Plan the rest of your trip</h2>${tool("trip-setup-tool--flight","flight","Find a flight","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${tool("trip-setup-tool--stay","bed","Find a place to stay","Browse stays on Booking.com",bookingUrl,true,"trip-setup-stay-link")}${tool("trip-setup-tool--esim","sim","Get an eSIM","Connect before you land",routeUrl("esim"))}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost.</p></main></section>`;
   }
   function addSheet() {
     const tripTitle = state.trip?.title || "your trip";
@@ -7448,8 +7648,20 @@
     const seg = (value, label, sub, tone) =>
       `<button type="button" class="share-role${role === value ? " is-active" : ""}" data-action="share-role" data-role="${value}" aria-pressed="${role === value}">${PastelIcon(roleMeta(value).icon, tone, 20, "share-role__icon")}<span class="share-role__copy"><strong>${esc(label)}</strong><small>${esc(sub)}</small></span><span class="share-role__indicator" aria-hidden="true">${role === value ? icon("check", 18) : ""}</span></button>`;
     const invite = state.shareInvite;
+    const shortInviteUrl = invite?.inviteUrl
+      ? invite.inviteUrl
+          .replace(/^https?:\/\//, "")
+          .replace(/^www\./, "")
+          .replace(/(\/join\/[A-Za-z0-9]{6})[A-Za-z0-9]+/, "$1…")
+      : "";
+    const expiryLabel = (value) => {
+      const n = Number(value);
+      return Number.isFinite(n) && n > 1e12
+        ? dateFormatter(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(n))
+        : formatDateOnly(value);
+    };
     const linkBlock = invite?.inviteUrl
-      ? `<div class="share-link" role="group" aria-label="Invitation link"><p class="share-link__label">${esc(roleMeta(invite.role).label)} link ready${invite.expiresAt ? ` · expires ${esc(formatDateOnly(invite.expiresAt))}` : ""}</p><div class="share-link__url" title="${esc(invite.inviteUrl)}">${esc(invite.inviteUrl)}</div><div class="share-link__actions"><button type="button" class="ds-primary-button" data-action="share-invite-link">${icon("share", 18)} Share link</button><button type="button" class="ds-secondary-button" data-action="copy-invite-link">${icon("copy", 18)} Copy link</button></div></div>`
+      ? `<div class="share-link" role="group" aria-label="Invitation link"><p class="share-link__label">${esc(roleMeta(invite.role).label)} link ready${invite.expiresAt ? ` · expires ${esc(expiryLabel(invite.expiresAt))}` : ""}</p><div class="share-link__url" title="${esc(invite.inviteUrl)}">${esc(shortInviteUrl)}</div><div class="share-link__actions"><button type="button" class="ds-primary-button" data-action="share-invite-link">${icon("share", 18)} Share link</button><button type="button" class="ds-secondary-button" data-action="copy-invite-link">${icon("copy", 18)} Copy link</button></div></div>`
       : "";
     const createLabel = invite?.inviteUrl ? "Create another link" : "Create invitation link";
     return bottomSheet(
@@ -7770,7 +7982,8 @@
     const places = weatherPlaces();
     const place = currentWeatherPlace();
     const wx = place && state.weatherByPlace ? state.weatherByPlace[place.key] : null;
-    // Per-place selector, only when the trip visits more than one place.
+    // A multi-stop trip needs a selector; a single-stop trip still names the
+    // forecast location so the reading never loses its city context.
     const selector =
       places.length > 1
         ? `<div class="wx-places" role="tablist" aria-label="Places">${places
@@ -7779,7 +7992,9 @@
                 `<button type="button" role="tab" class="wx-place-chip${p.key === place.key ? " is-active" : ""}" data-action="weather-place" data-key="${esc(p.key)}" aria-selected="${p.key === place.key}">${icon("pin", 14)}<span>${esc(p.label)}</span></button>`,
             )
             .join("")}</div>`
-        : "";
+        : place
+          ? `<div class="wx-place-context" aria-label="Forecast location"><span aria-hidden="true">${icon("pin", 18)}</span><strong>${esc(place.label)}</strong>${place.country ? `<small>${esc(place.country)}</small>` : ""}</div>`
+          : "";
     let body;
     if (wx && wx.tempC != null) {
       const hourly = Array.isArray(wx.hourly) ? wx.hourly.slice(0, 6) : [];
@@ -7812,7 +8027,7 @@
     const result = Number.isFinite(rate) ? amount * rate : null;
     const money = (value, code) => {
       if (!Number.isFinite(value)) return "—";
-      try { return new Intl.NumberFormat(undefined, { style:"currency", currency:code, maximumFractionDigits:2 }).format(value); }
+      try { return new Intl.NumberFormat("en-US", { style:"currency", currency:code, maximumFractionDigits:2 }).format(value); }
       catch (_) { return `${value.toFixed(2)} ${code}`; }
     };
     const currencyChoice = (field) => {
@@ -7829,7 +8044,7 @@
         ? `<span class="currency-status">${currency.cached ? "Saved offline" : "Rate updated"}${currency.date ? ` · ${esc(currency.date)}` : ""}</span>`
         : `<span class="currency-status">Rate not loaded</span>`;
     const error = state.currencyError ? `<section class="currency-error" role="status">${icon("info",18)}<span>${esc(state.currencyError)}</span></section>` : "";
-    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><header class="currency-hero"><span class="currency-hero__icon">${icon("currency",23)}</span><div><span>TRIP RATE</span><h1 id="currency-converter-title">${esc(destination)} uses ${esc(destinationCurrency())}</h1><p>Your destination currency is ready automatically.</p></div></header><section class="currency-workspace" aria-labelledby="currency-converter-title"><section class="currency-zone currency-zone--pay"><header class="currency-zone__head"><span>You pay</span>${currencyChoice("from")}</header><label class="currency-amount"><span class="sr-only">Amount in ${esc(currency.from)}</span><input data-currency-amount class="${String(currency.amount).length > 9 ? "is-long" : ""}" type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label><div class="currency-quick" aria-label="Quick amounts">${[10,50,100,500].map((value) => `<button type="button" data-action="currency-quick" data-value="${value}"${Number(currency.amount) === value ? " class=\"is-active\"" : ""}>${value}</button>`).join("")}</div></section><div class="currency-bridge"><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",21)}</button><span class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Update to load this rate"}</span></div><section class="currency-zone currency-zone--receive"><header class="currency-zone__head"><span>You get</span>${currencyChoice("to")}</header><output class="currency-result" aria-live="polite"><strong class="currency-result__amount${result != null && money(result, currency.to).length > 12 ? " is-long" : ""}">${esc(result == null ? "—" : money(result, currency.to))}</strong><span>${esc(currency.to)} · ${esc(TRAVEL_CURRENCIES.find(([code]) => code === currency.to)?.[1] || "Currency")}</span></output></section><footer class="currency-update-row"><div>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${state.currencyLoading ? "Updating" : "Update"}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
+    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><header class="currency-hero"><span class="currency-hero__icon">${icon("currency",23)}</span><div><span>EXCHANGE RATE</span><h1 id="currency-converter-title">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 2))} ${esc(currency.to)}` : "Tap Update to load the rate"}</h1><p>${esc(destination)} · reference rate for your trip</p></div></header><section class="currency-card" aria-labelledby="currency-converter-title"><div class="currency-line currency-line--from"><span class="currency-line__label">You pay</span><div class="currency-line__field">${currencyChoice("from")}<label class="currency-amount"><span class="sr-only">Amount in ${esc(currency.from)}</span><input data-currency-amount class="${String(currency.amount).length > 9 ? "is-long" : ""}" type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label></div></div><div class="currency-divider"><span class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Update to load this rate"}</span><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",20)}</button></div><div class="currency-line currency-line--to"><span class="currency-line__label">You get</span><div class="currency-line__field">${currencyChoice("to")}<output class="currency-result" aria-live="polite"><strong class="currency-result__amount${result != null && money(result, currency.to).length > 12 ? " is-long" : ""}">${esc(result == null ? "—" : money(result, currency.to))}</strong></output></div></div></section><footer class="currency-update-row"><div>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${state.currencyLoading ? "Updating" : "Update"}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
   }
   function esimScreen() {
     const dest =
@@ -8297,7 +8512,7 @@
     const steps = [
       ["trips", "Create your trip"],
       ["calendar", "Add your bookings"],
-      ["clock", "Everything becomes one Timeline"],
+      ["clock", "Bookings and plans appear on your Timeline"],
       ["shield", "Know what matters next"],
     ];
     return bottomSheet(
@@ -8367,8 +8582,8 @@
       home: "Travel planning on one calm timeline",
       trips: "Trips",
       timeline: state.trip?.title || "Trip timeline",
-      planning: "Trip planning",
       collection: name || "Neighborhood plan",
+      "collection-stop": "Place details",
       "save-later": "Save for Later",
       bookings: "Bookings",
       account: "Account",
@@ -8511,12 +8726,12 @@
           html = hotelScreen();
           break;
         case "bookings":
-          html = premiumBookingsScreen();
+          html = timelineScreen();
           break;
         case "train": html = trainScreen(); break;
         case "plan": html = planScreen(); break;
-        case "planning": html = planningScreen(); break;
         case "collection": html = collectionScreen(); break;
+        case "collection-stop": html = collectionStopDetailScreen(); break;
         case "collection-form": html = collectionFormScreen(); break;
         case "stop-form": html = stopFormScreen(); break;
         case "documents":
@@ -9731,13 +9946,13 @@
     try {
       if (QUICK_ADD_KINDS.has(kind) && !state.trip) throw new Error("Choose a trip before saving this booking.");
       if (PREVIEW_MODE) {
-        if (isFirstTripCreation) {
+        if (kind === "trip" && !editId) {
           const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
           const trip={id:"preview-created-trip",title:values.title,destination:fd.get("destination"),lifecycle_state:values.startsOn?"upcoming":"draft",starts_on:values.startsOn,ends_on:values.endsOn};
-          Object.assign(state,{trips:[trip],trip,timeline:[],checklist:[],brain:null,impacts:[],transport:[],stays:[],locations:[],travelers:[],connections:[],health:null,bookingDetails:[],contacts:[],syncStatus:null,localDocs:[],tripsLoaded:true});
+          Object.assign(state,{trips:[trip,...state.trips.filter((existing)=>String(existing.id)!==trip.id)],trip,timeline:[],checklist:[],brain:null,impacts:[],transport:[],stays:[],locations:[],travelers:[],connections:[],health:null,bookingDetails:[],contacts:[],syncStatus:null,localDocs:[],tripsLoaded:true});
         }
         clearQuickDraft(kind); formHasMeaningfulChanges=false; showToast(`${statusText(kind)} saved in preview.`);
-        route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true); if (isFirstTripCreation && !editId) openSheet("trip-created"); return;
+        route(kind==="document"?"documents":kind==="trip"?"timeline":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true); if (kind === "trip" && !editId) openSheet("trip-created"); return;
       }
       if (kind === "trip") {
         const values=tripRules.validateManualTrip({title:fd.get("title")||fd.get("destination"),startsOn:fd.get("startsOn"),endsOn:fd.get("endsOn")}).values;
@@ -9878,7 +10093,7 @@
       clearQuickDraft(kind); formHasMeaningfulChanges=false; state.manualLabel=null; state.editingEntity=null; formPrefill=null;
       const roundTripSaved = kind==="flight" && !editId && String(fd.get("roundTrip")||"")==="1" && String(fd.get("returnDepartureDate")||"") && savedBookingId;
       showToast(saveWarning||(roundTripSaved?"Round trip saved — outbound and return flights added.":(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`)),saveWarning?"alert":"status");
-      route(kind==="document"?"documents":kind==="trip"?"add-booking":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+      route(kind==="document"?"documents":kind==="trip"?"timeline":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
       if (kind === "trip" && !editId && !saveWarning) openSheet("trip-created");
     } catch (error) {
       const message = error?.status === 409
@@ -10267,7 +10482,7 @@
   const VIEWER_BLOCKED_ACTIONS = new Set([
     "open-add", "open-add-booking", "add-booking", "add-checklist-suggested",
     "add-document", "add-type", "add-duplicate-import", "confirm-import",
-    "delete-booking", "delete-checklist", "delete-trip", "edit-booking",
+    "delete-booking", "delete-checklist", "delete-trip", "delete-traveler", "edit-booking",
     "edit-checklist", "edit-note", "edit-trip", "save-note", "toggle-checklist",
     "move-booking", "apply-move", "manage-booking", "remove-document",
     "remove-import", "reject-import", "review-import", "import",
@@ -10599,11 +10814,6 @@
       case "refresh-currency":
         await ensureCurrencyRates(true);
         break;
-      case "currency-quick":
-        initCurrency().amount = Number(target.dataset.value) || 100;
-        saveCurrencyPreferences();
-        render();
-        break;
       case "currency-swap": {
         const currency = initCurrency(), from = currency.from;
         currency.from = currency.to;
@@ -10809,6 +11019,10 @@
         }
         break;
       }
+      case "delete-traveler":
+        if (state.sheet === "navigation") closeSheetKeepPage();
+        confirmDeleteTraveler(target.dataset.id);
+        break;
       case "manage-booking":
         state.manageBooking = { kind: target.dataset.kind, id: target.dataset.id };
         openSheet("manage-booking", target);
@@ -10919,10 +11133,6 @@
         route("form", type);
         break;
       }
-      case "open-planning":
-        closeSheet();
-        route("planning");
-        break;
       case "add-collection": {
         const type = target.dataset.collectionType;
         if (!collectionConfig(type)) break;
@@ -10956,6 +11166,13 @@
       case "stop-menu": {
         state.stopMenu = { collectionId: target.dataset.collection, stopId: target.dataset.id };
         openSheet("collection-stop", target);
+        break;
+      }
+      case "open-stop-detail": {
+        const stop = (state.collectionStops || []).find((row) => String(row.id) === String(target.dataset.id));
+        const linkedId = String(stop?.linked_trip_item_id || "");
+        if (linkedId) openTimelineItemDetail(linkedId);
+        else route("collection-stop", `${target.dataset.collection}::${target.dataset.id}`);
         break;
       }
       case "edit-stop": {
@@ -11371,8 +11588,26 @@
         break;
       case "save-note": {
         const id = target.dataset.id, kind = target.dataset.kind,
-          field = target.closest(".fd-note-edit")?.querySelector(".fd-note-edit__field"),
-          record = findBookingRecord(kind, id);
+          field = target.closest(".fd-note-edit")?.querySelector(".fd-note-edit__field");
+        if (kind === "stop") {
+          const [collectionId, stopId] = String(id || "").split("::");
+          if (target.getAttribute("aria-busy") === "true") break;
+          target.setAttribute("aria-busy", "true");
+          target.textContent = "Saving…";
+          try {
+            await saveStopNote(collectionId, stopId, field ? field.value : "");
+            state.editingNote = null;
+            showToast("Note saved.");
+          } catch (error) {
+            showToast(error?.message || "The note was not saved.");
+            target.removeAttribute("aria-busy");
+            target.textContent = "Save note";
+            break;
+          }
+          render();
+          break;
+        }
+        const record = findBookingRecord(kind, id);
         if (!record?.entity) {
           showToast("This booking is no longer available.");
           state.editingNote = null;
@@ -11502,13 +11737,16 @@
     if (wrap && handle) {
       swipeState = { wrap, row: handle, startX: t.clientX, startY: t.clientY, base: wrap.classList.contains("is-open") ? -96 : 0, decided: false, horizontal: false, dx: wrap.classList.contains("is-open") ? -96 : 0 };
     }
-    const card = event.target.closest?.("[data-longpress-trip]");
+    const booking = event.target.closest?.("[data-longpress-booking]");
+    const stop = event.target.closest?.("[data-longpress-stop]");
+    const card = booking || stop || event.target.closest?.("[data-longpress-trip]");
     if (card) {
       lpCard = card; lpStart = { x: t.clientX, y: t.clientY };
       lpTimer = setTimeout(() => {
         lpTimer = null; suppressClick = true;
+        try { window.getSelection?.()?.removeAllRanges(); } catch (_) {}
         try { navigator.vibrate?.(12); } catch (_) {}
-        handleAction("delete-trip", card, "pointer").catch((error) => showToast(error?.message || String(error), "alert"));
+        handleAction(booking ? "manage-booking" : stop ? "stop-menu" : "delete-trip", card, "pointer").catch((error) => showToast(error?.message || String(error), "alert"));
       }, 550);
     }
   }, { passive: true });
@@ -11614,11 +11852,10 @@
     currency.amount = amount;
     saveCurrencyPreferences();
     input.classList.toggle("is-long", String(input.value).length > 9);
-    app.querySelectorAll(".currency-quick button").forEach((button) => button.classList.toggle("is-active", Number(button.dataset.value) === amount));
     const result = app.querySelector(".currency-result__amount"), note = app.querySelector(".currency-rate-note"), rate = currency.rate == null ? NaN : Number(currency.rate);
     if (result) {
       const converted = Number.isFinite(rate) ? amount * rate : null;
-      try { result.textContent = converted == null ? "—" : new Intl.NumberFormat(undefined, { style:"currency", currency:currency.to, maximumFractionDigits:2 }).format(converted); }
+      try { result.textContent = converted == null ? "—" : new Intl.NumberFormat("en-US", { style:"currency", currency:currency.to, maximumFractionDigits:2 }).format(converted); }
       catch (_) { result.textContent = converted == null ? "—" : `${converted.toFixed(2)} ${currency.to}`; }
       result.classList.toggle("is-long", result.textContent.length > 12);
     }
@@ -11844,5 +12081,6 @@
       "",
       routeUrl(startupRoute.screen, startupRoute.id),
     );
+  applyNightTheme();
   resumeGoogleRedirectSession();
 })();

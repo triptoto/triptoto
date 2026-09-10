@@ -68,7 +68,7 @@ const missing = harness({ missing: true });
 const missingRequest = missing.ctx.loadApp();
 assert.equal(missing.frames[0], 'loading', 'Missing cached data is not a confirmed missing plan');
 missing.release(); await missingRequest;
-assert.equal(missing.state.screen, 'planning', 'A confirmed missing plan still recovers to the planning list');
+assert.equal(missing.state.screen, 'timeline', 'A confirmed missing plan still recovers to the timeline');
 assert(!missing.frames.includes('Plan unavailable'));
 
 const waitingRoute = harness({ cache: 'partial' });

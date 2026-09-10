@@ -56,6 +56,11 @@ class Browser:
         self.viewport(self.width,self.height)
         self.cmd('Page.navigate',{'url':BASE_URL+path})
         time.sleep(.4)
+        if urlparse(path).path.endswith('.html'):
+            for i in range(100):
+                time.sleep(.05)
+                if self.js('document.readyState === "complete"'): break
+            return
         for i in range(200):
             time.sleep(.1)
             if self.js('Boolean(window.TriptoMobileApp && document.querySelector(".screen,.first-run-screen") && !TriptoMobileApp.getState().loading)'): break
@@ -63,9 +68,19 @@ class Browser:
         if not self.js('Boolean(window.TriptoMobileApp)'):
             raise RuntimeError('Local preview did not initialize: ' + str(self.js('location.href')))
     def click(self,selector):
+        if selector.startswith('longpress:'):
+            return self.longpress(selector.removeprefix('longpress:'))
         result=self.js('(()=>{const e=document.querySelector('+json.dumps(selector)+');if(!e)return false;e.scrollIntoView({block:"nearest"});e.focus();e.click();return true})()')
         if not result: raise RuntimeError('Missing trigger '+selector)
         time.sleep(.18)
+    def longpress(self,selector,duration=.7):
+        rect=self.js('(()=>{const e=document.querySelector('+json.dumps(selector)+');if(!e)return null;e.scrollIntoView({block:"nearest"});e.focus();const r=e.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()')
+        if not rect: raise RuntimeError('Missing long-press trigger '+selector)
+        point={'x':rect['x'],'y':rect['y'],'radiusX':1,'radiusY':1,'force':1,'id':1}
+        self.cmd('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[point]})
+        time.sleep(duration)
+        self.cmd('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
+        time.sleep(.2)
     def screenshot(self,path):
         time.sleep(.1)
         p=Path(path);p.parent.mkdir(parents=True,exist_ok=True)

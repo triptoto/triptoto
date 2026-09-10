@@ -110,5 +110,5 @@ assert.match(css, /trip-create-screen \.trip-create-route\{[^}]*display:none!imp
 assert.match(css, /ds-grouped-card\{[^}]*padding:var\(--space-4\)[^}]*border:1px solid var\(--line\)[^}]*border-radius:var\(--radius-regular\)/, 'grouped surfaces must use shared spacing and border tokens');
 assert.ok(!/\b(?:window\.)?(?:confirm|prompt)\(/.test(js.replace(/^\s*\/\/.*$/gm, '')), 'app-owned confirmation flows must use the shared accessible dialog');
 assert.ok(js.includes('confirmationText: "DELETE"') && js.includes('input.value !== confirmationText'), 'account deletion must preserve exact typed confirmation');
-assert.ok(js.includes('awaitingConfirmation') && js.includes('if (!activeActivities.size || awaitingConfirmation)'), 'waiting for confirmation is not network activity');
+assert.ok(js.includes('awaitingConfirmation') && js.includes('document.getElementById("tripto-activity")?.remove()') && !js.includes('created.className = "thinking-notice"'), 'routine activity must remain silent while accessible confirmation state stays independent');
 console.log("Unified Tripto Elegant Flat Cards design-system contract passed.");

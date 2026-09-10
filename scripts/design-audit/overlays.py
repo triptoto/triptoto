@@ -4,18 +4,18 @@ phase='interaction'
 fixture=(SUITE_DIR/'fixture.js').read_text()
 # All selectors below are existing visible product triggers, never synthetic buttons.
 cases=[
- ('stop-menu','collection','audit-neighborhood',['[data-action="stop-menu"][data-id="audit-stop-2"]']),
- ('stop-delete','collection','audit-neighborhood',['[data-action="stop-menu"][data-id="audit-stop-2"]','[data-action="delete-stop"]']),
- ('collection-delete','collection','audit-neighborhood',['[data-action="delete-collection"]']),
+ ('stop-menu','collection','audit-neighborhood',['longpress:[data-longpress-stop][data-id="audit-stop-2"]']),
+ ('stop-delete','collection','audit-neighborhood',['longpress:[data-longpress-stop][data-id="audit-stop-2"]','[data-action="delete-stop"]']),
+ ('collection-delete','collection','audit-neighborhood',['[data-action="open-navigation"]','[data-action="edit-collection"]','[data-action="delete-collection"]']),
  ('idea-menu','save-later',None,['[data-action="open-idea"]']),
  ('idea-delete','save-later',None,['[data-action="open-idea"]','[data-action="delete-idea"]']),
- ('manage-booking','flight','flight',['[data-action="manage-booking"]']),
- ('move-booking','flight','flight',['[data-action="manage-booking"]','[data-action="move-booking"]']),
- ('delete-booking','flight','flight',['[data-action="manage-booking"]','[data-action="delete-booking"]']),
+ ('manage-booking','timeline',None,['longpress:[data-longpress-booking]']),
+ ('move-booking','timeline',None,['longpress:[data-longpress-booking]','[data-action="move-booking"]']),
+ ('delete-booking','timeline',None,['longpress:[data-longpress-booking]','[data-action="delete-booking"]']),
  ('trip-switch','account',None,['[data-action="switch-trip"]']),
  ('help-sheet','account',None,['[data-action="open-help"]']),
  ('tour-sheet','account',None,['[data-action="open-first-run-how"]']),
- ('notifications','timeline',None,['[data-action="open-notifications"]']),
+ ('notifications','timeline',None,['[data-action="open-navigation"]','[data-action="open-notifications"]']),
  ('currency-picker','currency',None,['[data-action="open-currency-picker"]']),
  ('share-sheet','collaboration',None,['[data-action="open-share"]']),
  ('member-sheet','collaboration',None,['[data-action="open-member-actions"]']),
@@ -33,6 +33,7 @@ cases=[
 start=int(sys.argv[4]) if len(sys.argv)>4 else 0
 end=int(sys.argv[5]) if len(sys.argv)>5 else len(cases)
 records=[]
+(root/phase).mkdir(parents=True,exist_ok=True)
 for name,screen,id,clicks in cases[start:end]:
     try:
         b.nav();b.js(fixture)

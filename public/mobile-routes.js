@@ -27,7 +27,6 @@
     "booking-email-inbox": "/bookings/email-inbox",
     sync: "/pending-changes",
     collaboration: "/collaboration",
-    planning: "/planning",
   });
 
   const DETAIL_PATHS = Object.freeze({
@@ -97,6 +96,16 @@
     if (path === "/local-guide")
       return { screen: "trip-options", id: null, redirect: true };
 
+    // The standalone booking inventory duplicated the trip timeline. Existing
+    // links stay useful, but now land on the single source of truth instead.
+    if (path === "/bookings")
+      return { screen: "timeline", id: null, redirect: true };
+
+    // The standalone Planning overview was retired. Neighborhoods are created
+    // through Day Plan and scheduled neighborhoods open from the trip timeline.
+    if (path === "/planning")
+      return { screen: "timeline", id: null, redirect: true };
+
     if (path === "/trips/new") return { screen: "form", id: "trip" };
     if (path.startsWith("/trips/"))
       return { screen: "timeline", id: safelyDecode(path.slice("/trips/".length)), tripRoute: true };
@@ -123,6 +132,8 @@
       return { screen: "collection-form", id: safelyDecode(collectionMatch[1]) };
     if ((collectionMatch = path.match(/^\/collections\/([^/]+)\/add-place$/)))
       return { screen: "stop-form", id: safelyDecode(collectionMatch[1]) };
+    if ((collectionMatch = path.match(/^\/collections\/([^/]+)\/places\/([^/]+)$/)))
+      return { screen: "collection-stop", id: `${safelyDecode(collectionMatch[1])}::${safelyDecode(collectionMatch[2])}` };
 
     // Day Plan activity form: create (/day-plan/new/<type>) or edit an existing
     // activity (/day-plan/item/<id>). Matched before the generic loop so the
@@ -168,10 +179,16 @@
     if (normalizedScreen === "collection-form") {
       if (normalizedId && normalizedId.startsWith("new:"))
         return `/collections/new/${encodeURIComponent(normalizedId.slice(4))}`;
-      return normalizedId ? `/collections/${encodeURIComponent(normalizedId)}/edit` : "/planning";
+      return normalizedId ? `/collections/${encodeURIComponent(normalizedId)}/edit` : "/day-plan";
     }
     if (normalizedScreen === "stop-form")
-      return normalizedId ? `/collections/${encodeURIComponent(normalizedId)}/add-place` : "/planning";
+      return normalizedId ? `/collections/${encodeURIComponent(normalizedId)}/add-place` : "/day-plan";
+    if (normalizedScreen === "collection-stop" && normalizedId) {
+      const [collectionId, stopId] = normalizedId.split("::");
+      return collectionId && stopId
+        ? `/collections/${encodeURIComponent(collectionId)}/places/${encodeURIComponent(stopId)}`
+        : "/timeline";
+    }
 
     if (normalizedScreen === "day-plan-form") {
       if (normalizedId && normalizedId.startsWith("new:"))

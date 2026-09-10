@@ -5,8 +5,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#FBF8F7",
-  "theme_color": "#FBF8F7",
+  "background_color": "#0F1F29",
+  "theme_color": "#0F1F29",
   "description": "Trips, offline travel essentials, deterministic booking import and beta readiness.",
   "categories": [
     "travel",
