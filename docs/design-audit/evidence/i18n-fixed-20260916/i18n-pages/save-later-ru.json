@@ -1,0 +1,24 @@
+{
+  "route": "save-later",
+  "path": "/save-later",
+  "screen": "save-later",
+  "locale": "ru",
+  "image": "save-later-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "СОХРАНЁННОЕ\nСохранить идеи для «Rome 2026»\n\nПостоянный список того, чем можно заняться. Откройте пункт, чтобы добавить его в план дня.\n\nИдей пока нет\n\nСохраняйте места, еду и то, чем хотите заняться. Спланируете по дням, когда будете готовы.\n\nДобавить идею",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Добавить идею",
+      "label": null,
+      "action": "add-save-later"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

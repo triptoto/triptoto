@@ -1,0 +1,29 @@
+{
+  "route": "health",
+  "path": "/trip-health",
+  "screen": "health",
+  "locale": "de",
+  "image": "health-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Alles sieht gut aus\n\nKeine bekannten Reiseprobleme.\n\nKeine bekannten Probleme\n\nKeine bekannten Reiseprobleme.\n\nReisezustand neu berechnen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Informationen zum Reisecheck",
+      "action": "health-info"
+    },
+    {
+      "text": "Reisezustand neu berechnen",
+      "label": null,
+      "action": "recalculate-health"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

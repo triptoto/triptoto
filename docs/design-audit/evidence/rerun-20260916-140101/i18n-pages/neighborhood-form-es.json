@@ -1,0 +1,27 @@
+{
+  "route": "neighborhood-form",
+  "path": "/collections/new/neighborhood",
+  "screen": "collection-form",
+  "locale": "es",
+  "image": "neighborhood-form-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Crear\nNUEVO PLAN\nBarrio\n\nAgrupa varios lugares de un mismo barrio en un solo plan. Aparece una vez en tu cronología y abre su propia lista de lugares.\n\nDetalles\nNeighborhood name *\nCiudad o zona Opcional\nFecha en la cronología\nFecha seleccionada\n17 sept 2026\nFecha seleccionada: 17 sept 2026.\n\nOpcional — elige una fecha en la que esta zona encaje en tu cronología. Déjalo en blanco para seguir planificándolo más tarde.\n\nHora de inicio Opcional\nNotas Opcional",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Crear",
+      "label": null
+    },
+    {
+      "text": "Fecha seleccionada\n17 sept 2026",
+      "label": "Date on timeline. 17 sept 2026",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0
+}

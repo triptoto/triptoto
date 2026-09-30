@@ -1,0 +1,88 @@
+{
+  "route": "add-booking",
+  "path": "/bookings/add",
+  "screen": "add-booking",
+  "locale": "es",
+  "image": "add-booking-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "AÑADIR UNA RESERVA\nAñade una reserva\n\nPara los viajes que ya has reservado. Para planear qué ver y hacer, usa el Plan del día.\n\nVuelo\nViaje en avión\nTren\nViaje en tren\nFerry\nBarco o travesía\nAutobús / Autocar\nTrayecto entre ciudades\nCrucero\nItinerario de navegación\nAlquiler de coche\nRecogida y devolución\nTraslado\nTransporte reservado\nTaxi / Viaje\nRecogida y entrega\nAparcamiento\nAparcamiento reservado\nHotel / Alojamiento\nHotel o apartamento\nSeguro de viaje\nDetalles de la póliza\nOtro\nCualquier plan confirmado\n¿YA TIENES UNA CONFIRMACIÓN?\nSube un archivo\nRevisa un billete o confirmación\nReenviar un correo\nEnvíalo a go@tripto.to",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Vuelo\nViaje en avión",
+      "label": "Añadir vuelo",
+      "action": "add-type"
+    },
+    {
+      "text": "Tren\nViaje en tren",
+      "label": "Añadir tren",
+      "action": "add-type"
+    },
+    {
+      "text": "Ferry\nBarco o travesía",
+      "label": "Añadir ferri",
+      "action": "add-type"
+    },
+    {
+      "text": "Autobús / Autocar\nTrayecto entre ciudades",
+      "label": "Añadir Autobús / Autocar",
+      "action": "add-type"
+    },
+    {
+      "text": "Crucero\nItinerario de navegación",
+      "label": "Añadir crucero",
+      "action": "add-type"
+    },
+    {
+      "text": "Alquiler de coche\nRecogida y devolución",
+      "label": "Añadir alquiler de coche",
+      "action": "add-type"
+    },
+    {
+      "text": "Traslado\nTransporte reservado",
+      "label": "Añadir traslado",
+      "action": "add-type"
+    },
+    {
+      "text": "Taxi / Viaje\nRecogida y entrega",
+      "label": "Añadir Taxi / Viaje",
+      "action": "add-type"
+    },
+    {
+      "text": "Aparcamiento\nAparcamiento reservado",
+      "label": "Añadir aparcamiento",
+      "action": "add-type"
+    },
+    {
+      "text": "Hotel / Alojamiento\nHotel o apartamento",
+      "label": "Añadir Hotel / Alojamiento",
+      "action": "add-type"
+    },
+    {
+      "text": "Seguro de viaje\nDetalles de la póliza",
+      "label": "Añadir Seguro de viaje",
+      "action": "add-type"
+    },
+    {
+      "text": "Otro\nCualquier plan confirmado",
+      "label": "Añadir Otro",
+      "action": "add-type"
+    },
+    {
+      "text": "Sube un archivo\nRevisa un billete o confirmación",
+      "label": null,
+      "action": "open-upload-booking"
+    },
+    {
+      "text": "Reenviar un correo\nEnvíalo a go@tripto.to",
+      "label": null,
+      "action": "open-forward-booking"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,122 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "VOYAGE PARTAGÉ\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nUn seul voyage.\nTout le monde synchronisé.\nPourquoi planifier ensemble ?\nCréez un seul plan\nLes éditeurs peuvent ajouter et modifier des réservations.\nGardez tout le monde synchronisé\nLes modifications du voyage restent visibles pour tout le monde au même endroit.\nVous gardez le contrôle\nChoisissez qui peut modifier ou consulter, et retirez l’accès à tout moment.\nInviter des personnes\nPersonnes sur ce voyage\nAlex Traveler (You)\nPropriétaire\nSam Companion\nPeut modifier\nTaylor Companion\nLecture seule\n\nJusqu’à 10 personnes par voyage.\n\nInvitations en attente\nfriend@example.test\nView only · pending · expires 2026-09-17T11:15:19.455Z\nInviter à ce voyage\n\nChaque personne que vous invitez se connecte avec son propre compte gratuit pour rejoindre le voyage. Le lien fonctionne une seule fois et vous pouvez le révoquer à tout moment.\n\nChoisir l’accès\nPeut modifier\nAjouter et modifier des réservations\nLecture seule\nVoir le voyage, sans pouvoir le modifier\nCréer un lien d’invitation",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1173
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 461.328125,
+        "width": 390,
+        "height": 382.671875,
+        "top": 461.328125,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Inviter des personnes",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Gérer l’accès pour Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Gérer l’accès pour Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Révoquer l'invitation",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Fermer",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Peut modifier\nAjouter et modifier des réservations",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Lecture seule\nVoir le voyage, sans pouvoir le modifier",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Créer un lien d’invitation",
+      "label": null,
+      "action": "create-invite"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "collaboration",
+  "clicks": [
+    "[data-action=\"open-share\"]"
+  ],
+  "documentLang": "fr",
+  "visibleText": [
+    "Planifier ensemble",
+    "Voyage partagé",
+    "Rome 2026",
+    "Invite people to view or edit",
+    "Rome 2026",
+    ". You stay the owner and can change roles or remove people at any time.",
+    "Un seul voyage.",
+    "Tout le monde synchronisé.",
+    "Pourquoi planifier ensemble ?",
+    "Créez un seul plan",
+    "Les éditeurs peuvent ajouter et modifier des réservations.",
+    "Gardez tout le monde synchronisé",
+    "Les modifications du voyage restent visibles pour tout le monde au même endroit.",
+    "Vous gardez le contrôle",
+    "Choisissez qui peut modifier ou consulter, et retirez l’accès à tout moment.",
+    "Inviter des personnes",
+    "Personnes sur ce voyage",
+    "Alex Traveler (You)",
+    "Propriétaire",
+    "Sam Companion",
+    "Peut modifier",
+    "Taylor Companion",
+    "Lecture seule",
+    "Jusqu’à 10 personnes par voyage.",
+    "Invitations en attente",
+    "friend@example.test",
+    "View only · pending · expires 2026-09-17T11:15:19.455Z",
+    "Inviter à ce voyage",
+    "Chaque personne que vous invitez se connecte avec son propre compte gratuit pour rejoindre le voyage. Le lien fonctionne une seule fois et vous pouvez le révoquer à tout moment.",
+    "Choisir l’accès",
+    "Peut modifier",
+    "Ajouter et modifier des réservations",
+    "Lecture seule",
+    "Voir le voyage, sans pouvoir le modifier",
+    "Créer un lien d’invitation"
+  ],
+  "errors": []
+}

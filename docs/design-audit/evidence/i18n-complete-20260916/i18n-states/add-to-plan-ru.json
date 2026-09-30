@@ -1,0 +1,25 @@
+{
+  "url": "/plan-idea",
+  "screen": "add-to-plan",
+  "text": "Идея недоступна\n\nЭта идея больше недоступна. Возможно, она уже в вашей хронологии.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "add-to-plan",
+  "clicks": [],
+  "documentLang": "ru",
+  "visibleText": [
+    "Идея недоступна",
+    "Идея недоступна",
+    "Эта идея больше недоступна. Возможно, она уже в вашей хронологии."
+  ],
+  "errors": []
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Temporary copies of documents/exports that the user explicitly shares or
+         opens in another app. Private app cache; cleared on every app start. -->
+    <cache-path name="tripto_share" path="tripto-share/" />
+</paths>

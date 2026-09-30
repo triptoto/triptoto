@@ -1,0 +1,27 @@
+{
+  "route": "plan-food_drink",
+  "path": "/day-plan/new/food_drink",
+  "screen": "day-plan-form",
+  "locale": "en",
+  "image": "plan-food_drink-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Save\nDAY PLAN\nFood & Drink\n\nA cafe, bar, or restaurant you want to try\n\nDetails\nName or place *\nDay\nSelect dates\nChoose dates\nNo date range selected.\nStart time Optional\nEnd time Optional\nAddress Optional\nNotes Optional\nTickets & Documents\n\nOptional · Stored on this device\n\nAdd files\nPDF, images, or passes · up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nLeave the day blank to keep this as an idea in Save for Later. Pick a day within your trip and it appears on your timeline.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Day. Choose day and day",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0
+}

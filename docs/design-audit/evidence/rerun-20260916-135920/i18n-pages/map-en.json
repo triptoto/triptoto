@@ -1,0 +1,75 @@
+{
+  "route": "map",
+  "path": "/trip-map",
+  "screen": "trip-map",
+  "locale": "en",
+  "image": "map-en.png",
+  "missingTranslations": [],
+  "errors": [
+    "wrong document language"
+  ],
+  "text": "Rome 2026\nSep 17–23, 2026\nAll\nWhole trip\nDay 1\nSep 17\nDay 2\nSep 18\nDay 3\nSep 20\nAll trip places\n0/3 mapped\nTap for directions\nHotel ArtemideNEXT\nVatican Museums\nRoma Termini\n\nDirections open one destination at a time. tripto.to shows your location only on this device and never shares your full itinerary.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Map layers",
+      "action": "toggle-map-layers"
+    },
+    {
+      "text": "All\nWhole trip",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Day 1\nSep 17",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Day 2\nSep 18",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Day 3\nSep 20",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "",
+      "label": "Fit all places",
+      "action": "map-fit"
+    },
+    {
+      "text": "",
+      "label": "My location",
+      "action": "map-locate"
+    },
+    {
+      "text": "",
+      "label": "Hide trip places",
+      "action": "toggle-map-sheet"
+    },
+    {
+      "text": "Hotel ArtemideNEXT",
+      "label": "Get directions to Hotel Artemide",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Vatican Museums",
+      "label": "Get directions to Vatican Museums",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Roma Termini",
+      "label": "Get directions to Roma Termini",
+      "action": "trip-map-navigate"
+    }
+  ],
+  "dialogCount": 0
+}

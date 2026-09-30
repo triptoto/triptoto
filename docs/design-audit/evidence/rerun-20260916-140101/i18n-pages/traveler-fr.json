@@ -1,0 +1,42 @@
+{
+  "route": "traveler",
+  "path": "/travelers/traveler",
+  "screen": "traveler",
+  "locale": "fr",
+  "image": "traveler-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "A\nArthur\n\nAdult\n\nModifier le voyageurRetirer le voyageur\nAttributions\nVol\nLY 383\nTrain\nFrecciarossa 9512\nTrain\nFrecciarossa 9551\nDétails du voyage\nSIÈGE\n12A\nCABINE\nÉconomique\nBAGAGES\n1 cochés\nBILLET\n114-1234567890\nDocuments\nLY 383 Boarding Pass\nDisponible hors ligne\nFrecciarossa 9512 Tickets\nDisponible hors ligne\nListe de contrôle\nPassport\nDocuments\nSave boarding pass offline\nDocuments\nPack medication\nBagages",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Modifier le voyageur",
+      "label": null,
+      "action": "open-form",
+      "id": "traveler"
+    },
+    {
+      "text": "Retirer le voyageur",
+      "label": null,
+      "action": "delete-traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "LY 383 Boarding Pass\nDisponible hors ligne",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "Frecciarossa 9512 Tickets\nDisponible hors ligne",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    }
+  ],
+  "dialogCount": 0
+}

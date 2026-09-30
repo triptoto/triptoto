@@ -1,0 +1,526 @@
+[
+  {
+    "route": "welcome",
+    "locale": "en",
+    "image": "welcome-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "welcome",
+    "locale": "de",
+    "image": "welcome-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "fr",
+    "image": "welcome-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "es",
+    "image": "welcome-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "ru",
+    "image": "welcome-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "en",
+    "image": "trips-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "trips",
+    "locale": "de",
+    "image": "trips-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "fr",
+    "image": "trips-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "es",
+    "image": "trips-es.png",
+    "missingTranslations": [
+      "Actual"
+    ],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "ru",
+    "image": "trips-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "en",
+    "image": "timeline-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "timeline",
+    "locale": "de",
+    "image": "timeline-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "fr",
+    "image": "timeline-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "es",
+    "image": "timeline-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "ru",
+    "image": "timeline-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "en",
+    "image": "add-trip-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "add-trip",
+    "locale": "de",
+    "image": "add-trip-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "fr",
+    "image": "add-trip-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "es",
+    "image": "add-trip-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "ru",
+    "image": "add-trip-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "error": "{'exceptionId': 6, 'text': 'Uncaught (in promise) TypeError: countNouns is not iterable', 'lineNumber': 65, 'columnNumber': 21, 'scriptId': '7', 'stackTrace': {'callFrames': [{'functionName': 'translateDynamic', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 64, 'columnNumber': 20}, {'functionName': 'translateText', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 87, 'columnNumber': 16}, {'functionName': 'translateRoot', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 102, 'columnNumber': 86}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 58453}, {'functionName': 'Se', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 98396}, {'functionName': '', 'scriptId': '16', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: countNouns is not iterable\\n    at translateDynamic (http://127.0.0.1:4174/i18n.js?v=i18n-v4:65:21)\\n    at translateText (http://127.0.0.1:4174/i18n.js?v=i18n-v4:88:17)\\n    at Array.forEach (<anonymous>)\\n    at Object.translateRoot [as translate] (http://127.0.0.1:4174/i18n.js?v=i18n-v4:103:87)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:58454)\\n    at Object.Se [as reload] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:98397)\\n    at <anonymous>:1:17', 'objectId': '4261383307736515273.6.2'}}"
+  },
+  {
+    "route": "day-plan",
+    "locale": "en",
+    "image": "day-plan-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "day-plan",
+    "locale": "de",
+    "image": "day-plan-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "day-plan",
+    "locale": "fr",
+    "image": "day-plan-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "day-plan",
+    "locale": "es",
+    "image": "day-plan-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "day-plan",
+    "locale": "ru",
+    "image": "day-plan-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "en",
+    "image": "save-later-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "save-later",
+    "locale": "de",
+    "image": "save-later-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "fr",
+    "image": "save-later-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "es",
+    "image": "save-later-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "ru",
+    "image": "save-later-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "bookings",
+    "error": "{'exceptionId': 10, 'text': 'Uncaught (in promise) TypeError: countNouns is not iterable', 'lineNumber': 65, 'columnNumber': 21, 'scriptId': '7', 'stackTrace': {'callFrames': [{'functionName': 'translateDynamic', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 64, 'columnNumber': 20}, {'functionName': 'translateText', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 87, 'columnNumber': 16}, {'functionName': 'translateRoot', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 102, 'columnNumber': 86}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 58453}, {'functionName': 'Se', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 98396}, {'functionName': '', 'scriptId': '16', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: countNouns is not iterable\\n    at translateDynamic (http://127.0.0.1:4174/i18n.js?v=i18n-v4:65:21)\\n    at translateText (http://127.0.0.1:4174/i18n.js?v=i18n-v4:88:17)\\n    at Array.forEach (<anonymous>)\\n    at Object.translateRoot [as translate] (http://127.0.0.1:4174/i18n.js?v=i18n-v4:103:87)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:58454)\\n    at Object.Se [as reload] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:98397)\\n    at <anonymous>:1:17', 'objectId': '4261383307736515273.9.2'}}"
+  },
+  {
+    "route": "flight",
+    "locale": "en",
+    "image": "flight-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "flight",
+    "locale": "de",
+    "image": "flight-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "fr",
+    "image": "flight-fr.png",
+    "missingTranslations": [
+      "Arrive"
+    ],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "es",
+    "image": "flight-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "ru",
+    "image": "flight-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "hotel",
+    "error": "{'exceptionId': 12, 'text': 'Uncaught (in promise) TypeError: countNouns is not iterable', 'lineNumber': 65, 'columnNumber': 21, 'scriptId': '7', 'stackTrace': {'callFrames': [{'functionName': 'translateDynamic', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 64, 'columnNumber': 20}, {'functionName': 'translateText', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 87, 'columnNumber': 16}, {'functionName': 'translateRoot', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 102, 'columnNumber': 86}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 58453}, {'functionName': 'Se', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 98396}, {'functionName': '', 'scriptId': '16', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: countNouns is not iterable\\n    at translateDynamic (http://127.0.0.1:4174/i18n.js?v=i18n-v4:65:21)\\n    at translateText (http://127.0.0.1:4174/i18n.js?v=i18n-v4:88:17)\\n    at Array.forEach (<anonymous>)\\n    at Object.translateRoot [as translate] (http://127.0.0.1:4174/i18n.js?v=i18n-v4:103:87)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:58454)\\n    at Object.Se [as reload] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:98397)\\n    at <anonymous>:1:17', 'objectId': '4261383307736515273.11.2'}}"
+  },
+  {
+    "route": "train",
+    "locale": "en",
+    "image": "train-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "train",
+    "locale": "de",
+    "image": "train-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "fr",
+    "image": "train-fr.png",
+    "missingTranslations": [
+      "Arrive"
+    ],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "es",
+    "image": "train-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "ru",
+    "image": "train-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "en",
+    "image": "activity-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "activity",
+    "locale": "de",
+    "image": "activity-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "fr",
+    "image": "activity-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "es",
+    "image": "activity-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "ru",
+    "image": "activity-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "documents",
+    "error": "{'exceptionId': 16, 'text': 'Uncaught (in promise) TypeError: countNouns is not iterable', 'lineNumber': 65, 'columnNumber': 21, 'scriptId': '7', 'stackTrace': {'callFrames': [{'functionName': 'translateDynamic', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 64, 'columnNumber': 20}, {'functionName': 'translateText', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 87, 'columnNumber': 16}, {'functionName': 'translateRoot', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 102, 'columnNumber': 86}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 58453}, {'functionName': 'Se', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 98396}, {'functionName': '', 'scriptId': '16', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: countNouns is not iterable\\n    at translateDynamic (http://127.0.0.1:4174/i18n.js?v=i18n-v4:65:21)\\n    at translateText (http://127.0.0.1:4174/i18n.js?v=i18n-v4:88:17)\\n    at Array.forEach (<anonymous>)\\n    at Object.translateRoot [as translate] (http://127.0.0.1:4174/i18n.js?v=i18n-v4:103:87)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:58454)\\n    at Object.Se [as reload] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:98397)\\n    at <anonymous>:1:17', 'objectId': '4261383307736515273.14.2'}}"
+  },
+  {
+    "route": "ready",
+    "locale": "en",
+    "image": "ready-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "ready",
+    "locale": "de",
+    "image": "ready-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "fr",
+    "image": "ready-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "es",
+    "image": "ready-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "ru",
+    "image": "ready-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "health",
+    "error": "{'exceptionId': 19, 'text': 'Uncaught (in promise) TypeError: countNouns is not iterable', 'lineNumber': 65, 'columnNumber': 21, 'scriptId': '7', 'stackTrace': {'callFrames': [{'functionName': 'translateDynamic', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 64, 'columnNumber': 20}, {'functionName': 'translateText', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 87, 'columnNumber': 16}, {'functionName': 'translateRoot', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 102, 'columnNumber': 86}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 58453}, {'functionName': 'Se', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 98396}, {'functionName': '', 'scriptId': '16', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: countNouns is not iterable\\n    at translateDynamic (http://127.0.0.1:4174/i18n.js?v=i18n-v4:65:21)\\n    at translateText (http://127.0.0.1:4174/i18n.js?v=i18n-v4:88:17)\\n    at Array.forEach (<anonymous>)\\n    at Object.translateRoot [as translate] (http://127.0.0.1:4174/i18n.js?v=i18n-v4:103:87)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:58454)\\n    at Object.Se [as reload] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:98397)\\n    at <anonymous>:1:17', 'objectId': '4261383307736515273.16.2'}}"
+  },
+  {
+    "route": "account",
+    "locale": "en",
+    "image": "account-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "account",
+    "error": "{'exceptionId': 21, 'text': 'Uncaught', 'lineNumber': 0, 'columnNumber': 2158, 'scriptId': '12', 'stackTrace': {'callFrames': [{'functionName': 'Qn', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 2158}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 60117}, {'functionName': 'no', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 57226}, {'functionName': 'D', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 45292}, {'functionName': '', 'scriptId': '218', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': \"TypeError: Cannot assign to read only property 'params' of object '#<Object>'\\n    at Qn (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:2159)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:60118)\\n    at no (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:57227)\\n    at Object.D [as show] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:45293)\\n    at <anonymous>:1:17\", 'objectId': '4261383307736515273.17.3'}}"
+  },
+  {
+    "route": "subscription",
+    "error": "{'exceptionId': 23, 'text': 'Uncaught (in promise) TypeError: countNouns is not iterable', 'lineNumber': 65, 'columnNumber': 21, 'scriptId': '7', 'stackTrace': {'callFrames': [{'functionName': 'translateDynamic', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 64, 'columnNumber': 20}, {'functionName': 'translateText', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 87, 'columnNumber': 16}, {'functionName': 'translateRoot', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 102, 'columnNumber': 86}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 58453}, {'functionName': 'Se', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 98396}, {'functionName': '', 'scriptId': '16', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: countNouns is not iterable\\n    at translateDynamic (http://127.0.0.1:4174/i18n.js?v=i18n-v4:65:21)\\n    at translateText (http://127.0.0.1:4174/i18n.js?v=i18n-v4:88:17)\\n    at Array.forEach (<anonymous>)\\n    at Object.translateRoot [as translate] (http://127.0.0.1:4174/i18n.js?v=i18n-v4:103:87)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:58454)\\n    at Object.Se [as reload] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:98397)\\n    at <anonymous>:1:17', 'objectId': '4261383307736515273.19.2'}}"
+  },
+  {
+    "route": "map",
+    "locale": "en",
+    "image": "map-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "map",
+    "locale": "de",
+    "image": "map-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "fr",
+    "image": "map-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "es",
+    "image": "map-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "ru",
+    "image": "map-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "en",
+    "image": "weather-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "weather",
+    "locale": "de",
+    "image": "weather-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "fr",
+    "image": "weather-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "es",
+    "image": "weather-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "ru",
+    "image": "weather-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "en",
+    "image": "currency-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "currency",
+    "locale": "de",
+    "image": "currency-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "fr",
+    "image": "currency-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "es",
+    "image": "currency-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "ru",
+    "image": "currency-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  }
+]

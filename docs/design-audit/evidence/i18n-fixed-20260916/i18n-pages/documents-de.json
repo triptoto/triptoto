@@ -1,0 +1,55 @@
+{
+  "route": "documents",
+  "path": "/documents",
+  "screen": "documents",
+  "locale": "de",
+  "image": "documents-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Reisedokumente\n\n3 von 3 offline bereit auf diesem Telefon\n\nDokument hinzufügen\nPDF, Bild oder Wallet-Pass · bis zu 10 MB\nAuf diesem Telefon (3)",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "LY 383 Boarding Pass löschen",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Hotel Artemide Confirmation löschen",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Frecciarossa 9512 Tickets löschen",
+      "action": "remove-document",
+      "id": "train-ticket"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

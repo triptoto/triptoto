@@ -1,0 +1,25 @@
+{
+  "url": "/day-plan",
+  "screen": "stop-form",
+  "text": "Plan indisponible\n\nCe programme n’est pas disponible.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "stop-form",
+  "clicks": [],
+  "documentLang": "fr",
+  "visibleText": [
+    "Plan indisponible",
+    "Plan indisponible",
+    "Ce programme n’est pas disponible."
+  ],
+  "errors": []
+}

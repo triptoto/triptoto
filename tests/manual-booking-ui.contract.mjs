@@ -207,12 +207,16 @@ assertFormFields(formBranches.flight, {
 }, "flight form");
 assert(formBranches.flight.includes("manualRouteCard(kind"), "flight must require a from/to route");
 assert(
-  formBranches.flight.includes('dateRangeField("departureDate", "returnDepartureDate"'),
-  "flight must choose departure and optional return dates from one calendar",
+  formBranches.flight.includes('dateRangeField("departureDate", "departureDateEnd"'),
+  "flight departure date must use its own single-date calendar",
+);
+assert(
+  formBranches.flight.includes('dateRangeField("returnDepartureDate", "returnDepartureDateEnd"'),
+  "round trip must reveal a separate return-date calendar",
 );
 assert(
   formBranches.flight.includes("{allowSingle:true}"),
-  "the shared flight calendar must support one-way travel without requiring a return date",
+  "the flight calendars must support one-way travel without requiring a return date",
 );
 
 assertFormFields(formBranches.hotel, {
@@ -630,10 +634,10 @@ assert(
 );
 const discardFlow = section(app, "async function closeDiscardDialog(", "function confirmDeleteTrip(");
 assert(
-  discardFlow.includes("await clearManualAttachment(scope)") &&
+  discardFlow.includes("await Promise.race([clearManualAttachment(scope)") &&
     !discardFlow.includes("clearManualAttachment(scope).catch(() => {})") &&
-    discardFlow.indexOf("await clearManualAttachment(scope)") < discardFlow.indexOf("clearActiveFormDraft()"),
-  "confirmed discard must verify local attachment cleanup before clearing the form and navigating",
+    discardFlow.indexOf("await Promise.race([clearManualAttachment(scope)") < discardFlow.indexOf("clearActiveFormDraft()"),
+  "confirmed discard must attempt local attachment cleanup (bounded wait) before clearing the form and always navigate",
 );
 assert(
   app.includes("sessionStorage.setItem(quickDraftKey(kind)") &&
@@ -815,7 +819,7 @@ includesOneOf(
   "secondary-write failure needs truthful post-create recovery copy",
 );
 assert(
-  /saveWarning\s*=\s*\[secondaryWarning\s*,\s*attachmentWarning\]/.test(saveForm) &&
+  /saveWarning\s*=\s*\[returnWarning\s*,\s*secondaryWarning\s*,\s*attachmentWarning\]/.test(saveForm) &&
     /showToast\(saveWarning\s*\|\|/.test(saveForm),
   "successful booking feedback must surface secondary-write warnings without reporting primary failure",
 );

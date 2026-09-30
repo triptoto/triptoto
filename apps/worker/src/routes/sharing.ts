@@ -137,7 +137,7 @@ export async function acceptInvite(request:Request,env:Env,auth:AuthContext):Pro
       .bind(auth.userId,now,invite.id,now,invite.trip_id,auth.userId,invite.trip_id,PRODUCT_LIMITS.tripMembers),
     env.DB.prepare(`INSERT INTO trip_members(trip_id,user_id,role,status,joined_at)
       SELECT trip_id,?,role,'active',? FROM trip_invites WHERE id=? AND status='accepted' AND accepted_by_user_id=?
-      ON CONFLICT(trip_id,user_id) DO UPDATE SET role=excluded.role,status='active',joined_at=COALESCE(trip_members.joined_at,excluded.joined_at),removed_at=NULL`).bind(auth.userId,now,invite.id,auth.userId),
+      ON CONFLICT(trip_id,user_id) DO UPDATE SET role=CASE WHEN trip_members.status='active' THEN trip_members.role ELSE excluded.role END,status='active',joined_at=COALESCE(trip_members.joined_at,excluded.joined_at),removed_at=NULL`).bind(auth.userId,now,invite.id,auth.userId),
   ]);
   const accepted=await env.DB.prepare(`SELECT status,accepted_by_user_id,role,trip_id FROM trip_invites WHERE id=?`).bind(invite.id).first<Record<string,unknown>>();
   if(Number(acceptance[0]?.meta?.changes??0)!==1||!accepted||accepted.status!=='accepted'||accepted.accepted_by_user_id!==auth.userId){
@@ -145,8 +145,11 @@ export async function acceptInvite(request:Request,env:Env,auth:AuthContext):Pro
     if(accepted?.status==='invited'&&Number(currentMembers?.count??0)>=PRODUCT_LIMITS.tripMembers)throw new HttpError(409,'MEMBER_LIMIT_REACHED','Trip member limit reached.');
     throw new HttpError(409,'INVITE_UNAVAILABLE','Invite was accepted by another account.');
   }
-  await recordChangeEvent(env,String(accepted.trip_id),'member',auth.userId!,'member_joined',null,{role:accepted.role},'manual',null,auth);
-  return json({tripId:accepted.trip_id,role:accepted.role},{},request,env);
+  // An existing active member keeps their role; report what they actually hold.
+  const member=await env.DB.prepare(`SELECT role FROM trip_members WHERE trip_id=? AND user_id=?`).bind(accepted.trip_id,auth.userId).first<{role:string}>();
+  const role=member?.role??accepted.role;
+  await recordChangeEvent(env,String(accepted.trip_id),'member',auth.userId!,'member_joined',null,{role},'manual',null,auth);
+  return json({tripId:accepted.trip_id,role},{},request,env);
 }
 
 export async function updateMemberRole(request:Request,env:Env,auth:AuthContext,tripId:string,userId:string):Promise<Response>{

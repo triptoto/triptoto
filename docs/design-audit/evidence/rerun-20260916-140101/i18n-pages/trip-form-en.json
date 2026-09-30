@@ -1,0 +1,27 @@
+{
+  "route": "trip-form",
+  "path": "/trips/new",
+  "screen": "form",
+  "locale": "en",
+  "image": "trip-form-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Next\nNEW TRIP\nWhere are you going?\nChoose your destination and travel dates to start planning your next adventure.\nDESTINATION *\nTravel dates\nSelect dates\nChoose dates\nNo date range selected.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Next",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Travel dates. Choose start date and end date",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0
+}

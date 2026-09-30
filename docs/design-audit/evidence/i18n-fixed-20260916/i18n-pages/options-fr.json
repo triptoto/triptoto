@@ -1,0 +1,64 @@
+{
+  "route": "options",
+  "path": "/trip-options",
+  "screen": "trip-options",
+  "locale": "fr",
+  "image": "options-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "VOTRE COMPAGNON DE VOYAGE\n🇮🇹\nRome 2026\n\nsept. 17–23, 2026\n\nOUTILS DE VOYAGE\nMétéo\nConvertisseur de devises\nDocs\nCarte\nPlanifier ensemble\nGÉRER LE VOYAGE\nModifier le voyage\nAlertes\nExporter en PDF\nAide et FAQ\nBESOIN D’AIDE ?\neSIM de voyage\nRéserver un transfert\nTrouver un vol\nTrouver un hôtel\nÀ faire",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Météo",
+      "label": null,
+      "action": "open-weather"
+    },
+    {
+      "text": "Convertisseur de devises",
+      "label": null,
+      "action": "open-currency"
+    },
+    {
+      "text": "Docs",
+      "label": "Billets et documents",
+      "screen": "documents"
+    },
+    {
+      "text": "Carte",
+      "label": null,
+      "action": "open-trip-map"
+    },
+    {
+      "text": "Planifier ensemble",
+      "label": null,
+      "action": "open-collaboration"
+    },
+    {
+      "text": "Modifier le voyage",
+      "label": null,
+      "action": "edit-trip"
+    },
+    {
+      "text": "Alertes",
+      "label": null,
+      "action": "open-notifications"
+    },
+    {
+      "text": "Exporter en PDF",
+      "label": null,
+      "action": "export-pdf"
+    },
+    {
+      "text": "Aide et FAQ",
+      "label": null,
+      "screen": "help"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

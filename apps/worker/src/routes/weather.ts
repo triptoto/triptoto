@@ -6,6 +6,12 @@ import { HttpError, json } from '../http.ts';
 // cache absorbs repeated lookups for the same destination.
 const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast';
 const OPEN_METEO_GEOCODE = 'https://geocoding-api.open-meteo.com/v1/search';
+// OpenStreetMap Nominatim resolves full addresses and POI names (e.g.
+// "Colosseum, Rome"), not just city centroids like Open-Meteo. Keyless and free
+// for light use; policy requires a descriptive User-Agent and ~1 req/s, which
+// the Trip Map easily satisfies (<=16 stops/trip, sequential, edge-cached 7d).
+const NOMINATIM_GEOCODE = 'https://nominatim.openstreetmap.org/search';
+const GEOCODE_UA = 'tripto.to/1.0 (https://tripto.to; trip-map geocoder)';
 const EDGE_TTL_SECONDS = 15 * 60;
 const GEOCODE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
@@ -16,9 +22,40 @@ function coordinate(raw: string | null, name: string, min: number, max: number):
   return value;
 }
 
-// Resolve a place name (e.g. "New York") to coordinates via Open-Meteo's free,
-// key-less geocoder. Cached hard at the edge since place->coordinate is stable.
+// Precise geocoder: OSM Nominatim handles street addresses and POI names so map
+// pins land on the actual place (not the city centre). Cached hard at the edge.
+async function geocodeNominatim(query: string): Promise<{ latitude: number; longitude: number; place: string } | null> {
+  const upstream = new URL(NOMINATIM_GEOCODE);
+  upstream.searchParams.set('q', query);
+  upstream.searchParams.set('format', 'jsonv2');
+  upstream.searchParams.set('limit', '1');
+  upstream.searchParams.set('accept-language', 'en');
+  try {
+    const response = await fetch(upstream.toString(), {
+      headers: { accept: 'application/json', 'user-agent': GEOCODE_UA },
+      cf: { cacheTtl: GEOCODE_TTL_SECONDS, cacheEverything: true },
+    } as RequestInit);
+    if (!response.ok) return null;
+    const payload: any = await response.json();
+    const hit = Array.isArray(payload) ? payload[0] : null;
+    if (!hit) return null;
+    const lat = Number(hit.lat), lon = Number(hit.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+    const label = String(hit.name || hit.display_name || query).split(',')[0].trim();
+    return { latitude: lat, longitude: lon, place: label || query };
+  } catch (_error) {
+    return null;
+  }
+}
+
+// Resolve a place name (e.g. "New York") to coordinates. Try the precise
+// address geocoder (Nominatim) first, then fall back to Open-Meteo's free,
+// key-less city geocoder. Cached hard at the edge since query->coordinate is
+// stable.
 async function geocode(query: string): Promise<{ latitude: number; longitude: number; place: string } | null> {
+  return (await geocodeNominatim(query)) || (await geocodeOpenMeteo(query));
+}
+async function geocodeOpenMeteo(query: string): Promise<{ latitude: number; longitude: number; place: string } | null> {
   const upstream = new URL(OPEN_METEO_GEOCODE);
   upstream.searchParams.set('name', query);
   upstream.searchParams.set('count', '1');
@@ -42,11 +79,13 @@ async function geocode(query: string): Promise<{ latitude: number; longitude: nu
 // Expose the keyless geocoder as its own endpoint so the Trip Map can resolve
 // address-only places to coordinates without a paid Maps API. Same-origin proxy
 // keeps the strict CSP intact; the edge cache absorbs repeats.
-export async function geocodePlace(request: Request, env: Env): Promise<Response> {
+export async function geocodePlace(request: Request, env: Env, preferPrecise = true): Promise<Response> {
   const url = new URL(request.url);
   const query = (url.searchParams.get('q') ?? '').trim().slice(0, 200);
   if (!query) throw new HttpError(400, 'VALIDATION_ERROR', 'q is required.');
-  const located = await geocode(query);
+  // If another request has just used the shared Nominatim allowance, retain a
+  // useful map result from Open-Meteo instead of failing the user's pin.
+  const located = preferPrecise ? await geocode(query) : await geocodeOpenMeteo(query);
   if (!located) throw new HttpError(404, 'PLACE_NOT_FOUND', 'Could not locate that place.');
   return json({ location: located }, {}, request, env);
 }

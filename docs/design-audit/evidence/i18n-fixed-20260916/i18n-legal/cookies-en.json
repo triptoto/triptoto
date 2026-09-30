@@ -1,0 +1,40 @@
+{
+  "lang": "en",
+  "title": "Cookies & local storage · tripto.to",
+  "text": "tripto.to\nEnglish\nDeutsch\nFrançais\nEspañol\nРусский\nOpen app\n\nBROWSER STORAGE\n\nCookies & local storage\n\nTripto uses a small amount of browser storage to make the app secure, reliable and useful offline. We do not use advertising cookies.\n\nLast updated 16 September 2026\ntripto.to\nWhat we use\nEssential sign-in cookies\nShort-lived security cookies may be used during the Google sign-in handoff. They help complete authentication safely.\nLocal storage\nYour browser may store your chosen theme, current trip, offline cache and pending changes so the app works between visits.\nService worker cache\nThe app shell and selected travel data can be cached on-device for quicker and offline access.\nCheckout provider\nIf you open a Plus checkout or billing portal, Lemon Squeezy may use its own cookies under its privacy terms.\nWhat we do not use\n\nTripto does not set advertising cookies or sell cookie-derived information. We do not use your itinerary to build an advertising profile.\n\nHow to control it\n\nYou can clear Tripto’s local data from Account, or clear site data in your browser settings. Clearing browser storage can sign you out, remove locally saved documents and discard unsynced changes on that device.\n\nA practical note\nBrowser storage helps Tripto work offline. If you use a shared device, sign out after use and avoid saving sensitive files locally.\nStill need help?\n\nWrite to us with the minimum information needed to understand your request.\n\nEmail go@tripto.to\nPrivacy\nTerms\nCookies\nContact\nOpen app",
+  "overflow": false,
+  "links": [
+    {
+      "text": "tripto.to",
+      "href": "/landing"
+    },
+    {
+      "text": "Open app",
+      "href": "/account"
+    },
+    {
+      "text": "Email go@tripto.to",
+      "href": "mailto:go@tripto.to?subject=Tripto%20support"
+    },
+    {
+      "text": "Privacy",
+      "href": "/privacy"
+    },
+    {
+      "text": "Terms",
+      "href": "/terms"
+    },
+    {
+      "text": "Cookies",
+      "href": "/cookies"
+    },
+    {
+      "text": "Contact",
+      "href": "/contact"
+    },
+    {
+      "text": "Open app",
+      "href": "/account"
+    }
+  ]
+}

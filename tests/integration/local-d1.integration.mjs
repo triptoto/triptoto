@@ -30,6 +30,7 @@ const { createActivity }=await load('apps/worker/src/routes/activities.js');
 const { createContact }=await load('apps/worker/src/routes/contacts.js');
 const { liveFlightUsageSummary, refreshLiveFlightById, runScheduledLiveFlightRefresh, scheduleLiveFlightMonitoring }=await load('apps/worker/src/live-flights.js');
 const { createTrip, updateTrip, deleteTrip }=await load('apps/worker/src/routes/trips.js');
+const { createChecklistItem }=await load('apps/worker/src/routes/checklist.js');
 
 class Prepared {
   constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}
@@ -51,7 +52,7 @@ function addDevice(db,id,userId=null){const now=Date.now();db.prepare(`INSERT IN
 
 const db=new DatabaseSync(':memory:');
 for(const name of readdirSync('migrations').filter(x=>x.endsWith('.sql')).sort())db.exec(readFileSync(join('migrations',name),'utf8'));
-const env={DB:new LocalD1(db),SESSION_SECRET:'x'.repeat(64),ACCOUNT_AUTH_ENABLED:'false',SHARING_ENABLED:'false',DEMO_TOOLS_ENABLED:'true',DEMO_TOOLS_SECRET:'demo-secret-value-12345',LIVE_FLIGHTS_ENABLED:'false',AI_ENABLED:'false',GMAIL_SYNC_ENABLED:'false',R2_DOCUMENTS_ENABLED:'false',APP_BASE_URL:'https://app.tripto.test',BETA_RELEASE:'beta-milestone-4',BETA_METRICS_ENABLED:'true',OPS_ENABLED:'false'};
+const env={DB:new LocalD1(db),SESSION_SECRET:'x'.repeat(64),ACCOUNT_AUTH_ENABLED:'false',SHARING_ENABLED:'false',DEMO_TOOLS_ENABLED:'true',DEMO_TOOLS_SECRET:'demo-secret-value-12345',LIVE_FLIGHTS_ENABLED:'false',AI_ENABLED:'false',GMAIL_SYNC_ENABLED:'false',R2_DOCUMENTS_ENABLED:'false',APP_BASE_URL:'https://app.tripto.test',BETA_RELEASE:'beta-milestone-4',BETA_METRICS_ENABLED:'true',OPS_ENABLED:'false',TRIPTO_PLUS_ENFORCEMENT:'false'};
 addDevice(db,'guest-device');
 const guest={deviceId:'guest-device'};
 
@@ -739,13 +740,47 @@ const privacyAuth={deviceId:'privacy-account-device',userId:privacyLogin.userId}
 db.prepare(`INSERT INTO usage_counters(scope_type,scope_id,period_key,metric,value,updated_at) VALUES ('user',?,'test','requests',1,?)`).run('user:'+privacyLogin.userId,Date.now());
 db.prepare(`INSERT INTO usage_counters(scope_type,scope_id,period_key,metric,value,updated_at) VALUES ('user',?,'test','requests',1,?)`).run('device:privacy-account-device',Date.now());
 const pa=await body(await createDemoTrip(req('https://test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,privacyAuth));
+// Capture the trip's child rows so we can assert they are ERASED, not orphaned
+// (BUG-02: D1 has no runtime FK cascade). The demo 'normal' trip has items,
+// transport segments, flights, stays, travelers, locations and checklist rows.
+const paItems=db.prepare(`SELECT id FROM trip_items WHERE trip_id=?`).all(pa.demo.tripId).map(r=>r.id);
+const paLocs=db.prepare(`SELECT location_id FROM trip_locations WHERE trip_id=?`).all(pa.demo.tripId).map(r=>r.location_id);
+assert(paItems.length>0&&paLocs.length>0,'account trip has children before deletion');
+assert(db.prepare(`SELECT COUNT(*) c FROM travelers WHERE trip_id=?`).get(pa.demo.tripId).c>0,'account trip has travelers before deletion');
 const accountPreview=await body(await deletionPreview(req('https://test/api/v1/account/deletion-preview'),env,privacyAuth));
 assert(accountPreview.deletion.ownedTrips===1,'account deletion preview counts owned trip');
 const accountDeleted=await body(await deleteMyData(req('https://test/api/v1/account','DELETE',{confirm:'DELETE'}),env,privacyAuth));
 assert(accountDeleted.deleted===true&&accountDeleted.mode==='account','account deletion completed');
 assert(db.prepare(`SELECT COUNT(*) c FROM users WHERE id=?`).get(privacyLogin.userId).c===0,'account user hard deleted');
 assert(db.prepare(`SELECT COUNT(*) c FROM trips WHERE id=?`).get(pa.demo.tripId).c===0,'account owned trip hard deleted');
+// Child-table erasure: no orphaned rows survive the trip (the gap that let BUG-02 ship).
+const itemPlaceholders=paItems.map(()=>'?').join(',');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_items WHERE trip_id=?`).get(pa.demo.tripId).c===0,'trip_items erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM transport_segments WHERE trip_item_id IN (${itemPlaceholders})`).get(...paItems).c===0,'transport_segments erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM flights WHERE trip_item_id IN (${itemPlaceholders})`).get(...paItems).c===0,'flights erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM stays WHERE trip_item_id IN (${itemPlaceholders})`).get(...paItems).c===0,'stays erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_item_travelers WHERE trip_item_id IN (${itemPlaceholders})`).get(...paItems).c===0,'trip_item_travelers erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM travelers WHERE trip_id=?`).get(pa.demo.tripId).c===0,'travelers erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_locations WHERE trip_id=?`).get(pa.demo.tripId).c===0,'trip_locations erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_checklist_items WHERE trip_id=?`).get(pa.demo.tripId).c===0,'trip_checklist_items erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM trip_members WHERE trip_id=?`).get(pa.demo.tripId).c===0,'trip_members erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM auth_identities WHERE user_id=?`).get(privacyLogin.userId).c===0,'auth_identities erased');
+assert(db.prepare(`SELECT COUNT(*) c FROM locations WHERE id IN (${paLocs.map(()=>'?').join(',')})`).get(...paLocs).c===0,'orphan locations reclaimed');
 assert(db.prepare(`SELECT COUNT(*) c FROM usage_counters WHERE scope_id IN (?,?)`).get('user:'+privacyLogin.userId,'device:privacy-account-device').c===0,'account rate-limit identifiers deleted');
 assert(Number(db.prepare(`SELECT COUNT(*) c FROM privacy_deletions`).get().c)>=2,'anonymous privacy deletion counters recorded');
+
+// Idempotent create: replaying a POST with the same Idempotency-Key returns the
+// original resource without inserting a duplicate row (the gap that let BUG-08 ship).
+addDevice(db,'idem-guest-device');
+const idemGuest={deviceId:'idem-guest-device'};
+const idemTrip=await body(await createDemoTrip(req('https://test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,idemGuest));
+const idemKey='idem-checklist-key-000000000001';
+const idemHeaders={'idempotency-key':idemKey};
+const idemBody={title:'Pack passport',category:'documents',priority:'high'};
+const idemBefore=Number(db.prepare(`SELECT COUNT(*) c FROM trip_checklist_items WHERE trip_id=?`).get(idemTrip.demo.tripId).c);
+const idemFirst=await body(await createChecklistItem(req('https://test/api/v1/trips/x/checklist','POST',idemBody,idemHeaders),env,idemGuest,idemTrip.demo.tripId));
+const idemSecond=await body(await createChecklistItem(req('https://test/api/v1/trips/x/checklist','POST',idemBody,idemHeaders),env,idemGuest,idemTrip.demo.tripId));
+assert(idemFirst.item&&idemSecond.item&&idemFirst.item.id===idemSecond.item.id,'replayed checklist create returns the original item id');
+assert(Number(db.prepare(`SELECT COUNT(*) c FROM trip_checklist_items WHERE trip_id=?`).get(idemTrip.demo.tripId).c)===idemBefore+1,'replayed checklist create does not insert a duplicate row');
 
 console.log('Local D1 integration suite passed: auth, migration, sharing, collaboration roles, imports, beta metrics, rate limits, ops privacy and data deletion.');

@@ -29,7 +29,7 @@ export async function opsSummary(request:Request,env:Env,_auth:AuthContext):Prom
     generatedAt:Date.now(),
   }},{},request,env);
 }
-async function equalSecret(a:string,b:string):Promise<boolean>{
+export async function equalSecret(a:string,b:string):Promise<boolean>{
   const [aa,bb]=await Promise.all([digest(a),digest(b)]);if(aa.length!==bb.length)return false;let diff=0;for(let i=0;i<aa.length;i++)diff|=aa[i]^bb[i];return diff===0;
 }
 async function digest(value:string):Promise<Uint8Array>{return new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)));}

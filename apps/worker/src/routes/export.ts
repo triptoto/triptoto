@@ -44,7 +44,7 @@ export async function exportTripJson(request:Request,env:Env,auth:AuthContext,tr
     notes:{documents:'Document metadata only. File bytes are not included in this JSON export.'},
   };
   const safeTitle=safeFileTitle(trip.title);
-  return json(payload,{headers:{'content-disposition':`attachment; filename="${safeTitle}-tripto-export.json"`}},request,env);
+  return json(stripInternalIds(payload),{headers:{'content-disposition':`attachment; filename="${safeTitle}-tripto-export.json"`}},request,env);
 }
 
 export async function exportTripCalendar(request:Request,env:Env,auth:AuthContext,tripId:string):Promise<Response>{
@@ -96,3 +96,12 @@ function safeFileTitle(value:unknown):string{return String(value??'trip').replac
 function icsUtc(ms:number):string{const d=new Date(ms);if(Number.isNaN(d.getTime()))return '';return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');}
 function icsDate(value:string):string{return value.replace(/-/g,'');}
 function icsText(value:string):string{return value.replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');}
+
+// Exports can be made by any trip member; account and device identifiers of other
+// people are internal and never leave the server.
+const INTERNAL_ID_KEY=/(^|_)(user_id|device_id)$/;
+function stripInternalIds(value:unknown):unknown{
+  if(Array.isArray(value))return value.map(stripInternalIds);
+  if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value as Record<string,unknown>).filter(([key])=>!INTERNAL_ID_KEY.test(key)).map(([key,v])=>[key,stripInternalIds(v)]));
+  return value;
+}

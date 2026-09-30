@@ -1,0 +1,23 @@
+{
+  "route": "email",
+  "path": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "locale": "fr",
+  "image": "email-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Transférez vos confirmations à\ngo@tripto.to\n\nChoisissez le voyage et confirmez les informations extraites avant tout ajout.\n\nConnectez-vous pour utiliser l’e-mail de réservation\n\nGoogle vérifie quelle adresse e-mail peut envoyer des confirmations.\n\nSe connecter avec Google",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Se connecter avec Google",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "dialogCount": 0
+}

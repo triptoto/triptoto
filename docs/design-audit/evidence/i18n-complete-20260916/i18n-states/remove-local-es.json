@@ -1,0 +1,206 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "AT\nAlex Traveler\n\nIdentidad de Google\n\nCerrar sesión\n0\nActual\n2\nPróximos\n1\nPasados\nTodos los viajes\nNuevo viaje\nTripto Plus\nDesbloquea Tripto Plus\nViajes ilimitados · Cancela cuando quieras\nTus viajes\nCambiar de viaje\n3 disponibles\nBandeja de entrada\n1 en espera de revisión\nEsenciales de viaje\nBuscar un vuelo\nBusca vuelos y hoteles\nBuscar un lugar donde alojarte\nExplora hoteles en Booking.com\neSIM de viaje\nConéctate antes de aterrizar\n\nLos enlaces de socios pueden generar una comisión para Tripto sin coste adicional.\n\nApariencia\nNoche\nDía\nIdioma\nEN\nEnglish\nDE\nDeutsch\nFR\nFrançais\nES\nEspañol\nRU\nРусский\nAyuda y soporte\nHacer el recorrido\nConoce Tripto\nAyuda, privacidad y términos\nInformación de soporte y legal\nBuscar actualizaciones\nRecargar la versión más reciente de la app\nPrivacidad y datos\nQuitar datos locales\nBorra archivos y viajes en caché solo de este teléfono\nEliminar mi cuenta\nElimina permanentemente tu cuenta del servidor y tus viajes\ntripto.to\n\nProducto V2\n\nRemove local data?\n\nRemove locally stored documents and cached trip data from this phone? Your server trip will not be deleted.\n\nCancel\nRemove",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 776,
+      "scroll": 1948
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 332.609375,
+        "width": 326,
+        "height": 178.78125,
+        "top": 332.609375,
+        "right": 358,
+        "bottom": 511.390625,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Cerrar sesión",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "Todos los viajes",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Nuevo viaje",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Desbloquea Tripto Plus\nViajes ilimitados · Cancela cuando quieras",
+      "label": null,
+      "action": "open-subscription"
+    },
+    {
+      "text": "Cambiar de viaje\n3 disponibles",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Bandeja de entrada\n1 en espera de revisión",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Noche",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "Día",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "EN\nEnglish",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "DE\nDeutsch",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "FR\nFrançais",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "ES\nEspañol",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "RU\nРусский",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "Hacer el recorrido\nConoce Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Ayuda, privacidad y términos\nInformación de soporte y legal",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Buscar actualizaciones\nRecargar la versión más reciente de la app",
+      "label": null,
+      "action": "force-update"
+    },
+    {
+      "text": "Quitar datos locales\nBorra archivos y viajes en caché solo de este teléfono",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "Eliminar mi cuenta\nElimina permanentemente tu cuenta del servidor y tus viajes",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Abrir pantalla de bienvenida",
+      "screen": "home"
+    },
+    {
+      "text": "Cancel",
+      "label": null
+    },
+    {
+      "text": "Remove",
+      "label": null
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "account",
+  "clicks": [
+    "[data-action=\"remove-local-data\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Cuenta",
+    "AT",
+    "Alex Traveler",
+    "Identidad de Google",
+    "Cerrar sesión",
+    "0",
+    "Actual",
+    "2",
+    "Próximos",
+    "1",
+    "Pasados",
+    "Todos los viajes",
+    "Nuevo viaje",
+    "Tripto Plus",
+    "Desbloquea Tripto Plus",
+    "Viajes ilimitados · Cancela cuando quieras",
+    "Tus viajes",
+    "Cambiar de viaje",
+    "3 disponibles",
+    "Bandeja de entrada",
+    "1 en espera de revisión",
+    "Esenciales de viaje",
+    "Buscar un vuelo",
+    "Busca vuelos y hoteles",
+    "Buscar un lugar donde alojarte",
+    "Explora hoteles en Booking.com",
+    "eSIM de viaje",
+    "Conéctate antes de aterrizar",
+    "Los enlaces de socios pueden generar una comisión para Tripto sin coste adicional.",
+    "Apariencia",
+    "Noche",
+    "Día",
+    "Idioma",
+    "EN",
+    "English",
+    "DE",
+    "Deutsch",
+    "FR",
+    "Français",
+    "ES",
+    "Español",
+    "RU",
+    "Русский",
+    "Ayuda y soporte",
+    "Hacer el recorrido",
+    "Conoce Tripto",
+    "Ayuda, privacidad y términos",
+    "Información de soporte y legal",
+    "Buscar actualizaciones",
+    "Recargar la versión más reciente de la app",
+    "Privacidad y datos",
+    "Quitar datos locales",
+    "Borra archivos y viajes en caché solo de este teléfono",
+    "Eliminar mi cuenta",
+    "Elimina permanentemente tu cuenta del servidor y tus viajes",
+    "tripto",
+    ".",
+    "to",
+    "Producto V2"
+  ],
+  "errors": []
+}

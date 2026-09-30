@@ -1,0 +1,54 @@
+{
+  "route": "documents",
+  "path": "/documents",
+  "screen": "documents",
+  "locale": "ru",
+  "image": "documents-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Документы для поездки\n\n3 из 3 доступно офлайн на этом телефоне\n\nДобавить документ\nPDF, изображение или карта Wallet · до 10 МБ\nНа этом телефоне (3)\nLY 383 Boarding Pass\nArthur\nГотово офлайн\nHotel Artemide Confirmation\nRome stay\nГотово офлайн\nFrecciarossa 9512 Tickets\nArthur, Maya\nГотово офлайн",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "LY 383 Boarding Pass\nArthur\nГотово офлайн",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "Удалить LY 383 Boarding Pass",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "Hotel Artemide Confirmation\nRome stay\nГотово офлайн",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Удалить Hotel Artemide Confirmation",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "Frecciarossa 9512 Tickets\nArthur, Maya\nГотово офлайн",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Удалить Frecciarossa 9512 Tickets",
+      "action": "remove-document",
+      "id": "train-ticket"
+    }
+  ],
+  "dialogCount": 0
+}

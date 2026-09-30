@@ -1,7 +1,8 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid, requireChanged } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
+import { digestJson, findReplayedCreate, idempotencyInsert, readIdempotencyKey } from '../create-idempotency.ts';
 
 // Planning collections reuse a `trip_items` row (type='custom') as their parent
 // so they inherit timeline placement, the sync quartet, versioning, collaboration
@@ -70,13 +71,29 @@ export async function createCollection(request:Request,env:Env,auth:AuthContext,
   const endLocal=optionalString(body.endLocalDatetime,'endLocalDatetime',40);
   const timezone=optionalString(body.timezone,'timezone',80);
   await ensureLocation(env,tripId,centralLocationId);
+  const key=readIdempotencyKey(request);
+  const fingerprint=key?await digestJson({tripId,title,collectionType,status,city,centralLocationId,notes,startsAtUtc,endsAtUtc,startLocal,endLocal,timezone}):null;
+  if(key&&fingerprint){
+    const replay=await findReplayedCreate(env,auth.deviceId,key,fingerprint);
+    if(replay){const existing=await getCollection(env,tripId,replay.resourceId);if(existing)return json({collection:existing,stops:await loadCollectionStops(env,replay.resourceId),replayed:true},{},request,env);}
+  }
   const id=uuid(),now=nowMs();
-  await env.DB.batch([
+  const statements=[
     env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,start_location_id,starts_at_utc,ends_at_utc,start_local_datetime,end_local_datetime,start_timezone,end_timezone,source_type,confidence,created_at,updated_at,version) VALUES (?,?,'custom',?,?,?,?,?,?,?,?,?,'manual','confirmed',?,?,1)`)
       .bind(id,tripId,status,title,centralLocationId,startsAtUtc,endsAtUtc,startLocal,endLocal,timezone,timezone,now,now),
     env.DB.prepare(`INSERT INTO planning_collections(trip_item_id,collection_type,city,central_location_id,notes,created_by_user_id) VALUES (?,?,?,?,?,?)`)
       .bind(id,collectionType,city,centralLocationId,notes,auth.userId??null),
-  ]);
+  ];
+  if(key&&fingerprint)statements.push(idempotencyInsert(env,auth.deviceId,key,fingerprint,'planning_collection',id,now));
+  try{await env.DB.batch(statements);}
+  catch(error){
+    if(!key||!fingerprint)throw error;
+    const replay=await findReplayedCreate(env,auth.deviceId,key,fingerprint);
+    if(!replay)throw error;
+    const existing=await getCollection(env,tripId,replay.resourceId);
+    if(!existing)throw error;
+    return json({collection:existing,stops:await loadCollectionStops(env,replay.resourceId),replayed:true},{},request,env);
+  }
   const collection=await getCollection(env,tripId,id);
   if(!collection)throw new HttpError(500,'COLLECTION_CREATE_FAILED','The collection was not available after saving.');
   await recordChangeEvent(env,tripId,'planning_collection',id,'collection_created',null,collection,'manual',null,auth);
@@ -168,9 +185,25 @@ export async function addStop(request:Request,env:Env,auth:AuthContext,tripId:st
     const max=await env.DB.prepare(`SELECT COALESCE(MAX(position),-1) AS m FROM planning_stops WHERE collection_item_id=? AND deleted_at IS NULL`).bind(itemId).first<{m:number}>();
     position=(max?.m??-1)+1;
   }
+  const key=readIdempotencyKey(request);
+  const fingerprint=key?await digestJson({tripId,itemId,title:values.title,scheduledTime:values.scheduledTime,timezone:values.timezone,locationId:values.locationId,placeType:values.placeType,notes:values.notes,linkedTripItemId:values.linkedTripItemId,status:values.status}):null;
+  if(key&&fingerprint){
+    const replay=await findReplayedCreate(env,auth.deviceId,key,fingerprint);
+    if(replay){const stop=await env.DB.prepare(`SELECT * FROM planning_stops WHERE id=? AND collection_item_id=?`).bind(replay.resourceId,itemId).first();if(stop)return json({stop,replayed:true},{},request,env);}
+  }
   const id=uuid(),now=nowMs();
-  await env.DB.prepare(`INSERT INTO planning_stops(id,collection_item_id,title,scheduled_time,timezone,position,location_id,address_snapshot,place_type,notes,linked_trip_item_id,status,created_by_user_id,created_at,updated_at,version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)`)
-    .bind(id,itemId,values.title,values.scheduledTime,values.timezone,position,values.locationId,values.addressSnapshot,values.placeType,values.notes,values.linkedTripItemId,values.status,auth.userId??null,now,now).run();
+  const statements=[env.DB.prepare(`INSERT INTO planning_stops(id,collection_item_id,title,scheduled_time,timezone,position,location_id,address_snapshot,place_type,notes,linked_trip_item_id,status,created_by_user_id,created_at,updated_at,version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)`)
+    .bind(id,itemId,values.title,values.scheduledTime,values.timezone,position,values.locationId,values.addressSnapshot,values.placeType,values.notes,values.linkedTripItemId,values.status,auth.userId??null,now,now)];
+  if(key&&fingerprint)statements.push(idempotencyInsert(env,auth.deviceId,key,fingerprint,'planning_stop',id,now));
+  try{await env.DB.batch(statements);}
+  catch(error){
+    if(!key||!fingerprint)throw error;
+    const replay=await findReplayedCreate(env,auth.deviceId,key,fingerprint);
+    if(!replay)throw error;
+    const stop=await env.DB.prepare(`SELECT * FROM planning_stops WHERE id=? AND collection_item_id=?`).bind(replay.resourceId,itemId).first();
+    if(!stop)throw error;
+    return json({stop,replayed:true},{},request,env);
+  }
   const stop=await env.DB.prepare(`SELECT * FROM planning_stops WHERE id=?`).bind(id).first();
   await touchCollection(env,itemId,now);
   await recordChangeEvent(env,tripId,'planning_stop',id,'stop_added',null,stop,'manual',null,auth);
@@ -188,8 +221,8 @@ export async function updateStop(request:Request,env:Env,auth:AuthContext,tripId
   await ensureLocation(env,tripId,values.locationId);
   await ensureLinkedItem(env,tripId,values.linkedTripItemId);
   const now=nowMs();
-  await env.DB.prepare(`UPDATE planning_stops SET title=?,scheduled_time=?,timezone=?,position=?,location_id=?,address_snapshot=?,place_type=?,notes=?,linked_trip_item_id=?,status=?,updated_at=?,version=version+1 WHERE id=? AND collection_item_id=? AND version=? AND deleted_at IS NULL`)
-    .bind(values.title,values.scheduledTime,values.timezone,values.position,values.locationId,values.addressSnapshot,values.placeType,values.notes,values.linkedTripItemId,values.status,now,stopId,itemId,body.version).run();
+  requireChanged(await env.DB.prepare(`UPDATE planning_stops SET title=?,scheduled_time=?,timezone=?,position=?,location_id=?,address_snapshot=?,place_type=?,notes=?,linked_trip_item_id=?,status=?,updated_at=?,version=version+1 WHERE id=? AND collection_item_id=? AND version=? AND deleted_at IS NULL`)
+    .bind(values.title,values.scheduledTime,values.timezone,values.position,values.locationId,values.addressSnapshot,values.placeType,values.notes,values.linkedTripItemId,values.status,now,stopId,itemId,body.version).run());
   const stop=await env.DB.prepare(`SELECT * FROM planning_stops WHERE id=?`).bind(stopId).first<Record<string,unknown>>();
   if(stop?.version===existing.version)throw new HttpError(409,'VERSION_CONFLICT','This place changed on another client.',{currentVersion:existing.version});
   await touchCollection(env,itemId,now);

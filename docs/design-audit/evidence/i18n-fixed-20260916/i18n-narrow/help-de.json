@@ -1,0 +1,136 @@
+{
+  "url": "/help",
+  "screen": "help",
+  "text": "REISEHILFE\nWie können wir helfen?\n\nFinden Sie eine klare Antwort, ohne Ihre Reise zu verlassen.\n\nHilfe durchsuchen\nIhre Reise in drei Schritten\n\nFangen Sie einfach an. Fügen Sie Details hinzu, sobald Sie sie haben.\n\n1\nReise erstellen\n2\nBuchungen hinzufügen\n3\nDer Zeitachse folgen\nErste Schritte\n3 Antworten\nWie erstelle ich eine Reise?\nWie bearbeite ich meine Reise?\nWie wechsle ich zwischen Reisen?\nBuchungen\n5 Antworten\nWie füge ich eine Buchung hinzu?\nWie funktioniert das Hochladen von Buchungen?\nWie füge ich eine Buchung manuell hinzu?\nWie bearbeite ich eine Buchung?\nWie entferne ich eine Buchung?\nIhre Reise\n5 Antworten\nWas ist die Zeitachse?\nWie funktioniert die Checkliste?\nWo sind meine Tickets und Dokumente?\nWann kann ich die Reisekarte nutzen?\nWas funktioniert offline?\nGemeinsam planen\n4 Antworten\nKann ich eine Reise mit anderen Personen planen?\nWas können eingeladene Personen tun?\nWie funktionieren Einladungslinks?\nWie beende ich das Teilen oder verlasse eine Reise?\nKonto\n1 Antwort\nWie melde ich mich ab?\nHilfreiche Links\n\nLernen Sie die Grundlagen, kontaktieren Sie uns oder sehen Sie, wie Ihre Daten verarbeitet werden.\n\nTour starten\nSupport kontaktieren\nDatenschutz\nAGB\nCookies",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 632,
+      "scroll": 2227
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Wie erstelle ich eine Reise?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "create-trip"
+    },
+    {
+      "text": "Wie bearbeite ich meine Reise?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-trip"
+    },
+    {
+      "text": "Wie wechsle ich zwischen Reisen?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "switch-trip"
+    },
+    {
+      "text": "Wie füge ich eine Buchung hinzu?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "add-booking"
+    },
+    {
+      "text": "Wie funktioniert das Hochladen von Buchungen?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "upload-booking"
+    },
+    {
+      "text": "Wie füge ich eine Buchung manuell hinzu?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "manual-booking"
+    },
+    {
+      "text": "Wie bearbeite ich eine Buchung?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-booking"
+    },
+    {
+      "text": "Wie entferne ich eine Buchung?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "remove-booking"
+    },
+    {
+      "text": "Was ist die Zeitachse?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "timeline"
+    },
+    {
+      "text": "Wie funktioniert die Checkliste?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "checklist"
+    },
+    {
+      "text": "Wo sind meine Tickets und Dokumente?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "documents"
+    },
+    {
+      "text": "Wann kann ich die Reisekarte nutzen?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "trip-map"
+    },
+    {
+      "text": "Was funktioniert offline?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "offline"
+    },
+    {
+      "text": "Kann ich eine Reise mit anderen Personen planen?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-what"
+    },
+    {
+      "text": "Was können eingeladene Personen tun?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-roles"
+    },
+    {
+      "text": "Wie funktionieren Einladungslinks?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-invite"
+    },
+    {
+      "text": "Wie beende ich das Teilen oder verlasse eine Reise?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-leave"
+    },
+    {
+      "text": "Wie melde ich mich ab?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "sign-out"
+    },
+    {
+      "text": "Tour starten",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "locale": "de",
+  "wideElements": []
+}

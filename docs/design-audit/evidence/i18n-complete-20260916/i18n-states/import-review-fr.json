@@ -1,0 +1,53 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Vérifier avant d'ajouter\nRien n’est ajouté tant que vous n’avez pas confirmé.\nHôtel\nReconnu\nType de réservation\nVol\nHôtel\nTrain\nVoiture\nTransfert\nFerry\nCroisière\nActivité\nRestaurant\nRéservation\nGeneric ticket\nHôtel\nArrivée\nDépart\nAdresse\nNuméro de confirmation\nAjouter à la chronologie\nAbandonner cette réservation",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 871
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Ajouter à la chronologie",
+      "label": null,
+      "action": "confirm-import",
+      "id": "audit-candidate"
+    },
+    {
+      "text": "Abandonner cette réservation",
+      "label": null,
+      "action": "reject-import",
+      "id": "audit-candidate"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "import-review",
+  "clicks": [],
+  "documentLang": "fr",
+  "visibleText": [
+    "Vérification de l'importation",
+    "Vérifier avant d'ajouter",
+    "Rien n’est ajouté tant que vous n’avez pas confirmé.",
+    "Hôtel",
+    "Reconnu",
+    "Type de réservation",
+    "Hôtel",
+    "Arrivée",
+    "Départ",
+    "Adresse",
+    "Numéro de confirmation",
+    "Ajouter à la chronologie",
+    "Abandonner cette réservation"
+  ],
+  "errors": []
+}

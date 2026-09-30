@@ -1,0 +1,39 @@
+{
+  "route": "currency",
+  "path": "/currency",
+  "screen": "currency",
+  "locale": "en",
+  "image": "currency-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "EXCHANGE RATE\n1 EUR = 1.16 USD\n\nRome · reference rate for your trip\n\nYOU PAY\nEUR\nEuro\nAmount in EUR\n1 EUR = 1.159 USD\nYOU GET\nUSD\nUS dollar\n$115.91\nRate updated · 2026-09-16\nPreview reference rate\nUpdate\n\nReference rate only; providers may add fees. Amounts are calculated on this phone.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "From currency: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Swap currencies",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nUS dollar",
+      "label": "To currency: USD, US dollar",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Update",
+      "label": "Update exchange rate",
+      "action": "refresh-currency"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

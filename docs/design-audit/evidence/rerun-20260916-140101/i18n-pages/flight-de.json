@@ -1,0 +1,52 @@
+{
+  "route": "flight",
+  "path": "/flights/flight",
+  "screen": "flight",
+  "locale": "de",
+  "image": "flight-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "LY 383\nConfirmed\nPlanmäßige Daten\nTLV\nBen Gurion Airport\nFCO\nRome Fiumicino\nABFAHRT\n10:00\nDo., 17. Sept.\n3h 30m\nANKUNFT\n12:30\nDo., 17. Sept.\nTERMINAL\n3\nGATE\nNicht zugewiesen\nSITZPLATZ\n12A\nEconomy\nRoute\nBordkarte\nAuf diesem Telefon gespeichert und verifiziert\nDokument hinzufügen\nFlugdetails\nNotiz hinzufügen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Bearbeiten",
+      "action": "edit-booking",
+      "id": "flight"
+    },
+    {
+      "text": "",
+      "label": "Löschen",
+      "action": "delete-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Route",
+      "label": null,
+      "action": "directions-flight",
+      "id": "flight"
+    },
+    {
+      "text": "Dokument hinzufügen",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Flugdetails",
+      "label": null,
+      "action": "toggle-flight-details"
+    },
+    {
+      "text": "Notiz hinzufügen",
+      "label": null,
+      "action": "edit-note",
+      "id": "flight"
+    }
+  ],
+  "dialogCount": 0
+}

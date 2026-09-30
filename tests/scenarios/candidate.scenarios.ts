@@ -56,9 +56,9 @@ scenario('mixed flight train ferry sequence remains generic', () => assert(valid
 scenario('offline create applies only when the entity is absent', () => assert(canApplyOperation(undefined,{id:'op',deviceId:'device',entityType:'trip_item',entityId:'new',operationType:'create',payload:{},status:'pending',createdAt:now}),'offline create'));
 scenario('connectivity restoration applies matching base version', () => assert(canApplyOperation(3,{id:'op',deviceId:'device',entityType:'checklist',entityId:'item',operationType:'update',baseVersion:3,payload:{},status:'pending',createdAt:now}),'restored connection'));
 scenario('shared-trip conflict boundary rejects stale base version', () => assert(!canApplyOperation(4,{id:'op',deviceId:'device',entityType:'trip_item',entityId:'shared',operationType:'update',baseVersion:3,payload:{},status:'pending',createdAt:now}),'optimistic lock'));
-scenario('changed hotel overlapping another plan is reported', () => {
-  const issues=assessTripHealth({nowUtc:now,trip:{id:'trip',lifecycleState:'active'},items:[item('hotel',now,now+4*hour,{type:'stay'}),item('tour',now+3*hour,now+5*hour,{type:'activity'})],travelerCount:1,transportCount:1,stayCount:1});
-  assert(issues.some(x=>x.code==='TIMELINE_OVERLAP'),'changed hotel overlap');
+scenario('changed activity overlapping another plan is reported', () => {
+  const issues=assessTripHealth({nowUtc:now,trip:{id:'trip',lifecycleState:'active'},items:[item('museum',now,now+4*hour,{type:'activity'}),item('tour',now+3*hour,now+5*hour,{type:'activity'})],travelerCount:1,transportCount:1,stayCount:1});
+  assert(issues.some(x=>x.code==='TIMELINE_OVERLAP'),'changed activity overlap');
 });
 scenario('flight traveler without a travel document is not Ready Offline', () => assert(!assessDocumentReadiness([],['adult'],[{kind:'flight',travelerIds:['adult']}]).ready,'missing flight document'));
 scenario('missing traveler document remains per-traveler', () => {

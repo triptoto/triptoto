@@ -1,0 +1,33 @@
+{
+  "route": "booking-flight",
+  "path": "/bookings/new/flight",
+  "screen": "form",
+  "locale": "de",
+  "image": "booking-flight-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Speichern\nMANUELLE BUCHUNG\nFlug\nDas Wichtigste\nHin- und Rückreise\nBeide Daten in einem Kalender auswählen\nFluggesellschaft *\nFlugnummer *\nVon *\nNach *\nReisedaten\nAusgewähltes Datum\n17. Sept. 2026\nAusgewähltes Datum: 17. Sept. 2026\nAbfahrtszeit *\nTickets & Dokumente\n\nOptional · Auf diesem Gerät gespeichert\n\nDateien hinzufügen\nPDF, Bilder oder Pässe · je bis zu 10 MB\n\nKeine Dateien ausgewählt. Sie können die Buchung auch ohne speichern.\n\nMehr Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Speichern",
+      "label": null
+    },
+    {
+      "text": "Ausgewähltes Datum\n17. Sept. 2026",
+      "label": "Travel dates. 17. Sept. 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Mehr Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-flight-de-bottom.png"
+}

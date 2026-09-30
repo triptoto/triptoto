@@ -1,0 +1,28 @@
+{
+  "route": "ready",
+  "path": "/ready-offline",
+  "screen": "ready",
+  "locale": "fr",
+  "image": "ready-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "9 sur 9 prêts\nVos essentiels sont enregistrés sur ce téléphone.\nChronologie du voyage\nMis à jour à l’instant\nRéservations de transport\nMis à jour à l’instant\nHébergements et adresses\nMis à jour à l’instant\nLieux\nMis à jour à l’instant\nModifications en attente\nAucune modification locale non synchronisée\nArthur · Flight ticket / boarding pass\nSomme de contrôle vérifiée sur ce téléphone\nArthur · Train ticket\nSomme de contrôle vérifiée sur ce téléphone\nMaya · Train ticket\nSomme de contrôle vérifiée sur ce téléphone\nConfirmation d'hôtel\nSomme de contrôle vérifiée sur ce téléphone\nActualiser les données hors ligne",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Informations hors ligne",
+      "action": "offline-info"
+    },
+    {
+      "text": "Actualiser les données hors ligne",
+      "label": null,
+      "action": "refresh-data"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,38 @@
+{
+  "route": "currency",
+  "path": "/currency",
+  "screen": "currency",
+  "locale": "fr",
+  "image": "currency-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "TAUX DE CHANGE\n1 EUR = 1.16 USD\n\n0 voyage\n\nVOUS PAYEZ\nEUR\nEuro\nAmount in EUR\n1 EUR = 1.159 USD\nVOUS RECEVEZ\nUSD\nDollar américain\n115,91 $US\nRate updated · 2026-09-16\nAperçu du taux de référence\nMettre à jour\n\nTaux de référence uniquement ; les prestataires peuvent ajouter des frais. Les montants sont calculés sur ce téléphone.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "Devise source : EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Inverser les devises",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nDollar américain",
+      "label": "Vers la devise : USD, Dollar américain",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Mettre à jour",
+      "label": "Mettre à jour le taux de change",
+      "action": "refresh-currency"
+    }
+  ],
+  "dialogCount": 0
+}

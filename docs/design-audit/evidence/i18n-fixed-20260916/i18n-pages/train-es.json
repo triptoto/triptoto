@@ -1,0 +1,53 @@
+{
+  "route": "train",
+  "path": "/trains/train",
+  "screen": "train",
+  "locale": "es",
+  "image": "train-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Trenitalia\nConfirmado\nDatos programados\nROM\nRoma Termini\nFIR\nFirenze S. M. Novella\nSALE\n09:30\ndom, 20 sept\n1h 35m\nLLEGA\n11:05\ndom, 20 sept\nANDÉN\n8\nCómo llegar a la estación\nTRN48291\nReferencia de la reserva · toca para copiar\nAñadir documento\nAñadir nota",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Editar",
+      "action": "edit-booking",
+      "id": "train"
+    },
+    {
+      "text": "",
+      "label": "Eliminar",
+      "action": "delete-booking",
+      "id": "train"
+    },
+    {
+      "text": "Cómo llegar a la estación",
+      "label": null,
+      "action": "directions-item",
+      "id": "train"
+    },
+    {
+      "text": "TRN48291\nReferencia de la reserva · toca para copiar",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Añadir documento",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Añadir nota",
+      "label": null,
+      "action": "edit-note",
+      "id": "train"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

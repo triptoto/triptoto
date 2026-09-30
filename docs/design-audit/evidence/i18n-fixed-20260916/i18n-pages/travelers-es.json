@@ -1,0 +1,36 @@
+{
+  "route": "travelers",
+  "path": "/travelers",
+  "screen": "travelers",
+  "locale": "es",
+  "image": "travelers-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Añadir viajero",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Añadir viajero",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

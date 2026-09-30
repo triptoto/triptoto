@@ -6,7 +6,7 @@ import { runInNewContext } from "node:vm";
 const source = readFileSync("public/manual-booking-attachments.js", "utf8");
 for (const contract of [
   'const DB_NAME = "tripto-local-docs-v1"',
-  "const DB_VERSION = 2",
+  "const DB_VERSION = 3",
   'const DRAFT_STORE = "bookingDrafts"',
   "stage,",
   "list,",
@@ -216,7 +216,7 @@ const staged = await service.stage(
   [first, second],
   { kind: "flight", type: "ticket", travelerIds: ["traveler-b", "traveler-a", "traveler-a"] },
 );
-assert.equal(fake.database("tripto-local-docs-v1").version, 2, "database did not upgrade to v2");
+assert.equal(fake.database("tripto-local-docs-v1").version, 3, "database did not upgrade to v3");
 assert.ok(fake.database("tripto-local-docs-v1").stores.has("bookingDrafts"), "bookingDrafts store missing");
 assert.deepEqual(fake.database("tripto-local-docs-v1").stores.get("docs").rows.get("existing-doc"), originalDoc, "v1 docs row changed during upgrade");
 assert.equal(staged.fileCount, 2, "multi-file selection was not staged");

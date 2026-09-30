@@ -1,0 +1,27 @@
+{
+  "route": "booking-document",
+  "path": "/bookings/new/document",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-document-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Добавить файл\nБРОНИРОВАНИЕ ВРУЧНУЮ\nДобавить документ\nВсё для поездки\nВыберите файлPDF, изображение или карта Wallet · до 10 МБ\nФайл не выбран\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Добавить файл",
+      "label": null
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

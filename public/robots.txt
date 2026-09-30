@@ -12,6 +12,7 @@ Disallow: /collaboration
 Disallow: /collections
 Disallow: /day-plan
 Disallow: /documents
+Disallow: /esim
 Disallow: /flights
 Disallow: /hotels
 Disallow: /home
@@ -23,6 +24,7 @@ Disallow: /plan-idea
 Disallow: /plans
 Disallow: /ready-offline
 Disallow: /save-later
+Disallow: /tax-free
 Disallow: /travelers
 Disallow: /trains
 Disallow: /timeline

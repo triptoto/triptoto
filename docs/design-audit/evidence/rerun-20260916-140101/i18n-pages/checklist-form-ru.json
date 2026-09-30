@@ -1,0 +1,22 @@
+{
+  "route": "checklist-form",
+  "path": "/before-you-go/new",
+  "screen": "form",
+  "locale": "ru",
+  "image": "checklist-form-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Save Checklist\nВАЖНОЕ ДЛЯ ПОЕЗДКИ\nДобавить нужное\nПункт *\nГруппа *\nДокументы\nПеред выездом\nСборы\nПриоритет *\nОбычный\nВажное\nВажное",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Save Checklist",
+      "label": null
+    }
+  ],
+  "dialogCount": 0
+}

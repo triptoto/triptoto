@@ -1,0 +1,12 @@
+{
+  "route": "timeline",
+  "path": "/timeline",
+  "screen": "timeline",
+  "locale": "fr",
+  "image": "timeline-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "tripto.to\nOuverture de vos voyages…\nUn petit instant pour votre prochaine aventure.",
+  "buttons": [],
+  "dialogCount": 0
+}

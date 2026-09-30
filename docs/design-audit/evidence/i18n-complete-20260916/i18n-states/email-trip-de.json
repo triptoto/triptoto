@@ -1,0 +1,89 @@
+{
+  "url": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "text": "Bestätigungen weiterleiten an\ngo@tripto.to\n\nWählen Sie die Reise und bestätigen Sie die erkannten Details, bevor etwas hinzugefügt wird.\n\nYour travel booking confirmation\nMi., 16. Sept., 14:10 GMT+3\nReise auswählen\nReise auswählen\nPosteingang aktualisieren\nReise auswählen\n\nYour travel booking confirmation\n\n🇮🇹\nRome 2026\nSept. 17–23, 2026\n🇬🇷\nAthens Weekend\nOkt. 15–18, 2026\n🇫🇷\nParis Spring\nApr. 3–8, 2026",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 566.609375,
+        "width": 390,
+        "height": 277.390625,
+        "top": 566.609375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Reise auswählen",
+      "label": null,
+      "action": "choose-booking-email-trip",
+      "id": "audit-email"
+    },
+    {
+      "text": "Posteingang aktualisieren",
+      "label": null,
+      "action": "refresh-booking-email-inbox"
+    },
+    {
+      "text": "",
+      "label": "Schließen",
+      "action": "close-sheet"
+    },
+    {
+      "text": "🇮🇹\nRome 2026\nSept. 17–23, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "🇬🇷\nAthens Weekend\nOkt. 15–18, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "🇫🇷\nParis Spring\nApr. 3–8, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "booking-email-inbox",
+  "clicks": [
+    "[data-action=\"choose-booking-email-trip\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "E-Mail-Posteingang",
+    "Bestätigungen weiterleiten an",
+    "go@tripto.to",
+    "Wählen Sie die Reise und bestätigen Sie die erkannten Details, bevor etwas hinzugefügt wird.",
+    "Your travel booking confirmation",
+    "Mi., 16. Sept., 14:10 GMT+3",
+    "Reise auswählen",
+    "Reise auswählen",
+    "Posteingang aktualisieren",
+    "Reise auswählen",
+    "Your travel booking confirmation",
+    "🇮🇹",
+    "Rome 2026",
+    "Sept. 17–23, 2026",
+    "🇬🇷",
+    "Athens Weekend",
+    "Okt. 15–18, 2026",
+    "🇫🇷",
+    "Paris Spring",
+    "Apr. 3–8, 2026"
+  ],
+  "errors": []
+}

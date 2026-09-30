@@ -1,0 +1,28 @@
+{
+  "route": "plan-idea",
+  "path": "/day-plan/new/idea",
+  "screen": "day-plan-form",
+  "locale": "de",
+  "image": "plan-idea-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Speichern\nTAGESPLAN\nIdee für „Rome 2026“ speichern\n\nGeben Sie ihr jetzt einen Namen – Tag und Details fügen Sie hinzu, wann immer Sie möchten.\n\nDetails zur Planung\nName oder Ort *\nTag\nDaten auswählen\nDaten auswählen\nKein Zeitraum ausgewählt.\nStartzeit Optional\nEndzeit Optional\nAdresse Optional\nNotizen Optional\nTickets & Dokumente\n\nOptional · Auf diesem Gerät gespeichert\n\nDateien hinzufügen\nPDF, Bilder oder Pässe · je bis zu 10 MB\n\nKeine Dateien ausgewählt. Sie können die Buchung auch ohne speichern.\n\nLassen Sie den Tag leer, um dies als Idee unter „Für später speichern“ zu behalten. Wählen Sie einen Tag innerhalb Ihrer Reise, und es erscheint auf Ihrer Zeitachse.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Speichern",
+      "label": null
+    },
+    {
+      "text": "Daten auswählen\nDaten auswählen",
+      "label": "Tag. day und day wählen",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "plan-idea-de-bottom.png"
+}

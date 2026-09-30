@@ -1,0 +1,74 @@
+{
+  "route": "map",
+  "path": "/trip-map",
+  "screen": "trip-map",
+  "locale": "ru",
+  "image": "map-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Rome 2026\nсент. 17–23, 2026\nВсе\nВся поездка\nДень 1\n17 сент.\nДень 2\n18 сент.\nДень 3\n20 сент.\nВсе места поездки\n0/3 на карте\nНажмите для маршрута\nHotel ArtemideДАЛЕЕ\nМузеи Ватикана\nRoma Termini\n\nМаршруты открываются по одному пункту назначения. tripto.to показывает вашу геопозицию только на этом устройстве и никогда не делится всем маршрутом.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Слои карты",
+      "action": "toggle-map-layers"
+    },
+    {
+      "text": "Все\nВся поездка",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "День 1\n17 сент.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "День 2\n18 сент.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "День 3\n20 сент.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "",
+      "label": "Показать все места",
+      "action": "map-fit"
+    },
+    {
+      "text": "",
+      "label": "Моё местоположение",
+      "action": "map-locate"
+    },
+    {
+      "text": "",
+      "label": "Скрыть места поездки",
+      "action": "toggle-map-sheet"
+    },
+    {
+      "text": "Hotel ArtemideДАЛЕЕ",
+      "label": "Маршрут до Hotel Artemide",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Музеи Ватикана",
+      "label": "Маршрут до Музеи Ватикана",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Roma Termini",
+      "label": "Маршрут до Roma Termini",
+      "action": "trip-map-navigate"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

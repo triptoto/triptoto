@@ -1,0 +1,270 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "TAUX DE CHANGE\nAppuyez sur Actualiser pour charger le taux\n\n0 voyage\n\nVOUS PAYEZ\nEUR\nEuro\nAmount in EUR\nMettez à jour pour charger ce taux\nVOUS RECEVEZ\nUSD\nDollar américain\n—\nTaux non chargé\nTaux de référence quotidiens\nMettre à jour\n\nTaux de référence uniquement ; les prestataires peuvent ajouter des frais. Les montants sont calculés sur ce téléphone.\n\nVous payez en\nAUD\nDollar australien\nCAD\nDollar canadien\nCHF\nFranc suisse\nCNY\nYuan chinois\nCZK\nCouronne tchèque\nDKK\nCouronne danoise\nEUR\nEuro\nGBP\nLivre sterling\nHKD\nDollar de Hong Kong\nHUF\nForint hongrois\nILS\nNouveau shekel israélien\nINR\nRoupie indienne\nISK\nCouronne islandaise\nJPY\nYen japonais\nKRW\nWon sud-coréen\nMXN\nPeso mexicain\nNOK\nCouronne norvégienne\nNZD\nDollar néo-zélandais\nPLN\nZłoty polonais\nRON\nLeu roumain\nSEK\nCouronne suédoise\nSGD\nDollar de Singapour\nTHB\nBaht thaïlandais\nTRY\nLivre turque\nUSD\nDollar américain\nZAR\nRand sud-africain",
+  "scroll": [
+    {
+      "class": "sheet-scroll",
+      "height": 458,
+      "scroll": 800
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 324,
+        "width": 390,
+        "height": 520,
+        "top": 324,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "Devise source : EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Inverser les devises",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nDollar américain",
+      "label": "Vers la devise : USD, Dollar américain",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Mettre à jour",
+      "label": "Mettre à jour le taux de change",
+      "action": "refresh-currency"
+    },
+    {
+      "text": "",
+      "label": "Fermer",
+      "action": "close-sheet"
+    },
+    {
+      "text": "AUD\nDollar australien",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CAD\nDollar canadien",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CHF\nFranc suisse",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CNY\nYuan chinois",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CZK\nCouronne tchèque",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "DKK\nCouronne danoise",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "GBP\nLivre sterling",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HKD\nDollar de Hong Kong",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HUF\nForint hongrois",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ILS\nNouveau shekel israélien",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "INR\nRoupie indienne",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ISK\nCouronne islandaise",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "JPY\nYen japonais",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "KRW\nWon sud-coréen",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "MXN\nPeso mexicain",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NOK\nCouronne norvégienne",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NZD\nDollar néo-zélandais",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "PLN\nZłoty polonais",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "RON\nLeu roumain",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SEK\nCouronne suédoise",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SGD\nDollar de Singapour",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "THB\nBaht thaïlandais",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "TRY\nLivre turque",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "USD\nDollar américain",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ZAR\nRand sud-africain",
+      "label": null,
+      "action": "select-currency"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "currency",
+  "clicks": [
+    "[data-action=\"open-currency-picker\"]"
+  ],
+  "documentLang": "fr",
+  "visibleText": [
+    "Devise",
+    "Rome 2026",
+    "TAUX DE CHANGE",
+    "Appuyez sur Actualiser pour charger le taux",
+    "0 voyage",
+    "Vous payez",
+    "EUR",
+    "Euro",
+    "Amount in EUR",
+    "Mettez à jour pour charger ce taux",
+    "Vous recevez",
+    "USD",
+    "Dollar américain",
+    "—",
+    "Taux non chargé",
+    "Taux de référence quotidiens",
+    "Mettre à jour",
+    "Taux de référence uniquement ; les prestataires peuvent ajouter des frais. Les montants sont calculés sur ce téléphone.",
+    "Vous payez en",
+    "AUD",
+    "Dollar australien",
+    "CAD",
+    "Dollar canadien",
+    "CHF",
+    "Franc suisse",
+    "CNY",
+    "Yuan chinois",
+    "CZK",
+    "Couronne tchèque",
+    "DKK",
+    "Couronne danoise",
+    "EUR",
+    "Euro",
+    "GBP",
+    "Livre sterling",
+    "HKD",
+    "Dollar de Hong Kong",
+    "HUF",
+    "Forint hongrois",
+    "ILS",
+    "Nouveau shekel israélien",
+    "INR",
+    "Roupie indienne",
+    "ISK",
+    "Couronne islandaise",
+    "JPY",
+    "Yen japonais",
+    "KRW",
+    "Won sud-coréen",
+    "MXN",
+    "Peso mexicain",
+    "NOK",
+    "Couronne norvégienne",
+    "NZD",
+    "Dollar néo-zélandais",
+    "PLN",
+    "Złoty polonais",
+    "RON",
+    "Leu roumain",
+    "SEK",
+    "Couronne suédoise",
+    "SGD",
+    "Dollar de Singapour",
+    "THB",
+    "Baht thaïlandais",
+    "TRY",
+    "Livre turque",
+    "USD",
+    "Dollar américain",
+    "ZAR",
+    "Rand sud-africain"
+  ],
+  "errors": []
+}

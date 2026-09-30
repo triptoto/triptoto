@@ -1,0 +1,48 @@
+{
+  "route": "import-history",
+  "path": "/bookings/import/history",
+  "screen": "import-history",
+  "locale": "ru",
+  "image": "import-history-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Импорт брони",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Удалить Your flight to Rome везде",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Удалить Hotel Artemide confirmation везде",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Импорт брони",
+      "label": null,
+      "screen": "import"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

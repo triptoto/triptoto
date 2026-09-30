@@ -1,0 +1,28 @@
+{
+  "route": "trip-form",
+  "path": "/trips/new",
+  "screen": "form",
+  "locale": "de",
+  "image": "trip-form-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Weiter\nNEUE REISE\nWohin geht die Reise?\nWählen Sie Ihr Reiseziel und Ihre Reisedaten, um Ihr nächstes Abenteuer zu planen.\nREISEZIEL *\nReisedaten\nDaten auswählen\nDaten auswählen\nKein Zeitraum ausgewählt.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Weiter",
+      "label": null
+    },
+    {
+      "text": "Daten auswählen\nDaten auswählen",
+      "label": "Reisedaten. start date und end date wählen",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

@@ -1,5 +1,5 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, requireChanged } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
 import { recordBookingMilestones } from '../beta-events.ts';
@@ -93,6 +93,13 @@ export async function updateTransport(request:Request,env:Env,auth:AuthContext,t
  await env.DB.batch(statements);
  const updated=await getTransport(env,tripId,itemId);
  if(!updated||Number(updated.version)!==Number(body.version)+1) throw new HttpError(409,'VERSION_CONFLICT','Transport changed on another client.');
+ // A different flight (number, date or airports) must not keep the old flight's live match or status.
+ if(transportType==='flight'&&['marketing_airline_code','marketing_flight_number','operating_airline_code','operating_flight_number','scheduled_departure_utc','departure_location_id','arrival_location_id'].some(key=>String(existing[key]??'')!==String(updated[key]??''))){
+   await env.DB.batch([
+     env.DB.prepare(`DELETE FROM flight_live_status WHERE trip_item_id=?`).bind(itemId),
+     env.DB.prepare(`UPDATE flights SET estimated_departure_utc=NULL,estimated_arrival_utc=NULL,actual_departure_utc=NULL,actual_arrival_utc=NULL,operational_phase='scheduled',disruption_state='none' WHERE trip_item_id=?`).bind(itemId),
+   ]);
+ }
  await recordChangeEvent(env,tripId,'trip_item',itemId,'transport_updated',existing,updated);
  return json({item:updated},{},request,env);
 }

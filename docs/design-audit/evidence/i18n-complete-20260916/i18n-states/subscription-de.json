@@ -1,0 +1,55 @@
+{
+  "url": "/timeline",
+  "screen": "subscription",
+  "text": "IHRE ERSTE REISE IST KOSTENLOS\n\nBereit für das nächste Abenteuer?\n\nErstellen und organisieren Sie mit Tripto Plus beliebig viele Reisen.\n\nUnbegrenzte Reisen\nAlle Planungstools\nJederzeit kündbar\nJährlich\nSparen Sie 35 % gegenüber der monatlichen Zahlung\n$39\npro Jahr\nBESTES ANGEBOT\nMonatlich\nFlexibler Zugang von Monat zu Monat\n$4.99\npro Monat\n\nSicherer Checkout wird vorbereitet… Bitte versuchen Sie es gleich noch einmal.\n\nNicht jetzt",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Jährlich\nSparen Sie 35 % gegenüber der monatlichen Zahlung\n$39\npro Jahr\nBESTES ANGEBOT",
+      "label": null,
+      "action": "choose-subscription-plan"
+    },
+    {
+      "text": "Monatlich\nFlexibler Zugang von Monat zu Monat\n$4.99\npro Monat",
+      "label": null,
+      "action": "choose-subscription-plan"
+    },
+    {
+      "text": "Nicht jetzt",
+      "label": null,
+      "action": "subscription-back"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "subscription",
+  "clicks": [],
+  "documentLang": "de",
+  "visibleText": [
+    "Upgrade",
+    "IHRE ERSTE REISE IST KOSTENLOS",
+    "Bereit für das nächste Abenteuer?",
+    "Erstellen und organisieren Sie mit Tripto Plus beliebig viele Reisen.",
+    "Unbegrenzte Reisen",
+    "Alle Planungstools",
+    "Jederzeit kündbar",
+    "Jährlich",
+    "Sparen Sie 35 % gegenüber der monatlichen Zahlung",
+    "$39",
+    "pro Jahr",
+    "BESTES ANGEBOT",
+    "Monatlich",
+    "Flexibler Zugang von Monat zu Monat",
+    "$4.99",
+    "pro Monat",
+    "Sicherer Checkout wird vorbereitet… Bitte versuchen Sie es gleich noch einmal.",
+    "Nicht jetzt"
+  ],
+  "errors": []
+}

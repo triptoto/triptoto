@@ -1,0 +1,28 @@
+{
+  "route": "booking-document",
+  "path": "/bookings/new/document",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-document-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Ajouter un fichier\nRÉSERVATION MANUELLE\nAjouter un document\nEssentiels\nChoisir un fichierPDF, image ou carte Wallet · jusqu'à 10 Mo\nAucun fichier sélectionné\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Ajouter un fichier",
+      "label": null
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

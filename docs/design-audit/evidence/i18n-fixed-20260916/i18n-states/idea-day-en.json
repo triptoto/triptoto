@@ -1,0 +1,90 @@
+{
+  "url": "/plan-idea/visit-the-museum-of-contemporary-art-museum-culture",
+  "screen": "add-to-plan",
+  "text": "ADD TO PLAN\nAdd Visit the museum of contemporary art\n\nPick a trip day and an optional time, then add it to the day plan.\n\nCHOOSE A DAY\nTHU\nSEP 17\nFRI\nSEP 18\nSAT\nSEP 19\nSUN\nSEP 20\nMON\nSEP 21\nTUE\nSEP 22\nWED\nSEP 23\nStart time\nOptional — used for the day plan\nADD TO THE DAY\nAdd to the day plan\nPut it on SEP 17",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "THU\nSEP 17",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "FRI\nSEP 18",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SAT\nSEP 19",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SUN\nSEP 20",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "MON\nSEP 21",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "TUE\nSEP 22",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "WED\nSEP 23",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "Add to the day plan\nPut it on SEP 17",
+      "label": null,
+      "action": "plan-general",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]",
+    "[data-action=\"idea-add-to-plan\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Add to plan",
+    "ADD TO PLAN",
+    "Add Visit the museum of contemporary art",
+    "Pick a trip day and an optional time, then add it to the day plan.",
+    "Choose a day",
+    "THU",
+    "SEP 17",
+    "FRI",
+    "SEP 18",
+    "SAT",
+    "SEP 19",
+    "SUN",
+    "SEP 20",
+    "MON",
+    "SEP 21",
+    "TUE",
+    "SEP 22",
+    "WED",
+    "SEP 23",
+    "Start time",
+    "Optional — used for the day plan",
+    "Add to the day",
+    "Add to the day plan",
+    "Put it on SEP 17"
+  ],
+  "errors": []
+}

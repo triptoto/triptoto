@@ -1,0 +1,51 @@
+{
+  "url": "/before-you-go",
+  "screen": "checklist",
+  "text": "Rome 2026\n\n2 tasks left\n\nAdd a task\nAdd\nPack power adapter\nPack medication\nCompleted (2)",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add",
+      "label": "Add task"
+    },
+    {
+      "text": "Pack power adapter",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "",
+      "label": "Edit Pack power adapter",
+      "action": "edit-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "Pack medication",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "",
+      "label": "Edit Pack medication",
+      "action": "edit-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "Completed (2)",
+      "label": null,
+      "action": "toggle-completed-checklist"
+    }
+  ],
+  "evidence": [
+    "checklist-top.png"
+  ]
+}

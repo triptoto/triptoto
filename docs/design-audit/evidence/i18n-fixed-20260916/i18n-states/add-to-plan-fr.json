@@ -1,0 +1,25 @@
+{
+  "url": "/plan-idea",
+  "screen": "add-to-plan",
+  "text": "Idée indisponible\n\nCette idée n’est plus disponible. Elle est peut-être déjà sur votre chronologie.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "add-to-plan",
+  "clicks": [],
+  "documentLang": "fr",
+  "visibleText": [
+    "Idée indisponible",
+    "Idée indisponible",
+    "Cette idée n’est plus disponible. Elle est peut-être déjà sur votre chronologie."
+  ],
+  "errors": []
+}

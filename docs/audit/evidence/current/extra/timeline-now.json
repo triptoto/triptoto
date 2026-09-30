@@ -1,0 +1,56 @@
+{
+  "url": "/trips/rome-2026-2026-09-10",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 10\u201316, 2026\nWED\nSep 9\nTHU\nSep 10\nFRI\nSep 11\nSUN\nSep 13\n22:28\nNOW\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n2h 30m",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 10\u201316, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Add to trip",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Menu",
+      "action": "open-navigation"
+    },
+    {
+      "text": "WED\nSep 9",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "FRI\nSep 11",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SUN\nSep 13",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "22:28\nNOW\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n2h 30m",
+      "label": "22:28. Flight to Rome. Flight \u00b7 TLV \u2192 FCO. 2h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "flight"
+    }
+  ],
+  "evidence": [
+    "timeline-now-top.png"
+  ],
+  "trigger": "",
+  "qaState": "timeline-now"
+}

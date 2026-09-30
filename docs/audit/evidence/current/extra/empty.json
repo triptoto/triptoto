@@ -1,0 +1,50 @@
+{
+  "url": "/trips",
+  "screen": "trips",
+  "text": "YOUR JOURNEYS\nAll your trips\n\nPlans, bookings, and ideas stay together here.\n\nAll\n0\nCurrent\n0\nUpcoming\n0\nPast\n0\nNo trips yet\n\nCreate your first trip and keep everything in one place.\n\nCreate trip",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Account",
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Create trip",
+      "action": "create-trip"
+    },
+    {
+      "text": "All\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Current\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Upcoming\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Past\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Create trip",
+      "label": null,
+      "action": "create-trip"
+    }
+  ],
+  "evidence": [
+    "empty-top.png"
+  ],
+  "trigger": "",
+  "qaState": "empty"
+}

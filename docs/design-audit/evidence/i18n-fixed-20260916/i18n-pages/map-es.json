@@ -1,0 +1,74 @@
+{
+  "route": "map",
+  "path": "/trip-map",
+  "screen": "trip-map",
+  "locale": "es",
+  "image": "map-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Rome 2026\nsept 17–23, 2026\nTodo\nTodo el viaje\nDía 1\n17 sept\nDía 2\n18 sept\nDía 3\n20 sept\nTodos los lugares del viaje\n0/3 en el mapa\nToca para ver las indicaciones\nHotel ArtemideSIGUIENTE\nMuseos Vaticanos\nRoma Termini\n\nCómo llegar se abre para un destino a la vez. tripto.to muestra tu ubicación solo en este dispositivo y nunca comparte tu itinerario completo.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Capas del mapa",
+      "action": "toggle-map-layers"
+    },
+    {
+      "text": "Todo\nTodo el viaje",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Día 1\n17 sept",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Día 2\n18 sept",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Día 3\n20 sept",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "",
+      "label": "Ajustar todos los lugares",
+      "action": "map-fit"
+    },
+    {
+      "text": "",
+      "label": "Mi ubicación",
+      "action": "map-locate"
+    },
+    {
+      "text": "",
+      "label": "Ocultar los lugares del viaje",
+      "action": "toggle-map-sheet"
+    },
+    {
+      "text": "Hotel ArtemideSIGUIENTE",
+      "label": "Cómo llegar a Hotel Artemide",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Museos Vaticanos",
+      "label": "Cómo llegar a Museos Vaticanos",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Roma Termini",
+      "label": "Cómo llegar a Roma Termini",
+      "action": "trip-map-navigate"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

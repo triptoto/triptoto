@@ -1,0 +1,86 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "SAVE FOR LATER\nSave ideas for “Rome 2026”\n\nA running list of things you might do. Open one to add it to a day plan.\n\nVisit the museum of contemporary art\nNot scheduled\nAdd an idea\nVisit the museum of contemporary art\nAdd to a day plan\nChoose a day and an optional time\nEdit idea\nName, address and notes\nDelete idea\nRemove it from Save for Later",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 589.21875,
+        "width": 390,
+        "height": 254.78125,
+        "top": 589.21875,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Visit the museum of contemporary art\nNot scheduled",
+      "label": null,
+      "action": "open-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Add an idea",
+      "label": null,
+      "action": "add-save-later"
+    },
+    {
+      "text": "",
+      "label": "Close",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Add to a day plan\nChoose a day and an optional time",
+      "label": null,
+      "action": "idea-add-to-plan",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Edit idea\nName, address and notes",
+      "label": null,
+      "action": "edit-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Delete idea\nRemove it from Save for Later",
+      "label": null,
+      "action": "delete-idea",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Save for Later",
+    "SAVE FOR LATER",
+    "Save ideas for “Rome 2026”",
+    "A running list of things you might do. Open one to add it to a day plan.",
+    "Visit the museum of contemporary art",
+    "Not scheduled",
+    "Add an idea",
+    "Visit the museum of contemporary art",
+    "Add to a day plan",
+    "Choose a day and an optional time",
+    "Edit idea",
+    "Name, address and notes",
+    "Delete idea",
+    "Remove it from Save for Later"
+  ],
+  "errors": []
+}

@@ -39,6 +39,18 @@ export function parseForwardedEmail(input: ForwardedEmailInput): ParsedForwarded
   const text = `${subject}\n${body}`.trim();
   const candidates: ParsedImportCandidate[] = [];
 
+  // BUG-07: a cancellation notice must never be auto-imported as a new *confirmed*
+  // booking (materializers always write booking_status='confirmed'). Detect
+  // genuine cancellation intent (ignoring policy/marketing phrasing) and surface
+  // the forward as unsupported instead of fabricating a live booking.
+  if (indicatesCancellation(text)) {
+    return {
+      candidates: [],
+      normalizedText: text,
+      unsupportedReason: 'A cancellation notice was detected. Cancellations are not auto-imported — update the affected booking manually.',
+    };
+  }
+
   const flight = parseFlight(text);
   if (flight) candidates.push(flight);
   const stay = parseStay(text, subject);
@@ -61,11 +73,28 @@ export function parseForwardedEmail(input: ForwardedEmailInput): ParsedForwarded
   };
 }
 
+// True when the email is a cancellation of the booking itself, not merely
+// mentioning cancellation in policy/marketing terms. Strips "free cancellation",
+// "cancellation policy/fee/deadline...", and "no cancellation(s)" first, so a
+// normal confirmation that quotes its cancellation policy is NOT flagged; any
+// remaining cancelled/canceled/cancellation token then indicates a real cancel.
+function indicatesCancellation(text: string): boolean {
+  const cleaned = text
+    .replace(/\bfree\s+cancellation\b/gi, ' ')
+    .replace(/\bno\s+cancel(?:l?ation)s?\b/gi, ' ')
+    .replace(/\bcancel(?:l?ation)s?\s+(?:policy|policies|fee|fees|charge|charges|deadline|terms|window|insurance|protection|coverage)\b/gi, ' ');
+  return /\bcancel(?:l?ed|l?ation)\b/i.test(cleaned);
+}
+
 function parseFlight(text: string): ParsedImportCandidate | null {
   const route = extractRoute(text);
   const flightNo = extractFlightNumber(text);
   const hasFlightWords = /\b(flight|boarding|airline|departure|arrival)\b/i.test(text);
-  if (!hasFlightWords && !route && !flightNo) return null;
+  // Corroboration guard (BUG-06): a bare flight-designator-like token (e.g.
+  // "US1234" in an order/promo line) is not enough to fabricate a flight. Emit
+  // only with real flight context: flight/airline wording, an IATA airport pair,
+  // or a *labeled* flight number. An unlabeled designator alone is ignored.
+  if (!hasFlightWords && !route && !flightNo?.labeled) return null;
 
   const departure = extractLabeledDateTime(text, ['departure','depart','dep']);
   const arrival = extractLabeledDateTime(text, ['arrival','arrive','arr']);
@@ -254,8 +283,10 @@ function normalize(value: string): string {
 function extractRoute(text: string): { from: string; to: string } | null {
   const patterns = [
     /\b([A-Z]{3})\s*(?:→|->|–|—|-)\s*([A-Z]{3})\b/,
-    /\bfrom\s+([A-Z]{3})\s+(?:to|→|->)\s+([A-Z]{3})\b/i,
-    /\bdeparture(?: airport)?\s*[:\-]\s*([A-Z]{3})[\s\S]{0,180}?arrival(?: airport)?\s*[:\-]\s*([A-Z]{3})\b/i,
+    // Labels are case-insensitive but the codes must be written in capitals, so
+    // "from New York to ..." or "Departure: Tel Aviv" never become NEW / TEL.
+    /\b[Ff][Rr][Oo][Mm]\s+([A-Z]{3})\s+(?:[Tt][Oo]|→|->)\s+([A-Z]{3})\b/,
+    /\b[Dd][Ee][Pp][Aa][Rr][Tt][Uu][Rr][Ee](?: [Aa][Ii][Rr][Pp][Oo][Rr][Tt])?\s*[:\-]\s*([A-Z]{3})\b[\s\S]{0,180}?\b[Aa][Rr][Rr][Ii][Vv][Aa][Ll](?: [Aa][Ii][Rr][Pp][Oo][Rr][Tt])?\s*[:\-]\s*([A-Z]{3})\b/,
   ];
   for (const p of patterns) {
     const m = text.match(p); if (m) return { from:m[1].toUpperCase(), to:m[2].toUpperCase() };
@@ -263,16 +294,22 @@ function extractRoute(text: string): { from: string; to: string } | null {
   return null;
 }
 
-function extractFlightNumber(text: string): { airlineCode: string; flightNumber: string } | null {
-  const labeled = text.match(/(?:flight(?: number| no\.?| #)?|flt)\s*[:#-]?\s*([A-Z0-9]{2,3})\s*[- ]?\s*(\d{1,4}[A-Z]?)/i);
-  if (labeled) return { airlineCode:labeled[1].toUpperCase(), flightNumber:labeled[2].toUpperCase() };
+function extractFlightNumber(text: string): { airlineCode: string; flightNumber: string; labeled: boolean } | null {
+  // Airline designator: two letters, letter+digit or digit+letter (or 3-letter ICAO), in capitals.
+  for (const labeled of text.matchAll(/\b(?:flight(?: number| no\.?| #)?|flt)\s*[:#-]?\s*([A-Z]{2,3}|[A-Z]\d|\d[A-Z])\s?-?\s?(\d{1,4}[A-Z]?)\b/gi)) {
+    if (labeled[1] === labeled[1].toUpperCase() && /[A-Z]/.test(labeled[1])) return { airlineCode:labeled[1], flightNumber:labeled[2].toUpperCase(), labeled:true };
+  }
   const generic = text.match(/\b([A-Z]{2}|[A-Z]\d|\d[A-Z])\s?(\d{2,4}[A-Z]?)\b/);
-  return generic ? { airlineCode:generic[1].toUpperCase(), flightNumber:generic[2].toUpperCase() } : null;
+  return generic ? { airlineCode:generic[1].toUpperCase(), flightNumber:generic[2].toUpperCase(), labeled:false } : null;
 }
 
 function extractConfirmation(text: string): string | null {
-  const m = text.match(/(?:confirmation(?: number| no\.?| #)?|booking reference|reservation(?: number| no\.?| #)?|pnr)\s*[:#-]?\s*([A-Z0-9-]{4,24})/i);
-  return m?.[1]?.toUpperCase() ?? null;
+  // A real code has a digit or is written in capitals ("Confirmation email" is not EMAIL).
+  for (const m of text.matchAll(/\b(?:confirmation(?: number| no\.?| #)?|booking reference|reservation(?: number| no\.?| #)?|pnr)\s*[:#-]?\s*([A-Z0-9-]{4,24})\b/gi)) {
+    const v = m[1];
+    if (/\d/.test(v) || (v === v.toUpperCase() && /[A-Z]/.test(v))) return v.toUpperCase();
+  }
+  return null;
 }
 
 function extractField(text: string, labels: string[]): string | null {
@@ -320,7 +357,10 @@ function parseDateToken(raw: string): string | null {
   let x=s.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
   if(x){y=+x[1];m=+x[2];d=+x[3];return isoDate(y,m,d);}
   x=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
-  if(x){d=+x[1];m=+x[2];y=+x[3];if(d<=12&&m<=12)return null;return isoDate(y,m,d);}
+  // Numeric D/M vs M/D is only safe to resolve when one component >12 forces the
+  // order. Both <=12 stays ambiguous (never guessed). first>12 => DD/MM;
+  // second>12 => unambiguous MM/DD (previously dropped — BUG-16).
+  if(x){const a=+x[1],b=+x[2];y=+x[3];if(a<=12&&b<=12)return null;if(a>12){d=a;m=b;}else{m=a;d=b;}return isoDate(y,m,d);}
   x=s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
   if(x){d=+x[1];m=MONTHS[x[2].toLowerCase()]??0;y=+x[3];return isoDate(y,m,d);}
   x=s.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);

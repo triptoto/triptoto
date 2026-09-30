@@ -1,0 +1,33 @@
+{
+  "route": "booking-hotel",
+  "path": "/bookings/new/hotel",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-hotel-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nHébergement\nEssentiels\nNom de l'hébergement *\nVille / lieu Facultatif\nDates du séjour\nSélectionner les dates\nChoisir les dates\nAucune période sélectionnée.\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Sélectionner les dates\nChoisir les dates",
+      "label": "Dates du séjour. Choisissez check-in et check-out",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-hotel-fr-bottom.png"
+}

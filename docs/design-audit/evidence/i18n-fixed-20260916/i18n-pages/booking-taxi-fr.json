@@ -1,0 +1,28 @@
+{
+  "route": "booking-taxi",
+  "path": "/bookings/new/taxi",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-taxi-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nTaxi\nEssentiels\nCompagnie / chauffeur Facultatif\nDe *\nÀ *\nDate de prise en charge *\nHeure de prise en charge *\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-taxi-fr-bottom.png"
+}

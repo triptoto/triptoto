@@ -1,0 +1,23 @@
+{
+  "url": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "text": "Forward confirmations to\ngo@tripto.to\n\nChoose the trip and confirm the extracted details before anything is added.\n\nSign in to use booking email\n\nGoogle verifies which email address may send confirmations.\n\nSign in with Google",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Sign in with Google",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "evidence": [
+    "email-top.png"
+  ]
+}

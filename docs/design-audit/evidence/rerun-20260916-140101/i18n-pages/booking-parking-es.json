@@ -1,0 +1,27 @@
+{
+  "route": "booking-parking",
+  "path": "/bookings/new/parking",
+  "screen": "form",
+  "locale": "es",
+  "image": "booking-parking-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar\nRESERVA MANUAL\nAparcamiento\nEsenciales\nNombre del aparcamiento *\nFecha de inicio *\nHora de entrada Opcional\nBilletes y documentos\n\nOpcional · Guardado en este dispositivo\n\nAñadir archivos\nPDF, imágenes o pases · hasta 10 MB cada uno\n\nNo se seleccionaron archivos. Puedes guardar la reserva sin ninguno.\n\nMás detalles",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar",
+      "label": null
+    },
+    {
+      "text": "Más detalles",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

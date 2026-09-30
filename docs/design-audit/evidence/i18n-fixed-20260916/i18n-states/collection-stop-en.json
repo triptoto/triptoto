@@ -1,0 +1,49 @@
+{
+  "url": "/collections/audit-neighborhood/places/audit-stop-2",
+  "screen": "collection-stop",
+  "text": "place\nPlanned\nGalleria Corsini\n\nMuseum · Rome\n\n11:30\nScheduled time\nNotes\nAllow time for the permanent collection.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Edit place",
+      "action": "edit-stop",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "",
+      "label": "Delete place",
+      "action": "delete-stop",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "Notes\nAllow time for the permanent collection.",
+      "label": null,
+      "action": "edit-note",
+      "id": "audit-neighborhood::audit-stop-2"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "collection-stop",
+  "clicks": [],
+  "documentLang": "en",
+  "visibleText": [
+    "Place",
+    "place",
+    "Planned",
+    "Galleria Corsini",
+    "Museum · Rome",
+    "11:30",
+    "Scheduled time",
+    "Notes",
+    "Allow time for the permanent collection."
+  ],
+  "errors": []
+}

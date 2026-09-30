@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "spec": "ARD",
+  "name": "tripto.to",
+  "description": "Free, privacy-first travel planner and progressive web app. Organizes trips, flights, hotels, day plans, documents and offline itineraries, with on-device tools for weather, currency conversion, tax-free (VAT refund) guidance and eSIM options.",
+  "url": "https://tripto.to",
+  "language": "en",
+  "publisher": {
+    "name": "tripto.to",
+    "url": "https://tripto.to",
+    "contact": "https://tripto.to/contact"
+  },
+  "updated": "2026-09-28T00:00:00Z",
+  "resources": [
+    {
+      "type": "web-application",
+      "name": "tripto.to travel planner",
+      "url": "https://tripto.to",
+      "description": "The tripto.to travel-planning progressive web app.",
+      "format": "text/html"
+    },
+    {
+      "type": "documentation",
+      "name": "Overview",
+      "url": "https://tripto.to/landing",
+      "description": "What tripto.to does and who it is for.",
+      "format": "text/html"
+    },
+    {
+      "type": "policy",
+      "name": "Privacy Policy",
+      "url": "https://tripto.to/privacy",
+      "description": "How tripto.to handles trip data.",
+      "format": "text/html"
+    },
+    {
+      "type": "policy",
+      "name": "Terms of Service",
+      "url": "https://tripto.to/terms",
+      "description": "The agreement for using tripto.to.",
+      "format": "text/html"
+    },
+    {
+      "type": "policy",
+      "name": "Cookies & local storage",
+      "url": "https://tripto.to/cookies",
+      "description": "How tripto.to stores data on your device.",
+      "format": "text/html"
+    },
+    {
+      "type": "sitemap",
+      "name": "Sitemap",
+      "url": "https://tripto.to/sitemap.xml",
+      "description": "XML sitemap of public pages.",
+      "format": "application/xml"
+    },
+    {
+      "type": "guidance",
+      "name": "llms.txt",
+      "url": "https://tripto.to/llms.txt",
+      "description": "Plain-text guidance for large language models.",
+      "format": "text/markdown"
+    }
+  ],
+  "policies": {
+    "ai-training": "conditional",
+    "ai-usage": "allowed",
+    "attribution": "required",
+    "notes": "Public marketing and legal pages may be used with attribution to tripto.to. Private in-app trip routes are noindex and must not be crawled or ingested."
+  }
+}

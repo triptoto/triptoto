@@ -1,0 +1,27 @@
+{
+  "route": "booking-taxi",
+  "path": "/bookings/new/taxi",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-taxi-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить\nБРОНИРОВАНИЕ ВРУЧНУЮ\nТакси\nВсё для поездки\nКомпания / водитель Необязательно\nОткуда *\nКуда *\nДата получения *\nВремя получения *\nБилеты и документы\n\nНеобязательно · Хранится на этом устройстве\n\nДобавить файлы\nPDF, изображения или карты · до 10 МБ каждый\n\nФайлы не выбраны. Вы можете сохранить бронирование без них.\n\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить",
+      "label": null
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,122 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "GETEILTE REISE\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nEine Reise.\nAlle auf dem gleichen Stand.\nWarum gemeinsam planen?\nEinen Plan erstellen\nBearbeiter:innen können Buchungen hinzufügen und aktualisieren.\nAlle auf dem gleichen Stand\nReiseänderungen bleiben für alle an einem Ort sichtbar.\nSie behalten die Kontrolle\nLegen Sie fest, wer bearbeiten oder ansehen darf, und entziehen Sie den Zugriff jederzeit.\nPersonen einladen\nPersonen auf dieser Reise\nAlex Traveler (You)\nEigentümer:in\nSam Companion\nKann bearbeiten\nTaylor Companion\nNur ansehen\n\nBis zu 10 Personen pro Reise.\n\nAusstehende Einladungen\nfriend@example.test\nView only · pending · expires 2026-09-17T11:09:26.756Z\nZu dieser Reise einladen\n\nWer eingeladen wird, meldet sich zum Beitreten mit dem eigenen kostenlosen Konto an. Der Link funktioniert einmal und lässt sich jederzeit widerrufen.\n\nZugriff auswählen\nKann bearbeiten\nBuchungen hinzufügen und ändern\nNur ansehen\nReise ansehen, aber nicht ändern\nEinladungslink erstellen",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1154
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 461.328125,
+        "width": 390,
+        "height": 382.671875,
+        "top": 461.328125,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Personen einladen",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Zugriff für Sam Companion verwalten",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Zugriff für Taylor Companion verwalten",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Einladung widerrufen",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Schließen",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Kann bearbeiten\nBuchungen hinzufügen und ändern",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Nur ansehen\nReise ansehen, aber nicht ändern",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Einladungslink erstellen",
+      "label": null,
+      "action": "create-invite"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "collaboration",
+  "clicks": [
+    "[data-action=\"open-share\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Gemeinsam planen",
+    "Geteilte Reise",
+    "Rome 2026",
+    "Invite people to view or edit",
+    "Rome 2026",
+    ". You stay the owner and can change roles or remove people at any time.",
+    "Eine Reise.",
+    "Alle auf dem gleichen Stand.",
+    "Warum gemeinsam planen?",
+    "Einen Plan erstellen",
+    "Bearbeiter:innen können Buchungen hinzufügen und aktualisieren.",
+    "Alle auf dem gleichen Stand",
+    "Reiseänderungen bleiben für alle an einem Ort sichtbar.",
+    "Sie behalten die Kontrolle",
+    "Legen Sie fest, wer bearbeiten oder ansehen darf, und entziehen Sie den Zugriff jederzeit.",
+    "Personen einladen",
+    "Personen auf dieser Reise",
+    "Alex Traveler (You)",
+    "Eigentümer:in",
+    "Sam Companion",
+    "Kann bearbeiten",
+    "Taylor Companion",
+    "Nur ansehen",
+    "Bis zu 10 Personen pro Reise.",
+    "Ausstehende Einladungen",
+    "friend@example.test",
+    "View only · pending · expires 2026-09-17T11:09:26.756Z",
+    "Zu dieser Reise einladen",
+    "Wer eingeladen wird, meldet sich zum Beitreten mit dem eigenen kostenlosen Konto an. Der Link funktioniert einmal und lässt sich jederzeit widerrufen.",
+    "Zugriff auswählen",
+    "Kann bearbeiten",
+    "Buchungen hinzufügen und ändern",
+    "Nur ansehen",
+    "Reise ansehen, aber nicht ändern",
+    "Einladungslink erstellen"
+  ],
+  "errors": []
+}

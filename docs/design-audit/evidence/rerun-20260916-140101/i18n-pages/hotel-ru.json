@@ -1,0 +1,58 @@
+{
+  "route": "hotel",
+  "path": "/hotels/stay",
+  "screen": "hotel",
+  "locale": "ru",
+  "image": "hotel-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Hotel Artemide\nConfirmed\nДанные по расписанию\nЗАЕЗД\n17 сент.\n15:00\n6 ночей\nВЫЕЗД\n23 сент.\n11:00\nПоказать водителю\nVia Nazionale 22, Roma\nСохранённый адрес\n+39 06 489911\nПозвонить в отель\ninfo@hotelartemide.it\nНаписать в отель\nHTL-48291\nПодтверждение · нажмите, чтобы скопировать\nДобавить документ\nДобавить заметку",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Изменить",
+      "action": "edit-booking",
+      "id": "stay"
+    },
+    {
+      "text": "",
+      "label": "Удалить",
+      "action": "delete-booking",
+      "id": "stay"
+    },
+    {
+      "text": "Показать водителю",
+      "label": null,
+      "action": "show-driver",
+      "id": "stay"
+    },
+    {
+      "text": "Via Nazionale 22, Roma\nСохранённый адрес",
+      "label": null,
+      "action": "directions-hotel",
+      "id": "stay"
+    },
+    {
+      "text": "HTL-48291\nПодтверждение · нажмите, чтобы скопировать",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Добавить документ",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Добавить заметку",
+      "label": null,
+      "action": "edit-note",
+      "id": "stay"
+    }
+  ],
+  "dialogCount": 0
+}

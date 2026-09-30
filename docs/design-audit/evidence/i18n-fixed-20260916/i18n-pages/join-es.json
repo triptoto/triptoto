@@ -1,0 +1,19 @@
+{
+  "route": "join",
+  "path": "/join/sample",
+  "screen": "join",
+  "locale": "es",
+  "image": "join-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Comprobando tu invitación…",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

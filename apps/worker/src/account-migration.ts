@@ -28,6 +28,8 @@ export async function migrateGuestDeviceToUser(env: Env, deviceId: string, userI
     env.DB.prepare(`UPDATE imports SET user_id=? WHERE user_id IS NULL AND trip_id IN (SELECT id FROM trips WHERE created_by_device_id=?)`).bind(userId,deviceId),
     env.DB.prepare(`UPDATE sync_operations SET user_id=? WHERE user_id IS NULL AND device_id=?`).bind(userId,deviceId),
     env.DB.prepare(`UPDATE devices SET user_id=?,last_seen_at=? WHERE id=? AND user_id IS NULL`).bind(userId,now,deviceId),
+    // A Tripto Plus purchase made as a guest follows the traveler into their account.
+    env.DB.prepare(`UPDATE tripto_plus_subscriptions SET subject_type='user',subject_id=?,updated_at=? WHERE subject_type='device' AND subject_id=?`).bind(userId,now,deviceId),
     env.DB.prepare(`INSERT INTO identity_events(id,user_id,device_id,event_type,metadata_json,created_at) VALUES (?,?,?,'guest_migrated',?,?)`)
       .bind(eventId,userId,deviceId,JSON.stringify({migratedTrips}),now),
   ]);

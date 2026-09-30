@@ -1,0 +1,185 @@
+[
+  {
+    "route": "welcome",
+    "locale": "en",
+    "image": "welcome-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "de",
+    "image": "welcome-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "fr",
+    "image": "welcome-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "es",
+    "image": "welcome-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "ru",
+    "image": "welcome-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "en",
+    "image": "trips-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "trips",
+    "locale": "de",
+    "image": "trips-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "fr",
+    "image": "trips-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "es",
+    "image": "trips-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "ru",
+    "image": "trips-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "en",
+    "image": "timeline-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "timeline",
+    "locale": "de",
+    "image": "timeline-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "fr",
+    "image": "timeline-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "es",
+    "image": "timeline-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "locale": "ru",
+    "image": "timeline-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "en",
+    "image": "add-trip-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "add-trip",
+    "locale": "de",
+    "image": "add-trip-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "fr",
+    "image": "add-trip-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "es",
+    "image": "add-trip-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "ru",
+    "image": "add-trip-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "en",
+    "image": "add-booking-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "add-booking",
+    "locale": "de",
+    "image": "add-booking-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "fr",
+    "image": "add-booking-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "es",
+    "image": "add-booking-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "ru",
+    "image": "add-booking-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  }
+]

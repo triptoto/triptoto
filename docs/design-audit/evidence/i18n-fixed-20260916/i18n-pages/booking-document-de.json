@@ -1,0 +1,28 @@
+{
+  "route": "booking-document",
+  "path": "/bookings/new/document",
+  "screen": "form",
+  "locale": "de",
+  "image": "booking-document-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Datei hinzufügen\nMANUELLE BUCHUNG\nDokument hinzufügen\nDas Wichtigste\nDatei auswählenPDF, Bild oder Wallet-Pass · bis zu 10 MB\nKeine Datei ausgewählt\nMehr Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Datei hinzufügen",
+      "label": null
+    },
+    {
+      "text": "Mehr Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

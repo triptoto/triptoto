@@ -1,0 +1,27 @@
+{
+  "route": "booking-activity",
+  "path": "/bookings/new/activity",
+  "screen": "form",
+  "locale": "en",
+  "image": "booking-activity-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Save\nMANUAL BOOKING\nActivity\nEssentials\nActivity name *\nType Optional\nActivity\nTour\nConcert\nTheatre\nMuseum\nAttraction\nSports\nMeeting\nShow\nOther\nDate *\nLocal time Optional\nVenue Optional\nTickets & Documents\n\nOptional · Stored on this device\n\nAdd files\nPDF, images, or passes · up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,25 @@
+{
+  "route": "save-later",
+  "path": "/save-later",
+  "screen": "save-later",
+  "locale": "en",
+  "image": "save-later-en.png",
+  "missingTranslations": [],
+  "errors": [
+    "wrong document language"
+  ],
+  "text": "SAVE FOR LATER\nSave ideas for “Rome 2026”\n\nA running list of things you might do. Open one to add it to a day plan.\n\nNo ideas yet\n\nSave places, food and things you might want to do. Plan them onto a day whenever you're ready.\n\nAdd an idea",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add an idea",
+      "label": null,
+      "action": "add-save-later"
+    }
+  ],
+  "dialogCount": 0
+}

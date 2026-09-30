@@ -1,0 +1,44 @@
+{
+  "lang": "en",
+  "title": "Privacy, clearly explained · tripto.to",
+  "text": "tripto.to\nEnglish\nDeutsch\nFrançais\nEspañol\nРусский\nOpen app\n\nYOUR DATA, YOUR TRIP\n\nPrivacy, clearly explained\n\nTripto is designed to help you organise a trip without turning your travel plans into advertising data. This policy explains what we collect, why we use it, and the choices you have.\n\nLast updated 16 September 2026\ntripto.to\nWhat we collect\nAccount information\nYour verified Google email address and account identifier when you choose to sign in.\nTrip information\nTrips, bookings, dates, notes and shared-trip details you choose to add.\nService data\nLimited technical records needed to keep the service secure, reliable and in sync.\nOn-device documents\nFiles you save for offline use stay on your device; their contents are not uploaded to Tripto servers.\nHow we use it\nTo show, sync and protect the trips you create.\nTo process booking details that you explicitly add or forward for review.\nTo prevent accidental overwrites and maintain the security of your account.\nTo respond when you request support or account deletion.\n\nWe do not sell itinerary content or use it to target advertising.\n\nBooking emails and imports\n\nWhen you forward a confirmation to go@tripto.to, Tripto processes it to identify travel details for your review. Smart Import processes supported files on your device; raw files and extracted text are not uploaded through that flow.\n\nYour choices\nYou can sign out from Account at any time.\nYou can remove local files and cached trip data from the device that stores them.\nYou can request deletion of your account data by contacting us.\nPrivacy by design\nSupport diagnostics use coarse operational information. They exclude confirmation numbers, invite tokens, email bodies, traveller names, addresses and document file bytes.\nStill need help?\n\nWrite to us with the minimum information needed to understand your request.\n\nEmail go@tripto.to\nPrivacy\nTerms\nCookies\nContact\nOpen app",
+  "overflow": false,
+  "links": [
+    {
+      "text": "tripto.to",
+      "href": "/landing"
+    },
+    {
+      "text": "Open app",
+      "href": "/account"
+    },
+    {
+      "text": "go@tripto.to",
+      "href": "mailto:go@tripto.to"
+    },
+    {
+      "text": "Email go@tripto.to",
+      "href": "mailto:go@tripto.to?subject=Tripto%20support"
+    },
+    {
+      "text": "Privacy",
+      "href": "/privacy"
+    },
+    {
+      "text": "Terms",
+      "href": "/terms"
+    },
+    {
+      "text": "Cookies",
+      "href": "/cookies"
+    },
+    {
+      "text": "Contact",
+      "href": "/contact"
+    },
+    {
+      "text": "Open app",
+      "href": "/account"
+    }
+  ]
+}

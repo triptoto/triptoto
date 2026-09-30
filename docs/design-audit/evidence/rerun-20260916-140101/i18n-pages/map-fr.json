@@ -1,0 +1,73 @@
+{
+  "route": "map",
+  "path": "/trip-map",
+  "screen": "trip-map",
+  "locale": "fr",
+  "image": "map-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Rome 2026\nsept. 17–23, 2026\nTous\nTout le voyage\nJour 1\n17 sept.\nJour 2\n18 sept.\nJour 3\n20 sept.\nImpossible de charger la carte. Vos lieux sont listés ci-dessous.\nTous les lieux du voyage\n0/3 placés sur la carte\nAppuyez pour l’itinéraire\nHotel ArtemideSUIVANT\nMusées du Vatican\nRoma Termini\n\nL'itinéraire s'ouvre pour une destination à la fois. tripto.to affiche votre position uniquement sur cet appareil et ne partage jamais votre itinéraire complet.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Calques de la carte",
+      "action": "toggle-map-layers"
+    },
+    {
+      "text": "Tous\nTout le voyage",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Jour 1\n17 sept.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Jour 2\n18 sept.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Jour 3\n20 sept.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "",
+      "label": "Afficher tous les lieux",
+      "action": "map-fit"
+    },
+    {
+      "text": "",
+      "label": "Ma position",
+      "action": "map-locate"
+    },
+    {
+      "text": "",
+      "label": "Masquer les lieux du voyage",
+      "action": "toggle-map-sheet"
+    },
+    {
+      "text": "Hotel ArtemideSUIVANT",
+      "label": "Obtenir l’itinéraire vers Hotel Artemide",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Musées du Vatican",
+      "label": "Obtenir l’itinéraire vers Musées du Vatican",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Roma Termini",
+      "label": "Obtenir l’itinéraire vers Roma Termini",
+      "action": "trip-map-navigate"
+    }
+  ],
+  "dialogCount": 0
+}

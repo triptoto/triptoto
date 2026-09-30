@@ -1,0 +1,42 @@
+{
+  "route": "traveler",
+  "path": "/travelers/traveler",
+  "screen": "traveler",
+  "locale": "ru",
+  "image": "traveler-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "A\nArthur\n\nAdult\n\nИзменить путешественникаУбрать путешественника\nНазначения\nРейс\nLY 383\nПоезд\nFrecciarossa 9512\nПоезд\nFrecciarossa 9551\nДетали поездки\nМЕСТО\n12A\nКАЮТА\nЭконом\nБАГАЖ\nОтмечено: 1\nБИЛЕТ\n114-1234567890\nДокументы\nЧек-лист\nPassport\nДокументы\nSave boarding pass offline\nДокументы\nPack medication\nСборы",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Изменить путешественника",
+      "label": null,
+      "action": "open-form",
+      "id": "traveler"
+    },
+    {
+      "text": "Убрать путешественника",
+      "label": null,
+      "action": "delete-traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    }
+  ],
+  "dialogCount": 0
+}

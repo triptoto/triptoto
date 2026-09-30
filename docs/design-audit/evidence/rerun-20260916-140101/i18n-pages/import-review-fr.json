@@ -1,0 +1,23 @@
+{
+  "route": "import-review",
+  "path": "/bookings/import/review",
+  "screen": "home",
+  "locale": "fr",
+  "image": "import-review-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "tripto.to\n\nVOYAGER DEVIENT PLUS LÉGER ICI\n\nVotre voyage.\nRéunis avec élégance.\n\nGardez chaque réservation, plan et idée prêts pour le voyage à venir.\n\nRéservations, réunies\nVols, hôtels et confirmations\nUn programme pour chaque jour\nSachez ce qui vient ensuite, en un coup d'œil\nEnregistrez de bonnes idées\nGardez-les prêts pour plus tard\nSe connecter avec Google\nVoir comment ça marche\nPrivé dès la conception.\nConfidentialité\n·\nConditions\n·\nCookies\n·\nContact",
+  "buttons": [
+    {
+      "text": "Se connecter avec Google",
+      "label": "Se connecter avec Google",
+      "action": "preview-google"
+    },
+    {
+      "text": "Voir comment ça marche",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "dialogCount": 0
+}

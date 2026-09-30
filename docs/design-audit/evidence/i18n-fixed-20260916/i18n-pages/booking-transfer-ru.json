@@ -1,0 +1,28 @@
+{
+  "route": "booking-transfer",
+  "path": "/bookings/new/transfer",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-transfer-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить\nБРОНИРОВАНИЕ ВРУЧНУЮ\nТрансфер\nВсё для поездки\nПровайдер / водитель Необязательно\nОткуда *\nКуда *\nДата получения *\nВремя получения *\nБилеты и документы\n\nНеобязательно · Хранится на этом устройстве\n\nДобавить файлы\nPDF, изображения или карты · до 10 МБ каждый\n\nФайлы не выбраны. Вы можете сохранить бронирование без них.\n\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить",
+      "label": null
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-transfer-ru-bottom.png"
+}

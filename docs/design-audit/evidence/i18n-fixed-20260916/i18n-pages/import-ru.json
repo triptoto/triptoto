@@ -1,0 +1,28 @@
+{
+  "route": "import",
+  "path": "/bookings/import",
+  "screen": "import",
+  "locale": "ru",
+  "image": "import-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Проверить\nЗагрузить бронирование\n\nРаспознавание происходит на этом телефоне. Проверьте каждое поле перед сохранением.\n\nДокумент бронирования\nЛучшая точность: оригинальный PDF, .eml, .ics или .pkpass. Фото и скриншоты распознаются через OCR и могут потребовать правок. · Не более 10 МБ\nИстория импорта",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Проверить",
+      "label": null
+    },
+    {
+      "text": "История импорта",
+      "label": null,
+      "screen": "import-history"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

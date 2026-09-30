@@ -26,9 +26,9 @@
     mod
   ));
 
-  // ../production-main-release/node_modules/jsqr/dist/jsQR.js
+  // node_modules/jsqr/dist/jsQR.js
   var require_jsQR = __commonJS({
-    "../production-main-release/node_modules/jsqr/dist/jsQR.js"(exports, module) {
+    "node_modules/jsqr/dist/jsQR.js"(exports, module) {
       (function webpackUniversalModuleDefinition(root, factory) {
         if (typeof exports === "object" && typeof module === "object")
           module.exports = factory();
@@ -10045,7 +10045,7 @@
     }
   });
 
-  // ../production-main-release/node_modules/fflate/esm/browser.js
+  // node_modules/fflate/esm/browser.js
   var u8 = Uint8Array;
   var u16 = Uint16Array;
   var i32 = Int32Array;
@@ -10601,7 +10601,7 @@
     const type = ranked[0][0];
     const source = cleanRows[0]?.source ?? (barcodes.length ? "barcode" : "embedded_text");
     const fields = {};
-    add(fields, "confirmationNumber", match(text, /(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+(?:code|reference|ref|number|no\.?)|reservation(?:\s+(?:number|code|no\.?))?|record\s+locator|pnr|reference)\s*[:#-]?\s*([A-Z0-9]{5,12})\b/i), 0.82, source);
+    add(fields, "confirmationNumber", matchCode(text, /\b(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+(?:code|reference|ref|number|no\.?)|reservation(?:\s+(?:number|code|no\.?))?|record\s+locator|pnr|reference)\s*[:#-]?\s*([A-Z0-9]{5,12})\b/gi), 0.82, source);
     add(fields, "address", match(text, /(?:address|location)\s*:\s*([^\n]{6,180})/i), 0.68, source);
     add(fields, "seat", match(text, /\bseat\s*[:#-]?\s*([0-9]{1,3}[A-Z])\b/i), 0.88, source);
     add(fields, "gate", match(text, /\bgate\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z]?\d{1,3}[A-Z]?)\b/i), 0.82, source);
@@ -10611,8 +10611,8 @@
     if (type === "flight" && flightSegments.length) {
       const routing = extractFlightRouting(text);
       const routeMatch = text.match(/\b([A-Z]{3})\s+[A-Z]{2}\d?\s+([A-Z]{3})\b/);
-      const outDep = match(text, /(?:from|departure|departing)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i) || (routeMatch?.[1] ?? null);
-      const outArr = match(text, /(?:to|arrival|arriving)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i) || (routeMatch?.[2] ?? null);
+      const outDep = match(text, /\b(?:from|departure|departing)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i) || (routeMatch?.[1] ?? null);
+      const outArr = match(text, /\b(?:to|arrival|arriving)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i) || (routeMatch?.[2] ?? null);
       const evidence = cleanRows.slice(0, 3).map((r) => ({ source: r.source, text: r.text.slice(0, 240) }));
       return flightSegments.map((seg, i) => {
         const segFields = {};
@@ -10644,8 +10644,8 @@
         add(fields, "flightNumber", flight[2].toUpperCase(), 0.78, source);
       }
     }
-    add(fields, "departureIata", match(text, /(?:from|departure|departing)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i), 0.72, source);
-    add(fields, "arrivalIata", match(text, /(?:to|arrival|arriving)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i), 0.72, source);
+    add(fields, "departureIata", match(text, /\b(?:from|departure|departing)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i), 0.72, source);
+    add(fields, "arrivalIata", match(text, /\b(?:to|arrival|arriving)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i), 0.72, source);
     if (type === "flight" && (!fields.departureIata || !fields.arrivalIata)) {
       const route = text.match(/\b([A-Z]{3})\s+[A-Z]{2}\d?\s+([A-Z]{3})\b/);
       if (route) {
@@ -10685,6 +10685,13 @@
   }
   function add(fields, key, value, confidence, source) {
     if (value) fields[key] = { value, confidence: round(confidence), source };
+  }
+  function matchCode(text, re) {
+    for (const m of text.matchAll(re)) {
+      const v = String(m[1] || "");
+      if (/\d/.test(v) || v === v.toUpperCase() && /[A-Z]/.test(v)) return v.toUpperCase();
+    }
+    return null;
   }
   function match(text, re) {
     const m = text.match(re);
@@ -10843,7 +10850,7 @@
   }
   function emailText(raw) {
     const split = raw.search(/\r?\n\r?\n/), headers = split >= 0 ? raw.slice(0, split) : "", body = split >= 0 ? raw.slice(split) : raw;
-    return `${headers.match(/^(?:From|Subject|Date):.*$/gim)?.join("\n") || ""}
+    return `${headers.match(/^(?:From|Subject):.*$/gim)?.join("\n") || ""}
 ${stripMarkup(body.replace(/=\r?\n/g, ""))}`;
   }
   function calendarText(raw) {

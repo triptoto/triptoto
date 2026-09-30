@@ -1,0 +1,83 @@
+{
+  "url": "/bookings/import/history",
+  "screen": "import-history",
+  "text": "Import booking\nDelete this booking?\n\n“Your flight to Rome” will be removed from your import history and the inbound email feed everywhere. This cannot be undone.\n\nKeep\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 332.609375,
+        "width": 326,
+        "height": 178.78125,
+        "top": 332.609375,
+        "right": 358,
+        "bottom": 511.390625,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Delete Your flight to Rome everywhere",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Delete Hotel Artemide confirmation everywhere",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Import booking",
+      "label": null,
+      "screen": "import"
+    },
+    {
+      "text": "Keep",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "import-history",
+  "clicks": [
+    "[data-action=\"remove-import\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Import History",
+    "Your flight to Rome",
+    "Tue, Sep 15, 02:15 PM GMT+3",
+    "Needs review",
+    "Hotel Artemide confirmation",
+    "Sun, Sep 13, 02:15 PM GMT+3",
+    "Added",
+    "Import booking"
+  ],
+  "errors": []
+}

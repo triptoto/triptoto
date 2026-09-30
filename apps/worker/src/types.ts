@@ -21,6 +21,10 @@ export interface Env {
   ASSETS?: { fetch(request: Request): Promise<Response> };
   SESSION_SECRET?: string;
   ALLOWED_ORIGINS?: string;
+  ANDROID_APP_PACKAGE?: string;
+  // Comma-separated SHA-256 signing-cert fingerprints (Play App Signing key, upload key)
+  // published in /.well-known/assetlinks.json so /join/ links open the Android app.
+  ANDROID_APP_LINK_SHA256?: string;
   LIVE_FLIGHTS_ENABLED?: string;
   LIVE_FLIGHT_PROVIDER?: string;
   LIVE_FLIGHT_DAILY_REQUEST_BUDGET?: string;
@@ -45,6 +49,12 @@ export interface Env {
   BETA_METRICS_ENABLED?: string;
   OPS_ENABLED?: string;
   OPS_SECRET?: string;
+  LEMONSQUEEZY_WEBHOOK_SECRET?: string;
+  TRIPTO_PLUS_ENFORCEMENT?: string;
+  TAX_FREE_SOURCE_CHECKS_ENABLED?: string;
+  TAX_FREE_SOURCE_CHECK_BUDGET?: string;
+  TAX_FREE_SOURCE_TIMEOUT_MS?: string;
+  TAX_FREE_SOURCE_MAX_BYTES?: string;
 }
 
 export interface AuthContext {

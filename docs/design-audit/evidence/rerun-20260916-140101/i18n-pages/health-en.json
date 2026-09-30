@@ -1,0 +1,28 @@
+{
+  "route": "health",
+  "path": "/trip-health",
+  "screen": "health",
+  "locale": "en",
+  "image": "health-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Everything looks good\n\nNo known trip issues.\n\nNo known issues\n\nNo known trip issues.\n\nRecalculate Trip Health",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Trip Health information",
+      "action": "health-info"
+    },
+    {
+      "text": "Recalculate Trip Health",
+      "label": null,
+      "action": "recalculate-health"
+    }
+  ],
+  "dialogCount": 0
+}

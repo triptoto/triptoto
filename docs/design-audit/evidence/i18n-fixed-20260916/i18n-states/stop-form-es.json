@@ -1,0 +1,25 @@
+{
+  "url": "/day-plan",
+  "screen": "stop-form",
+  "text": "Plan no disponible\n\nEste plan no está disponible.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "stop-form",
+  "clicks": [],
+  "documentLang": "es",
+  "visibleText": [
+    "Plan no disponible",
+    "Plan no disponible",
+    "Este plan no está disponible."
+  ],
+  "errors": []
+}

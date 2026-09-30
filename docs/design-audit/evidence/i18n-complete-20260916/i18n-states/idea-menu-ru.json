@@ -1,0 +1,86 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "СОХРАНЁННОЕ\nСохранить идеи для «Rome 2026»\n\nПостоянный список того, чем можно заняться. Откройте пункт, чтобы добавить его в план дня.\n\nVisit the museum of contemporary art\nНе запланировано\nДобавить идею\nVisit the museum of contemporary art\nДобавить в план дня\nВыберите день и, по желанию, время\nИзменить идею\nНазвание, адрес и заметки\nУдалить идею\nУбрать из «Сохранённого»",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 589.21875,
+        "width": 390,
+        "height": 254.78125,
+        "top": 589.21875,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Visit the museum of contemporary art\nНе запланировано",
+      "label": null,
+      "action": "open-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Добавить идею",
+      "label": null,
+      "action": "add-save-later"
+    },
+    {
+      "text": "",
+      "label": "Закрыть",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Добавить в план дня\nВыберите день и, по желанию, время",
+      "label": null,
+      "action": "idea-add-to-plan",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Изменить идею\nНазвание, адрес и заметки",
+      "label": null,
+      "action": "edit-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Удалить идею\nУбрать из «Сохранённого»",
+      "label": null,
+      "action": "delete-idea",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]"
+  ],
+  "documentLang": "ru",
+  "visibleText": [
+    "Сохранённое",
+    "СОХРАНЁННОЕ",
+    "Сохранить идеи для «Rome 2026»",
+    "Постоянный список того, чем можно заняться. Откройте пункт, чтобы добавить его в план дня.",
+    "Visit the museum of contemporary art",
+    "Не запланировано",
+    "Добавить идею",
+    "Visit the museum of contemporary art",
+    "Добавить в план дня",
+    "Выберите день и, по желанию, время",
+    "Изменить идею",
+    "Название, адрес и заметки",
+    "Удалить идею",
+    "Убрать из «Сохранённого»"
+  ],
+  "errors": []
+}

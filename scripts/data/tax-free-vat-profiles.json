@@ -1,0 +1,2250 @@
+{
+  "generatedOn": "2026-09-27",
+  "source": {
+    "url": "https://taxsummaries.pwc.com/quick-charts/value-added-tax-vat-rates",
+    "publisher": "PwC Worldwide Tax Summaries"
+  },
+  "profiles": [
+    {
+      "countryCode": "AD",
+      "name": "Andorra",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AE",
+      "name": "United Arab Emirates",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "5",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "AF",
+      "name": "Afghanistan",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AG",
+      "name": "Antigua & Barbuda",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AI",
+      "name": "Anguilla",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AL",
+      "name": "Albania",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-07-22",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AM",
+      "name": "Armenia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-06-30",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "AO",
+      "name": "Angola",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "14;See Angola's Corporate summary for a description of reduced VAT rates.",
+      "sourceReviewedOn": "2026-06-24",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AQ",
+      "name": "Antarctica",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AR",
+      "name": "Argentina",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-06-16",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "AS",
+      "name": "American Samoa",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AT",
+      "name": "Austria",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-07-23",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "AU",
+      "name": "Australia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Goods and services tax: 10",
+      "sourceReviewedOn": "2026-06-30",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "AW",
+      "name": "Aruba",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AX",
+      "name": "Åland Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "AZ",
+      "name": "Azerbaijan",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-01-09",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "BA",
+      "name": "Bosnia & Herzegovina",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "17",
+      "sourceReviewedOn": "2026-09-23",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BB",
+      "name": "Barbados",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "17.5",
+      "sourceReviewedOn": "2026-01-11",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BD",
+      "name": "Bangladesh",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-07-31",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BE",
+      "name": "Belgium",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-09-10",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "BF",
+      "name": "Burkina Faso",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BG",
+      "name": "Bulgaria",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-08-02",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "BH",
+      "name": "Bahrain",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10",
+      "sourceReviewedOn": "2026-07-26",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "BI",
+      "name": "Burundi",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BJ",
+      "name": "Benin",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BL",
+      "name": "St. Barthélemy",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BM",
+      "name": "Bermuda",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-02-19",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BN",
+      "name": "Brunei",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-08-03",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BO",
+      "name": "Bolivia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "13",
+      "sourceReviewedOn": "2026-07-21",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BQ",
+      "name": "Caribbean Netherlands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BR",
+      "name": "Brazil",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Excise federal tax (IPI): Normally between 5% and 30%;Federal VATs (PIS/COFINS): Generally a combined rate of 3.65% (cumulative) or 9.25% (non-cumulative); State VAT (ICMS): Normally between 17% and 20% (lower rates apply to inter-state transactions, varying between 4%, 7%, and 12%, and increased rates apply on certain products);Municipal Service Tax (ISS): 2% to 5% (cumulative).",
+      "sourceReviewedOn": "2026-09-23",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BS",
+      "name": "Bahamas",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10",
+      "sourceReviewedOn": "2026-07-21",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "BT",
+      "name": "Bhutan",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BV",
+      "name": "Bouvet Island",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BW",
+      "name": "Botswana",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "14",
+      "sourceReviewedOn": "2026-01-09",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BY",
+      "name": "Belarus",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "BZ",
+      "name": "Belize",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CA",
+      "name": "Canada",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Combined federal and provincial/territorial sales taxes range from 5% to 15%.",
+      "sourceReviewedOn": "2026-06-12",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CC",
+      "name": "Cocos (Keeling) Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CD",
+      "name": "Congo - Kinshasa",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-04-21",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CF",
+      "name": "Central African Republic",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CG",
+      "name": "Congo - Brazzaville",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18.90 (18% VAT + 5% surtax)",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CH",
+      "name": "Switzerland",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "8.1",
+      "sourceReviewedOn": "2026-07-01",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "CI",
+      "name": "Côte d’Ivoire",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CK",
+      "name": "Cook Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CL",
+      "name": "Chile",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "19",
+      "sourceReviewedOn": "2025-12-19",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CM",
+      "name": "Cameroon",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "19.25",
+      "sourceReviewedOn": "2026-08-14",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CN",
+      "name": "China",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "13, 9, or 6 depending on the types of goods and services",
+      "sourceReviewedOn": "2026-07-22",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "CO",
+      "name": "Colombia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "19",
+      "sourceReviewedOn": "2026-07-21",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "CR",
+      "name": "Costa Rica",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "13",
+      "sourceReviewedOn": "2026-06-30",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CU",
+      "name": "Cuba",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CV",
+      "name": "Cape Verde",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-05-29",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CW",
+      "name": "Curaçao",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CX",
+      "name": "Christmas Island",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "CY",
+      "name": "Cyprus",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "19",
+      "sourceReviewedOn": "2026-08-04",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "CZ",
+      "name": "Czechia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-07-27",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "DE",
+      "name": "Germany",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "19",
+      "sourceReviewedOn": "2026-06-30",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "DJ",
+      "name": "Djibouti",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "DK",
+      "name": "Denmark",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "25",
+      "sourceReviewedOn": "2026-07-31",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "DM",
+      "name": "Dominica",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "DO",
+      "name": "Dominican Republic",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-08-25",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "DZ",
+      "name": "Algeria",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "EC",
+      "name": "Ecuador",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-07-23",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "EE",
+      "name": "Estonia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "24",
+      "sourceReviewedOn": "2026-05-29",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "EG",
+      "name": "Egypt",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "14",
+      "sourceReviewedOn": "2026-08-17",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "EH",
+      "name": "Western Sahara",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "ER",
+      "name": "Eritrea",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "ES",
+      "name": "Spain",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-06-30",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "ET",
+      "name": "Ethiopia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-07-15",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "FI",
+      "name": "Finland",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "25.5",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "FJ",
+      "name": "Fiji",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "FK",
+      "name": "Falkland Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "FM",
+      "name": "Micronesia",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "FO",
+      "name": "Faroe Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "FR",
+      "name": "France",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Turnover tax: 20",
+      "sourceReviewedOn": "2026-04-24",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "GA",
+      "name": "Gabon",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-08-06",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GB",
+      "name": "United Kingdom",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-07-23",
+      "programStatus": "confirmed_unavailable",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "GD",
+      "name": "Grenada",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GE",
+      "name": "Georgia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-09-02",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "GF",
+      "name": "French Guiana",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GG",
+      "name": "Guernsey",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "NA;Proposals to implement GST in 2028 were included in the 2025 Budget and (as of August 2026) are currently being debated in the States of Deliberation.",
+      "sourceReviewedOn": "2026-09-21",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GH",
+      "name": "Ghana",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Standard rate scheme: 15;Additional levies charged on taxable supplies are NHIL: 2.5 and GETFL: 2.5.",
+      "sourceReviewedOn": "2026-03-11",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GI",
+      "name": "Gibraltar",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-08-22",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GL",
+      "name": "Greenland",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-08-10",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GM",
+      "name": "Gambia",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GN",
+      "name": "Guinea",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GP",
+      "name": "Guadeloupe",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GQ",
+      "name": "Equatorial Guinea",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2025-11-21",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GR",
+      "name": "Greece",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "24",
+      "sourceReviewedOn": "2026-09-08",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "GS",
+      "name": "South Georgia & South Sandwich Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GT",
+      "name": "Guatemala",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "12",
+      "sourceReviewedOn": "2026-06-09",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GU",
+      "name": "Guam",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GW",
+      "name": "Guinea-Bissau",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "GY",
+      "name": "Guyana",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "14",
+      "sourceReviewedOn": "2026-06-02",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "HK",
+      "name": "Hong Kong SAR China",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-07-22",
+      "programStatus": "confirmed_unavailable",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "HM",
+      "name": "Heard & McDonald Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "HN",
+      "name": "Honduras",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Sales tax: 15",
+      "sourceReviewedOn": "2026-08-10",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "HR",
+      "name": "Croatia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "25",
+      "sourceReviewedOn": "2026-08-27",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "HT",
+      "name": "Haiti",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "HU",
+      "name": "Hungary",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "27",
+      "sourceReviewedOn": "2026-07-01",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "ID",
+      "name": "Indonesia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "12",
+      "sourceReviewedOn": "2026-06-11",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "IE",
+      "name": "Ireland",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "23",
+      "sourceReviewedOn": "2026-08-11",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "IL",
+      "name": "Israel",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-06-29",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "IM",
+      "name": "Isle of Man",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-09-24",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "IN",
+      "name": "India",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "The rate of GST varies from 5% to 28% depending upon the category of goods and services being supplied, the general rate of tax being 18% on majority of goods and services. Additionally, for certain goods, a compensation cess is levied at different rates as prescribed by the government.",
+      "sourceReviewedOn": "2026-05-11",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "IO",
+      "name": "British Indian Ocean Territory",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "IQ",
+      "name": "Iraq",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Sales tax: Varies by good/service (see Iraq's corporate tax summary).",
+      "sourceReviewedOn": "2026-06-24",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "IR",
+      "name": "Iran",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "IS",
+      "name": "Iceland",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "24",
+      "sourceReviewedOn": "2026-06-22",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "IT",
+      "name": "Italy",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "22",
+      "sourceReviewedOn": "2026-07-13",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "JE",
+      "name": "Jersey",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Goods and Services Tax (GST): 5",
+      "sourceReviewedOn": "2026-07-22",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "JM",
+      "name": "Jamaica",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "General consumption tax (GCT): 15",
+      "sourceReviewedOn": "2025-12-31",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "JO",
+      "name": "Jordan",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Sales tax: 16",
+      "sourceReviewedOn": "2026-07-05",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "JP",
+      "name": "Japan",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Consumption tax: 10",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "KE",
+      "name": "Kenya",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-07-17",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KG",
+      "name": "Kyrgyzstan",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KH",
+      "name": "Cambodia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10",
+      "sourceReviewedOn": "2026-04-02",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KI",
+      "name": "Kiribati",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KM",
+      "name": "Comoros",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KN",
+      "name": "St. Kitts & Nevis",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KP",
+      "name": "North Korea",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KR",
+      "name": "South Korea",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10",
+      "sourceReviewedOn": "2026-06-04",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "KW",
+      "name": "Kuwait",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-07-22",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KY",
+      "name": "Cayman Islands",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-05-29",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "KZ",
+      "name": "Kazakhstan",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-07-23",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "LA",
+      "name": "Laos",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "LB",
+      "name": "Lebanon",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "11",
+      "sourceReviewedOn": "2026-07-01",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "LC",
+      "name": "St. Lucia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "12.5",
+      "sourceReviewedOn": "2026-01-13",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "LI",
+      "name": "Liechtenstein",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "8.1",
+      "sourceReviewedOn": "2026-06-09",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "LK",
+      "name": "Sri Lanka",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "LR",
+      "name": "Liberia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Goods and services tax (GST): 13VAT: 15",
+      "sourceReviewedOn": "2026-09-24",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "LS",
+      "name": "Lesotho",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "LT",
+      "name": "Lithuania",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-03-10",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "LU",
+      "name": "Luxembourg",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "17",
+      "sourceReviewedOn": "2026-07-31",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "LV",
+      "name": "Latvia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-06-30",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "LY",
+      "name": "Libya",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-05-31",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MA",
+      "name": "Morocco",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-04-30",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "MC",
+      "name": "Monaco",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MD",
+      "name": "Moldova",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-06-24",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "ME",
+      "name": "Montenegro",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MF",
+      "name": "St. Martin",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MG",
+      "name": "Madagascar",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2025-11-18",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MH",
+      "name": "Marshall Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MK",
+      "name": "North Macedonia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-07-23",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "ML",
+      "name": "Mali",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MM",
+      "name": "Myanmar (Burma)",
+      "taxSystemStatus": "alternative_consumption_tax",
+      "rateSummary": "There is no VAT in Myanmar. The indirect tax in Myanmar is commercial tax, with the general rate of 5%.",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MN",
+      "name": "Mongolia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10",
+      "sourceReviewedOn": "2026-06-08",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MO",
+      "name": "Macao SAR China",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-06-02",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MP",
+      "name": "Northern Mariana Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MQ",
+      "name": "Martinique",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MR",
+      "name": "Mauritania",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MS",
+      "name": "Montserrat",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MT",
+      "name": "Malta",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-08-26",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "MU",
+      "name": "Mauritius",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-06-15",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MV",
+      "name": "Maldives",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MW",
+      "name": "Malawi",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MX",
+      "name": "Mexico",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-08-06",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "MY",
+      "name": "Malaysia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Sales tax: 10;Service tax: 8",
+      "sourceReviewedOn": "2026-06-16",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "MZ",
+      "name": "Mozambique",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-08-11",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NA",
+      "name": "Namibia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-07-16",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NC",
+      "name": "New Caledonia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "General consumption tax (TGC): 11",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NE",
+      "name": "Niger",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NF",
+      "name": "Norfolk Island",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NG",
+      "name": "Nigeria",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "7.5",
+      "sourceReviewedOn": "2026-05-29",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NI",
+      "name": "Nicaragua",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-08-04",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NL",
+      "name": "Netherlands",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-05-29",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "NO",
+      "name": "Norway",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "25",
+      "sourceReviewedOn": "2026-06-25",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "NP",
+      "name": "Nepal",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NR",
+      "name": "Nauru",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NU",
+      "name": "Niue",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "NZ",
+      "name": "New Zealand",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Goods and services tax (GST): 15",
+      "sourceReviewedOn": "2026-07-06",
+      "programStatus": "confirmed_unavailable",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "OM",
+      "name": "Oman",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "5 (subject to specific exemptions and zero ratings prescribed under the Oman VAT Law)",
+      "sourceReviewedOn": "2026-07-07",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "PA",
+      "name": "Panama",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Movable goods and services transfer tax: 7",
+      "sourceReviewedOn": "2026-08-04",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PE",
+      "name": "Peru",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-07-13",
+      "programStatus": "confirmed_available",
+      "evidenceLevel": "reviewed_rule"
+    },
+    {
+      "countryCode": "PF",
+      "name": "French Polynesia",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PG",
+      "name": "Papua New Guinea",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Goods and services tax: 10",
+      "sourceReviewedOn": "2026-09-23",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PH",
+      "name": "Philippines",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "12",
+      "sourceReviewedOn": "2026-08-01",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "PK",
+      "name": "Pakistan",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "For goods:18For services: Ranges from 15% to 16% depending on the province.",
+      "sourceReviewedOn": "2026-08-24",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PL",
+      "name": "Poland",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "23",
+      "sourceReviewedOn": "2026-08-11",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "PM",
+      "name": "St. Pierre & Miquelon",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PN",
+      "name": "Pitcairn Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PR",
+      "name": "Puerto Rico",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Sales and use tax: 11.5% for tangible personal property and certain services; 4% for business-to-business services and designated services.",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PS",
+      "name": "Palestinian Territories",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-08-12",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PT",
+      "name": "Portugal",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "23",
+      "sourceReviewedOn": "2026-07-24",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "PW",
+      "name": "Palau",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "PY",
+      "name": "Paraguay",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10 (5% for sale and rent of immovables, some medicines, and agricultural, horticultural, and fruit products)",
+      "sourceReviewedOn": "2026-02-07",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "QA",
+      "name": "Qatar",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-09-17",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "RE",
+      "name": "Réunion",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "RO",
+      "name": "Romania",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "21",
+      "sourceReviewedOn": "2026-09-25",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "RS",
+      "name": "Serbia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "RU",
+      "name": "Russia",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "RW",
+      "name": "Rwanda",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-09-23",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SA",
+      "name": "Saudi Arabia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15 (5% prior to 1 July 2020)",
+      "sourceReviewedOn": "2026-07-29",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "SB",
+      "name": "Solomon Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SC",
+      "name": "Seychelles",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SD",
+      "name": "Sudan",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SE",
+      "name": "Sweden",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "25",
+      "sourceReviewedOn": "2026-09-22",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "SG",
+      "name": "Singapore",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Goods and services tax: 9",
+      "sourceReviewedOn": "2026-07-02",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "SH",
+      "name": "St. Helena",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SI",
+      "name": "Slovenia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "22",
+      "sourceReviewedOn": "2026-07-15",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "SJ",
+      "name": "Svalbard & Jan Mayen",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SK",
+      "name": "Slovakia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "23",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "SL",
+      "name": "Sierra Leone",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SM",
+      "name": "San Marino",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SN",
+      "name": "Senegal",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-08-07",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SO",
+      "name": "Somalia",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SR",
+      "name": "Suriname",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SS",
+      "name": "South Sudan",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "ST",
+      "name": "São Tomé & Príncipe",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SV",
+      "name": "El Salvador",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "13",
+      "sourceReviewedOn": "2026-02-26",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SX",
+      "name": "Sint Maarten",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SY",
+      "name": "Syria",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "SZ",
+      "name": "Eswatini",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-03-30",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TC",
+      "name": "Turks & Caicos Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TD",
+      "name": "Chad",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2024-08-12",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TF",
+      "name": "French Southern Territories",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TG",
+      "name": "Togo",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TH",
+      "name": "Thailand",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "7",
+      "sourceReviewedOn": "2026-08-24",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "TJ",
+      "name": "Tajikistan",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TK",
+      "name": "Tokelau",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TL",
+      "name": "Timor-Leste",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TM",
+      "name": "Turkmenistan",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TN",
+      "name": "Tunisia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "19",
+      "sourceReviewedOn": "2026-06-29",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TO",
+      "name": "Tonga",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TR",
+      "name": "Türkiye",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "TT",
+      "name": "Trinidad & Tobago",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "12.5",
+      "sourceReviewedOn": "2026-06-02",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TV",
+      "name": "Tuvalu",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "TW",
+      "name": "Taiwan",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "5% to general industries",
+      "sourceReviewedOn": "2026-08-20",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "TZ",
+      "name": "Tanzania",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "Tanzania Mainland: 18%; 16% for B2C purchases where payments are made via bank or an approved electronic payment system (currently on hold pending issuance of an implementation notice).Tanzania Zanzibar: 18% for banking, postal, and telecommunication services; 15% for all other supplies",
+      "sourceReviewedOn": "2026-09-09",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "UA",
+      "name": "Ukraine",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "20",
+      "sourceReviewedOn": "2026-06-30",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "UG",
+      "name": "Uganda",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "18",
+      "sourceReviewedOn": "2026-01-12",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "UM",
+      "name": "U.S. Outlying Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "US",
+      "name": "United States",
+      "taxSystemStatus": "no_general_vat_listed",
+      "rateSummary": "NA",
+      "sourceReviewedOn": "2026-09-04",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "UY",
+      "name": "Uruguay",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "22 (reduced 10% VAT rate applicable to certain goods and services).",
+      "sourceReviewedOn": "2026-09-02",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "UZ",
+      "name": "Uzbekistan",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "12",
+      "sourceReviewedOn": "2026-08-27",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "VA",
+      "name": "Vatican City",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "VC",
+      "name": "St. Vincent & Grenadines",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "VE",
+      "name": "Venezuela",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-01-12",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "VG",
+      "name": "British Virgin Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "VI",
+      "name": "U.S. Virgin Islands",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "VN",
+      "name": "Vietnam",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "10",
+      "sourceReviewedOn": "2026-09-23",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "VU",
+      "name": "Vanuatu",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "WF",
+      "name": "Wallis & Futuna",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "WS",
+      "name": "Samoa",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "YE",
+      "name": "Yemen",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "YT",
+      "name": "Mayotte",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "ZA",
+      "name": "South Africa",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "15",
+      "sourceReviewedOn": "2026-05-29",
+      "programStatus": "published_partial",
+      "evidenceLevel": "published_partial"
+    },
+    {
+      "countryCode": "ZM",
+      "name": "Zambia",
+      "taxSystemStatus": "vat_or_consumption_tax",
+      "rateSummary": "16",
+      "sourceReviewedOn": "2026-07-24",
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    },
+    {
+      "countryCode": "ZW",
+      "name": "Zimbabwe",
+      "taxSystemStatus": "not_listed_in_global_table",
+      "rateSummary": null,
+      "sourceReviewedOn": null,
+      "programStatus": "no_confirmed_program_found",
+      "evidenceLevel": "cross_source_screening"
+    }
+  ]
+}

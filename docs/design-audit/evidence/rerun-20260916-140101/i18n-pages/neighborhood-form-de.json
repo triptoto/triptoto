@@ -1,0 +1,27 @@
+{
+  "route": "neighborhood-form",
+  "path": "/collections/new/neighborhood",
+  "screen": "collection-form",
+  "locale": "de",
+  "image": "neighborhood-form-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Erstellen\nNEUER PLAN\nViertel\n\nFassen Sie mehrere Orte in einem Viertel zu einem Plan zusammen. Er erscheint einmal auf Ihrer Zeitachse und öffnet seine eigene Ortsliste.\n\nDetails\nNeighborhood name *\nStadt oder Region Optional\nDatum auf der Zeitachse\nAusgewähltes Datum\n17. Sept. 2026\nAusgewähltes Datum: 17. Sept. 2026.\n\nOptional — wählen Sie ein Datum, an dem dieses Viertel auf Ihre Zeitachse gehört. Lassen Sie es leer, um es später zu planen.\n\nStartzeit Optional\nNotizen Optional",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Erstellen",
+      "label": null
+    },
+    {
+      "text": "Ausgewähltes Datum\n17. Sept. 2026",
+      "label": "Date on timeline. 17. Sept. 2026",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0
+}

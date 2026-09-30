@@ -1,0 +1,25 @@
+{
+  "url": "/plan-idea",
+  "screen": "add-to-plan",
+  "text": "Idee nicht verfügbar\n\nDiese Idee ist nicht mehr verfügbar. Möglicherweise ist sie bereits auf Ihrer Zeitachse.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "add-to-plan",
+  "clicks": [],
+  "documentLang": "de",
+  "visibleText": [
+    "Idee nicht verfügbar",
+    "Idee nicht verfügbar",
+    "Diese Idee ist nicht mehr verfügbar. Möglicherweise ist sie bereits auf Ihrer Zeitachse."
+  ],
+  "errors": []
+}

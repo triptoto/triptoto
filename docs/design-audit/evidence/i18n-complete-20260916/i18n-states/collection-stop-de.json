@@ -1,0 +1,25 @@
+{
+  "url": "/timeline",
+  "screen": "collection-stop",
+  "text": "Ort nicht verfügbar\n\nDieser Ort ist nicht verfügbar.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "collection-stop",
+  "clicks": [],
+  "documentLang": "de",
+  "visibleText": [
+    "Ort nicht verfügbar",
+    "Ort nicht verfügbar",
+    "Dieser Ort ist nicht verfügbar."
+  ],
+  "errors": []
+}

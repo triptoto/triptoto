@@ -1,0 +1,2 @@
+Local D1 integration suite passed: auth, migration, sharing, collaboration roles, imports, beta metrics, rate limits, ops privacy and data deletion.
+Major local D1 integration passed: travel management, health, sync and readiness.

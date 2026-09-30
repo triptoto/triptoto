@@ -1,0 +1,40 @@
+{
+  "lang": "es",
+  "title": "Cookies y almacenamiento local · tripto.to",
+  "text": "tripto.to\nEnglish\nDeutsch\nFrançais\nEspañol\nРусский\nAbrir app\n\nALMACENAMIENTO DEL NAVEGADOR\n\nCookies y almacenamiento local\n\nTripto usa una pequeña cantidad de almacenamiento del navegador para que la app sea segura, fiable y útil sin conexión. No usamos cookies publicitarias.\n\nÚltima actualización: 16 de septiembre de 2026\ntripto.to\nQué usamos\nCookies esenciales de inicio de sesión\nEs posible que se usen cookies de seguridad de corta duración durante el paso de inicio de sesión con Google. Ayudan a completar la autenticación de forma segura.\nAlmacenamiento local\nTu navegador puede guardar el tema que elijas, el viaje actual, la caché sin conexión y los cambios pendientes para que la app funcione entre visitas.\nCaché del service worker\nLa estructura de la app y ciertos datos de viaje se pueden guardar en el dispositivo para un acceso más rápido y sin conexión.\nProveedor de pago\nSi abres un pago de Plus o el portal de facturación, Lemon Squeezy puede usar sus propias cookies según sus términos de privacidad.\nQué no usamos\n\nTripto no usa cookies publicitarias ni vende información derivada de cookies. No usamos tu itinerario para crear un perfil publicitario.\n\nCómo controlarlo\n\nPuedes borrar los datos locales de Tripto desde Cuenta, o borrar los datos del sitio en los ajustes de tu navegador. Borrar el almacenamiento del navegador puede cerrar tu sesión, eliminar documentos guardados localmente y descartar cambios sin sincronizar en ese dispositivo.\n\nUna nota práctica\nEl almacenamiento del navegador ayuda a que Tripto funcione sin conexión. Si usas un dispositivo compartido, cierra sesión al terminar y evita guardar archivos sensibles localmente.\n¿Aún necesitas ayuda?\n\nEscríbenos con la mínima información necesaria para entender tu solicitud.\n\nEscribe a go@tripto.to\nPrivacidad\nTérminos\nCookies\nContacto\nAbrir app",
+  "overflow": false,
+  "links": [
+    {
+      "text": "tripto.to",
+      "href": "/landing"
+    },
+    {
+      "text": "Abrir app",
+      "href": "/account"
+    },
+    {
+      "text": "Escribe a go@tripto.to",
+      "href": "mailto:go@tripto.to?subject=Tripto%20support"
+    },
+    {
+      "text": "Privacidad",
+      "href": "/privacy"
+    },
+    {
+      "text": "Términos",
+      "href": "/terms"
+    },
+    {
+      "text": "Cookies",
+      "href": "/cookies"
+    },
+    {
+      "text": "Contacto",
+      "href": "/contact"
+    },
+    {
+      "text": "Abrir app",
+      "href": "/account"
+    }
+  ]
+}

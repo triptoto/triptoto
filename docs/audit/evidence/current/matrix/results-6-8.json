@@ -1,0 +1,114 @@
+[
+  {
+    "case": "1440x900-welcome",
+    "errors": []
+  },
+  {
+    "case": "1440x900-trips",
+    "errors": []
+  },
+  {
+    "case": "1440x900-trip-form",
+    "errors": []
+  },
+  {
+    "case": "1440x900-flight-form",
+    "errors": []
+  },
+  {
+    "case": "1440x900-flight",
+    "errors": []
+  },
+  {
+    "case": "1440x900-collection",
+    "errors": []
+  },
+  {
+    "case": "1440x900-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "1440x900-stop-form",
+    "errors": []
+  },
+  {
+    "case": "1440x900-collab",
+    "errors": []
+  },
+  {
+    "case": "1440x900-share",
+    "errors": []
+  },
+  {
+    "case": "1440x900-confirm",
+    "errors": []
+  },
+  {
+    "case": "1440x900-calendar",
+    "errors": []
+  },
+  {
+    "case": "1440x900-ready",
+    "errors": []
+  },
+  {
+    "case": "1440x900-missing",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-welcome",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-trips",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-trip-form",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-flight-form",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-flight",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-collection",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-stop-form",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-collab",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-share",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-confirm",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-calendar",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-ready",
+    "errors": []
+  },
+  {
+    "case": "1920x1080-missing",
+    "errors": []
+  }
+]

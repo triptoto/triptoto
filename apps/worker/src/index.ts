@@ -1,5 +1,5 @@
 import type { Env } from './types.ts';
-import { corsPreflight, errorResponse, json } from './http.ts';
+import { HttpError, corsPreflight, ensureApiCors, errorResponse, json } from './http.ts';
 import { requireAuth } from './auth.ts';
 import { health } from './routes/health.ts';
 import { createGuestSession, refreshSession } from './routes/session.ts';
@@ -13,7 +13,7 @@ import { listTransport, createTransport, updateTransport, deleteTransport } from
 import { listStays, createStay, updateStay, deleteStay } from './routes/stays.ts';
 import { listConnections, createConnection, updateConnection, deleteConnection } from './routes/connections.ts';
 import { listImpacts, recalculateImpacts, listChanges } from './routes/impacts.ts';
-import { accountStatus, accountMigrationPreview } from './routes/account.ts';
+import { accountStatus, accountMigrationPreview, updateAccountLocale } from './routes/account.ts';
 import { diagnostics } from './routes/diagnostics.ts';
 import { exportTripJson, exportTripCalendar } from './routes/export.ts';
 import { tripSupportBundle } from './routes/support.ts';
@@ -24,7 +24,7 @@ import { acknowledgeGoogleHandoff, createGoogleChallenge, exchangeGoogleHandoff,
 import { betaStatus, recordClientBetaEvent } from './routes/beta.ts';
 import { opsSummary } from './routes/ops.ts';
 import { deletionPreview, deleteMyData } from './routes/privacy.ts';
-import { enforceActorRateLimit, enforcePublicRateLimit } from './rate-limit.ts';
+import { enforceActorRateLimit, enforceGlobalRateLimit, enforcePublicRateLimit, pruneExpiredUsageCounters } from './rate-limit.ts';
 import { PRODUCT_LIMITS } from './config.ts';
 import { listJourneys, createJourney, updateJourney, replaceJourneyItems, deleteJourney } from './routes/journeys.ts';
 import { listActivities, createActivity, updateActivity, deleteActivity } from './routes/activities.ts';
@@ -38,23 +38,90 @@ import { readiness } from './routes/readiness.ts';
 import { currentWeather, geocodePlace } from './routes/weather.ts';
 import { currencyRates } from './routes/currency.ts';
 import { receiveBookingEmail, type InboundEmailMessage } from './inbound-email.ts';
+import { lemonSqueezyWebhook, subscriptionStatus } from './routes/subscriptions.ts';
 import { assignBookingEmail, dismissBookingEmail, listBookingEmails } from './routes/booking-emails.ts';
 import { refreshLiveFlight, updateLiveFlightMonitoring } from './routes/live-flights.ts';
 import { runScheduledLiveFlightRefresh } from './live-flights.ts';
+import { taxFreeCatalog, taxFreeRule, taxFreeCandidates, reviewTaxFreeCandidate, publishTaxFreeDraft, rollbackTaxFreeVersion } from './routes/tax-free.ts';
+import { runScheduledTaxFreeSourceChecks } from './tax-free-monitor.ts';
+// The machine-readable AI catalog is served directly from the worker (not the
+// static-asset bucket) so it can NEVER fall through to the SPA index.html
+// fallback (not_found_handling: "single-page-application"). A missing asset
+// would otherwise return the HTML shell, and agent validators reject that with
+// "Malformed JSON: Unexpected token '<', "<!doctype "...". Importing the file
+// keeps public/ai-catalog.json as the single source of truth.
+import aiCatalog from '../../../public/ai-catalog.json' with { type: 'json' };
 
 const APP_PATHS = [
-  /^\/(?:home|timeline|trips|add|day-plan|save-later|bookings|documents|ready-offline|trip-health|account|trip-map|weather|currency|trip-options|esim|before-you-go|help|travelers|pending-changes|collaboration|plan-idea)(?:\/.*)?$/,
+  /^\/(?:home|timeline|trips|add|day-plan|save-later|bookings|documents|ready-offline|trip-health|account|trip-map|weather|currency|tax-free|saved-spots|trip-options|esim|before-you-go|help|travelers|pending-changes|collaboration|plan-idea)(?:\/.*)?$/,
   /^\/(?:flights|hotels|trains|plans|collections|join)(?:\/.*)?$/,
 ];
-const STATIC_ASSET_PATH = /\.(?:css|js|json|xml|txt|webmanifest|svg|png|jpg|jpeg|webp|ico|map)$/i;
+const STATIC_ASSET_PATH = /\.(?:css|js|json|xml|txt|webmanifest|svg|png|jpg|jpeg|webp|ico|map|ttf|otf|woff|woff2)$/i;
+
+// Content-Security-Policy for served HTML documents. Kept in the worker (not the
+// _headers file) because the full third-party allow-list plus the inline-script
+// sha256 hashes exceed Cloudflare's 2000-char-per-line _headers limit. script-src
+// has no 'unsafe-inline'; every inline <script> in a served HTML page is allowed
+// by its stable sha256 hash (the four in index.html plus the shared legal/landing
+// theme-bootstrap hash). These are deploy-independent (the asset-version token is
+// read from a <meta> tag, never inlined), so the hashes never change per release.
+// tests/seo-release.contract.mjs recomputes the hashes and fails if any drift.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'sha256-KBSes116HebjqHvxmJXbjM0Py040wqmrJZ93ZQFieaM=' 'sha256-R6555leUrF4qgqhOkgeaAcVag9K+MqUo+VciDo2VsCE=' 'sha256-CJ850s8HZfOvkdNKpRxLrdkOINWM/83lsCUZNndrAkc=' 'sha256-H/rQFRGeVg7AKee498X61n9+NDOQMkxqd74qqXgoAw8=' 'sha256-cM1uCIDgiJMwQrus7zfQ95xBaXMFvZzsgQ9LTY8bCEw=' 'sha256-ny/Z5znEr6fA1fGfqebPT7Ckj2TNr5wKx2QSiZBJlw8=' 'sha256-0UtseHxFccx6ffbOzGSA4eulVApYUD1WeP2dpsuLV+o=' 'sha256-H5epmeOGBAUbELfBPGCBhy2AgT/caUgrTNhiNdjMlvA=' https://www.googletagmanager.com https://cdn.jsdelivr.net https://accounts.google.com https://scripts.stay22.com https://widgets.stay22.com https://tpwgt.com https://cdn.b2b.welcomepickups.com https://*.welcomepickups.com https://tpo.gg https://*.tpo.gg https://tp.media https://www.aviasales.com https://*.aviasales.com https://*.avs.io https://avsplow.com",
+  "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com https://tpwgt.com https://*.welcomepickups.com https://tp.media https://www.aviasales.com https://*.aviasales.com",
+  "img-src 'self' data: blob: https://tiles.openfreemap.org https://*.googleusercontent.com https://www.google-analytics.com https://*.google-analytics.com https://tpwgt.com https://*.tpwgt.com https://tp.media https://*.welcomepickups.com https://tpo.gg https://*.tpo.gg https://www.aviasales.com https://*.aviasales.com https://*.avs.io",
+  "connect-src 'self' https://cdn.jsdelivr.net https://tiles.openfreemap.org https://accounts.google.com https://id.h2.stay22.com https://www.stay22.com https://widgets.stay22.com https://tpwgt.com https://*.tpwgt.com https://tp.media https://*.welcomepickups.com https://tpo.gg https://*.tpo.gg https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.aviasales.com https://*.aviasales.com https://*.avs.io https://avsplow.com https://*.avsplow.com https://www.apistp.com https://*.apistp.com",
+  "frame-src https://accounts.google.com https://widgets.stay22.com https://tpwgt.com https://*.tpwgt.com https://www.travelpayouts.com https://tp.media https://*.welcomepickups.com https://www.aviasales.com https://*.aviasales.com",
+  "font-src 'self' https://fonts.gstatic.com https://*.welcomepickups.com https://tp.media https://www.aviasales.com https://*.aviasales.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://www.aviasales.com https://*.aviasales.com",
+  "frame-ancestors 'none'",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+].join('; ');
+
+// Attach the CSP to an HTML-document response. Rebuilds the response because
+// env.ASSETS responses carry immutable headers.
+function withCsp(response: Response, method: string): Response {
+  const headers = new Headers(response.headers);
+  headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+  return new Response(method === 'HEAD' ? null : response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
+// Digital Asset Links for Android App Links (https://tripto.to/join/... opens the
+// app). Fingerprints come from ANDROID_APP_LINK_SHA256 (Play App Signing key and
+// upload key, from Play Console); until they are configured the file is 404 and
+// invite links simply keep opening in the browser.
+const SHA256_FINGERPRINT = /^(?:[0-9A-F]{2}:){31}[0-9A-F]{2}$/;
+function assetLinksResponse(request: Request, env: Env): Response {
+  const fingerprints = (env.ANDROID_APP_LINK_SHA256 ?? '').split(',').map((v) => v.trim().toUpperCase()).filter((v) => SHA256_FINGERPRINT.test(v));
+  const packageName = (env.ANDROID_APP_PACKAGE ?? '').trim();
+  const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=3600' };
+  if (!packageName || !fingerprints.length) return new Response(request.method === 'HEAD' ? null : '[]', { status: 404, headers });
+  const body = JSON.stringify([{ relation: ['delegate_permission/common.handle_all_urls'], target: { namespace: 'android_app', package_name: packageName, sha256_cert_fingerprints: fingerprints } }]);
+  return new Response(request.method === 'HEAD' ? null : body, { headers });
+}
 
 export async function frontendResponse(request: Request, env: Env, path: string): Promise<Response | null> {
   if (!env.ASSETS || !['GET', 'HEAD'].includes(request.method)) return null;
   const url = new URL(request.url);
-  if (path === '/' || path === '/index.html') return env.ASSETS.fetch(request);
-  if (path === '/privacy' || path === '/terms') {
+  if (path === '/' || path === '/index.html') return withCsp(await env.ASSETS.fetch(request), request.method);
+  if (path === '/landing' || path === '/landing/' || path === '/landing.html') {
+    url.pathname = '/landing.html';
+    return withCsp(await env.ASSETS.fetch(new Request(url, request)), request.method);
+  }
+  if (path === '/.well-known/assetlinks.json') return assetLinksResponse(request, env);
+  if (['/privacy', '/terms', '/cookies', '/contact', '/delete-account'].includes(path)) {
     url.pathname = `${path}.html`;
-    return env.ASSETS.fetch(new Request(url, request));
+    return withCsp(await env.ASSETS.fetch(new Request(url, request)), request.method);
+  }
+  if (path === '/ai-catalog.json') {
+    const body = JSON.stringify(aiCatalog);
+    return new Response(request.method === 'HEAD' ? null : body, {
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
+    });
   }
   if (STATIC_ASSET_PATH.test(path)) return env.ASSETS.fetch(request);
   if (APP_PATHS.some((pattern) => pattern.test(path))) {
@@ -62,12 +129,19 @@ export async function frontendResponse(request: Request, env: Env, path: string)
     const shell = await env.ASSETS.fetch(new Request(url, request));
     const headers = new Headers(shell.headers);
     headers.set('X-Robots-Tag', 'noindex, nofollow');
+    headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
     return new Response(request.method === 'HEAD' ? null : shell.body, { status: shell.status, statusText: shell.statusText, headers });
   }
-  return new Response('Page not found.', {
-    status: 404,
-    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' },
-  });
+  // Useful, on-brand 404: serve the styled page (with a link home) instead of a
+  // bare "Not found" message, and keep the correct 404 status + noindex header.
+  url.pathname = '/404.html';
+  const notFound = await env.ASSETS.fetch(new Request(url, request));
+  const headers = new Headers(notFound.headers);
+  headers.set('Content-Type', 'text/html; charset=utf-8');
+  headers.set('Cache-Control', 'no-store');
+  headers.set('X-Robots-Tag', 'noindex, nofollow');
+  headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+  return new Response(request.method === 'HEAD' ? null : notFound.body, { status: 404, statusText: 'Not Found', headers });
 }
 
 export default {
@@ -77,7 +151,7 @@ export default {
       // thrown inside a route) is caught here and converted to a JSON error,
       // instead of escaping as an uncaught rejection => Cloudflare Worker 1101 (500).
       // A returned-but-not-awaited promise's rejection bypasses this try/catch.
-      return await (async (): Promise<Response> => {
+      const response = await (async (): Promise<Response> => {
       if (request.method === 'OPTIONS') return corsPreflight(request, env);
       const url = new URL(request.url);
       const path = url.pathname.replace(/\/+$/, '') || '/';
@@ -96,11 +170,29 @@ export default {
       }
       if (request.method === 'GET' && path === '/api/v1/geocode') {
         await enforcePublicRateLimit(request,env,{action:'geocode',limit:120,windowMs:60*60*1000});
-        return geocodePlace(request, env);
+        try {
+          await enforceGlobalRateLimit(env,{action:'nominatim',limit:1,windowMs:1100});
+          return geocodePlace(request, env);
+        } catch (error) {
+          // Nominatim permits about one request per second globally. When its
+          // shared allowance is busy, use the city-level provider rather than
+          // returning a blank marker or an opaque 429 to the map.
+          if (error instanceof HttpError && error.code === 'RATE_LIMITED') return geocodePlace(request, env, false);
+          throw error;
+        }
       }
       if (request.method === 'GET' && path === '/api/v1/currency') {
         await enforcePublicRateLimit(request,env,{action:'currency',limit:120,windowMs:60*60*1000});
         return currencyRates(request, env);
+      }
+      if (request.method === 'GET' && path === '/api/v1/tax-free') {
+        await enforcePublicRateLimit(request,env,{action:'tax_free_catalog',limit:120,windowMs:60*60*1000});
+        return taxFreeCatalog(request,env);
+      }
+      const publicTaxFreeMatch=path.match(/^\/api\/v1\/tax-free\/([A-Za-z]{2})$/);
+      if(request.method==='GET'&&publicTaxFreeMatch){
+        await enforcePublicRateLimit(request,env,{action:'tax_free_rule',limit:180,windowMs:60*60*1000});
+        return taxFreeRule(request,env,publicTaxFreeMatch[1]);
       }
       if (!path.startsWith('/api/')) {
         const frontend = await frontendResponse(request, env, path);
@@ -109,8 +201,10 @@ export default {
       if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-candidate-1' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {
         await enforcePublicRateLimit(request,env,{action:'guest_session',limit:PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint,windowMs:60*60*1000});
+        await enforcePublicRateLimit(request,env,{action:'guest_session_ip',limit:PRODUCT_LIMITS.guestSessionsPerHourPerFingerprint*2,windowMs:60*60*1000},{ipOnly:true});
         return createGuestSession(request, env);
       }
+      if (request.method === 'POST' && path === '/api/v1/billing/lemonsqueezy/webhook') return lemonSqueezyWebhook(request, env);
       // Await the public redirect handler so HttpError rejections are converted
       // by this fetch handler's catch block instead of escaping as Worker 1101.
       if (['GET','POST'].includes(request.method) && path === '/api/v1/auth/google/callback') return await googleSignInRedirect(request,env);
@@ -118,9 +212,12 @@ export default {
 
       const auth = await requireAuth(request, env);
       if (['POST','PUT','PATCH','DELETE'].includes(request.method)) await enforceActorRateLimit(env,auth,{action:'api_write',limit:PRODUCT_LIMITS.actorWritesPerHour,windowMs:60*60*1000});
+      else if (request.method === 'GET') await enforceActorRateLimit(env,auth,{action:'api_read',limit:PRODUCT_LIMITS.actorReadsPerHour,windowMs:60*60*1000});
       if (request.method === 'POST' && path === '/api/v1/session/refresh') return refreshSession(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account') return accountStatus(request, env, auth);
+      if (request.method === 'GET' && path === '/api/v1/subscription') return subscriptionStatus(request, env, auth);
       if (request.method === 'GET' && path === '/api/v1/account/migration-preview') return accountMigrationPreview(request, env, auth);
+      if (request.method === 'PATCH' && path === '/api/v1/account/locale') return updateAccountLocale(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/auth/google/challenge') {
         await enforceActorRateLimit(env,auth,{action:'google_auth',limit:PRODUCT_LIMITS.googleAuthAttemptsPerHour,windowMs:60*60*1000});
         return createGoogleChallenge(request,env,auth);
@@ -137,6 +234,13 @@ export default {
       if (request.method === 'GET' && path === '/api/v1/beta/status') return betaStatus(request,env,auth);
       if (request.method === 'POST' && path === '/api/v1/beta/events') return recordClientBetaEvent(request,env,auth);
       if (request.method === 'GET' && path === '/api/v1/internal/ops/summary') return opsSummary(request,env,auth);
+      if(request.method==='GET'&&path==='/api/v1/internal/tax-free/candidates')return taxFreeCandidates(request,env,auth);
+      let taxFreeAdminMatch=path.match(/^\/api\/v1\/internal\/tax-free\/candidates\/([^/]+)\/review$/);
+      if(request.method==='POST'&&taxFreeAdminMatch)return reviewTaxFreeCandidate(request,env,auth,decodeURIComponent(taxFreeAdminMatch[1]));
+      taxFreeAdminMatch=path.match(/^\/api\/v1\/internal\/tax-free\/drafts\/([^/]+)\/publish$/);
+      if(request.method==='POST'&&taxFreeAdminMatch)return publishTaxFreeDraft(request,env,auth,decodeURIComponent(taxFreeAdminMatch[1]));
+      taxFreeAdminMatch=path.match(/^\/api\/v1\/internal\/tax-free\/versions\/([^/]+)\/rollback$/);
+      if(request.method==='POST'&&taxFreeAdminMatch)return rollbackTaxFreeVersion(request,env,auth,decodeURIComponent(taxFreeAdminMatch[1]));
       if (request.method === 'POST' && path === '/api/v1/invites/preview') return previewInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/invites/accept') return acceptInvite(request, env, auth);
       if (request.method === 'POST' && path === '/api/v1/internal/demo-trips') return createDemoTrip(request, env, auth);
@@ -299,6 +403,7 @@ export default {
 
       return json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } }, { status: 404 }, request, env);
       })();
+      return ensureApiCors(response, request, env);
     } catch (error) {
       return errorResponse(error, request, env);
     }
@@ -307,6 +412,6 @@ export default {
     await receiveBookingEmail(message, env);
   },
   async scheduled(_controller: unknown, env: Env): Promise<void> {
-    await runScheduledLiveFlightRefresh(env);
+    await Promise.allSettled([runScheduledLiveFlightRefresh(env),runScheduledTaxFreeSourceChecks(env),pruneExpiredUsageCounters(env)]);
   },
 };

@@ -1,0 +1,97 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Travel documents\n\n3 of 3 ready offline on this phone\n\nAdd a document\nPDF, image, or Wallet pass · up to 10 MB\nOn this phone (3)\nDelete this document?\n\n“LY 383 Boarding Pass” will be removed from this phone. This cannot be undone.\n\nKeep document\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "Delete LY 383 Boarding Pass",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Delete Hotel Artemide Confirmation",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Delete Frecciarossa 9512 Tickets",
+      "action": "remove-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "Keep document",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "documents",
+  "clicks": [
+    "[data-action=\"remove-document\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Documents",
+    "Travel documents",
+    "3 of 3 ready offline on this phone",
+    "Add a document",
+    "PDF, image, or Wallet pass · up to 10 MB",
+    "On this phone (3)",
+    "LY 383 Boarding Pass",
+    "Arthur",
+    "Ready offline",
+    "Hotel Artemide Confirmation",
+    "Rome stay",
+    "Ready offline",
+    "Frecciarossa 9512 Tickets",
+    "Arthur, Maya",
+    "Ready offline"
+  ],
+  "errors": []
+}

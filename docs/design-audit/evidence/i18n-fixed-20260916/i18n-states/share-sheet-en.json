@@ -1,0 +1,122 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "SHARED TRIP\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nOne trip.\nEveryone in sync.\nWhy plan together?\nBuild one plan\nEditors can add and update bookings.\nKeep everyone aligned\nTrip changes stay visible to everyone in one place.\nYou stay in control\nChoose who can edit or view, and remove access anytime.\nInvite people\nPeople on this trip\nAlex Traveler (You)\nOwner\nSam Companion\nCan edit\nTaylor Companion\nView only\n\nUp to 10 people per trip.\n\nPending invitations\nfriend@example.test\nView only · pending · expires 2026-09-17T11:15:15.118Z\nInvite to this trip\n\nAnyone you invite signs in with their own free account to join. The link works once and you can revoke it anytime.\n\nChoose access\nCan edit\nAdd and change bookings\nView only\nSee the trip, can’t change it\nCreate invitation link",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1123
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 480.921875,
+        "width": 390,
+        "height": 363.078125,
+        "top": 480.921875,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Invite people",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Manage access for Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Revoke invitation",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Close",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Can edit\nAdd and change bookings",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "View only\nSee the trip, can’t change it",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Create invitation link",
+      "label": null,
+      "action": "create-invite"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "collaboration",
+  "clicks": [
+    "[data-action=\"open-share\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Plan together",
+    "Shared trip",
+    "Rome 2026",
+    "Invite people to view or edit",
+    "Rome 2026",
+    ". You stay the owner and can change roles or remove people at any time.",
+    "One trip.",
+    "Everyone in sync.",
+    "Why plan together?",
+    "Build one plan",
+    "Editors can add and update bookings.",
+    "Keep everyone aligned",
+    "Trip changes stay visible to everyone in one place.",
+    "You stay in control",
+    "Choose who can edit or view, and remove access anytime.",
+    "Invite people",
+    "People on this trip",
+    "Alex Traveler (You)",
+    "Owner",
+    "Sam Companion",
+    "Can edit",
+    "Taylor Companion",
+    "View only",
+    "Up to 10 people per trip.",
+    "Pending invitations",
+    "friend@example.test",
+    "View only · pending · expires 2026-09-17T11:15:15.118Z",
+    "Invite to this trip",
+    "Anyone you invite signs in with their own free account to join. The link works once and you can revoke it anytime.",
+    "Choose access",
+    "Can edit",
+    "Add and change bookings",
+    "View only",
+    "See the trip, can’t change it",
+    "Create invitation link"
+  ],
+  "errors": []
+}

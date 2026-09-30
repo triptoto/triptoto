@@ -1,0 +1,37 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "TIPO DE CAMBIO\n1 EUR = 1.16 USD\n\nRoma · tipo de cambio de referencia para tu viaje\n\nPAGAS\nEUR\nEuro\nImporte en EUR\n1 EUR = 1.159 USD\nRECIBES\nUSD\nDólar estadounidense\n115,91 US$\nTipo actualizado · 2026-09-16\nVer tipo de cambio de referencia\nActualizar",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "Moneda de origen: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Intercambiar monedas",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nDólar estadounidense",
+      "label": "A la moneda: USD, Dólar estadounidense",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Actualizar",
+      "label": "Actualizar el tipo de cambio",
+      "action": "refresh-currency"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

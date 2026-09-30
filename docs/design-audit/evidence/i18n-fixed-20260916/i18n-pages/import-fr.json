@@ -1,0 +1,28 @@
+{
+  "route": "import",
+  "path": "/bookings/import",
+  "screen": "import",
+  "locale": "fr",
+  "image": "import-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Vérifier\nImporter une réservation\n\nLa reconnaissance reste sur ce téléphone. Vérifiez chaque champ avant d'enregistrer.\n\nDocument de réservation\nMeilleure précision : le PDF original, .eml, .ics ou .pkpass. Les photos et captures d'écran sont lues par OCR et peuvent nécessiter des corrections. · 10 Mo max\nHistorique des importations",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Vérifier",
+      "label": null
+    },
+    {
+      "text": "Historique des importations",
+      "label": null,
+      "screen": "import-history"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

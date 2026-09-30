@@ -1,0 +1,89 @@
+{
+  "url": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "text": "Reenvía las confirmaciones a\ngo@tripto.to\n\nElige el viaje y confirma los detalles extraídos antes de añadir nada.\n\nYour travel booking confirmation\nmié, 16 sept, 14:10 GMT+3\nElige un viaje\nElige el viaje\nActualizar bandeja\nElige el viaje\n\nYour travel booking confirmation\n\n🇮🇹\nRome 2026\nsept 17–23, 2026\n🇬🇷\nAthens Weekend\noct 15–18, 2026\n🇫🇷\nParis Spring\nabr 3–8, 2026",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 566.609375,
+        "width": 390,
+        "height": 277.390625,
+        "top": 566.609375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Elige el viaje",
+      "label": null,
+      "action": "choose-booking-email-trip",
+      "id": "audit-email"
+    },
+    {
+      "text": "Actualizar bandeja",
+      "label": null,
+      "action": "refresh-booking-email-inbox"
+    },
+    {
+      "text": "",
+      "label": "Cerrar",
+      "action": "close-sheet"
+    },
+    {
+      "text": "🇮🇹\nRome 2026\nsept 17–23, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "🇬🇷\nAthens Weekend\noct 15–18, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "🇫🇷\nParis Spring\nabr 3–8, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "booking-email-inbox",
+  "clicks": [
+    "[data-action=\"choose-booking-email-trip\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Bandeja de entrada",
+    "Reenvía las confirmaciones a",
+    "go@tripto.to",
+    "Elige el viaje y confirma los detalles extraídos antes de añadir nada.",
+    "Your travel booking confirmation",
+    "mié, 16 sept, 14:10 GMT+3",
+    "Elige un viaje",
+    "Elige el viaje",
+    "Actualizar bandeja",
+    "Elige el viaje",
+    "Your travel booking confirmation",
+    "🇮🇹",
+    "Rome 2026",
+    "sept 17–23, 2026",
+    "🇬🇷",
+    "Athens Weekend",
+    "oct 15–18, 2026",
+    "🇫🇷",
+    "Paris Spring",
+    "abr 3–8, 2026"
+  ],
+  "errors": []
+}

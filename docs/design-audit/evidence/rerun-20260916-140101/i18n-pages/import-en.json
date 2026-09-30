@@ -1,0 +1,27 @@
+{
+  "route": "import",
+  "path": "/bookings/import",
+  "screen": "import",
+  "locale": "en",
+  "image": "import-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Review\nUpload a booking\n\nRecognition stays on this phone. Review every field before saving.\n\nBooking document\nBest accuracy: the original PDF, .eml, .ics, or .pkpass. Photos and screenshots are read with OCR and may need corrections. · 10 MB max\nImport History",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Review",
+      "label": null
+    },
+    {
+      "text": "Import History",
+      "label": null,
+      "screen": "import-history"
+    }
+  ],
+  "dialogCount": 0
+}

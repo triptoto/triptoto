@@ -1,0 +1,270 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "КУРС ОБМЕНА\nНажмите «Обновить», чтобы загрузить курс\n\nРим · справочный курс для вашей поездки\n\nВЫ ПЛАТИТЕ\nEUR\nЕвро\nСумма в EUR\nОбновите, чтобы загрузить этот курс\nВЫ ПОЛУЧАЕТЕ\nUSD\nДоллар США\n—\nКурс не загружен\nЕжедневные справочные курсы\nОбновить\n\nТолько справочный курс; поставщики могут добавить комиссию. Суммы рассчитываются на этом телефоне.\n\nВы платите в\nAUD\nАвстралийский доллар\nCAD\nКанадский доллар\nCHF\nШвейцарский франк\nCNY\nКитайский юань\nCZK\nЧешская крона\nDKK\nДатская крона\nEUR\nЕвро\nGBP\nБританский фунт\nHKD\nГонконгский доллар\nHUF\nВенгерский форинт\nILS\nИзраильский новый шекель\nINR\nИндийская рупия\nISK\nИсландская крона\nJPY\nЯпонская иена\nKRW\nЮжнокорейская вона\nMXN\nМексиканское песо\nNOK\nНорвежская крона\nNZD\nНовозеландский доллар\nPLN\nПольский злотый\nRON\nРумынский лей\nSEK\nШведская крона\nSGD\nСингапурский доллар\nTHB\nТайский бат\nTRY\nТурецкая лира\nUSD\nДоллар США\nZAR\nЮжноафриканский рэнд",
+  "scroll": [
+    {
+      "class": "sheet-scroll",
+      "height": 458,
+      "scroll": 800
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 324,
+        "width": 390,
+        "height": 520,
+        "top": 324,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nЕвро",
+      "label": "Из валюты: EUR, Евро",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Поменять валюты местами",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nДоллар США",
+      "label": "В валюту: USD, Доллар США",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Обновить",
+      "label": "Обновить курс обмена",
+      "action": "refresh-currency"
+    },
+    {
+      "text": "",
+      "label": "Закрыть",
+      "action": "close-sheet"
+    },
+    {
+      "text": "AUD\nАвстралийский доллар",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CAD\nКанадский доллар",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CHF\nШвейцарский франк",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CNY\nКитайский юань",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CZK\nЧешская крона",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "DKK\nДатская крона",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "EUR\nЕвро",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "GBP\nБританский фунт",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HKD\nГонконгский доллар",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HUF\nВенгерский форинт",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ILS\nИзраильский новый шекель",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "INR\nИндийская рупия",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ISK\nИсландская крона",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "JPY\nЯпонская иена",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "KRW\nЮжнокорейская вона",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "MXN\nМексиканское песо",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NOK\nНорвежская крона",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NZD\nНовозеландский доллар",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "PLN\nПольский злотый",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "RON\nРумынский лей",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SEK\nШведская крона",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SGD\nСингапурский доллар",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "THB\nТайский бат",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "TRY\nТурецкая лира",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "USD\nДоллар США",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ZAR\nЮжноафриканский рэнд",
+      "label": null,
+      "action": "select-currency"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "currency",
+  "clicks": [
+    "[data-action=\"open-currency-picker\"]"
+  ],
+  "documentLang": "ru",
+  "visibleText": [
+    "Валюта",
+    "Rome 2026",
+    "КУРС ОБМЕНА",
+    "Нажмите «Обновить», чтобы загрузить курс",
+    "Рим · справочный курс для вашей поездки",
+    "Вы платите",
+    "EUR",
+    "Евро",
+    "Сумма в EUR",
+    "Обновите, чтобы загрузить этот курс",
+    "Вы получаете",
+    "USD",
+    "Доллар США",
+    "—",
+    "Курс не загружен",
+    "Ежедневные справочные курсы",
+    "Обновить",
+    "Только справочный курс; поставщики могут добавить комиссию. Суммы рассчитываются на этом телефоне.",
+    "Вы платите в",
+    "AUD",
+    "Австралийский доллар",
+    "CAD",
+    "Канадский доллар",
+    "CHF",
+    "Швейцарский франк",
+    "CNY",
+    "Китайский юань",
+    "CZK",
+    "Чешская крона",
+    "DKK",
+    "Датская крона",
+    "EUR",
+    "Евро",
+    "GBP",
+    "Британский фунт",
+    "HKD",
+    "Гонконгский доллар",
+    "HUF",
+    "Венгерский форинт",
+    "ILS",
+    "Израильский новый шекель",
+    "INR",
+    "Индийская рупия",
+    "ISK",
+    "Исландская крона",
+    "JPY",
+    "Японская иена",
+    "KRW",
+    "Южнокорейская вона",
+    "MXN",
+    "Мексиканское песо",
+    "NOK",
+    "Норвежская крона",
+    "NZD",
+    "Новозеландский доллар",
+    "PLN",
+    "Польский злотый",
+    "RON",
+    "Румынский лей",
+    "SEK",
+    "Шведская крона",
+    "SGD",
+    "Сингапурский доллар",
+    "THB",
+    "Тайский бат",
+    "TRY",
+    "Турецкая лира",
+    "USD",
+    "Доллар США",
+    "ZAR",
+    "Южноафриканский рэнд"
+  ],
+  "errors": []
+}

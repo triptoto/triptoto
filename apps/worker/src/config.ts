@@ -6,6 +6,7 @@ export const PRODUCT_LIMITS = {
   pendingInvitesPerTrip: 10,
   forwardedImportsPerDay: 20,
   actorWritesPerHour: 300,
+  actorReadsPerHour: 3000,
   guestSessionsPerHourPerFingerprint: 60,
   googleAuthAttemptsPerHour: 20,
 } as const;

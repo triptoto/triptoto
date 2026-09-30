@@ -1,0 +1,77 @@
+{
+  "url": "/flights/ly-383-tlv-fco",
+  "screen": "flight",
+  "text": "LY 383\nConfirmed\nScheduled data\nTLV\nBen Gurion Airport\nFCO\nRome Fiumicino\nDEPARTS\n10:00\nThu, Sep 10\n3h 30m\nARRIVES\n12:30\nThu, Sep 10\nTERMINAL\n3\nGATE\nNot assigned\nSEAT\n12A\nEconomy\nDirections\nBoarding pass\nStored and verified on this phone\nAdd document\nFlight details\nAdd note",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Edit",
+      "action": "edit-booking",
+      "id": "flight"
+    },
+    {
+      "text": "",
+      "label": "Delete",
+      "action": "delete-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Directions",
+      "label": null,
+      "action": "directions-flight",
+      "id": "flight"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Flight details",
+      "label": null,
+      "action": "toggle-flight-details"
+    },
+    {
+      "text": "Add note",
+      "label": null,
+      "action": "edit-note",
+      "id": "flight"
+    }
+  ],
+  "viewport": [
+    1920,
+    1080
+  ],
+  "geometry": {
+    "header": {
+      "x": 660,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 1260,
+      "bottom": 68,
+      "left": 660
+    },
+    "main": {
+      "x": 660,
+      "y": 68,
+      "width": 600,
+      "height": 1012,
+      "top": 68,
+      "right": 1260,
+      "bottom": 1080,
+      "left": 660
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

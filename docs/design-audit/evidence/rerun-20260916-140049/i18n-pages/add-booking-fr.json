@@ -1,0 +1,88 @@
+{
+  "route": "add-booking",
+  "path": "/bookings/add",
+  "screen": "add-booking",
+  "locale": "fr",
+  "image": "add-booking-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "AJOUTER UNE RÉSERVATION\nAjouter une réservation\n\nPour les voyages que vous avez déjà réservés. Pour planifier vos visites et activités, utilisez le Programme du jour.\n\nVol\nVoyage en avion\nTrain\nTrajet en train\nFerry\nBateau ou traversée\nBus / Autocar\nTrajet interurbain\nCroisière\nItinéraire de croisière\nLocation de voiture\nPrise en charge et retour\nTransfert\nTransport réservé\nTaxi / VTC\nPrise en charge et restitution\nParking\nParking réservé\nHôtel / Hébergement\nHôtel ou appartement\nAssurance voyage\nDétails de la police\nAutre\nTout plan confirmé\nVOUS AVEZ DÉJÀ UNE CONFIRMATION ?\nImporter un fichier\nVérifier un billet ou une confirmation\nTransférer un e-mail\nEnvoyez-le à go@tripto.to",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Vol\nVoyage en avion",
+      "label": "Ajouter un vol",
+      "action": "add-type"
+    },
+    {
+      "text": "Train\nTrajet en train",
+      "label": "Ajouter un train",
+      "action": "add-type"
+    },
+    {
+      "text": "Ferry\nBateau ou traversée",
+      "label": "Ajouter un ferry",
+      "action": "add-type"
+    },
+    {
+      "text": "Bus / Autocar\nTrajet interurbain",
+      "label": "Ajouter Bus / Autocar",
+      "action": "add-type"
+    },
+    {
+      "text": "Croisière\nItinéraire de croisière",
+      "label": "Ajouter une croisière",
+      "action": "add-type"
+    },
+    {
+      "text": "Location de voiture\nPrise en charge et retour",
+      "label": "Ajouter une location de voiture",
+      "action": "add-type"
+    },
+    {
+      "text": "Transfert\nTransport réservé",
+      "label": "Ajouter un transfert",
+      "action": "add-type"
+    },
+    {
+      "text": "Taxi / VTC\nPrise en charge et restitution",
+      "label": "Ajouter Taxi / VTC",
+      "action": "add-type"
+    },
+    {
+      "text": "Parking\nParking réservé",
+      "label": "Ajouter un parking",
+      "action": "add-type"
+    },
+    {
+      "text": "Hôtel / Hébergement\nHôtel ou appartement",
+      "label": "Ajouter Hôtel / Hébergement",
+      "action": "add-type"
+    },
+    {
+      "text": "Assurance voyage\nDétails de la police",
+      "label": "Ajouter Assurance voyage",
+      "action": "add-type"
+    },
+    {
+      "text": "Autre\nTout plan confirmé",
+      "label": "Ajouter Autre",
+      "action": "add-type"
+    },
+    {
+      "text": "Importer un fichier\nVérifier un billet ou une confirmation",
+      "label": null,
+      "action": "open-upload-booking"
+    },
+    {
+      "text": "Transférer un e-mail\nEnvoyez-le à go@tripto.to",
+      "label": null,
+      "action": "open-forward-booking"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -160,7 +160,7 @@ export function classifyAndExtract(textRows: TextExtraction[], barcodes: Barcode
   const type = ranked[0][0];
   const source = cleanRows[0]?.source ?? (barcodes.length ? 'barcode' : 'embedded_text');
   const fields: Record<string, ExtractedField> = {};
-  add(fields, 'confirmationNumber', match(text, /(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+(?:code|reference|ref|number|no\.?)|reservation(?:\s+(?:number|code|no\.?))?|record\s+locator|pnr|reference)\s*[:#-]?\s*([A-Z0-9]{5,12})\b/i), 0.82, source);
+  add(fields, 'confirmationNumber', matchCode(text, /\b(?:confirmation(?:\s+(?:number|code|no\.?))?|booking\s+(?:code|reference|ref|number|no\.?)|reservation(?:\s+(?:number|code|no\.?))?|record\s+locator|pnr|reference)\s*[:#-]?\s*([A-Z0-9]{5,12})\b/gi), 0.82, source);
   add(fields, 'address', match(text, /(?:address|location)\s*:\s*([^\n]{6,180})/i), 0.68, source);
   add(fields, 'seat', match(text, /\bseat\s*[:#-]?\s*([0-9]{1,3}[A-Z])\b/i), 0.88, source);
   add(fields, 'gate', match(text, /\bgate\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z]?\d{1,3}[A-Z]?)\b/i), 0.82, source);
@@ -172,8 +172,8 @@ export function classifyAndExtract(textRows: TextExtraction[], barcodes: Barcode
   if (type === 'flight' && flightSegments.length) {
     const routing = extractFlightRouting(text);
     const routeMatch = text.match(/\b([A-Z]{3})\s+[A-Z]{2}\d?\s+([A-Z]{3})\b/);
-    const outDep = match(text, /(?:from|departure|departing)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i) || (routeMatch?.[1] ?? null);
-    const outArr = match(text, /(?:to|arrival|arriving)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i) || (routeMatch?.[2] ?? null);
+    const outDep = match(text, /\b(?:from|departure|departing)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i) || (routeMatch?.[1] ?? null);
+    const outArr = match(text, /\b(?:to|arrival|arriving)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i) || (routeMatch?.[2] ?? null);
     const evidence = cleanRows.slice(0,3).map((r) => ({ source: r.source, text: r.text.slice(0,240) }));
     return flightSegments.map((seg, i) => {
       const segFields: Record<string, ExtractedField> = {};
@@ -201,8 +201,8 @@ export function classifyAndExtract(textRows: TextExtraction[], barcodes: Barcode
   let serviceNumber=match(text, /\b(?:marketing\s+)?(?:flight|train|service)\s*(?:no\.?|number|#)?\s*[:#-]?\s*([A-Z]{1,3}\s?\d{1,5}[A-Z]?)\b/i);
   add(fields, 'serviceNumber', serviceNumber, 0.78, source);
   if(type==='flight'&&serviceNumber){const flight=serviceNumber.replace(/\s+/g,'').match(/^([A-Z]{2,3})(\d{1,5}[A-Z]?)$/i);if(flight){add(fields,'airlineCode',flight[1].toUpperCase(),0.78,source);add(fields,'flightNumber',flight[2].toUpperCase(),0.78,source);}}
-  add(fields, 'departureIata', match(text, /(?:from|departure|departing)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i), 0.72, source);
-  add(fields, 'arrivalIata', match(text, /(?:to|arrival|arriving)\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i), 0.72, source);
+  add(fields, 'departureIata', match(text, /\b(?:from|departure|departing)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b([A-Z]{3})\s*(?:→|->|to)\s*[A-Z]{3}\b/i), 0.72, source);
+  add(fields, 'arrivalIata', match(text, /\b(?:to|arrival|arriving)\b\s*[:\-]?\s*(?:[A-Za-z .'-]+\s+)?\(([A-Z]{3})\)|\b[A-Z]{3}\s*(?:→|->|to)\s*([A-Z]{3})\b/i), 0.72, source);
   // Amadeus fare-calculation lines encode routing as "TLV LY ZRH ..." — recover
   // the IATA pair from it when the itinerary spells the city names out instead.
   if(type==='flight'&&(!fields.departureIata||!fields.arrivalIata)){const route=text.match(/\b([A-Z]{3})\s+[A-Z]{2}\d?\s+([A-Z]{3})\b/);if(route){if(!fields.departureIata)add(fields,'departureIata',route[1],0.6,source);if(!fields.arrivalIata)add(fields,'arrivalIata',route[2],0.6,source);}}
@@ -236,6 +236,9 @@ function extractUnambiguousDates(text: string, source: FieldSource): {fields: Re
 }
 
 function add(fields:Record<string,ExtractedField>, key:string, value:string|null, confidence:number, source:FieldSource) { if (value) fields[key] = {value, confidence:round(confidence), source}; }
+// Case-insensitive labels, but a real code has a digit or is written in capitals
+// ("Confirmation email" must not yield EMAIL).
+function matchCode(text:string,re:RegExp):string|null { for (const m of text.matchAll(re)) { const v=String(m[1]||''); if (/\d/.test(v) || (v===v.toUpperCase() && /[A-Z]/.test(v))) return v.toUpperCase(); } return null; }
 function match(text:string,re:RegExp):string|null { const m=text.match(re); return m ? String(m[1] || m[2] || '').trim() || null : null; }
 function score(text:string,words:string[]):number { return words.reduce((n,w)=>n+(text.includes(w)?1:0),0); }
 function normalizeText(value:string):string { return String(value||'').replace(/\u0000/g,'').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim(); }

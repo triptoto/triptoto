@@ -1,12 +1,13 @@
 import type { AuthContext, Env } from '../types.ts';
-import { enumValue, json, nowMs, readJson, uuid } from '../http.ts';
+import { dateOnlyToUtcMs, enumValue, json, nowMs, readJson, uuid } from '../http.ts';
+import { equalSecret } from './ops.ts';
 
 const scenarios=['normal','self_transfer','overnight','family','missing_essentials','airport_change','date_line','cancelled_flight','road_trip','provider_outage'] as const;
 
 export async function createDemoTrip(request:Request,env:Env,auth:AuthContext):Promise<Response>{
   if(env.DEMO_TOOLS_ENABLED!=='true')return json({error:{code:'NOT_FOUND',message:'Endpoint not found.'}},{status:404},request,env);
   const provided=request.headers.get('x-tripto-demo-secret')??'';
-  if(!env.DEMO_TOOLS_SECRET||env.DEMO_TOOLS_SECRET.length<16||provided!==env.DEMO_TOOLS_SECRET)return json({error:{code:'DEMO_SECRET_REQUIRED',message:'Demo tools secret is invalid.'}},{status:403},request,env);
+  if(!env.DEMO_TOOLS_SECRET||env.DEMO_TOOLS_SECRET.length<16||!(await equalSecret(provided,env.DEMO_TOOLS_SECRET)))return json({error:{code:'DEMO_SECRET_REQUIRED',message:'Demo tools secret is invalid.'}},{status:403},request,env);
   const body=await readJson<{scenario?:unknown}>(request); const scenario=enumValue(body.scenario,'scenario',scenarios,'normal');
   const now=nowMs(); const day=86400000; const hour=3600000;
   const starts=now+7*day; const tripId=uuid();
@@ -115,7 +116,7 @@ async function addGround(env:Env,tripId:string,from:string,to:string,title:strin
 }
 async function addStay(env:Env,tripId:string,locationId:string,name:string,checkIn:string,checkOut:string,travelers:string[],now:number):Promise<string>{
   const id=uuid();const stmts=[
-    env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,start_location_id,source_type,confidence,created_at,updated_at,version) VALUES (?,?,'stay','confirmed',?,?,'system','confirmed',?,?,1)`).bind(id,tripId,name,locationId,now,now),
+    env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,start_location_id,starts_at_utc,ends_at_utc,source_type,confidence,created_at,updated_at,version) VALUES (?,?,'stay','confirmed',?,?,?,?,'system','confirmed',?,?,1)`).bind(id,tripId,name,locationId,dateOnlyToUtcMs(checkIn),dateOnlyToUtcMs(checkOut),now,now),
     env.DB.prepare(`INSERT INTO stays(trip_item_id,property_name,property_location_id,check_in_date,check_out_date,booking_status) VALUES (?,?,?,?,?,'confirmed')`).bind(id,name,locationId,checkIn,checkOut),
   ];
   for(const travelerId of travelers)stmts.push(env.DB.prepare(`INSERT INTO trip_item_travelers(trip_item_id,traveler_id,role,created_at) VALUES (?,?,'participant',?)`).bind(id,travelerId,now));

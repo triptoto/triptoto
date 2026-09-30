@@ -1,0 +1,57 @@
+{
+  "url": "/trips",
+  "screen": "trips",
+  "text": "YOUR JOURNEYS\nAll your trips\n\nPlans, bookings, and ideas stay together here.\n\nAll\n3\nCurrent\n0\nUpcoming\n2\nPast\n1\nPast trips\n1\nParis Spring\nApr 3\u20138, 2026\nCompleted",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Account",
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Create trip",
+      "action": "create-trip"
+    },
+    {
+      "text": "All\n3",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Current\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Upcoming\n2",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Past\n1",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "",
+      "label": "Delete Paris Spring",
+      "action": "delete-trip",
+      "id": "preview-trip-past"
+    },
+    {
+      "text": "Paris Spring\nApr 3\u20138, 2026\nCompleted",
+      "label": "Open trip: Paris Spring",
+      "action": "open-trip",
+      "id": "preview-trip-past"
+    }
+  ],
+  "evidence": [
+    "trips-past-top.png"
+  ],
+  "trigger": "[data-action=\"filter-trips\"][data-filter=\"past\"]",
+  "qaState": ""
+}

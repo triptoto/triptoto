@@ -1,0 +1,28 @@
+{
+  "route": "booking-restaurant",
+  "path": "/bookings/new/restaurant",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-restaurant-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить\nБРОНИРОВАНИЕ ВРУЧНУЮ\nРесторан\nВсё для поездки\nНазвание ресторана *\nДата бронирования *\nМестное время Необязательно\nГости Необязательно\nБилеты и документы\n\nНеобязательно · Хранится на этом устройстве\n\nДобавить файлы\nPDF, изображения или карты · до 10 МБ каждый\n\nФайлы не выбраны. Вы можете сохранить бронирование без них.\n\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить",
+      "label": null
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-restaurant-ru-bottom.png"
+}

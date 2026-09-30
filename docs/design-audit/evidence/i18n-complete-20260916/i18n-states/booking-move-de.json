@@ -1,0 +1,177 @@
+{
+  "url": "/trips/rome-2026-2026-09-17",
+  "screen": "timeline",
+  "text": "Rome 2026\nSept. 17–23, 2026\n2\nDO\nSep 17\nFR\nSep 18\nSO\nSep 20\nDO\nSep 17\n10:00\nWEITER\nFlight to Rome\nFlight · TLV → FCO\n3h 30m\n13:15\nAirport to hotel\nTaxi · Private transfer\n14:30\nHotel Artemide\nCheck-in\nAuf anderen Tag verschieben\n1\nTag 1\nTHU · SEP 17\nAktuell\n2\nTag 2\nFRI · SEP 18\n3\nTag 3\nSAT · SEP 19\n4\nTag 4\nSUN · SEP 20\n5\nTag 5\nMON · SEP 21\n6\nTag 6\nTUE · SEP 22\n7\nTag 7\nWED · SEP 23",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 384,
+        "width": 390,
+        "height": 460,
+        "top": 384,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSept. 17–23, 2026",
+      "label": "Reise wechseln",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Zur Reise hinzufügen",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Reiseoptionen",
+      "screen": "trip-options"
+    },
+    {
+      "text": "2",
+      "label": "Menü, 2 ungelesene Benachrichtigungen",
+      "action": "open-navigation"
+    },
+    {
+      "text": "DO\nSep 17",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "FR\nSep 18",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SO\nSep 20",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "DO\nSep 17",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "10:00\nWEITER\nFlight to Rome\nFlight · TLV → FCO\n3h 30m",
+      "label": "10:00. Flight to Rome. Flight · TLV → FCO. 3h 30m. Lange drücken für Aktionen",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:15\nAirport to hotel\nTaxi · Private transfer",
+      "label": "13:15. Airport to hotel. Taxi · Private transfer. Lange drücken für Aktionen",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "14:30\nHotel Artemide\nCheck-in",
+      "label": "14:30. Hotel Artemide. Check-in. Lange drücken für Aktionen",
+      "action": "timeline-detail",
+      "id": "stay"
+    },
+    {
+      "text": "",
+      "label": "Schließen",
+      "action": "close-sheet"
+    },
+    {
+      "text": "1\nTag 1\nTHU · SEP 17\nAktuell",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "2\nTag 2\nFRI · SEP 18",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "3\nTag 3\nSAT · SEP 19",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "4\nTag 4\nSUN · SEP 20",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "5\nTag 5\nMON · SEP 21",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "6\nTag 6\nTUE · SEP 22",
+      "label": null,
+      "action": "apply-move"
+    },
+    {
+      "text": "7\nTag 7\nWED · SEP 23",
+      "label": null,
+      "action": "apply-move"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "timeline",
+  "clicks": [
+    "longpress:[data-longpress-booking]",
+    "[data-action=\"move-booking\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Rome 2026",
+    "Sept. 17–23, 2026",
+    "2",
+    "DO",
+    "Sep 17",
+    "FR",
+    "Sep 18",
+    "SO",
+    "Sep 20",
+    "DO",
+    "Sep 17",
+    "10:00",
+    "Weiter",
+    "Flight to Rome",
+    "Flight · TLV → FCO",
+    "3h 30m",
+    "13:15",
+    "Airport to hotel",
+    "Taxi · Private transfer",
+    "14:30",
+    "Hotel Artemide",
+    "Check-in",
+    "Auf anderen Tag verschieben",
+    "1",
+    "Tag 1",
+    "THU · SEP 17",
+    "Aktuell",
+    "2",
+    "Tag 2",
+    "FRI · SEP 18",
+    "3",
+    "Tag 3",
+    "SAT · SEP 19",
+    "4",
+    "Tag 4",
+    "SUN · SEP 20",
+    "5",
+    "Tag 5",
+    "MON · SEP 21",
+    "6",
+    "Tag 6",
+    "TUE · SEP 22",
+    "7",
+    "Tag 7",
+    "WED · SEP 23"
+  ],
+  "errors": []
+}

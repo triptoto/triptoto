@@ -1,0 +1,27 @@
+{
+  "route": "booking-activity",
+  "path": "/bookings/new/activity",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-activity-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nActivité\nEssentiels\nNom de l'activité *\nType Facultatif\nActivité\nVisite guidée\nConcert\nThéâtre\nMusée\nAttraction\nSports\nRendez-vous\nAfficher\nAutre\nDate *\nHeure locale Facultatif\nLieu Facultatif\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

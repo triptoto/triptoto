@@ -1,0 +1,32 @@
+{
+  "route": "booking-car-rental",
+  "path": "/bookings/new/car-rental",
+  "screen": "form",
+  "locale": "de",
+  "image": "booking-car-rental-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Speichern\nMANUELLE BUCHUNG\nMietwagen\nEssentials\nVermietung *\nAbholort *\nRückgabeort *\nMietdaten\nDaten auswählen\nDaten auswählen\nKein Zeitraum ausgewählt.\nAbholzeit *\nRückgabezeit Optional\nTickets & Dokumente\n\nOptional · Auf diesem Gerät gespeichert\n\nDateien hinzufügen\nPDF, Bilder oder Pässe · je bis zu 10 MB\n\nKeine Dateien ausgewählt. Sie können die Buchung auch ohne speichern.\n\nMehr Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Speichern",
+      "label": null
+    },
+    {
+      "text": "Daten auswählen\nDaten auswählen",
+      "label": "Mietdaten. pickup und drop-off wählen",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Mehr Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

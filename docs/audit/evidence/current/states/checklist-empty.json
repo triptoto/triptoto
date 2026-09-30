@@ -1,0 +1,24 @@
+{
+  "url": "/before-you-go",
+  "screen": "checklist",
+  "text": "Rome 2026\nAdd a task\nAdd\n\nNothing here yet. Add your first task above.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add",
+      "label": "Add task"
+    }
+  ],
+  "evidence": [
+    "checklist-empty-top.png"
+  ],
+  "fixtureSetup": "s.checklist=[];",
+  "trigger": []
+}

@@ -1,11 +1,26 @@
 <!doctype html>
-<html lang="en" class="theme-beart">
+<html lang="en" class="theme-day theme-studio">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0f1f29">
-  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#f6f4f1">
+  <meta name="color-scheme" content="light">
+  <script>(function(){try{var t=localStorage.getItem("tripto_theme_v3");if(t!=="night"&&t!=="day"&&t!=="mono"&&t!=="ember")return;var r=document.documentElement;r.classList.remove("theme-studio");if(t==="night"){r.classList.remove("theme-day");r.classList.add("theme-beart");}if(t==="mono"||t==="ember")r.classList.add("theme-flat","theme-mono");if(t==="ember")r.classList.add("theme-ember");document.querySelector('meta[name="theme-color"]').setAttribute("content",t==="night"?"#0f1f29":t==="mono"?"#ffffff":t==="ember"?"#f6f4f1":"#fbf8f7");document.querySelector('meta[name="color-scheme"]').setAttribute("content",t==="night"?"dark":"light");}catch(_){}})();</script>
+  <meta name="tripto-asset-ver" content="v827-offline-first">
+  <script>(function(){if(location.protocol!=="file:")return;location.replace("https://tripto.to/"+location.search+location.hash);})();</script>
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7EBJRZVVW"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', { 'analytics_storage': 'denied', 'ad_storage': 'denied', 'ad_user_data': 'denied', 'ad_personalization': 'denied', 'wait_for_update': 500 });
+  try { if (localStorage.getItem('tripto_consent_v1') === 'granted') gtag('consent', 'update', { 'analytics_storage': 'granted' }); } catch (e) {}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Y7EBJRZVVW');
+  </script>
+  <script src="/consent-banner.js?v=consent-banner-v1" defer></script>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="robots" content="index, follow">
   <title>tripto.to · Travel planning on one calm timeline</title>
@@ -22,7 +37,7 @@
   <meta name="twitter:image" content="https://tripto.to/icon-512.png">
   <link rel="canonical" href="https://tripto.to/">
   <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebSite","name":"tripto.to","url":"https://tripto.to/","description":"A calm, private travel companion for organizing bookings and plans on one timeline."}
+    {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://tripto.to/#website","name":"tripto.to","url":"https://tripto.to/","description":"A calm, private travel companion for organizing bookings and plans on one timeline.","publisher":{"@id":"https://tripto.to/#org"}},{"@type":"Organization","@id":"https://tripto.to/#org","name":"tripto.to","url":"https://tripto.to/","logo":"https://tripto.to/icon-512.png"},{"@type":"WebApplication","@id":"https://tripto.to/#app","name":"tripto.to","url":"https://tripto.to/","applicationCategory":"TravelApplication","operatingSystem":"Web, iOS, Android","browserRequirements":"Requires JavaScript. Runs in any modern browser.","description":"All your trips on one quiet timeline. Offline-ready, private by design, with deterministic booking import.","publisher":{"@id":"https://tripto.to/#org"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}]}
   </script>
   <link rel="manifest" href="/manifest.webmanifest?v=compass-v120">
   <link rel="icon" href="/favicon.svg?v=compass-v120" type="image/svg+xml">
@@ -33,14 +48,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;display=swap">
-<link rel="stylesheet" href="/mobile-app.min.css?v=prod-release-v348">
-  <script src="/shell-update.js?v=shell-refresh-v1"></script>
+  <link rel="preload" href="/vendor/space-grotesk/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link id="app-css" rel="preload" href="/mobile-app.min.css?v=v827-offline-first" as="style">
+  <noscript><link rel="stylesheet" href="/mobile-app.min.css?v=v827-offline-first"></noscript>
+  <script>/* Take the 549KB app stylesheet off the render-blocking path. The inline
+     critical CSS above paints the loading skeleton immediately; this applies the
+     full sheet as soon as it is fetched (preload load event) with window load as a
+     guaranteed fallback. Removes the render-blocking <link> that was pushing FCP/LCP
+     past 5s on slow mobile networks.
+     The watchdog verifies the sheet actually applied (--navy is only defined by
+     the full sheet) and re-requests it if the preload failed or its load event was
+     missed, so a flaky network can never leave the app unstyled. */
+  (function(){var l=document.getElementById("app-css");if(!l)return;var href=l.getAttribute("href"),tries=0;function s(){if(l.rel!=="stylesheet")l.rel="stylesheet";}function ok(){try{return !!getComputedStyle(document.documentElement).getPropertyValue("--navy").trim();}catch(e){return true;}}function retry(){var n=document.createElement("link");n.rel="stylesheet";n.href=href+(href.indexOf("?")<0?"?":"&")+"r="+Date.now();document.head.appendChild(n);}function check(){if(ok())return;s();if(++tries>2)retry();if(tries<8)setTimeout(check,1500*tries);}l.addEventListener("load",s);l.addEventListener("error",function(){s();setTimeout(check,500);});window.addEventListener("load",function(){s();setTimeout(check,800);});window.addEventListener("pageshow",function(){setTimeout(check,300);});setTimeout(check,4000);})();</script>
+  <script src="/shell-update.js?v=shell-refresh-v3"></script>
   <script>/* Runs fresh from the always-network-first navigation HTML, so it can pull a
      new service worker even when the old one is still serving stale cached JS.
      Forces an update check that bypasses the HTTP cache and promotes any waiting
      worker; shell-update.js handles the reload on controllerchange. */
   (function(){if(!("serviceWorker" in navigator))return;try{navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(function(reg){reg.update();if(reg.waiting)reg.waiting.postMessage("skipWaiting");reg.addEventListener("updatefound",function(){var nw=reg.installing;if(nw)nw.addEventListener("statechange",function(){if(nw.state==="installed"&&reg.waiting)reg.waiting.postMessage("skipWaiting");});});}).catch(function(){});}catch(e){}})();</script>
-<style id="tripto-loading-critical">:root{--paper:#0f1f29;--ink:#f1f5f9;--card:#22333d;--line:#465875;--muted:#aeb9c8;--activity-soft:#39305c;--stay-soft:#21503f;--flight-soft:#2b3f5c;--transfer-soft:#4d3d28;--accent:#f59e0b}body{margin:0;font-family:"Noto Sans",-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;background:var(--paper)}.thinking-stage,.thinking-panel,.thinking-pattern{box-sizing:border-box}
+<style id="tripto-loading-critical">:root{--paper:#f6f4f1;--ink:#17151f;--card:#ffffff;--line:#e4e1ea;--muted:#5f5b6b;--activity-soft:#ede9fe;--stay-soft:#d1fae5;--flight-soft:#dbeafe;--transfer-soft:#fef3c7;--accent:#7c3aed}body{margin:0;font-family:"Space Grotesk","Noto Sans",-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;background:var(--paper)}html.theme-mono body{font-family:"Space Grotesk","Noto Sans",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}.thinking-stage,.thinking-panel,.thinking-pattern{box-sizing:border-box}
 /* Shared loading pattern: no images, timers or layout-heavy animation. */
 .thinking-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;min-height:55svh;padding:28px 20px;background:var(--paper);color:var(--ink)}
 .thinking-stage--startup{min-height:100svh;gap:44px}
@@ -219,13 +245,30 @@
   <symbol id="wx-storm" viewBox="0 0 256 256"><g fill="currentColor"><path d="M156,16A76.2,76.2,0,0,0,84.92,64.76,53.26,53.26,0,0,0,76,64a52,52,0,0,0,0,104h37.87L97.14,195.88A8,8,0,0,0,104,208h25.87l-16.73,27.88a8,8,0,0,0,13.72,8.24l24-40A8,8,0,0,0,144,192H118.13l14.4-24H156a76,76,0,0,0,0-152Zm0,136H76a36,36,0,0,1,0-72,38.11,38.11,0,0,1,4.78.31q-.56,3.57-.77,7.23a8,8,0,0,0,16,.92A60.06,60.06,0,1,1,156,152Z"/></g></symbol>
   <symbol id="wx-drop" viewBox="0 0 256 256"><g fill="currentColor"><path d="M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z"/></g></symbol>
   <symbol id="wx-wind" viewBox="0 0 256 256"><g fill="currentColor"><path d="M184,184a32,32,0,0,1-32,32c-13.7,0-26.95-8.93-31.5-21.22a8,8,0,0,1,15-5.56C137.74,195.27,145,200,152,200a16,16,0,0,0,0-32H40a8,8,0,0,1,0-16H152A32,32,0,0,1,184,184Zm-64-80a32,32,0,0,0,0-64c-13.7,0-26.95,8.93-31.5,21.22a8,8,0,0,0,15,5.56C105.74,60.73,113,56,120,56a16,16,0,0,1,0,32H24a8,8,0,0,0,0,16Zm88-32c-13.7,0-26.95,8.93-31.5,21.22a8,8,0,0,0,15,5.56C193.74,92.73,201,88,208,88a16,16,0,0,1,0,32H32a8,8,0,0,0,0,16H208a32,32,0,0,0,0-64Z"/></g></symbol>
-</svg>
+<symbol id="crown" viewBox="0 0 256 256"><g fill="currentColor"><path d="M232,64a16,16,0,1,0-16-16,16,16,0,0,0,1,5.56L172.19,88.67,136.88,39.23a16,16,0,1,0-17.76,0L83.81,88.67,39,53.56A16,16,0,1,0,24,64a15.8,15.8,0,0,0,4.28-.6L48,184a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16L227.72,63.4A15.8,15.8,0,0,0,232,64ZM192,184H64L47.12,80.59l39,30.52a8,8,0,0,0,11.38-1.41L128,67l30.5,42.7a8,8,0,0,0,11.38,1.41l39-30.52ZM48,216a8,8,0,0,1,8-8H200a8,8,0,0,1,0,16H56A8,8,0,0,1,48,216Z"/></g></symbol>
+  </svg>
   <div id="app"><div class="phone-app"><section class="thinking-stage thinking-stage--startup"><div class="loading-mark">tripto<span>.</span>to</div><div class="thinking-panel" role="status" aria-live="polite"><span class="thinking-pattern" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><div class="thinking-copy"><strong>Opening your trips…</strong><span>A little moment for your next adventure.</span></div></div></section></div></div>
+  <noscript>
+    <main style="max-width:42rem;margin:0 auto;padding:2.5rem 1.25rem;font-family:'Noto Sans',system-ui,sans-serif;line-height:1.6;color:#0f1f29">
+      <h1>tripto.to · Travel planning on one calm timeline</h1>
+      <p>tripto.to is a calm, private travel companion. Every trip lives on one quiet timeline — flights, hotels, trains and plans in the order they happen. Bookings import deterministically, essentials work offline, and nothing about your travel is sold or tracked.</p>
+      <h2>What you can do</h2>
+      <ul>
+        <li>Keep all your trips on a single, chronological timeline.</li>
+        <li>Import bookings from confirmation emails without guesswork.</li>
+        <li>Reach passes, addresses and plans offline while you travel.</li>
+        <li>Convert currencies and check tax-free refund rules on the go.</li>
+      </ul>
+      <p><a href="/landing">Learn more about tripto.to</a>. This app needs JavaScript enabled to run.</p>
+    </main>
+  </noscript>
   <script src="/canonical-host.js?v=canonical-apex-v1"></script>
+  <script>window.__TRIPTO_ASSET_VER=(document.querySelector('meta[name="tripto-asset-ver"]')||{}).content||"";</script>
+  <script src="/i18n.js?v=i18n-v6"></script>
   <script src="/mobile-routes.js?v=trip-options-routes-v4" defer></script>
   <script src="/mobile-trip-rules.js?v=optional-trip-dates-v96" defer></script>
   <script src="/google-auth-client.js?v=google-auth-ios-v100" defer></script>
   <script src="/manual-booking-attachments.js?v=manual-booking-v2c3" defer></script>
-  <script src="/mobile-app.min.js?v=prod-release-v348" defer></script>
+  <script src="/mobile-app.min.js?v=v827-offline-first" defer></script>
 </body>
 </html>

@@ -34,6 +34,12 @@ export async function receiveBookingEmail(message: InboundEmailMessage, env: Env
     message.setReject('Sender is required');
     return;
   }
+  // The envelope sender is only trusted when the receiving MTA authenticated it;
+  // otherwise anyone could forge a verified user's address and inject bookings.
+  if (!senderAuthenticated(message.headers, sender)) {
+    message.setReject('Sender could not be authenticated');
+    return;
+  }
   let bytes: Uint8Array;
   try {
     bytes = await readBounded(message.raw, MAX_BYTES);
@@ -114,7 +120,17 @@ export async function receiveBookingEmail(message: InboundEmailMessage, env: Env
     statements.push(env.DB.prepare(`INSERT INTO import_candidates(id,import_id,candidate_type,payload_json,confidence,validation_status,created_at) VALUES (?,?,?,?,?,'pending',?)`).bind(row.id,importId,row.candidate.candidateType,JSON.stringify({...row.candidate.payload,warnings:row.candidate.warnings}),row.candidate.confidence,now));
   }
   statements.push(env.DB.prepare(`INSERT INTO inbound_booking_emails(id,user_id,trip_id,import_id,sender_normalized,message_fingerprint,subject,status,rejection_code,received_at) VALUES (?,?,?,?,?,?,?,?,?,?)`).bind(uuid(),verified.user_id,tripId,importId,sender,fingerprint,subject,inboundStatus,rejectionCode,now));
-  await env.DB.batch(statements);
+  try {
+    await env.DB.batch(statements);
+  } catch (error) {
+    // The early SELECT above catches the common duplicate; this guards the rare
+    // concurrent double-delivery race where two batches both pass that check. The
+    // message_fingerprint UNIQUE index makes the losing batch roll back atomically
+    // (D1 batch = one transaction), so no partial import survives — treat the
+    // constraint violation as a successful dedup rather than surfacing a 500/retry.
+    if (/UNIQUE constraint failed/i.test(String((error as Error)?.message ?? error))) return;
+    throw error;
+  }
 }
 
 interface TripRow { id: string; title: string | null; starts_on: string | null; ends_on: string | null; }
@@ -217,3 +233,18 @@ function normalizeAddress(value:string):string { const match=String(value||'').m
 function headerValue(headers:Headers,name:string):string { return String(headers.get(name) || ''); }
 async function readBounded(stream:ReadableStream<Uint8Array>,limit:number):Promise<Uint8Array>{const reader=stream.getReader(),chunks:Uint8Array[]=[];let total=0;for(;;){const {done,value}=await reader.read();if(done)break;if(!value)continue;total+=value.byteLength;if(total>limit)throw new Error('Inbound confirmation exceeds the safe size limit.');chunks.push(value);}const output=new Uint8Array(total);let offset=0;for(const chunk of chunks){output.set(chunk,offset);offset+=chunk.byteLength;}return output;}
 async function digestHex(value:string):Promise<string>{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return [...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+
+// Accept when Authentication-Results shows DMARC pass, or SPF/DKIM pass for the
+// sender's own domain. Messages without any Authentication-Results header (older
+// routing paths) are allowed; an explicit non-pass is rejected.
+export function senderAuthenticated(headers: Headers, sender: string): boolean {
+  const results = [headers.get('authentication-results'), headers.get('arc-authentication-results')].filter(Boolean).join(';').toLowerCase();
+  if (!results) return true;
+  if (/\bdmarc=pass\b/.test(results)) return true;
+  const domain = sender.split('@')[1] ?? '';
+  if (!domain) return false;
+  const aligned = (value: string) => value === domain || value.endsWith(`.${domain}`) || domain.endsWith(`.${value}`);
+  for (const m of results.matchAll(/\bdkim=pass\b[^;]*?header\.(?:d|i)=@?([a-z0-9.-]+)/g)) if (aligned(m[1])) return true;
+  for (const m of results.matchAll(/\bspf=pass\b[^;]*?smtp\.mailfrom=(?:[^@\s;]*@)?([a-z0-9.-]+)/g)) if (aligned(m[1])) return true;
+  return false;
+}

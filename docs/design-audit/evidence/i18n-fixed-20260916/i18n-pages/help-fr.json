@@ -1,0 +1,132 @@
+{
+  "route": "help",
+  "path": "/help",
+  "screen": "help",
+  "locale": "fr",
+  "image": "help-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "AIDE AU VOYAGE\nComment pouvons-nous vous aider ?\n\nTrouvez une réponse claire sans quitter votre voyage.\n\nRechercher dans l'aide\n18 réponses\nVotre voyage en trois étapes\n\nCommencez simplement. Ajoutez des détails quand vous les avez.\n\n1\nCréer un voyage\n2\nAjouter des réservations\n3\nSuivez la Chronologie\nPremiers pas\n3 réponses\nComment créer un voyage ?\nComment modifier mon voyage ?\nComment passer d'un voyage à l'autre ?\nRéservations\n5 réponses\nComment ajouter une réservation ?\nComment fonctionne l'import de réservation ?\nComment ajouter une réservation manuellement ?\nComment modifier une réservation ?\nComment retirer une réservation ?\nVotre voyage\n5 réponses\nQu’est-ce que la Chronologie ?\nComment fonctionne la liste de contrôle ?\nOù sont mes billets et documents ?\nQuand puis-je utiliser la Carte du voyage ?\nQue fonctionne-t-il hors ligne ?\nPlanifier ensemble\n4 réponses\nPuis-je planifier un voyage avec d'autres personnes ?\nQue peuvent faire les personnes invitées ?\nComment fonctionnent les liens d'invitation ?\nComment arrêter le partage ou quitter un voyage ?\nCompte\n1 réponse\nComment me déconnecter ?\nLiens utiles\n\nApprenez les bases, contactez-nous ou consultez comment vos données sont traitées.\n\nFaire la visite\nContacter le support\nConfidentialité\nConditions\nCookies",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Comment créer un voyage ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "create-trip"
+    },
+    {
+      "text": "Comment modifier mon voyage ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-trip"
+    },
+    {
+      "text": "Comment passer d'un voyage à l'autre ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "switch-trip"
+    },
+    {
+      "text": "Comment ajouter une réservation ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "add-booking"
+    },
+    {
+      "text": "Comment fonctionne l'import de réservation ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "upload-booking"
+    },
+    {
+      "text": "Comment ajouter une réservation manuellement ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "manual-booking"
+    },
+    {
+      "text": "Comment modifier une réservation ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-booking"
+    },
+    {
+      "text": "Comment retirer une réservation ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "remove-booking"
+    },
+    {
+      "text": "Qu’est-ce que la Chronologie ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "timeline"
+    },
+    {
+      "text": "Comment fonctionne la liste de contrôle ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "checklist"
+    },
+    {
+      "text": "Où sont mes billets et documents ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "documents"
+    },
+    {
+      "text": "Quand puis-je utiliser la Carte du voyage ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "trip-map"
+    },
+    {
+      "text": "Que fonctionne-t-il hors ligne ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "offline"
+    },
+    {
+      "text": "Puis-je planifier un voyage avec d'autres personnes ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-what"
+    },
+    {
+      "text": "Que peuvent faire les personnes invitées ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-roles"
+    },
+    {
+      "text": "Comment fonctionnent les liens d'invitation ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-invite"
+    },
+    {
+      "text": "Comment arrêter le partage ou quitter un voyage ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-leave"
+    },
+    {
+      "text": "Comment me déconnecter ?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "sign-out"
+    },
+    {
+      "text": "Faire la visite",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "help-fr-bottom.png"
+}

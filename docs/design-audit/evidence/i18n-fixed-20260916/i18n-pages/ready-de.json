@@ -1,0 +1,29 @@
+{
+  "route": "ready",
+  "path": "/ready-offline",
+  "screen": "ready",
+  "locale": "de",
+  "image": "ready-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "9 von 9 bereit\nIhre Reise-Essentials sind auf diesem Telefon gespeichert.\nReise-Zeitachse\nGerade aktualisiert\nTransport-Buchungen\nGerade aktualisiert\nHotels und Adressen\nGerade aktualisiert\nOrte\nGerade aktualisiert\nAusstehende Änderungen\nKeine nicht synchronisierten lokalen Änderungen\nArthur · Flight ticket / boarding pass\nPrüfsumme auf diesem Gerät verifiziert\nArthur · Train ticket\nPrüfsumme auf diesem Gerät verifiziert\nMaya · Train ticket\nPrüfsumme auf diesem Gerät verifiziert\nHotelbestätigung\nPrüfsumme auf diesem Gerät verifiziert\nOffline-Daten aktualisieren",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Offline-Informationen",
+      "action": "offline-info"
+    },
+    {
+      "text": "Offline-Daten aktualisieren",
+      "label": null,
+      "action": "refresh-data"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "ready-de-bottom.png"
+}

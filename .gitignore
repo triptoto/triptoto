@@ -6,3 +6,11 @@ node_modules/
 .DS_Store
 dist/
 coverage/
+android-web/
+*.jks
+*.keystore
+keystore.properties
+
+# Local-only: D1 dumps (user data) and tool state
+backups/
+.qoder/

@@ -248,7 +248,9 @@ function findOperatingCandidate(selected: NormalizedCandidate, candidates: Norma
 
 function normalizeStatus(value: string): { operationalPhase: FlightOperationalPhase; disruptionState: FlightDisruptionState } {
   const status = value.toLowerCase().replace(/[^a-z]/g, '');
-  if (status === 'canceled' || status === 'cancelled' || status === 'canceleduncertain' || status === 'cancelleduncertain') return { operationalPhase: 'unknown', disruptionState: 'cancelled' };
+  if (status === 'canceled' || status === 'cancelled') return { operationalPhase: 'unknown', disruptionState: 'cancelled' };
+  // The provider itself is unsure; do not raise a cancellation on it.
+  if (status === 'canceleduncertain' || status === 'cancelleduncertain') return { operationalPhase: 'unknown', disruptionState: 'unknown' };
   if (status === 'diverted') return { operationalPhase: 'en_route', disruptionState: 'diverted' };
   if (status === 'delayed') return { operationalPhase: 'scheduled', disruptionState: 'delayed' };
   if (status === 'boarding' || status === 'gateclosed' || status === 'checkin') return { operationalPhase: 'boarding', disruptionState: 'none' };

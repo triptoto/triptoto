@@ -1,0 +1,38 @@
+{
+  "url": "/hotels/hotel-artemide-hotel-artemide",
+  "screen": "hotel",
+  "text": "Mostrar al conductor\nConduce hasta\nDESTINO\nHotel Artemide\nDIRECCIÓN\nVia Nazionale 22, Roma\n\nMuéstrale esta pantalla a tu conductor. El destino se guarda con tu viaje.\n\nAbrir indicaciones",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Cerrar",
+      "action": "close-driver"
+    },
+    {
+      "text": "Abrir indicaciones",
+      "label": null,
+      "action": "directions-hotel",
+      "id": "stay"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "hotel",
+  "clicks": [
+    "[data-action=\"show-driver\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Mostrar al conductor",
+    "Conduce hasta",
+    "Destino",
+    "Hotel Artemide",
+    "Dirección",
+    "Via Nazionale 22, Roma",
+    "Muéstrale esta pantalla a tu conductor. El destino se guarda con tu viaje.",
+    "Abrir indicaciones"
+  ],
+  "errors": []
+}

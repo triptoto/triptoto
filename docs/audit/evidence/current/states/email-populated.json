@@ -1,0 +1,31 @@
+{
+  "url": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "text": "Forward confirmations to\ngo@tripto.to\n\nChoose the trip and confirm the extracted details before anything is added.\n\nYour travel booking confirmation\nWed, Sep 9, 11:00 PM GMT+3\nChoose a trip\nChoose trip\nRefresh inbox",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Choose trip",
+      "label": null,
+      "action": "choose-booking-email-trip",
+      "id": "audit-email"
+    },
+    {
+      "text": "Refresh inbox",
+      "label": null,
+      "action": "refresh-booking-email-inbox"
+    }
+  ],
+  "evidence": [
+    "email-populated-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": []
+}

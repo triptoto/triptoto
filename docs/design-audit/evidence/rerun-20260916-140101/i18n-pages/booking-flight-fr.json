@@ -1,0 +1,32 @@
+{
+  "route": "booking-flight",
+  "path": "/bookings/new/flight",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-flight-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nVol\nEssentiels\nAller-retour\nChoisissez les deux dates dans un même calendrier\nCompagnie aérienne *\nNuméro de vol *\nDe *\nÀ *\nDates du voyage\nDate sélectionnée\n17 sept. 2026\nDate sélectionnée : 17 sept. 2026.\nHeure de départ *\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Date sélectionnée\n17 sept. 2026",
+      "label": "Travel dates. 17 sept. 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

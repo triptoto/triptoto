@@ -1,0 +1,28 @@
+{
+  "route": "booking-insurance",
+  "path": "/bookings/new/insurance",
+  "screen": "form",
+  "locale": "es",
+  "image": "booking-insurance-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar\nRESERVA MANUAL\nSeguro\nEsenciales\nPóliza / proveedor *\nLa cobertura empieza *\nHora local Opcional\nBilletes y documentos\n\nOpcional · Guardado en este dispositivo\n\nAñadir archivos\nPDF, imágenes o pases · hasta 10 MB cada uno\n\nNo se seleccionaron archivos. Puedes guardar la reserva sin ninguno.\n\nMás detalles",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar",
+      "label": null
+    },
+    {
+      "text": "Más detalles",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

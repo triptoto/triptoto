@@ -1,0 +1,38 @@
+{
+  "route": "currency",
+  "path": "/currency",
+  "screen": "currency",
+  "locale": "ru",
+  "image": "currency-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "КУРС ОБМЕНА\n1 EUR = 1.16 USD\n\n0 поездок\n\nВЫ ПЛАТИТЕ\nEUR\nЕвро\nAmount in EUR\n1 EUR = 1.159 USD\nВЫ ПОЛУЧАЕТЕ\nUSD\nДоллар США\n115,91 $\nRate updated · 2026-09-16\nОриентировочный курс для предпросмотра\nОбновить\n\nТолько справочный курс; поставщики могут добавить комиссию. Суммы рассчитываются на этом телефоне.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nЕвро",
+      "label": "Из валюты: EUR, Евро",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Поменять валюты местами",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nДоллар США",
+      "label": "В валюту: USD, Доллар США",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Обновить",
+      "label": "Обновить курс обмена",
+      "action": "refresh-currency"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,28 @@
+{
+  "route": "plan-food_drink",
+  "path": "/day-plan/new/food_drink",
+  "screen": "day-plan-form",
+  "locale": "fr",
+  "image": "plan-food_drink-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nPROGRAMME DU JOUR\nManger et boire\n\nUn café, un bar ou un restaurant à essayer\n\nDétails\nNom ou lieu *\nJour\nSélectionner les dates\nChoisir les dates\nAucune période sélectionnée.\nHeure de début Facultatif\nHeure de fin Facultatif\nAdresse Facultatif\nNotes Facultatif\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nLaissez le jour vide pour garder ceci comme idée dans « Enregistrer pour plus tard ». Choisissez un jour de votre voyage et il apparaît sur votre chronologie.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Sélectionner les dates\nChoisir les dates",
+      "label": "Jour. Choisissez day et day",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "plan-food_drink-fr-bottom.png"
+}

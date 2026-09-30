@@ -1,0 +1,33 @@
+{
+  "route": "add-trip",
+  "path": "/add",
+  "screen": "add-trip",
+  "locale": "fr",
+  "image": "add-trip-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "AJOUTER AU VOYAGE\nQue souhaitez-vous ajouter ?\n\nRéservez, planifiez vos journées ou enregistrez une idée pour Rome 2026.\n\nAjouter une réservation\nVols, hôtels et trains que vous avez réservés\nPlanifiez vos journées\nÀ voir et à faire\nEnregistrer une idée\nGardez des idées pour plus tard",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Ajouter une réservation\nVols, hôtels et trains que vous avez réservés",
+      "label": null,
+      "action": "open-add-booking"
+    },
+    {
+      "text": "Planifiez vos journées\nÀ voir et à faire",
+      "label": null,
+      "action": "open-day-plan"
+    },
+    {
+      "text": "Enregistrer une idée\nGardez des idées pour plus tard",
+      "label": null,
+      "action": "open-save-later"
+    }
+  ],
+  "dialogCount": 0
+}

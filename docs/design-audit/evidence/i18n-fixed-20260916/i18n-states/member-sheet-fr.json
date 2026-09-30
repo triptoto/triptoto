@@ -1,0 +1,125 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "VOYAGE PARTAGÉ\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nUn seul voyage.\nTout le monde synchronisé.\nPourquoi planifier ensemble ?\nCréez un seul plan\nLes éditeurs peuvent ajouter et modifier des réservations.\nGardez tout le monde synchronisé\nLes modifications du voyage restent visibles pour tout le monde au même endroit.\nVous gardez le contrôle\nChoisissez qui peut modifier ou consulter, et retirez l’accès à tout moment.\nInviter des personnes\nPersonnes sur ce voyage\nAlex Traveler (You)\nPropriétaire\nSam Companion\nPeut modifier\nTaylor Companion\nLecture seule\n\nJusqu’à 10 personnes par voyage.\n\nInvitations en attente\nfriend@example.test\nView only · pending · expires 2026-09-17T11:15:29.785Z\nManage Sam Companion\n\nCan edit access to Rome 2026\n\nDéfinir en lecture seule\nIls peuvent voir le programme mais ne peuvent pas le modifier.\nDéfinir comme propriétaire\nVous deviendrez éditeur et perdrez les commandes de partage.\nRetirer du voyage\nIls n’auront plus accès à ce voyage.",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1173
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 519.65625,
+        "width": 390,
+        "height": 324.34375,
+        "top": 519.65625,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Inviter des personnes",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Gérer l’accès pour Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Gérer l’accès pour Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Révoquer l'invitation",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Fermer",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Définir en lecture seule\nIls peuvent voir le programme mais ne peuvent pas le modifier.",
+      "label": null,
+      "action": "member-role",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Définir comme propriétaire\nVous deviendrez éditeur et perdrez les commandes de partage.",
+      "label": null,
+      "action": "member-transfer",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Retirer du voyage\nIls n’auront plus accès à ce voyage.",
+      "label": null,
+      "action": "member-remove",
+      "id": "audit-editor"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "collaboration",
+  "clicks": [
+    "[data-action=\"open-member-actions\"]"
+  ],
+  "documentLang": "fr",
+  "visibleText": [
+    "Planifier ensemble",
+    "Voyage partagé",
+    "Rome 2026",
+    "Invite people to view or edit",
+    "Rome 2026",
+    ". You stay the owner and can change roles or remove people at any time.",
+    "Un seul voyage.",
+    "Tout le monde synchronisé.",
+    "Pourquoi planifier ensemble ?",
+    "Créez un seul plan",
+    "Les éditeurs peuvent ajouter et modifier des réservations.",
+    "Gardez tout le monde synchronisé",
+    "Les modifications du voyage restent visibles pour tout le monde au même endroit.",
+    "Vous gardez le contrôle",
+    "Choisissez qui peut modifier ou consulter, et retirez l’accès à tout moment.",
+    "Inviter des personnes",
+    "Personnes sur ce voyage",
+    "Alex Traveler (You)",
+    "Propriétaire",
+    "Sam Companion",
+    "Peut modifier",
+    "Taylor Companion",
+    "Lecture seule",
+    "Jusqu’à 10 personnes par voyage.",
+    "Invitations en attente",
+    "friend@example.test",
+    "View only · pending · expires 2026-09-17T11:15:29.785Z",
+    "Manage Sam Companion",
+    "Can edit access to Rome 2026",
+    "Définir en lecture seule",
+    "Ils peuvent voir le programme mais ne peuvent pas le modifier.",
+    "Définir comme propriétaire",
+    "Vous deviendrez éditeur et perdrez les commandes de partage.",
+    "Retirer du voyage",
+    "Ils n’auront plus accès à ce voyage."
+  ],
+  "errors": []
+}

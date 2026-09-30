@@ -1,0 +1,83 @@
+{
+  "url": "/bookings/import/history",
+  "screen": "import-history",
+  "text": "Импорт брони\nDelete this booking?\n\n“Your flight to Rome” will be removed from your import history and the inbound email feed everywhere. This cannot be undone.\n\nKeep\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 332.609375,
+        "width": 326,
+        "height": 178.78125,
+        "top": 332.609375,
+        "right": 358,
+        "bottom": 511.390625,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Удалить Your flight to Rome везде",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Удалить Hotel Artemide confirmation везде",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Импорт брони",
+      "label": null,
+      "screen": "import"
+    },
+    {
+      "text": "Keep",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "import-history",
+  "clicks": [
+    "[data-action=\"remove-import\"]"
+  ],
+  "documentLang": "ru",
+  "visibleText": [
+    "История импорта",
+    "Your flight to Rome",
+    "вт, 15 сент., 14:15 GMT+3",
+    "Требует проверки",
+    "Hotel Artemide confirmation",
+    "вс, 13 сент., 14:15 GMT+3",
+    "Добавлено",
+    "Импорт брони"
+  ],
+  "errors": []
+}

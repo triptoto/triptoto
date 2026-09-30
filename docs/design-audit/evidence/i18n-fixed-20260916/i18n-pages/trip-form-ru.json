@@ -1,0 +1,28 @@
+{
+  "route": "trip-form",
+  "path": "/trips/new",
+  "screen": "form",
+  "locale": "ru",
+  "image": "trip-form-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Далее\nНОВАЯ ПОЕЗДКА\nКуда вы едете?\nВыберите направление и даты поездки, чтобы начать планировать своё следующее приключение.\nПУНКТ НАЗНАЧЕНИЯ *\nДаты поездки\nВыберите даты\nВыберите даты\nДиапазон дат не выбран.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Далее",
+      "label": null
+    },
+    {
+      "text": "Выберите даты\nВыберите даты",
+      "label": "Даты поездки. Выберите start date и end date",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

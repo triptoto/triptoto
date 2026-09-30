@@ -1,0 +1,25 @@
+{
+  "url": "/plan-idea",
+  "screen": "add-to-plan",
+  "text": "Idea unavailable\n\nThis idea is no longer available. It may already be on your timeline.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "add-to-plan",
+  "clicks": [],
+  "documentLang": "en",
+  "visibleText": [
+    "Idea unavailable",
+    "Idea unavailable",
+    "This idea is no longer available. It may already be on your timeline."
+  ],
+  "errors": []
+}

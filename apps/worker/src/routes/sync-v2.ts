@@ -22,7 +22,7 @@ export async function syncChanges(request:Request,env:Env,auth:AuthContext,tripI
   const limitRaw=Number(url.searchParams.get('limit')??'100');
   const limit=Math.max(1,Math.min(200,Number.isSafeInteger(limitRaw)?limitRaw:100));
   const changes=(await env.DB.prepare(`SELECT id,entity_type,entity_id,event_type,source_type,source_id,created_at FROM change_events WHERE trip_id=? AND (created_at>? OR (created_at=? AND id>?)) ORDER BY created_at,id LIMIT ?`).bind(tripId,since,since,afterId,limit).all()).results??[];
-  const tombstones=(await env.DB.prepare(`SELECT t.entity_type,t.entity_id,t.version,t.deleted_at FROM tombstones t WHERE t.deleted_at>? AND (EXISTS(SELECT 1 FROM trip_items i WHERE i.id=t.entity_id AND i.trip_id=?) OR EXISTS(SELECT 1 FROM travelers tr WHERE tr.id=t.entity_id AND tr.trip_id=?) OR EXISTS(SELECT 1 FROM journey_groups j WHERE j.id=t.entity_id AND j.trip_id=?) OR EXISTS(SELECT 1 FROM trip_contacts c WHERE c.id=t.entity_id AND c.trip_id=?) OR EXISTS(SELECT 1 FROM trip_time_markers tm WHERE tm.id=t.entity_id AND tm.trip_id=?)) ORDER BY t.deleted_at,t.entity_id LIMIT ?`).bind(since,tripId,tripId,tripId,tripId,tripId,limit).all()).results??[];
+  const tombstones=(await env.DB.prepare(`SELECT t.entity_type,t.entity_id,t.version,t.deleted_at FROM tombstones t WHERE t.deleted_at>? AND (EXISTS(SELECT 1 FROM trip_items i WHERE i.id=t.entity_id AND i.trip_id=?) OR EXISTS(SELECT 1 FROM travelers tr WHERE tr.id=t.entity_id AND tr.trip_id=?) OR EXISTS(SELECT 1 FROM journey_groups j WHERE j.id=t.entity_id AND j.trip_id=?) OR EXISTS(SELECT 1 FROM trip_contacts c WHERE c.id=t.entity_id AND c.trip_id=?) OR EXISTS(SELECT 1 FROM trip_time_markers tm WHERE tm.id=t.entity_id AND tm.trip_id=?) OR EXISTS(SELECT 1 FROM trip_checklist_items ci WHERE ci.id=t.entity_id AND ci.trip_id=?)) ORDER BY t.deleted_at,t.entity_id LIMIT ?`).bind(since,tripId,tripId,tripId,tripId,tripId,tripId,limit).all()).results??[];
   const last=changes.length?changes[changes.length-1] as Record<string,unknown>:null;
   return json({changes,tombstones,nextCursor:last?{createdAt:Number(last.created_at),id:String(last.id)}:{createdAt:since,id:afterId},hasMore:changes.length===limit},{},request,env);
 }
@@ -56,6 +56,8 @@ export async function queueSyncOperation(request:Request,env:Env,auth:AuthContex
   const operationId=uuid(),now=nowMs();
   const response={operation:{id:operationId,status:'pending',safeMode:true,entityType,entityId,operationType,baseVersion,note:'Operation is queued. Automatic generic mutation application is intentionally disabled.'}};
   await env.DB.batch([
+    // An expired entry for the same key would otherwise collide with the new insert.
+    env.DB.prepare(`DELETE FROM sync_idempotency WHERE idempotency_key=? AND device_id=? AND trip_id=? AND expires_at<=?`).bind(key,auth.deviceId,tripId,now),
     env.DB.prepare(`INSERT INTO sync_operations(id,user_id,device_id,entity_type,entity_id,operation_type,base_version,payload_json,status,created_at) VALUES (?,?,?,?,?,?,?,?, 'pending',?)`).bind(operationId,auth.userId??null,auth.deviceId,entityType,entityId,operationType,baseVersion,payloadJson,now),
     env.DB.prepare(`INSERT INTO sync_idempotency(idempotency_key,device_id,trip_id,operation_id,response_json,created_at,expires_at) VALUES (?,?,?,?,?,?,?)`).bind(key,auth.deviceId,tripId,operationId,JSON.stringify(response),now,now+24*60*60*1000),
   ]);

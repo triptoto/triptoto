@@ -1,0 +1,85 @@
+{
+  "route": "trips",
+  "path": "/trips",
+  "screen": "trips",
+  "locale": "ru",
+  "image": "trips-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "ВАШИ ПУТЕШЕСТВИЯ\nВсе ваши поездки\n\nВсе ваши поездки — в одном месте.\n\nВсе\n3\nТекущая\n0\nПредстоящие\n2\nПрошедшие\n1\nПредстоящие\n2\n🇮🇹\nRome 2026\nсент. 17–23, 2026\nНачинается завтра\n🇬🇷\nAthens Weekend\nокт. 15–18, 2026\nНачнётся через 29 дн.\nПрошедшие поездки\n1\n🇫🇷\nParis Spring\nапр. 3–8, 2026\nЗавершено",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Аккаунт",
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Tripto Plus",
+      "action": "open-subscription"
+    },
+    {
+      "text": "",
+      "label": "Создать поездку",
+      "action": "create-trip"
+    },
+    {
+      "text": "Все\n3",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Текущая\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Предстоящие\n2",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Прошедшие\n1",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "",
+      "label": "Удалить Rome 2026",
+      "action": "delete-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "🇮🇹\nRome 2026\nсент. 17–23, 2026\nНачинается завтра",
+      "label": "Открыть поездку: Rome 2026",
+      "action": "open-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "",
+      "label": "Удалить Athens Weekend",
+      "action": "delete-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "🇬🇷\nAthens Weekend\nокт. 15–18, 2026\nНачнётся через 29 дн.",
+      "label": "Открыть поездку: Athens Weekend",
+      "action": "open-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "",
+      "label": "Удалить Paris Spring",
+      "action": "delete-trip",
+      "id": "preview-trip-past"
+    },
+    {
+      "text": "🇫🇷\nParis Spring\nапр. 3–8, 2026\nЗавершено",
+      "label": "Открыть поездку: Paris Spring",
+      "action": "open-trip",
+      "id": "preview-trip-past"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

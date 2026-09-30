@@ -1,0 +1,53 @@
+{
+  "route": "train",
+  "path": "/trains/train",
+  "screen": "train",
+  "locale": "ru",
+  "image": "train-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Trenitalia\nПодтверждено\nДанные по расписанию\nROM\nRoma Termini\nFIR\nFirenze S. M. Novella\nОТПРАВЛЕНИЕ\n09:30\nвс, 20 сент.\n1h 35m\nПРИБЫВАЕТ\n11:05\nвс, 20 сент.\nПЛАТФОРМА\n8\nМаршрут до станции\nTRN48291\nНомер бронирования · нажмите, чтобы скопировать\nДобавить документ\nДобавить заметку",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Изменить",
+      "action": "edit-booking",
+      "id": "train"
+    },
+    {
+      "text": "",
+      "label": "Удалить",
+      "action": "delete-booking",
+      "id": "train"
+    },
+    {
+      "text": "Маршрут до станции",
+      "label": null,
+      "action": "directions-item",
+      "id": "train"
+    },
+    {
+      "text": "TRN48291\nНомер бронирования · нажмите, чтобы скопировать",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Добавить документ",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Добавить заметку",
+      "label": null,
+      "action": "edit-note",
+      "id": "train"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

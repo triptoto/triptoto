@@ -1,0 +1,32 @@
+{
+  "url": "/weather",
+  "screen": "weather",
+  "text": "Hotel Artemide\nRoma\nAún no hay pronóstico\n\nNo encontramos el pronóstico para el destino de este viaje.\n\nInténtalo de nuevo",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Hotel Artemide",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Roma",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Inténtalo de nuevo",
+      "label": null,
+      "action": "refresh-weather"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

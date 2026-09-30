@@ -1,0 +1,33 @@
+{
+  "route": "booking-flight",
+  "path": "/bookings/new/flight",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-flight-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить\nБРОНИРОВАНИЕ ВРУЧНУЮ\nРейс\nВсё для поездки\nТуда и обратно\nВыберите обе даты в одном календаре\nАвиакомпания *\nНомер рейса *\nОткуда *\nКуда *\nДаты поездки\nВыбранная дата\n17 сент. 2026 г.\nВыбранная дата: 17 сент. 2026 г.\nВремя отправления *\nБилеты и документы\n\nНеобязательно · Хранится на этом устройстве\n\nДобавить файлы\nPDF, изображения или карты · до 10 МБ каждый\n\nФайлы не выбраны. Вы можете сохранить бронирование без них.\n\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить",
+      "label": null
+    },
+    {
+      "text": "Выбранная дата\n17 сент. 2026 г.",
+      "label": "Travel dates. 17 сент. 2026 г.",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-flight-ru-bottom.png"
+}

@@ -1,0 +1,28 @@
+{
+  "route": "booking-transfer",
+  "path": "/bookings/new/transfer",
+  "screen": "form",
+  "locale": "de",
+  "image": "booking-transfer-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Speichern\nMANUELLE BUCHUNG\nTransfer\nDas Wichtigste\nAnbieter / Fahrer:in Optional\nVon *\nNach *\nAbholdatum *\nAbholzeit *\nTickets & Dokumente\n\nOptional · Auf diesem Gerät gespeichert\n\nDateien hinzufügen\nPDF, Bilder oder Pässe · je bis zu 10 MB\n\nKeine Dateien ausgewählt. Sie können die Buchung auch ohne speichern.\n\nMehr Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Speichern",
+      "label": null
+    },
+    {
+      "text": "Mehr Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-transfer-de-bottom.png"
+}

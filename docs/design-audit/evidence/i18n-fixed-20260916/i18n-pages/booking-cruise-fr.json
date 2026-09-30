@@ -1,0 +1,28 @@
+{
+  "route": "booking-cruise",
+  "path": "/bookings/new/cruise",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-cruise-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nCroisière\nEssentiels\nCompagnie de croisière *\nPort de départ *\nPort d'arrivée / de retour *\nDate de départ *\nHeure de départ Facultatif\nDate de retour / d'arrivée Facultatif\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-cruise-fr-bottom.png"
+}

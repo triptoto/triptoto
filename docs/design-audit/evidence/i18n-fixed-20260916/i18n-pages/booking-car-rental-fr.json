@@ -1,0 +1,33 @@
+{
+  "route": "booking-car-rental",
+  "path": "/bookings/new/car-rental",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-car-rental-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nLocation de voiture\nEssentiels\nSociété de location *\nLieu de prise en charge *\nLieu de restitution *\nDates de location\nSélectionner les dates\nChoisir les dates\nAucune période sélectionnée.\nHeure de prise en charge *\nHeure de restitution Facultatif\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Sélectionner les dates\nChoisir les dates",
+      "label": "Dates de location. Choisissez pickup et drop-off",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-car-rental-fr-bottom.png"
+}

@@ -1,0 +1,28 @@
+{
+  "route": "booking-cruise",
+  "path": "/bookings/new/cruise",
+  "screen": "form",
+  "locale": "en",
+  "image": "booking-cruise-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Save\nMANUAL BOOKING\nCruise\nEssentials\nCruise line *\nDeparture port *\nArrival / return port *\nDeparture date *\nDeparture time Optional\nReturn / arrival date Optional\nTickets & Documents\n\nOptional · Stored on this device\n\nAdd files\nPDF, images, or passes · up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-cruise-en-bottom.png"
+}

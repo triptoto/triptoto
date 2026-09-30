@@ -1,0 +1,204 @@
+{
+  "url": "/collections/a-morning-in-trastevere-rome",
+  "screen": "collection",
+  "text": "2\nNEIGHBORHOOD\nA morning in Trastevere\n\nRome · Do., 17. Sept., 11:00 MESZ\n\nExplore at your own pace.\n\nORTE\n8\n1 von 8 besucht\n09:30\n01\nWEITER\nSanta Maria in Trastevere\nMuseum\n—\n02\nBEVORSTEHEND\nCoffee and pastries\nCafé\n11:30\n03\nBEVORSTEHEND\nGalleria Corsini\nMuseum\nAllow time for the permanent collection.\n—\n04\nBEVORSTEHEND\nLunch in the neighborhood\nRestaurant\n13:30\n05\nBEVORSTEHEND\nBotanical garden\nPark\n—\n06\nBEVORSTEHEND\nA quiet walk along the river\nStraße\n15:30\n07\nBESUCHT\nPiazza Trilussa\nAussichtspunkt\n—\n08\nÜBERSPRUNGEN\nEvening gelato\nCafé\nGalleria Corsini\nOrt bearbeiten\nName, Zeit, Adresse und Notizen\nNach vorne verschieben\nNach hinten verschieben\nAls besucht markieren\nAbhaken, sobald Sie da waren\nDiesen Ort überspringen\nBehalten, aber ausgrauen\nOrt löschen\nAus diesem Plan entfernen",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 428,
+        "width": 390,
+        "height": 416,
+        "top": 428,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "0 Orte",
+      "action": "collection-add-place",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "",
+      "label": "Reiseoptionen",
+      "screen": "trip-options"
+    },
+    {
+      "text": "2",
+      "label": "Menü, 2 ungelesene Benachrichtigungen",
+      "action": "open-navigation"
+    },
+    {
+      "text": "09:30\n01\nWEITER\nSanta Maria in Trastevere\nMuseum",
+      "label": "09:30, Santa Maria in Trastevere. Next. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-0"
+    },
+    {
+      "text": "—\n02\nBEVORSTEHEND\nCoffee and pastries\nCafé",
+      "label": "Coffee and pastries. Upcoming. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-1"
+    },
+    {
+      "text": "11:30\n03\nBEVORSTEHEND\nGalleria Corsini\nMuseum\nAllow time for the permanent collection.",
+      "label": "11:30, Galleria Corsini. Upcoming. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "—\n04\nBEVORSTEHEND\nLunch in the neighborhood\nRestaurant",
+      "label": "Lunch in the neighborhood. Upcoming. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-3"
+    },
+    {
+      "text": "13:30\n05\nBEVORSTEHEND\nBotanical garden\nPark",
+      "label": "13:30, Botanical garden. Upcoming. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-4"
+    },
+    {
+      "text": "—\n06\nBEVORSTEHEND\nA quiet walk along the river\nStraße",
+      "label": "A quiet walk along the river. Upcoming. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-5"
+    },
+    {
+      "text": "15:30\n07\nBESUCHT\nPiazza Trilussa\nAussichtspunkt",
+      "label": "15:30, Piazza Trilussa. Visited. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-6"
+    },
+    {
+      "text": "—\n08\nÜBERSPRUNGEN\nEvening gelato\nCafé",
+      "label": "Evening gelato. Skipped. Open details. Lange drücken für Aktionen",
+      "action": "open-stop-detail",
+      "id": "audit-stop-7"
+    },
+    {
+      "text": "",
+      "label": "Schließen",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Ort bearbeiten\nName, Zeit, Adresse und Notizen",
+      "label": null,
+      "action": "edit-stop",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "Nach vorne verschieben",
+      "label": null,
+      "action": "stop-move",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "Nach hinten verschieben",
+      "label": null,
+      "action": "stop-move",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "Als besucht markieren\nAbhaken, sobald Sie da waren",
+      "label": null,
+      "action": "stop-status",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "Diesen Ort überspringen\nBehalten, aber ausgrauen",
+      "label": null,
+      "action": "stop-status",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "Ort löschen\nAus diesem Plan entfernen",
+      "label": null,
+      "action": "delete-stop",
+      "id": "audit-stop-2"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "collection",
+  "clicks": [
+    "longpress:[data-longpress-stop][data-id=\"audit-stop-2\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Viertel",
+    "2",
+    "NEIGHBORHOOD",
+    "A morning in Trastevere",
+    "Rome · Do., 17. Sept., 11:00 MESZ",
+    "Explore at your own pace.",
+    "Orte",
+    "8",
+    "1 von 8 besucht",
+    "09:30",
+    "01",
+    "Weiter",
+    "Santa Maria in Trastevere",
+    "Museum",
+    "—",
+    "02",
+    "Bevorstehend",
+    "Coffee and pastries",
+    "Café",
+    "11:30",
+    "03",
+    "Bevorstehend",
+    "Galleria Corsini",
+    "Museum",
+    "Allow time for the permanent collection.",
+    "—",
+    "04",
+    "Bevorstehend",
+    "Lunch in the neighborhood",
+    "Restaurant",
+    "13:30",
+    "05",
+    "Bevorstehend",
+    "Botanical garden",
+    "Park",
+    "—",
+    "06",
+    "Bevorstehend",
+    "A quiet walk along the river",
+    "Straße",
+    "15:30",
+    "07",
+    "Besucht",
+    "Piazza Trilussa",
+    "Aussichtspunkt",
+    "—",
+    "08",
+    "Übersprungen",
+    "Evening gelato",
+    "Café",
+    "Galleria Corsini",
+    "Ort bearbeiten",
+    "Name, Zeit, Adresse und Notizen",
+    "Nach vorne verschieben",
+    "Nach hinten verschieben",
+    "Als besucht markieren",
+    "Abhaken, sobald Sie da waren",
+    "Diesen Ort überspringen",
+    "Behalten, aber ausgrauen",
+    "Ort löschen",
+    "Aus diesem Plan entfernen"
+  ],
+  "errors": []
+}

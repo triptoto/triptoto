@@ -15,6 +15,7 @@ const {expandedTripHealth}=await load('apps/worker/src/routes/intelligence.js');
 const {syncStatus,syncChanges,acknowledgeSync,queueSyncOperation}=await load('apps/worker/src/routes/sync-v2.js');
 const {readiness}=await load('apps/worker/src/routes/readiness.js');
 const {listTransport}=await load('apps/worker/src/routes/transport.js');
+const {createStay,listStays}=await load('apps/worker/src/routes/stays.js');
 
 class Prepared{constructor(db,sql,values=[]){this.db=db;this.sql=sql;this.values=values;}bind(...values){return new Prepared(this.db,this.sql,values);}async first(column){const row=this.db.prepare(this.sql).get(...this.values);if(!row)return null;return column?row[column]:row;}async all(){return{success:true,results:this.db.prepare(this.sql).all(...this.values)}}async run(){const info=this.db.prepare(this.sql).run(...this.values);return{success:true,meta:{changes:info.changes}}}}
 class LocalD1{constructor(db){this.db=db;}prepare(q){return new Prepared(this.db,q)}async batch(statements){this.db.exec('BEGIN');try{const out=[];for(const s of statements)out.push(await s.run());this.db.exec('COMMIT');return out;}catch(e){this.db.exec('ROLLBACK');throw e;}}}
@@ -29,6 +30,16 @@ addDevice(db,'major-device');const auth={deviceId:'major-device'};
 const demo=await body(await createDemoTrip(req('https://test/api/v1/internal/demo-trips','POST',{scenario:'normal'},{'x-tripto-demo-secret':'demo-secret-value-12345'}),env,auth));const tripId=demo.demo.tripId;
 const itemRows=db.prepare(`SELECT id,type,starts_at_utc,ends_at_utc FROM trip_items WHERE trip_id=? ORDER BY starts_at_utc,created_at`).all(tripId);const travelerId=db.prepare(`SELECT id FROM travelers WHERE trip_id=? LIMIT 1`).get(tripId).id;
 assert(itemRows.length>=2,'demo has itinerary items');
+// Stays must anchor trip_items.starts_at_utc/ends_at_utc from their check-in/out
+// dates, otherwise the client timeline drops them into the "Date unavailable"
+// bucket. Demo stays and manually-created stays alike must carry the anchors.
+for(const stay of itemRows.filter(x=>x.type==='stay'))assert(stay.starts_at_utc!=null,'demo stay has a timeline start anchor');
+const madeStay=await body(await createStay(req('https://test/api/v1/trips/x/stays','POST',{propertyName:'Aeolos Beach Resort',checkInDate:'2026-09-20',checkOutDate:'2026-09-24'}),env,auth,tripId));
+assert(madeStay.stay?.id,'stay created');
+const stayRow=db.prepare(`SELECT starts_at_utc,ends_at_utc FROM trip_items WHERE id=?`).get(madeStay.stay.id);
+assert(stayRow.starts_at_utc===Date.UTC(2026,8,20,12,0,0),'stay start anchored to noon UTC of check-in');
+assert(stayRow.ends_at_utc===Date.UTC(2026,8,24,12,0,0),'stay end anchored to noon UTC of check-out');
+const stayList=await body(await listStays(req('https://test/api/v1/trips/x/stays'),env,auth,tripId));assert(stayList.stays.some(x=>x.id===madeStay.stay.id),'stay listed');
 
 const createdJourney=await body(await createJourney(req('https://test/api/v1/trips/x/journeys','POST',{title:'Rome round trip',journeyType:'round_trip',status:'confirmed',sequenceNo:0}),env,auth,tripId));
 assert(createdJourney.journey.id,'journey created');

@@ -179,7 +179,7 @@ assert.ok(!app.includes("google_session="));
 
 // Exercise the real app load + Google completion handlers with isolated API
 // fixtures. Cover both popup and full-page iPhone redirect navigation.
-const appAuthSource = `const POST_AUTH_DESTINATION_KEY="tripto_post_auth_destination_v1";
+const appAuthSource = `const NATIVE=false,NATIVE_PLATFORM="web",API="";const POST_AUTH_DESTINATION_KEY="tripto_post_auth_destination_v1";
 ${app.slice(app.indexOf("async function loadApp()"), app.indexOf("function selectRelevantTrip("))}
 ${app.slice(app.indexOf("function rememberPostAuthDestination("), app.indexOf("function quickField("))}
 `;
@@ -203,16 +203,18 @@ function authHarness({ trips = [], storage = new Map(), mobile = false, screen =
     localStorage: { getItem: key => local.get(key) || null, setItem: (key, value) => local.set(key, value) },
     isSignedIn: () => state.account?.mode === "account",
     hydrateAppFromCache: () => false,
+    sessionPayload: () => null, sessionIdentity: () => "anonymous", migrateSpotOwner: async () => {},
+    migratePendingOwner() {}, syncPendingChanges: async () => false, loadLocalDocsFor: async () => null, myPendingMutations: () => [], renderConnectionState() {},
     resolveRouteSelection: () => true,
     applyRouteTripSelection: () => {},
     canonicalizeAppRoute: () => {},
     selectRelevantTrip: rows => rows[0] || null,
     loadTripDetails: async () => {},
-    render() {}, maybeLoadScreenData() {}, showToast() {},
+    render() {}, maybeLoadScreenData() {}, showToast() {}, withStartupTimeout: p => p,
     route: (screen, id, replace) => { state.screen = screen; state.selectedId = id; calls.push([screen, id, replace]); },
     loadCollaboration: async () => calls.push(["load-collaboration"]),
     loadJoinPreview: async token => calls.push(["load-join", token]),
-    apiGet: async path => path === "/api/v1/trips" ? { trips } : path === "/api/v1/account" ? { account: { mode: "account" } } : {},
+    apiGet: async path => path === "/api/v1/trips" ? { trips } : path === "/api/v1/account" ? { account: { mode: "account" } } : path === "/api/v1/subscription" ? { subscription: null } : {},
     api: async path => path.endsWith("/challenge") ? challenge : { session: { token: "test-session" } },
     fetch: async () => ({ ok: true, json: async () => ({ session: { token: "test-session" } }) }),
     google: { accounts: { id: {

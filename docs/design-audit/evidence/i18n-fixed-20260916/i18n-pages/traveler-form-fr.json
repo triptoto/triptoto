@@ -1,0 +1,23 @@
+{
+  "route": "traveler-form",
+  "path": "/travelers/new",
+  "screen": "form",
+  "locale": "fr",
+  "image": "traveler-form-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer le voyageur\nVOYAGEUR\nAjouter un voyageur\nNom *\nType de voyageur *\nAdulte\nEnfant\nBébé",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer le voyageur",
+      "label": null
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

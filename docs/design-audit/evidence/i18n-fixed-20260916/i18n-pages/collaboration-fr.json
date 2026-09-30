@@ -1,0 +1,24 @@
+{
+  "route": "collaboration",
+  "path": "/collaboration",
+  "screen": "collaboration",
+  "locale": "fr",
+  "image": "collaboration-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "VOYAGE PARTAGÉ\nRome 2026\n\nInvitez les personnes qui voyagent avec vous pour que tout le groupe suive un plan clair.\n\nUn seul voyage.\nTout le monde synchronisé.\nPourquoi planifier ensemble ?\nCréez un seul plan\nLes éditeurs peuvent ajouter et modifier des réservations.\nGardez tout le monde synchronisé\nLes modifications du voyage restent visibles pour tout le monde au même endroit.\nVous gardez le contrôle\nChoisissez qui peut modifier ou consulter, et retirez l’accès à tout moment.\nPrêt à planifier ensemble ?\n\nConnectez-vous avec votre compte gratuit. Chacun utilise ses propres identifiants — aucun mot de passe partagé.\n\nConnectez-vous pour continuer\nGratuit pour chaque voyage.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Connectez-vous pour continuer",
+      "label": null,
+      "action": "collab-sign-in"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "collaboration-fr-bottom.png"
+}

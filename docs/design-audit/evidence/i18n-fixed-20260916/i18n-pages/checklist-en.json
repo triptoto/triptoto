@@ -1,0 +1,57 @@
+{
+  "route": "checklist",
+  "path": "/before-you-go",
+  "screen": "checklist",
+  "locale": "en",
+  "image": "checklist-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "BEFORE YOU GO\nRome 2026\n\n2 tasks left\n\n2/4\nAdd a task\nAdd\nPacking\nPack power adapter\nPack medication\nAdd travel essentials\nCompleted (2)",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add",
+      "label": "Add task"
+    },
+    {
+      "text": "Pack power adapter",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "",
+      "label": "Edit Pack power adapter",
+      "action": "edit-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "Pack medication",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "",
+      "label": "Edit Pack medication",
+      "action": "edit-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "Add travel essentials",
+      "label": null,
+      "action": "load-essentials"
+    },
+    {
+      "text": "Completed (2)",
+      "label": null,
+      "action": "toggle-completed-checklist"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

@@ -1,0 +1,53 @@
+{
+  "url": "/trip-map",
+  "screen": "trip-map",
+  "text": "YOUR ROUTE\nPlaces in trip order\n\nPlaces from your trip, organized by day.\n\n3\nAll Trip\nSep 10\nSep 11\nSep 13\nTRIP PLACES\nAll trip places\nTap for directions\nHotel Artemide\nNEXT\nThu, Sep 10, 03:00 PM GMT+3 \u00b7 Via Nazionale 22, Roma\nDirections\nVatican Museums\nFri, Sep 11, 04:30 PM GMT+3 \u00b7 Viale Vaticano, Rome\nDirections\nRoma Termini\nSun, Sep 13, 10:30 AM GMT+3 \u00b7 Piazza dei Cinquecento, Rome\nDirections\n\nDirections open one destination at a time. tripto.to never requests your location or shares your complete itinerary with Google.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "All Trip",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Sep 10",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Sep 11",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Sep 13",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Hotel Artemide\nNEXT\nThu, Sep 10, 03:00 PM GMT+3 \u00b7 Via Nazionale 22, Roma\nDirections",
+      "label": "Get directions to Hotel Artemide",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Vatican Museums\nFri, Sep 11, 04:30 PM GMT+3 \u00b7 Viale Vaticano, Rome\nDirections",
+      "label": "Get directions to Vatican Museums",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Roma Termini\nSun, Sep 13, 10:30 AM GMT+3 \u00b7 Piazza dei Cinquecento, Rome\nDirections",
+      "label": "Get directions to Roma Termini",
+      "action": "trip-map-navigate"
+    }
+  ],
+  "evidence": [
+    "map-top.png"
+  ]
+}

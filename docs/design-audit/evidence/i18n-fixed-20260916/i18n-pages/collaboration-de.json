@@ -1,0 +1,24 @@
+{
+  "route": "collaboration",
+  "path": "/collaboration",
+  "screen": "collaboration",
+  "locale": "de",
+  "image": "collaboration-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "GETEILTE REISE\nRome 2026\n\nLaden Sie Ihre Mitreisenden ein, damit die ganze Gruppe einem klaren Plan folgen kann.\n\nEine Reise.\nAlle auf dem gleichen Stand.\nWarum gemeinsam planen?\nEinen Plan erstellen\nBearbeiter:innen können Buchungen hinzufügen und aktualisieren.\nAlle auf dem gleichen Stand\nReiseänderungen bleiben für alle an einem Ort sichtbar.\nSie behalten die Kontrolle\nLegen Sie fest, wer bearbeiten oder ansehen darf, und entziehen Sie den Zugriff jederzeit.\nBereit, gemeinsam zu planen?\n\nMelden Sie sich mit Ihrem kostenlosen Konto an. Jede:r nutzt den eigenen Login – keine geteilten Passwörter.\n\nZum Fortfahren anmelden\nKostenlos für jede Reise.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Zum Fortfahren anmelden",
+      "label": null,
+      "action": "collab-sign-in"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "collaboration-de-bottom.png"
+}

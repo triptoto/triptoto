@@ -1,0 +1,59 @@
+{
+  "url": "/ready-offline",
+  "screen": "ready",
+  "text": "9 of 9 ready\nYour essentials are saved on this phone.\nTrip timeline\nUpdated now\nTransport bookings\nUpdated now\nStays and addresses\nUpdated now\nLocations\nUpdated now\nPending changes\nNo unsynced local changes\nArthur \u00b7 Flight ticket / boarding pass\nChecksum verified on this phone\nArthur \u00b7 Train ticket\nChecksum verified on this phone\nMaya \u00b7 Train ticket\nChecksum verified on this phone\nHotel confirmation\nChecksum verified on this phone\nRefresh Offline Data",
+  "scroll": [
+    {
+      "class": "ready-content",
+      "height": 832,
+      "scroll": 875
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Offline information",
+      "action": "offline-info"
+    },
+    {
+      "text": "Refresh Offline Data",
+      "label": null,
+      "action": "refresh-data"
+    }
+  ],
+  "viewport": [
+    1440,
+    900
+  ],
+  "geometry": {
+    "header": {
+      "x": 420,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 1020,
+      "bottom": 68,
+      "left": 420
+    },
+    "main": {
+      "x": 420,
+      "y": 68,
+      "width": 600,
+      "height": 832,
+      "top": 68,
+      "right": 1020,
+      "bottom": 900,
+      "left": 420
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

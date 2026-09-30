@@ -1,0 +1,84 @@
+{
+  "route": "trips",
+  "path": "/trips",
+  "screen": "trips",
+  "locale": "fr",
+  "image": "trips-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "VOS VOYAGES\nTous vos voyages\n\nTous vos voyages, réunis au même endroit.\n\nTous\n3\nActuel\n0\nÀ venir\n2\nPassés\n1\nÀ venir\n2\n🇮🇹\nRome 2026\nsept. 17–23, 2026\nCommence demain\n🇬🇷\nAthens Weekend\noct. 15–18, 2026\n29 jours\nVoyages passés\n1\n🇫🇷\nParis Spring\navr. 3–8, 2026\nTerminé",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Compte",
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Tripto Plus",
+      "action": "open-subscription"
+    },
+    {
+      "text": "",
+      "label": "Créer un voyage",
+      "action": "create-trip"
+    },
+    {
+      "text": "Tous\n3",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Actuel\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "À venir\n2",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Passés\n1",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "",
+      "label": "Supprimer Rome 2026",
+      "action": "delete-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "🇮🇹\nRome 2026\nsept. 17–23, 2026\nCommence demain",
+      "label": "Ouvrir le voyage : Rome 2026",
+      "action": "open-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "",
+      "label": "Supprimer Athens Weekend",
+      "action": "delete-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "🇬🇷\nAthens Weekend\noct. 15–18, 2026\n29 jours",
+      "label": "Ouvrir le voyage : Athens Weekend",
+      "action": "open-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "",
+      "label": "Supprimer Paris Spring",
+      "action": "delete-trip",
+      "id": "preview-trip-past"
+    },
+    {
+      "text": "🇫🇷\nParis Spring\navr. 3–8, 2026\nTerminé",
+      "label": "Ouvrir le voyage : Paris Spring",
+      "action": "open-trip",
+      "id": "preview-trip-past"
+    }
+  ],
+  "dialogCount": 0
+}

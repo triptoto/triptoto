@@ -1,0 +1,25 @@
+{
+  "url": "/timeline",
+  "screen": "collection-stop",
+  "text": "Lieu indisponible\n\nCe lieu n’est pas disponible.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "collection-stop",
+  "clicks": [],
+  "documentLang": "fr",
+  "visibleText": [
+    "Lieu indisponible",
+    "Lieu indisponible",
+    "Ce lieu n’est pas disponible."
+  ],
+  "errors": []
+}

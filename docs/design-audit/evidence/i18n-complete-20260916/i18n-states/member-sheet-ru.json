@@ -1,0 +1,125 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "ОБЩАЯ ПОЕЗДКА\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nОдна поездка.\nВсе в курсе.\nЗачем планировать вместе?\nСоберите единый план\nРедакторы могут добавлять и обновлять бронирования.\nДержите всех на одной волне\nИзменения в поездке видны всем в одном месте.\nВсё под вашим контролем\nВыберите, кто может изменять или просматривать, и в любой момент закрывайте доступ.\nПригласить людей\nУчастники поездки\nAlex Traveler (You)\nВладелец\nSam Companion\nМожет изменять\nTaylor Companion\nТолько просмотр\n\nДо 10 участников на поездку.\n\nОжидающие приглашения\nfriend@example.test\nView only · pending · expires 2026-09-17T11:09:42.207Z\nManage Sam Companion\n\nCan edit access to Rome 2026\n\nТолько просмотр\nМожет видеть план, но не может его менять.\nНазначить владельцем\nВы станете редактором и потеряете управление общим доступом.\nУбрать из поездки\nУ него больше не будет доступа к этой поездке.",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1154
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 503.078125,
+        "width": 390,
+        "height": 340.921875,
+        "top": 503.078125,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Пригласить людей",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Управление доступом для Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Управление доступом для Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Отозвать приглашение",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Закрыть",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Только просмотр\nМожет видеть план, но не может его менять.",
+      "label": null,
+      "action": "member-role",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Назначить владельцем\nВы станете редактором и потеряете управление общим доступом.",
+      "label": null,
+      "action": "member-transfer",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Убрать из поездки\nУ него больше не будет доступа к этой поездке.",
+      "label": null,
+      "action": "member-remove",
+      "id": "audit-editor"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "collaboration",
+  "clicks": [
+    "[data-action=\"open-member-actions\"]"
+  ],
+  "documentLang": "ru",
+  "visibleText": [
+    "Планируйте вместе",
+    "Общая поездка",
+    "Rome 2026",
+    "Invite people to view or edit",
+    "Rome 2026",
+    ". You stay the owner and can change roles or remove people at any time.",
+    "Одна поездка.",
+    "Все в курсе.",
+    "Зачем планировать вместе?",
+    "Соберите единый план",
+    "Редакторы могут добавлять и обновлять бронирования.",
+    "Держите всех на одной волне",
+    "Изменения в поездке видны всем в одном месте.",
+    "Всё под вашим контролем",
+    "Выберите, кто может изменять или просматривать, и в любой момент закрывайте доступ.",
+    "Пригласить людей",
+    "Участники поездки",
+    "Alex Traveler (You)",
+    "Владелец",
+    "Sam Companion",
+    "Может изменять",
+    "Taylor Companion",
+    "Только просмотр",
+    "До 10 участников на поездку.",
+    "Ожидающие приглашения",
+    "friend@example.test",
+    "View only · pending · expires 2026-09-17T11:09:42.207Z",
+    "Manage Sam Companion",
+    "Can edit access to Rome 2026",
+    "Только просмотр",
+    "Может видеть план, но не может его менять.",
+    "Назначить владельцем",
+    "Вы станете редактором и потеряете управление общим доступом.",
+    "Убрать из поездки",
+    "У него больше не будет доступа к этой поездке."
+  ],
+  "errors": []
+}

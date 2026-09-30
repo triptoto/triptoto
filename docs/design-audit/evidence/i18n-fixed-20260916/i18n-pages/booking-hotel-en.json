@@ -1,0 +1,33 @@
+{
+  "route": "booking-hotel",
+  "path": "/bookings/new/hotel",
+  "screen": "form",
+  "locale": "en",
+  "image": "booking-hotel-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Save\nMANUAL BOOKING\nStay\nEssentials\nProperty name *\nCity / location Optional\nStay dates\nSelect dates\nChoose dates\nNo date range selected.\nTickets & Documents\n\nOptional · Stored on this device\n\nAdd files\nPDF, images, or passes · up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Stay dates. Choose check-in and check-out",
+      "action": "open-date-range"
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-hotel-en-bottom.png"
+}

@@ -16,9 +16,10 @@
     account: "/account",
     "trip-map": "/trip-map",
     weather: "/weather",
+    spots: "/saved-spots",
     currency: "/currency",
+    "tax-free": "/tax-free",
     "trip-options": "/trip-options",
-    esim: "/esim",
     checklist: "/before-you-go",
     help: "/help",
     travelers: "/travelers",
@@ -105,6 +106,11 @@
     // through Day Plan and scheduled neighborhoods open from the trip timeline.
     if (path === "/planning")
       return { screen: "timeline", id: null, redirect: true };
+
+    // The old standalone eSIM page is retired. Preserve shared links and
+    // bookmarks by taking people to the maintained Trip Options destination.
+    if (path === "/esim")
+      return { screen: "trip-options", id: null, redirect: true };
 
     if (path === "/trips/new") return { screen: "form", id: "trip" };
     if (path.startsWith("/trips/"))

@@ -1,0 +1,10 @@
+
+> tripto-to@0.9.0-beta.1 test:scenarios
+> node --import tsx/esm tests/scenarios/core.scenarios.ts && node --import tsx/esm tests/scenarios/beta.scenarios.ts && node --import tsx/esm tests/scenarios/milestone2.scenarios.ts && node --import tsx/esm tests/scenarios/import.scenarios.ts && node --import tsx/esm tests/scenarios/inbound-email.scenarios.ts && node --import tsx/esm tests/scenarios/launch.scenarios.ts && node --import tsx/esm tests/scenarios/major.scenarios.ts
+
+Extended beta scenario suite passed.
+Milestone 2 scenario suite passed.
+Import parser scenarios passed: flight, stay, mixed booking, expanded types (train/car/transfer/cruise/ferry/restaurant/activity/generic), stray-keyword safety, ambiguous locale safety and unsupported handling.
+Inbound-email MIME scenarios passed: plain-text safety, header extraction, multipart/alternative, sanitized HTML (no execution/fetch), quoted-printable, base64, attachment-metadata-only, forwarded message/rfc822, bounded huge-attachment handling, and end-to-end import.
+Launch readiness scenarios passed: quotas, feature boundaries, event privacy and request-size guard.
+Major scenario suite passed: journeys, deterministic health and sync version safety.

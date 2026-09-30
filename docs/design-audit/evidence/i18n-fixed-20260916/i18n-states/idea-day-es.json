@@ -1,0 +1,90 @@
+{
+  "url": "/plan-idea/visit-the-museum-of-contemporary-art-museum-culture",
+  "screen": "add-to-plan",
+  "text": "AÑADIR AL PLAN\nAdd Visit the museum of contemporary art\n\nElige un día del viaje y una hora opcional; luego añádelo al plan del día.\n\nELIGE UN DÍA\nJUE\nSEP 17\nVIE\nSEP 18\nSÁB\nSEP 19\nDOM\nSEP 20\nMON\nSEP 21\nTUE\nSEP 22\nWED\nSEP 23\nHora de inicio\nOpcional — se usa para el plan del día\nAÑADIR AL DÍA\nAñadir al plan del día\nPut it on SEP 17",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "JUE\nSEP 17",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "VIE\nSEP 18",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SÁB\nSEP 19",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "DOM\nSEP 20",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "MON\nSEP 21",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "TUE\nSEP 22",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "WED\nSEP 23",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "Añadir al plan del día\nPut it on SEP 17",
+      "label": null,
+      "action": "plan-general",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]",
+    "[data-action=\"idea-add-to-plan\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Añadir al plan",
+    "AÑADIR AL PLAN",
+    "Add Visit the museum of contemporary art",
+    "Elige un día del viaje y una hora opcional; luego añádelo al plan del día.",
+    "Elige un día",
+    "JUE",
+    "SEP 17",
+    "VIE",
+    "SEP 18",
+    "SÁB",
+    "SEP 19",
+    "DOM",
+    "SEP 20",
+    "MON",
+    "SEP 21",
+    "TUE",
+    "SEP 22",
+    "WED",
+    "SEP 23",
+    "Hora de inicio",
+    "Opcional — se usa para el plan del día",
+    "Añadir al día",
+    "Añadir al plan del día",
+    "Put it on SEP 17"
+  ],
+  "errors": []
+}

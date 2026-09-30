@@ -1,0 +1,156 @@
+{
+  "url": "/day-plan",
+  "screen": "day-plan",
+  "text": "ПЛАН ДНЯ\nСпланируйте свой день\n\nЧто вы хотите посетить или сделать? Выберите тип и добавьте детали.\n\nРайон\nОбъедините близкие места в один район\nДостопримечательность\nДостопримечательность, которую стоит увидеть\nМузеи и культура\nМузеи, галереи и культурные места\nЕда и напитки\nКафе, бар или ресторан, который хочется попробовать\nШопинг\nМагазины, рынки и места для прогулок\nТур и впечатления\nЭкскурсия, мастер-класс или забронированное впечатление\nПрирода и отдых на воздухе\nПарки, сады, прогулки и зелёные зоны\nПляж и отдых\nПляж, бассейн или место, где можно расслабиться\nРазвлечения\nШоу, концерт, матч или вечерний выход\nСмотровые площадки и виды\nСмотровая площадка или живописное место с видом\nДругое\nЧто ещё хотите сделать или запомнить",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 632,
+      "scroll": 1277
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Район\nОбъедините близкие места в один район",
+      "label": "Район",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Достопримечательность\nДостопримечательность, которую стоит увидеть",
+      "label": "Достопримечательность",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Музеи и культура\nМузеи, галереи и культурные места",
+      "label": "Музеи и культура",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Еда и напитки\nКафе, бар или ресторан, который хочется попробовать",
+      "label": "Еда и напитки",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Шопинг\nМагазины, рынки и места для прогулок",
+      "label": "Шопинг",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Тур и впечатления\nЭкскурсия, мастер-класс или забронированное впечатление",
+      "label": "Тур и впечатления",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Природа и отдых на воздухе\nПарки, сады, прогулки и зелёные зоны",
+      "label": "Природа и отдых на воздухе",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Пляж и отдых\nПляж, бассейн или место, где можно расслабиться",
+      "label": "Пляж и отдых",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Развлечения\nШоу, концерт, матч или вечерний выход",
+      "label": "Развлечения",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Смотровые площадки и виды\nСмотровая площадка или живописное место с видом",
+      "label": "Смотровые площадки и виды",
+      "action": "day-plan-type"
+    },
+    {
+      "text": "Другое\nЧто ещё хотите сделать или запомнить",
+      "label": "Другое",
+      "action": "day-plan-type"
+    }
+  ],
+  "locale": "ru",
+  "wideElements": [
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    },
+    {
+      "tag": "SPAN",
+      "cls": "ds-flat-row__icon day-plan-row__icon",
+      "text": "",
+      "width": 36,
+      "scroll": 40
+    }
+  ]
+}

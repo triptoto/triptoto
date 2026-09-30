@@ -1,0 +1,89 @@
+{
+  "url": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "text": "Forward confirmations to\ngo@tripto.to\n\nChoose the trip and confirm the extracted details before anything is added.\n\nYour travel booking confirmation\nWed, Sep 16, 02:10 PM GMT+3\nChoose a trip\nChoose trip\nRefresh inbox\nChoose trip\n\nYour travel booking confirmation\n\n🇮🇹\nRome 2026\nSep 17–23, 2026\n🇬🇷\nAthens Weekend\nOct 15–18, 2026\n🇫🇷\nParis Spring\nApr 3–8, 2026",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 566.609375,
+        "width": 390,
+        "height": 277.390625,
+        "top": 566.609375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Choose trip",
+      "label": null,
+      "action": "choose-booking-email-trip",
+      "id": "audit-email"
+    },
+    {
+      "text": "Refresh inbox",
+      "label": null,
+      "action": "refresh-booking-email-inbox"
+    },
+    {
+      "text": "",
+      "label": "Close",
+      "action": "close-sheet"
+    },
+    {
+      "text": "🇮🇹\nRome 2026\nSep 17–23, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "🇬🇷\nAthens Weekend\nOct 15–18, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "🇫🇷\nParis Spring\nApr 3–8, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "booking-email-inbox",
+  "clicks": [
+    "[data-action=\"choose-booking-email-trip\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Email Inbox",
+    "Forward confirmations to",
+    "go@tripto.to",
+    "Choose the trip and confirm the extracted details before anything is added.",
+    "Your travel booking confirmation",
+    "Wed, Sep 16, 02:10 PM GMT+3",
+    "Choose a trip",
+    "Choose trip",
+    "Refresh inbox",
+    "Choose trip",
+    "Your travel booking confirmation",
+    "🇮🇹",
+    "Rome 2026",
+    "Sep 17–23, 2026",
+    "🇬🇷",
+    "Athens Weekend",
+    "Oct 15–18, 2026",
+    "🇫🇷",
+    "Paris Spring",
+    "Apr 3–8, 2026"
+  ],
+  "errors": []
+}

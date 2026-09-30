@@ -11,7 +11,7 @@ for (const token of [
   "--radius-regular:16px",
   "--radius-hero:22px",
   "--control-height:52px",
-  "--row-height:74px",
+  "--row-height:80px",
   "--ds-shadow:none",
 ]) {
   assert.ok(css.includes(token), `missing unified design token ${token}`);
@@ -40,18 +40,21 @@ for (const primitive of [
 }
 
 for (const routeMarkup of [
-  "ds-flat-row trip-option-card",
-  "ds-flat-row add-intent-row",
   "ds-flat-row day-plan-row",
   "ds-flat-row travel-row",
-  "trip-list-row ds-flat-row",
 ]) {
   assert.ok(js.includes(routeMarkup), `route is not using the shared flat-row grammar: ${routeMarkup}`);
 }
 
-assert.match(css, /trip-options-page[^{]*trip-options-grid\{[^}]*grid-template-columns:1fr!important/);
-assert.match(css, /trip-options-page[^{]*trip-option-card\{[^}]*background:transparent!important/);
-assert.match(css, /add-intent-page[^{]*add-intent-row\{[^}]*border-bottom:1px solid var\(--line\)/);
+// Trip Options presents its tools as a compact icon-tile grid (Travel tools +
+// Need help), not the flat-row list. Edit/Alerts/Help live in the header.
+assert.match(css, /trip-options-page[^{]*trip-tools-grid\{[^}]*grid-template-columns:repeat\(5,1fr\)/);
+assert.match(css, /trip-options-page[^{]*trip-option-tile\{[^}]*background:var\(--surface\)/);
+assert.ok(js.includes('class="trip-option-tile trip-option-tile--'), 'Trip Options must render icon-grid tiles');
+// The Add-to-trip hub presents its choices as the same flat bordered icon grid.
+assert.match(css, /add-intent-fields\.add-intent-grid\{[^}]*display:grid/);
+assert.match(css, /html body \.add-intent-tile\{[^}]*background:var\(--card\)/);
+assert.ok(js.includes('class="add-intent-tile add-intent-tile--'), 'the Add hub must render icon-grid tiles');
 assert.match(css, /save-later-page[^{]*save-later-row\{[^}]*background:transparent/);
 assert.match(css, /dark-detail[^{]*fd-list--detail\{[^}]*box-shadow:none/);
 assert.ok(js.includes('fd-list fd-list--detail'), 'all booking detail variants must use the compact shared detail list');
@@ -60,7 +63,7 @@ const flightDetail = js.slice(js.indexOf('function flightScreen()'), js.indexOf(
 assert.ok(flightDetail.includes('flightDetailsList = fdList('), 'flight detail must use the shared flat-list layout');
 assert.ok(!flightDetail.includes('fdSection(') && !flightDetail.includes('fd-list__section'), 'flight detail must not insert redundant section headings');
 assert.match(css, /flight-detail-screen \.fd-list--detail\{[^}]*margin-top:0!important/);
-assert.match(css, /flight-detail-screen[^{]*fd-row\{[^}]*min-height:60px!important/);
+assert.match(css, /flight-detail-screen[^{]*fd-row\{[^}]*min-height:46px!important/);
 assert.ok(js.includes('collection-schedule__helper'), 'neighborhood schedule explanation must stay with the date field');
 assert.match(css, /collection-form-screen[^{]*collection-schedule\{[^}]*grid-column:1\/-1/);
 assert.ok(js.includes('function sheetActionRow('), 'item action sheets must share one row primitive');
@@ -79,7 +82,6 @@ assert.match(css, /discard-dialog\{[\s\S]*?max-height:calc\(var\(--app-viewport-
 const popupMenu = (start, end) => js.slice(js.indexOf(start), js.indexOf(end, js.indexOf(start)));
 for (const [start, end, name] of [
   ['function manageBookingSheet()', 'function bookingAnchorDate(', 'booking actions'],
-  ['function addSheet()', 'function tripOptionsScreen(', 'add actions'],
   ['function manualBookingSheet()', 'function documentSheet(', 'manual booking chooser'],
   ['function tripSwitchSheet()', 'function bookingEmailTripSheet(', 'trip chooser'],
   ['function bookingEmailTripSheet()', 'function firstRunHowSheet(', 'email trip chooser'],
@@ -100,14 +102,14 @@ assert.match(css, /\.date-range-trigger\{[^}]*min-height:var\(--control-height\)
 assert.match(css, /\.date-range-trigger__icon\{[^}]*width:40px[^}]*height:40px[^}]*border-radius:var\(--radius-control\)/, 'date controls must use the same icon geometry as form controls');
 assert.match(css, /\.form-fields--flight-when\{[^}]*align-items:start/, 'flight date and departure-time labels must share a top edge');
 assert.match(css, /\.form-fields--flight-when>\.form-field>input\{[^}]*min-height:var\(--control-height\)/, 'flight departure time must match the shared date control height');
-assert.ok(js.includes('function tripsPageHeader(') && js.includes('class="screen trips-screen"'), 'Trips root must use the shared application shell');
+assert.ok(js.includes('function tripsPageHeader(') && js.includes('class="screen trips-screen trips-screen--editorial'), 'Trips root must use the shared application shell');
 const tripsInventory = js.slice(js.indexOf('function tripsPageHeader('), js.indexOf('function meaningfulBookingStatus('));
-assert.ok(!tripsInventory.includes('trips-fab') && !tripsInventory.includes('bottomNav(') && tripsInventory.includes('data-screen="account"') && tripsInventory.includes('data-action="create-trip"'), 'Trips must open Account and create trips from the header without bottom navigation');
+assert.ok(tripsInventory.includes('class="trips-fab trips-create-fab" data-action="create-trip"') && !tripsInventory.includes('bottomNav(') && tripsInventory.includes('data-screen="account"'), 'Trips must open Account from the header and create trips from the bottom-right + button without bottom navigation');
 assert.match(css, /trips-screen[^}]*trips-page\{[^}]*background:var\(--paper\)/);
 assert.match(css, /trip-create-screen \.trip-create-head\{[^}]*background:transparent!important/);
 assert.match(css, /trip-create-screen \.trip-create-route\{[^}]*display:none!important/);
 
-assert.match(css, /ds-grouped-card\{[^}]*padding:var\(--space-4\)[^}]*border:1px solid var\(--line\)[^}]*border-radius:var\(--radius-regular\)/, 'grouped surfaces must use shared spacing and border tokens');
+assert.match(css, /ds-grouped-card\{[^}]*padding:var\(--space-5\)[^}]*border:1px solid var\(--line\)[^}]*border-radius:var\(--radius-regular\)/, 'grouped surfaces must use shared spacing and border tokens');
 assert.ok(!/\b(?:window\.)?(?:confirm|prompt)\(/.test(js.replace(/^\s*\/\/.*$/gm, '')), 'app-owned confirmation flows must use the shared accessible dialog');
 assert.ok(js.includes('confirmationText: "DELETE"') && js.includes('input.value !== confirmationText'), 'account deletion must preserve exact typed confirmation');
 assert.ok(js.includes('awaitingConfirmation') && js.includes('document.getElementById("tripto-activity")?.remove()') && !js.includes('created.className = "thinking-notice"'), 'routine activity must remain silent while accessible confirmation state stays independent');

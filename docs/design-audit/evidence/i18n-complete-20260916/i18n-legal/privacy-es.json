@@ -1,0 +1,44 @@
+{
+  "lang": "es",
+  "title": "Datenschutz, klar erklärt · tripto.to",
+  "text": "tripto.to\nEnglish\nDeutsch\nFrançais\nEspañol\nРусский\nApp öffnen\n\nIHRE DATEN, IHRE REISE\n\nDatenschutz, klar erklärt\n\nTripto wurde entwickelt, um Ihnen bei der Organisation einer Reise zu helfen, ohne Ihre Reisepläne in Werbedaten zu verwandeln. Diese Richtlinie erklärt, was wir erfassen, warum wir es nutzen und welche Wahlmöglichkeiten Sie haben.\n\nZuletzt aktualisiert am 16. September 2026\ntripto.to\nWas wir erfassen\nKontoinformationen\nIhre verifizierte Google-E-Mail-Adresse und Konto-Kennung, wenn Sie sich anmelden.\nReiseinformationen\nReisen, Buchungen, Daten, Notizen und Details geteilter Reisen, die Sie hinzufügen möchten.\nVerbindungsdaten\nBegrenzte technische Daten, die nötig sind, um den Dienst sicher, zuverlässig und synchron zu halten.\nDokumente auf dem Gerät\nDateien, die Sie offline speichern, bleiben auf Ihrem Gerät; ihre Inhalte werden nicht auf Tripto-Server hochgeladen.\nWie wir sie nutzen\nUm die Reisen, die Sie erstellen, anzuzeigen, zu synchronisieren und zu schützen.\nUm Buchungsdetails zu verarbeiten, die Sie ausdrücklich zur Prüfung hinzufügen oder weiterleiten.\nUm versehentliches Überschreiben zu verhindern und die Sicherheit Ihres Kontos zu wahren.\nUm zu reagieren, wenn Sie Support oder die Löschung Ihres Kontos anfragen.\n\nWir verkaufen Reiseplan-Inhalte nicht und nutzen sie nicht für gezielte Werbung.\n\nBuchungs-E-Mails und Importe\n\nWhen you forward a confirmation to go@tripto.to, Tripto processes it to identify travel details for your review. Smart Import processes supported files on your device; raw files and extracted text are not uploaded through that flow.\n\nIhre Auswahl\nSie können sich jederzeit im Konto abmelden.\nSie können lokale Dateien und zwischengespeicherte Reisedaten von dem Gerät entfernen, das sie speichert.\nSie können die Löschung Ihrer Kontodaten anfordern, indem Sie uns kontaktieren.\nDatenschutz von Anfang an\nSupport-Diagnosen verwenden grobe Betriebsinformationen. Sie enthalten keine Bestätigungsnummern, Einladungstokens, E-Mail-Texte, Namen von Reisenden, Adressen oder Dokumentinhalte.\nBrauchen Sie noch Hilfe?\n\nSchreiben Sie uns mit den nötigsten Angaben, damit wir Ihr Anliegen verstehen.\n\nE-Mail an go@tripto.to\nDatenschutz\nAGB\nCookies\nKontakt\nApp öffnen",
+  "overflow": false,
+  "links": [
+    {
+      "text": "tripto.to",
+      "href": "/landing"
+    },
+    {
+      "text": "App öffnen",
+      "href": "/account"
+    },
+    {
+      "text": "go@tripto.to",
+      "href": "mailto:go@tripto.to"
+    },
+    {
+      "text": "E-Mail an go@tripto.to",
+      "href": "mailto:go@tripto.to?subject=Tripto%20support"
+    },
+    {
+      "text": "Datenschutz",
+      "href": "/privacy"
+    },
+    {
+      "text": "AGB",
+      "href": "/terms"
+    },
+    {
+      "text": "Cookies",
+      "href": "/cookies"
+    },
+    {
+      "text": "Kontakt",
+      "href": "/contact"
+    },
+    {
+      "text": "App öffnen",
+      "href": "/account"
+    }
+  ]
+}

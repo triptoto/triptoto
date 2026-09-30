@@ -1,0 +1,338 @@
+[
+  {
+    "case": "320x568-welcome",
+    "errors": []
+  },
+  {
+    "case": "320x568-trips",
+    "errors": []
+  },
+  {
+    "case": "320x568-trip-form",
+    "errors": []
+  },
+  {
+    "case": "320x568-flight-form",
+    "errors": []
+  },
+  {
+    "case": "320x568-flight",
+    "errors": []
+  },
+  {
+    "case": "320x568-collection",
+    "errors": []
+  },
+  {
+    "case": "320x568-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "320x568-stop-form",
+    "errors": []
+  },
+  {
+    "case": "320x568-collab",
+    "errors": []
+  },
+  {
+    "case": "320x568-share",
+    "errors": []
+  },
+  {
+    "case": "320x568-confirm",
+    "errors": []
+  },
+  {
+    "case": "320x568-calendar",
+    "errors": []
+  },
+  {
+    "case": "320x568-ready",
+    "errors": []
+  },
+  {
+    "case": "320x568-missing",
+    "errors": []
+  },
+  {
+    "case": "360x740-welcome",
+    "errors": []
+  },
+  {
+    "case": "360x740-trips",
+    "errors": []
+  },
+  {
+    "case": "360x740-trip-form",
+    "errors": []
+  },
+  {
+    "case": "360x740-flight-form",
+    "errors": []
+  },
+  {
+    "case": "360x740-flight",
+    "errors": []
+  },
+  {
+    "case": "360x740-collection",
+    "errors": []
+  },
+  {
+    "case": "360x740-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "360x740-stop-form",
+    "errors": []
+  },
+  {
+    "case": "360x740-collab",
+    "errors": []
+  },
+  {
+    "case": "360x740-share",
+    "errors": []
+  },
+  {
+    "case": "360x740-confirm",
+    "errors": []
+  },
+  {
+    "case": "360x740-calendar",
+    "errors": []
+  },
+  {
+    "case": "360x740-ready",
+    "errors": []
+  },
+  {
+    "case": "360x740-missing",
+    "errors": []
+  },
+  {
+    "case": "430x932-welcome",
+    "errors": []
+  },
+  {
+    "case": "430x932-trips",
+    "errors": []
+  },
+  {
+    "case": "430x932-trip-form",
+    "errors": []
+  },
+  {
+    "case": "430x932-flight-form",
+    "errors": []
+  },
+  {
+    "case": "430x932-flight",
+    "errors": []
+  },
+  {
+    "case": "430x932-collection",
+    "errors": []
+  },
+  {
+    "case": "430x932-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "430x932-stop-form",
+    "errors": []
+  },
+  {
+    "case": "430x932-collab",
+    "errors": []
+  },
+  {
+    "case": "430x932-share",
+    "errors": []
+  },
+  {
+    "case": "430x932-confirm",
+    "errors": []
+  },
+  {
+    "case": "430x932-calendar",
+    "errors": []
+  },
+  {
+    "case": "430x932-ready",
+    "errors": []
+  },
+  {
+    "case": "430x932-missing",
+    "errors": []
+  },
+  {
+    "case": "768x1024-welcome",
+    "errors": []
+  },
+  {
+    "case": "768x1024-trips",
+    "errors": []
+  },
+  {
+    "case": "768x1024-trip-form",
+    "errors": []
+  },
+  {
+    "case": "768x1024-flight-form",
+    "errors": []
+  },
+  {
+    "case": "768x1024-flight",
+    "errors": []
+  },
+  {
+    "case": "768x1024-collection",
+    "errors": []
+  },
+  {
+    "case": "768x1024-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "768x1024-stop-form",
+    "errors": []
+  },
+  {
+    "case": "768x1024-collab",
+    "errors": []
+  },
+  {
+    "case": "768x1024-share",
+    "errors": []
+  },
+  {
+    "case": "768x1024-confirm",
+    "errors": []
+  },
+  {
+    "case": "768x1024-calendar",
+    "errors": []
+  },
+  {
+    "case": "768x1024-ready",
+    "errors": []
+  },
+  {
+    "case": "768x1024-missing",
+    "errors": []
+  },
+  {
+    "case": "1024x768-welcome",
+    "errors": []
+  },
+  {
+    "case": "1024x768-trips",
+    "errors": []
+  },
+  {
+    "case": "1024x768-trip-form",
+    "errors": []
+  },
+  {
+    "case": "1024x768-flight-form",
+    "errors": []
+  },
+  {
+    "case": "1024x768-flight",
+    "errors": []
+  },
+  {
+    "case": "1024x768-collection",
+    "errors": []
+  },
+  {
+    "case": "1024x768-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "1024x768-stop-form",
+    "errors": []
+  },
+  {
+    "case": "1024x768-collab",
+    "errors": []
+  },
+  {
+    "case": "1024x768-share",
+    "errors": []
+  },
+  {
+    "case": "1024x768-confirm",
+    "errors": []
+  },
+  {
+    "case": "1024x768-calendar",
+    "errors": []
+  },
+  {
+    "case": "1024x768-ready",
+    "errors": []
+  },
+  {
+    "case": "1024x768-missing",
+    "errors": []
+  },
+  {
+    "case": "844x390-welcome",
+    "errors": []
+  },
+  {
+    "case": "844x390-trips",
+    "errors": []
+  },
+  {
+    "case": "844x390-trip-form",
+    "errors": []
+  },
+  {
+    "case": "844x390-flight-form",
+    "errors": []
+  },
+  {
+    "case": "844x390-flight",
+    "errors": []
+  },
+  {
+    "case": "844x390-collection",
+    "errors": []
+  },
+  {
+    "case": "844x390-stop-menu",
+    "errors": []
+  },
+  {
+    "case": "844x390-stop-form",
+    "errors": []
+  },
+  {
+    "case": "844x390-collab",
+    "errors": []
+  },
+  {
+    "case": "844x390-share",
+    "errors": []
+  },
+  {
+    "case": "844x390-confirm",
+    "errors": []
+  },
+  {
+    "case": "844x390-calendar",
+    "errors": []
+  },
+  {
+    "case": "844x390-ready",
+    "errors": []
+  },
+  {
+    "case": "844x390-missing",
+    "errors": []
+  }
+]

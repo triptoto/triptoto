@@ -1,0 +1,73 @@
+{
+  "route": "map",
+  "path": "/trip-map",
+  "screen": "trip-map",
+  "locale": "de",
+  "image": "map-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Rome 2026\nSept. 17–23, 2026\nAlle\nGanze Reise\nTag 1\n17. Sept.\nTag 2\n18. Sept.\nTag 3\n20. Sept.\nAlle Orte der Reise\n0/3 verortet\nFür Wegbeschreibung tippen\nHotel ArtemideWEITER\nVatikanische Museen\nRoma Termini\n\nRouten öffnen jeweils nur ein Ziel. tripto.to zeigt Ihren Standort nur auf diesem Gerät und teilt niemals Ihre gesamte Reiseroute.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Kartenebenen",
+      "action": "toggle-map-layers"
+    },
+    {
+      "text": "Alle\nGanze Reise",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Tag 1\n17. Sept.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Tag 2\n18. Sept.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "Tag 3\n20. Sept.",
+      "label": null,
+      "action": "trip-map-day"
+    },
+    {
+      "text": "",
+      "label": "Alle Orte anzeigen",
+      "action": "map-fit"
+    },
+    {
+      "text": "",
+      "label": "Mein Standort",
+      "action": "map-locate"
+    },
+    {
+      "text": "",
+      "label": "Reiseorte ausblenden",
+      "action": "toggle-map-sheet"
+    },
+    {
+      "text": "Hotel ArtemideWEITER",
+      "label": "Wegbeschreibung nach Hotel Artemide",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Vatikanische Museen",
+      "label": "Wegbeschreibung nach Vatikanische Museen",
+      "action": "trip-map-navigate"
+    },
+    {
+      "text": "Roma Termini",
+      "label": "Wegbeschreibung nach Roma Termini",
+      "action": "trip-map-navigate"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,103 @@
+{
+  "route": "account",
+  "path": "/account",
+  "screen": "account",
+  "locale": "fr",
+  "image": "account-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "GT\nVoyageur invité\n\nProfil invité\n\n0\nActuel\n2\nÀ venir\n1\nPassés\nTous les voyages\nNouveau voyage\nTripto Plus\nDébloquer Tripto Plus\nVoyages illimités · Annulez à tout moment\nVos voyages\nChanger de voyage\n3 disponibles\nBoîte de réception\nConnectez-vous pour vérifier un expéditeur\nEssentiels de voyage\nTrouver un vol\nRechercher des vols et des hôtels\nTrouver un hébergement\nParcourir les hôtels sur Booking.com\neSIM de voyage\nConnectez-vous avant d'atterrir\n\nLes liens partenaires peuvent rapporter une commission à Tripto, sans frais supplémentaires.\n\nApparence\nNuit\nJour\nLangue\nEN\nEnglish\nDE\nDeutsch\nFR\nFrançais\nES\nEspañol\nRU\nРусский\nAide et assistance\nFaire la visite\nDécouvrez Tripto\nAide, confidentialité et conditions\nInformations d’assistance et mentions légales\nRechercher des mises à jour\nRecharger la dernière version de l’application\nConfidentialité et données\nSupprimer les données locales\nEfface les fichiers et les voyages en cache de ce téléphone uniquement\ntripto.to\n\nProduct V2",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Tous les voyages",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Nouveau voyage",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Débloquer Tripto Plus\nVoyages illimités · Annulez à tout moment",
+      "label": null,
+      "action": "open-subscription"
+    },
+    {
+      "text": "Changer de voyage\n3 disponibles",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Boîte de réception\nConnectez-vous pour vérifier un expéditeur",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Nuit",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "Jour",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "EN\nEnglish",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "DE\nDeutsch",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "FR\nFrançais",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "ES\nEspañol",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "RU\nРусский",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "Faire la visite\nDécouvrez Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Aide, confidentialité et conditions\nInformations d’assistance et mentions légales",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Rechercher des mises à jour\nRecharger la dernière version de l’application",
+      "label": null,
+      "action": "force-update"
+    },
+    {
+      "text": "Supprimer les données locales\nEfface les fichiers et les voyages en cache de ce téléphone uniquement",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Ouvrir l'écran d'accueil",
+      "screen": "home"
+    }
+  ],
+  "dialogCount": 0
+}

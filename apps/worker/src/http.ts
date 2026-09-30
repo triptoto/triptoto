@@ -37,6 +37,10 @@ export function errorResponse(error: unknown, request: Request, env: Env): Respo
     if (error.status === 429 && Number.isFinite(retry) && retry > 0) headers.set('retry-after', String(Math.ceil(retry)));
     return json({ error: { code: error.code, message: error.message, details: error.details, requestId: id } }, { status: error.status, headers }, request, env);
   }
+  // A duplicate (e.g. the same connection twice) is a conflict, not a server crash.
+  if (error instanceof Error && /UNIQUE constraint failed/i.test(error.message)) return json({ error: { code: 'ALREADY_EXISTS', message: 'This item already exists.', requestId: id } }, { status: 409 }, request, env);
+  // A malformed %-escape in a path segment is a client error, not a crash.
+  if (error instanceof URIError) return json({ error: { code: 'INVALID_PATH', message: 'Endpoint not found.', requestId: id } }, { status: 400 }, request, env);
   console.error('Unhandled worker error', { requestId: id, error });
   return json({ error: { code: 'INTERNAL_ERROR', message: 'Unexpected server error.', requestId: id } }, { status: 500 }, request, env);
 }
@@ -108,6 +112,17 @@ export function nowMs(): number {
   return Date.now();
 }
 
+// Anchor a date-only value (YYYY-MM-DD) to a sortable UTC instant. We use noon
+// UTC so the calendar day stays correct once formatted back in any realistic
+// trip time zone (UTC-11..+13). Stays store only check-in/out dates, so this is
+// what feeds trip_items.starts_at_utc/ends_at_utc for timeline bucketing.
+export function dateOnlyToUtcMs(date: string | null | undefined): number | null {
+  if (!date) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date));
+  if (!match) return null;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0);
+}
+
 export function applyCors(headers: Headers, request: Request, env: Env): void {
   const origin = request.headers.get('origin');
   if (!origin) return;
@@ -119,6 +134,18 @@ export function applyCors(headers: Headers, request: Request, env: Env): void {
   }
 }
 
+// Some API handlers build their Response without passing request/env to json().
+// For an allowlisted Origin (the Android app's https://localhost) make sure every
+// /api/ response still carries the CORS headers; other origins stay untouched.
+export function ensureApiCors(response: Response, request: Request, env: Env): Response {
+  if (!request.headers.get('origin') || !new URL(request.url).pathname.startsWith('/api/')) return response;
+  if (response.headers.has('access-control-allow-origin') || response.status === 101) return response;
+  const headers = new Headers(response.headers);
+  applyCors(headers, request, env);
+  if (!headers.has('access-control-allow-origin')) return response;
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 export function corsPreflight(request: Request, env: Env): Response {
   const headers = new Headers();
   applyCors(headers, request, env);
@@ -126,4 +153,10 @@ export function corsPreflight(request: Request, env: Env): Response {
   headers.set('access-control-allow-headers', 'authorization,content-type,idempotency-key,x-api-version,x-tripto-client-request-id,x-tripto-demo-secret,x-tripto-ops-secret,x-request-id');
   headers.set('access-control-max-age', '600');
   return new Response(null, { status: 204, headers });
+}
+
+// A version-guarded UPDATE that matches no row means another client changed or
+// deleted the entity first. D1 still reports success, so check the row count.
+export function requireChanged(result: { meta?: { changes?: number } }, message = 'This item changed on another client.'): void {
+  if (Number(result?.meta?.changes ?? 0) < 1) throw new HttpError(409, 'VERSION_CONFLICT', message);
 }

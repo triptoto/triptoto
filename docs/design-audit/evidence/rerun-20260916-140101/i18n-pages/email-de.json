@@ -1,0 +1,23 @@
+{
+  "route": "email",
+  "path": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "locale": "de",
+  "image": "email-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Bestätigungen weiterleiten an\ngo@tripto.to\n\nWählen Sie die Reise und bestätigen Sie die erkannten Details, bevor etwas hinzugefügt wird.\n\nZum Nutzen der Buchungs-E-Mail anmelden\n\nGoogle überprüft, welche E-Mail-Adresse Bestätigungen senden darf.\n\nMit Google anmelden",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Mit Google anmelden",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "dialogCount": 0
+}

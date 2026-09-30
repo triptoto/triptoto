@@ -1,0 +1,59 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Reisedokumente\n\n3 von 3 offline bereit auf diesem Telefon\n\nDokument hinzufügen\nPDF, Bild oder Wallet-Pass · bis zu 10 MB\nAuf diesem Telefon (3)\nLY 383 Boarding Pass\nArthur\nOffline bereit\nHotel Artemide Confirmation\nRome stay\nOffline bereit\nFrecciarossa 9512 Tickets\nArthur, Maya\nOffline bereit",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 632,
+      "scroll": 678
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "LY 383 Boarding Pass\nArthur\nOffline bereit",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "LY 383 Boarding Pass löschen",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "Hotel Artemide Confirmation\nRome stay\nOffline bereit",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Hotel Artemide Confirmation löschen",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "Frecciarossa 9512 Tickets\nArthur, Maya\nOffline bereit",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Frecciarossa 9512 Tickets löschen",
+      "action": "remove-document",
+      "id": "train-ticket"
+    }
+  ],
+  "locale": "de",
+  "wideElements": []
+}

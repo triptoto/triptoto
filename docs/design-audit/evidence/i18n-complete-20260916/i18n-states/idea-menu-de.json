@@ -1,0 +1,86 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "FÜR SPÄTER SPEICHERN\nIdeen für „Rome 2026“ speichern\n\nEine laufende Liste möglicher Aktivitäten. Öffnen Sie eine, um sie einem Tagesplan hinzuzufügen.\n\nVisit the museum of contemporary art\nNicht geplant\nIdee hinzufügen\nVisit the museum of contemporary art\nZu einem Tagesplan hinzufügen\nWählen Sie einen Tag und optional eine Uhrzeit\nIdee bearbeiten\nName, Adresse und Notizen\nIdee löschen\nAus „Für später speichern“ entfernen",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 572.640625,
+        "width": 390,
+        "height": 271.359375,
+        "top": 572.640625,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Visit the museum of contemporary art\nNicht geplant",
+      "label": null,
+      "action": "open-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Idee hinzufügen",
+      "label": null,
+      "action": "add-save-later"
+    },
+    {
+      "text": "",
+      "label": "Schließen",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Zu einem Tagesplan hinzufügen\nWählen Sie einen Tag und optional eine Uhrzeit",
+      "label": null,
+      "action": "idea-add-to-plan",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Idee bearbeiten\nName, Adresse und Notizen",
+      "label": null,
+      "action": "edit-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Idee löschen\nAus „Für später speichern“ entfernen",
+      "label": null,
+      "action": "delete-idea",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Für später speichern",
+    "FÜR SPÄTER SPEICHERN",
+    "Ideen für „Rome 2026“ speichern",
+    "Eine laufende Liste möglicher Aktivitäten. Öffnen Sie eine, um sie einem Tagesplan hinzuzufügen.",
+    "Visit the museum of contemporary art",
+    "Nicht geplant",
+    "Idee hinzufügen",
+    "Visit the museum of contemporary art",
+    "Zu einem Tagesplan hinzufügen",
+    "Wählen Sie einen Tag und optional eine Uhrzeit",
+    "Idee bearbeiten",
+    "Name, Adresse und Notizen",
+    "Idee löschen",
+    "Aus „Für später speichern“ entfernen"
+  ],
+  "errors": []
+}

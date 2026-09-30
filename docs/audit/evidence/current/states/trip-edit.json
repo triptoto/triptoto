@@ -1,0 +1,36 @@
+{
+  "url": "/trips/new",
+  "screen": "form",
+  "text": "Save changes\nTRIP DETAILS\nEdit trip details\nDESTINATION *\nTravel dates\nSelected dates\nSep 10, 2026 \u2013 Sep 16, 2026\nSelected range: Sep 10, 2026 to Sep 16, 2026.\nTrip name Optional\nDelete this trip",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save changes",
+      "label": null
+    },
+    {
+      "text": "Selected dates\nSep 10, 2026 \u2013 Sep 16, 2026",
+      "label": "Travel dates. Sep 10, 2026 to Sep 16, 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Delete this trip",
+      "label": null,
+      "action": "delete-trip"
+    }
+  ],
+  "evidence": [
+    "trip-edit-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": [
+    "[data-action=\"edit-trip\"]"
+  ]
+}

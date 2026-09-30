@@ -1,0 +1,43 @@
+{
+  "url": "/plans/missing",
+  "screen": "plan",
+  "text": "Plan unavailable\n\nThis plan is not available.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "viewport": [
+    844,
+    390
+  ],
+  "geometry": {
+    "header": {
+      "x": 122,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 722,
+      "bottom": 68,
+      "left": 122
+    },
+    "main": {
+      "x": 122,
+      "y": 68,
+      "width": 600,
+      "height": 322,
+      "top": 68,
+      "right": 722,
+      "bottom": 390,
+      "left": 122
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

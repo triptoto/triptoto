@@ -1,0 +1,18 @@
+{
+  "route": "sync",
+  "path": "/pending-changes",
+  "screen": "sync",
+  "locale": "en",
+  "image": "sync-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Everything is synced\nLast sync time unavailable",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "dialogCount": 0
+}

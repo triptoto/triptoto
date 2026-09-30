@@ -1,0 +1,114 @@
+{
+  "url": "/trips/rome-2026-2026-09-10",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 10\u201316, 2026\n2\nTHU\nSep 10\nFRI\nSep 11\nSUN\nSep 13\nTHU\nSep 10\n10:00\nNEXT\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n3h 30m\n13:15\nAirport to hotel\nTaxi \u00b7 Private transfer\n14:30\nHotel Artemide\nCheck-in\nFlight to Rome\nEdit\nUpdate details\nShare\nSend the trip details\nMove to another day\nKeep the same time\nDelete\nRemove from this trip",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 532,
+        "width": 390,
+        "height": 312,
+        "top": 532,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 10\u201316, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Add to trip",
+      "action": "open-add"
+    },
+    {
+      "text": "2",
+      "label": "Menu, 2 unread notifications",
+      "action": "open-navigation"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "FRI\nSep 11",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SUN\nSep 13",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "10:00\nNEXT\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n3h 30m",
+      "label": "10:00. Flight to Rome. Flight \u00b7 TLV \u2192 FCO. 3h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:15\nAirport to hotel\nTaxi \u00b7 Private transfer",
+      "label": "13:15. Airport to hotel. Taxi \u00b7 Private transfer. Long press for actions",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "14:30\nHotel Artemide\nCheck-in",
+      "label": "14:30. Hotel Artemide. Check-in. Long press for actions",
+      "action": "timeline-detail",
+      "id": "stay"
+    },
+    {
+      "text": "",
+      "label": "Close Flight to Rome",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Edit\nUpdate details",
+      "label": null,
+      "action": "edit-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Share\nSend the trip details",
+      "label": null,
+      "action": "share-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Move to another day\nKeep the same time",
+      "label": null,
+      "action": "move-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Delete\nRemove from this trip",
+      "label": null,
+      "action": "delete-booking",
+      "id": "flight"
+    }
+  ],
+  "focusInside": false,
+  "trigger": [
+    "longpress:[data-longpress-booking]"
+  ],
+  "bottomEvidence": "manage-booking-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"journey-event journey-event--next\" data-action=\"timeline-detail\" data-id=\"flight\" data-longpress-booking=\"\" data-kind=\"flight\" aria-label=\"10:00. Flight to Rome. Flight \u00b7 TLV \u2192 FCO. 3h 30m. Long press for actions\" aria-current=\"step\"><span class=\"journey-time\">10:00</span><span class=\"journey-track\" aria-hidden=\"true\"><span class=\"journey-dot\"></span></span><span class=\"journey-marker journey-marker--flight\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"24\" height=\"24\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:24px\"><use href=\"#flight\"></use></svg></span><span class=\"journey-content\"><span class=\"journey-copy\"><span class=\"timeline-flags\"><span class=\"timeline-flag timeline-flag--next\">Next</span></span><strong>Flight to Rome</strong><small>Flight \u00b7 TLV \u2192 FCO</small><small class=\"journey-meta\">3h 30m</small></span><span class=\"journey-chevron\" aria-hidden=\"true\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:20px\"><use href=\"#chevron-right\"></use></svg></span></span></button>"
+}

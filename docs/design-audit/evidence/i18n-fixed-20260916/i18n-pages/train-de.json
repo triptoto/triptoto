@@ -1,0 +1,53 @@
+{
+  "route": "train",
+  "path": "/trains/train",
+  "screen": "train",
+  "locale": "de",
+  "image": "train-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Trenitalia\nBestätigt\nPlanmäßige Daten\nROM\nRoma Termini\nFIR\nFirenze S. M. Novella\nABFAHRT\n09:30\nSo., 20. Sept.\n1h 35m\nANKUNFT\n11:05\nSo., 20. Sept.\nGLEIS\n8\nRoute zum Bahnhof\nTRN48291\nBuchungsnummer · zum Kopieren tippen\nDokument hinzufügen\nNotiz hinzufügen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Bearbeiten",
+      "action": "edit-booking",
+      "id": "train"
+    },
+    {
+      "text": "",
+      "label": "Löschen",
+      "action": "delete-booking",
+      "id": "train"
+    },
+    {
+      "text": "Route zum Bahnhof",
+      "label": null,
+      "action": "directions-item",
+      "id": "train"
+    },
+    {
+      "text": "TRN48291\nBuchungsnummer · zum Kopieren tippen",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Dokument hinzufügen",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Notiz hinzufügen",
+      "label": null,
+      "action": "edit-note",
+      "id": "train"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

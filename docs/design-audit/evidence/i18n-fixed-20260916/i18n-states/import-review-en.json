@@ -1,0 +1,53 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Review before adding\nNothing is added until you confirm.\nHotel\nRecognized\nBooking type\nFlight\nHotel\nTrain\nCar\nTransfer\nFerry\nCruise\nActivity\nRestaurant\nReservation\nGeneric ticket\nHotel\nCheck-in\nCheck-out\nAddress\nConfirmation number\nAdd to Timeline\nDiscard this booking",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 856
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add to Timeline",
+      "label": null,
+      "action": "confirm-import",
+      "id": "audit-candidate"
+    },
+    {
+      "text": "Discard this booking",
+      "label": null,
+      "action": "reject-import",
+      "id": "audit-candidate"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "import-review",
+  "clicks": [],
+  "documentLang": "en",
+  "visibleText": [
+    "Import Review",
+    "Review before adding",
+    "Nothing is added until you confirm.",
+    "Hotel",
+    "Recognized",
+    "Booking type",
+    "Hotel",
+    "Check-in",
+    "Check-out",
+    "Address",
+    "Confirmation number",
+    "Add to Timeline",
+    "Discard this booking"
+  ],
+  "errors": []
+}

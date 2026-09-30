@@ -1,0 +1,40 @@
+{
+  "lang": "fr",
+  "title": "Cookies et stockage local · tripto.to",
+  "text": "tripto.to\nEnglish\nDeutsch\nFrançais\nEspañol\nРусский\nOuvrir l’app\n\nSTOCKAGE DU NAVIGATEUR\n\nCookies et stockage local\n\nTripto utilise un peu de stockage navigateur pour rendre l’application sécurisée, fiable et utile hors ligne. Nous n’utilisons pas de cookies publicitaires.\n\nDernière mise à jour le 16 septembre 2026\ntripto.to\nCe que nous utilisons\nCookies de connexion essentiels\nDes cookies de sécurité temporaires peuvent être utilisés lors de la connexion avec Google. Ils aident à finaliser l’authentification en toute sécurité.\nStockage local\nVotre navigateur peut enregistrer le thème choisi, le voyage en cours, le cache hors ligne et les modifications en attente pour que l’application fonctionne d’une visite à l’autre.\nCache du service worker\nL’interface de l’app et certaines données de voyage peuvent être mises en cache sur l’appareil pour un accès plus rapide et hors ligne.\nPrestataire de paiement\nSi vous ouvrez un paiement Plus ou un portail de facturation, Lemon Squeezy peut utiliser ses propres cookies selon ses conditions de confidentialité.\nCe que nous n’utilisons pas\n\nTripto n’utilise pas de cookies publicitaires et ne vend pas les informations qui en découlent. Nous n’utilisons pas votre itinéraire pour créer un profil publicitaire.\n\nComment le contrôler\n\nVous pouvez effacer les données locales de Tripto depuis le Compte, ou effacer les données du site dans les paramètres de votre navigateur. Effacer le stockage du navigateur peut vous déconnecter, supprimer les documents enregistrés localement et abandonner les modifications non synchronisées sur cet appareil.\n\nUne note pratique\nLe stockage du navigateur aide Tripto à fonctionner hors ligne. Si vous utilisez un appareil partagé, déconnectez-vous après usage et évitez d'enregistrer des fichiers sensibles en local.\nBesoin d’aide supplémentaire ?\n\nÉcrivez-nous avec le minimum d’informations nécessaires pour comprendre votre demande.\n\nÉcrire à go@tripto.to\nConfidentialité\nConditions\nCookies\nContact\nOuvrir l’app",
+  "overflow": false,
+  "links": [
+    {
+      "text": "tripto.to",
+      "href": "/landing"
+    },
+    {
+      "text": "Ouvrir l’app",
+      "href": "/account"
+    },
+    {
+      "text": "Écrire à go@tripto.to",
+      "href": "mailto:go@tripto.to?subject=Tripto%20support"
+    },
+    {
+      "text": "Confidentialité",
+      "href": "/privacy"
+    },
+    {
+      "text": "Conditions",
+      "href": "/terms"
+    },
+    {
+      "text": "Cookies",
+      "href": "/cookies"
+    },
+    {
+      "text": "Contact",
+      "href": "/contact"
+    },
+    {
+      "text": "Ouvrir l’app",
+      "href": "/account"
+    }
+  ]
+}

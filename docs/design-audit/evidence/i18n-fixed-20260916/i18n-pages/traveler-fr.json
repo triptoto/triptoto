@@ -1,0 +1,43 @@
+{
+  "route": "traveler",
+  "path": "/travelers/traveler",
+  "screen": "traveler",
+  "locale": "fr",
+  "image": "traveler-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "A\nArthur\n\nAdulte\n\nModifier le voyageurRetirer le voyageur\nAttributions\nVol\nLY 383\nTrain\nFrecciarossa 9512\nTrain\nFrecciarossa 9551\nDétails du voyage\nSIÈGE\n12A\nCABINE\nÉconomique\nBAGAGES\n1 cochés\nBILLET\n114-1234567890\nDocuments\nListe de contrôle\nPassport\nDocuments\nEnregistrer la carte d’embarquement hors ligne\nDocuments\nPack medication\nBagages",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Modifier le voyageur",
+      "label": null,
+      "action": "open-form",
+      "id": "traveler"
+    },
+    {
+      "text": "Retirer le voyageur",
+      "label": null,
+      "action": "delete-traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "traveler-fr-bottom.png"
+}

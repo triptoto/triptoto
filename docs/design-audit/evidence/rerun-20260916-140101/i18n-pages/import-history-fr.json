@@ -1,0 +1,47 @@
+{
+  "route": "import-history",
+  "path": "/bookings/import/history",
+  "screen": "import-history",
+  "locale": "fr",
+  "image": "import-history-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Your flight to Rome\nmar. 15 sept., 14:01 UTC+3\nÀ vérifier\nHotel Artemide confirmation\ndim. 13 sept., 14:01 UTC+3\nAjouté\nImporter une réservation",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Your flight to Rome\nmar. 15 sept., 14:01 UTC+3\nÀ vérifier",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Supprimer Your flight to Rome partout",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "Hotel Artemide confirmation\ndim. 13 sept., 14:01 UTC+3\nAjouté",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Supprimer Hotel Artemide confirmation partout",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Importer une réservation",
+      "label": null,
+      "screen": "import"
+    }
+  ],
+  "dialogCount": 0
+}

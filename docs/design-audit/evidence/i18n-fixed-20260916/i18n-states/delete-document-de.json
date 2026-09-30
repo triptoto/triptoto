@@ -1,0 +1,97 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Reisedokumente\n\n3 von 3 offline bereit auf diesem Telefon\n\nDokument hinzufügen\nPDF, Bild oder Wallet-Pass · bis zu 10 MB\nAuf diesem Telefon (3)\nDelete this document?\n\n“LY 383 Boarding Pass” will be removed from this phone. This cannot be undone.\n\nKeep document\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "LY 383 Boarding Pass löschen",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Hotel Artemide Confirmation löschen",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Frecciarossa 9512 Tickets löschen",
+      "action": "remove-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "Keep document",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "documents",
+  "clicks": [
+    "[data-action=\"remove-document\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Dokumente",
+    "Reisedokumente",
+    "3 von 3 offline bereit auf diesem Telefon",
+    "Dokument hinzufügen",
+    "PDF, Bild oder Wallet-Pass · bis zu 10 MB",
+    "Auf diesem Telefon (3)",
+    "LY 383 Boarding Pass",
+    "Arthur",
+    "Offline bereit",
+    "Hotel Artemide Confirmation",
+    "Rome stay",
+    "Offline bereit",
+    "Frecciarossa 9512 Tickets",
+    "Arthur, Maya",
+    "Offline bereit"
+  ],
+  "errors": []
+}

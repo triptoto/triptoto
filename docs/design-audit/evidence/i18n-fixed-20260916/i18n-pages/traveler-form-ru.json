@@ -1,0 +1,23 @@
+{
+  "route": "traveler-form",
+  "path": "/travelers/new",
+  "screen": "form",
+  "locale": "ru",
+  "image": "traveler-form-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить путешественника\nПУТЕШЕСТВЕННИК\nДобавить путешественника\nНазвание *\nТип путешественника *\nВзрослый\nРебёнок\nМладенец",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить путешественника",
+      "label": null
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

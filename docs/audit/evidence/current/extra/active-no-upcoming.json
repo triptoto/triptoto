@@ -1,0 +1,109 @@
+{
+  "url": "/trips/rome-2026-2026-09-10",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 10\u201316, 2026\nWED\nSEP 02\n22:58\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n20:58\nAirport to hotel\nTaxi \u00b7 Private transfer\n30m\n19:58\nHotel Artemide\nCheck-in\n0 nights\n18:58\nBreakfast reservation\nRestaurant \u00b7 Rome\n1h 30m\n17:58\nPhotography walk\nPhotography \u00b7 Rome\n2h\n16:58\nCoffee & pastry\nCoffee \u00b7 Rome\n2h 30m\n15:58\nLunch in Rome\nRestaurant \u00b7 Rome\n3h\n14:58\nVatican Museums\nMuseum \u00b7 Rome\n3h 30m\n13:58\nSouvenir shopping\nShopping \u00b7 Rome\n4h\n12:58\nWine tasting\nBar \u00b7 Rome\n4h 30m\n11:58\nTrain to Florence\n9512 \u00b7 ROM \u2192 FIR\n5h\n10:58\nTrain to Rome\n9551 \u00b7 FIR \u2192 ROM\n5h 30m",
+  "scroll": [
+    {
+      "class": "timeline-page timeline-page--journey",
+      "height": 768,
+      "scroll": 1020
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 10\u201316, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Add to trip",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Menu",
+      "action": "open-navigation"
+    },
+    {
+      "text": "22:58\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO",
+      "label": "22:58. Flight to Rome. Flight \u00b7 TLV \u2192 FCO. Long press for actions",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "20:58\nAirport to hotel\nTaxi \u00b7 Private transfer\n30m",
+      "label": "20:58. Airport to hotel. Taxi \u00b7 Private transfer. 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "19:58\nHotel Artemide\nCheck-in\n0 nights",
+      "label": "19:58. Hotel Artemide. Check-in. 0 nights. Long press for actions",
+      "action": "timeline-detail",
+      "id": "stay"
+    },
+    {
+      "text": "18:58\nBreakfast reservation\nRestaurant \u00b7 Rome\n1h 30m",
+      "label": "18:58. Breakfast reservation. Restaurant \u00b7 Rome. 1h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "breakfast"
+    },
+    {
+      "text": "17:58\nPhotography walk\nPhotography \u00b7 Rome\n2h",
+      "label": "17:58. Photography walk. Photography \u00b7 Rome. 2h. Long press for actions",
+      "action": "timeline-detail",
+      "id": "photo-walk"
+    },
+    {
+      "text": "16:58\nCoffee & pastry\nCoffee \u00b7 Rome\n2h 30m",
+      "label": "16:58. Coffee & pastry. Coffee \u00b7 Rome. 2h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "coffee"
+    },
+    {
+      "text": "15:58\nLunch in Rome\nRestaurant \u00b7 Rome\n3h",
+      "label": "15:58. Lunch in Rome. Restaurant \u00b7 Rome. 3h. Long press for actions",
+      "action": "timeline-detail",
+      "id": "lunch"
+    },
+    {
+      "text": "14:58\nVatican Museums\nMuseum \u00b7 Rome\n3h 30m",
+      "label": "14:58. Vatican Museums. Museum \u00b7 Rome. 3h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "activity"
+    },
+    {
+      "text": "13:58\nSouvenir shopping\nShopping \u00b7 Rome\n4h",
+      "label": "13:58. Souvenir shopping. Shopping \u00b7 Rome. 4h. Long press for actions",
+      "action": "timeline-detail",
+      "id": "shopping"
+    },
+    {
+      "text": "12:58\nWine tasting\nBar \u00b7 Rome\n4h 30m",
+      "label": "12:58. Wine tasting. Bar \u00b7 Rome. 4h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "wine"
+    },
+    {
+      "text": "11:58\nTrain to Florence\n9512 \u00b7 ROM \u2192 FIR\n5h",
+      "label": "11:58. Train to Florence. 9512 \u00b7 ROM \u2192 FIR. 5h. Long press for actions",
+      "action": "timeline-detail",
+      "id": "train"
+    },
+    {
+      "text": "10:58\nTrain to Rome\n9551 \u00b7 FIR \u2192 ROM\n5h 30m",
+      "label": "10:58. Train to Rome. 9551 \u00b7 FIR \u2192 ROM. 5h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "train-return"
+    }
+  ],
+  "evidence": [
+    "active-no-upcoming-top.png",
+    "active-no-upcoming-scroll-0-0.png"
+  ],
+  "trigger": "",
+  "qaState": "active-no-upcoming"
+}

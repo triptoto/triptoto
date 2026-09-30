@@ -1,0 +1,29 @@
+{
+  "route": "health",
+  "path": "/trip-health",
+  "screen": "health",
+  "locale": "ru",
+  "image": "health-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Всё в порядке\n\nИзвестных проблем с поездкой нет.\n\nИзвестных проблем нет\n\nИзвестных проблем с поездкой нет.\n\nПересчитать состояние поездки",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Сведения о состоянии поездки",
+      "action": "health-info"
+    },
+    {
+      "text": "Пересчитать состояние поездки",
+      "label": null,
+      "action": "recalculate-health"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

@@ -1,0 +1,20 @@
+{
+  "url": "/travelers/absent-id",
+  "screen": "traveler",
+  "text": "Traveler unavailable\n\nThis traveler is not available.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "missing-traveler-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": []
+}

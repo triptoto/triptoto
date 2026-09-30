@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://tripto.to/</loc></url>
+  <url><loc>https://tripto.to/landing</loc></url>
   <url><loc>https://tripto.to/privacy</loc></url>
   <url><loc>https://tripto.to/terms</loc></url>
+  <url><loc>https://tripto.to/cookies</loc></url>
+  <url><loc>https://tripto.to/contact</loc></url>
+  <url><loc>https://tripto.to/delete-account</loc></url>
 </urlset>

@@ -1,0 +1,18 @@
+{
+  "route": "join",
+  "path": "/join/sample",
+  "screen": "join",
+  "locale": "de",
+  "image": "join-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Einladung wird geprüft…",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    }
+  ],
+  "dialogCount": 0
+}

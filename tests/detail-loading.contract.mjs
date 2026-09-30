@@ -13,6 +13,7 @@ function harness({ cache = 'full', screen = 'collection', rawId = 'old-town', mi
   const replies = new Map([
     ['/api/v1/trips', { trips: [trip] }],
     ['/api/v1/account', { account: { mode: 'guest' } }],
+    ['/api/v1/subscription', { subscription: null }],
     [`/api/v1/trips/${trip.id}/timeline`, { items: [collection] }],
     [`/api/v1/trips/${trip.id}/collections`, { collections: missing ? [] : [collection], stops: [] }],
   ]);
@@ -28,7 +29,8 @@ function harness({ cache = 'full', screen = 'collection', rawId = 'old-town', mi
     cacheRead: path => cached.has(path) ? { data: cached.get(path) } : null,
     apiGet: async path => { await gate; return replies.get(path) || {}; },
     normalizeChecklist: rows => rows, listLocalDocs: async () => [], ensureWeather() {}, loadSharingStatus() {}, resetCollaborationState() {},
-    maybeLoadScreenData() {}, routeHistoryIndex: () => 0,
+    maybeLoadScreenData() {}, routeHistoryIndex: () => 0, withStartupTimeout: p => p,
+    navigator: { onLine: true }, myPendingMutations: () => [], resolvePendingId: id => id, renderConnectionState() {}, flushSmartImportQueue: async () => false, flushChecklistQueue: async () => false, flushCollectionsQueue: async () => false,
     routeHistoryState: (nextScreen, id) => ({ tripto: true, screen: nextScreen, id }),
   });
   vm.runInContext(readFileSync('public/mobile-routes.js', 'utf8'), ctx);

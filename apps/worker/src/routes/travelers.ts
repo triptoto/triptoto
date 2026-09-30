@@ -1,5 +1,5 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid, requireChanged } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
 
@@ -45,8 +45,8 @@ export async function updateTraveler(request: Request, env: Env, auth: AuthConte
   const birthYear = body.birthYear === undefined ? existing.birth_year as number|null : optionalInteger(body.birthYear,'birthYear');
   if (birthYear != null && (birthYear < 1900 || birthYear > 2200)) throw new HttpError(400,'VALIDATION_ERROR','birthYear is out of range.');
   const now=nowMs();
-  await env.DB.prepare(`UPDATE travelers SET display_name=?,given_name=?,family_name=?,traveler_type=?,birth_year=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`)
-    .bind(displayName,givenName,familyName,travelerType,birthYear,now,travelerId,tripId,body.version).run();
+  requireChanged(await env.DB.prepare(`UPDATE travelers SET display_name=?,given_name=?,family_name=?,traveler_type=?,birth_year=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`)
+    .bind(displayName,givenName,familyName,travelerType,birthYear,now,travelerId,tripId,body.version).run());
   const traveler = await env.DB.prepare(`SELECT * FROM travelers WHERE id=?`).bind(travelerId).first();
   await recordChangeEvent(env,tripId,'traveler',travelerId,'traveler_updated',existing,traveler);
   return json({ traveler },{},request,env);

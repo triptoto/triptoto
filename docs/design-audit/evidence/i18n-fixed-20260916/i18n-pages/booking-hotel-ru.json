@@ -1,0 +1,33 @@
+{
+  "route": "booking-hotel",
+  "path": "/bookings/new/hotel",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-hotel-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить\nБРОНИРОВАНИЕ ВРУЧНУЮ\nОтель\nВсё для поездки\nНазвание объекта *\nГород / место Необязательно\nДаты проживания\nВыберите даты\nВыберите даты\nДиапазон дат не выбран.\nБилеты и документы\n\nНеобязательно · Хранится на этом устройстве\n\nДобавить файлы\nPDF, изображения или карты · до 10 МБ каждый\n\nФайлы не выбраны. Вы можете сохранить бронирование без них.\n\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить",
+      "label": null
+    },
+    {
+      "text": "Выберите даты\nВыберите даты",
+      "label": "Даты проживания. Выберите check-in и check-out",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-hotel-ru-bottom.png"
+}

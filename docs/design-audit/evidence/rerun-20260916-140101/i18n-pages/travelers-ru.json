@@ -1,0 +1,35 @@
+{
+  "route": "travelers",
+  "path": "/travelers",
+  "screen": "travelers",
+  "locale": "ru",
+  "image": "travelers-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "A\nArthur\n3 бронирования\n2 документа\nM\nMaya\n2 бронирования\n1 документ\nДобавить путешественника",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "A\nArthur\n3 бронирования\n2 документа",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "M\nMaya\n2 бронирования\n1 документ",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Добавить путешественника",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "dialogCount": 0
+}

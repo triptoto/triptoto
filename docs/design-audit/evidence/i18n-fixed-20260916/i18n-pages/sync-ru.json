@@ -1,0 +1,19 @@
+{
+  "route": "sync",
+  "path": "/pending-changes",
+  "screen": "sync",
+  "locale": "ru",
+  "image": "sync-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Всё синхронизировано\nВремя последней синхронизации недоступно",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

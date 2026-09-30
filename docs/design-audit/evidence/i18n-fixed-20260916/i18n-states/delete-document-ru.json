@@ -1,0 +1,97 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Документы для поездки\n\n3 из 3 доступно офлайн на этом телефоне\n\nДобавить документ\nPDF, изображение или карта Wallet · до 10 МБ\nНа этом телефоне (3)\nDelete this document?\n\n“LY 383 Boarding Pass” will be removed from this phone. This cannot be undone.\n\nKeep document\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "Удалить LY 383 Boarding Pass",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Удалить Hotel Artemide Confirmation",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Удалить Frecciarossa 9512 Tickets",
+      "action": "remove-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "Keep document",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "documents",
+  "clicks": [
+    "[data-action=\"remove-document\"]"
+  ],
+  "documentLang": "ru",
+  "visibleText": [
+    "Документы",
+    "Документы для поездки",
+    "3 из 3 доступно офлайн на этом телефоне",
+    "Добавить документ",
+    "PDF, изображение или карта Wallet · до 10 МБ",
+    "На этом телефоне (3)",
+    "LY 383 Boarding Pass",
+    "Arthur",
+    "Готово офлайн",
+    "Hotel Artemide Confirmation",
+    "Rome stay",
+    "Готово офлайн",
+    "Frecciarossa 9512 Tickets",
+    "Arthur, Maya",
+    "Готово офлайн"
+  ],
+  "errors": []
+}

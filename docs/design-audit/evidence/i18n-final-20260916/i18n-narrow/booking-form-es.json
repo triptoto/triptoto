@@ -1,0 +1,32 @@
+{
+  "url": "/bookings/new/ferry",
+  "screen": "form",
+  "text": "Guardar\nRESERVA MANUAL\nFerry\nEsenciales\nPuerto de salida *\nPuerto de llegada *\nFecha de salida *\nHora local *\nBilletes y documentos\n\nOpcional · Guardado en este dispositivo\n\nAñadir archivos\nPDF, imágenes o pases · hasta 10 MB cada uno\n\nNo se seleccionaron archivos. Puedes guardar la reserva sin ninguno.\n\nMás detalles",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 632,
+      "scroll": 939
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar",
+      "label": null
+    },
+    {
+      "text": "Más detalles",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

@@ -1,0 +1,85 @@
+{
+  "route": "trips",
+  "path": "/trips",
+  "screen": "trips",
+  "locale": "de",
+  "image": "trips-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "IHRE REISEN\nAlle Ihre Reisen\n\nJede Reise, die Sie planen – alles an einem Ort.\n\nAlle\n3\nAktuell\n0\nBevorstehend\n2\nVergangen\n1\nBevorstehend\n2\n🇮🇹\nRome 2026\nSept. 17–23, 2026\nBeginnt morgen\n🇬🇷\nAthens Weekend\nOkt. 15–18, 2026\nBeginnt in 29 Tagen\nVergangene Reisen\n1\n🇫🇷\nParis Spring\nApr. 3–8, 2026\nAbgeschlossen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Konto",
+      "screen": "account"
+    },
+    {
+      "text": "",
+      "label": "Tripto Plus",
+      "action": "open-subscription"
+    },
+    {
+      "text": "",
+      "label": "Reise erstellen",
+      "action": "create-trip"
+    },
+    {
+      "text": "Alle\n3",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Aktuell\n0",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Bevorstehend\n2",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "Vergangen\n1",
+      "label": null,
+      "action": "filter-trips"
+    },
+    {
+      "text": "",
+      "label": "Rome 2026 löschen",
+      "action": "delete-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "🇮🇹\nRome 2026\nSept. 17–23, 2026\nBeginnt morgen",
+      "label": "Reise öffnen: Rome 2026",
+      "action": "open-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "",
+      "label": "Athens Weekend löschen",
+      "action": "delete-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "🇬🇷\nAthens Weekend\nOkt. 15–18, 2026\nBeginnt in 29 Tagen",
+      "label": "Reise öffnen: Athens Weekend",
+      "action": "open-trip",
+      "id": "preview-trip-next"
+    },
+    {
+      "text": "",
+      "label": "Paris Spring löschen",
+      "action": "delete-trip",
+      "id": "preview-trip-past"
+    },
+    {
+      "text": "🇫🇷\nParis Spring\nApr. 3–8, 2026\nAbgeschlossen",
+      "label": "Reise öffnen: Paris Spring",
+      "action": "open-trip",
+      "id": "preview-trip-past"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

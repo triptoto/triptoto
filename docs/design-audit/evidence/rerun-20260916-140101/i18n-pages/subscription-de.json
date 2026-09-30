@@ -1,0 +1,23 @@
+{
+  "route": "subscription",
+  "path": "/subscription",
+  "screen": "home",
+  "locale": "de",
+  "image": "subscription-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "tripto.to\n\nREISEN FÜHLT SICH HIER LEICHTER AN\n\nIhre Reise.\nSchön vereint.\n\nHalten Sie jede Buchung, jeden Plan und jede Idee bereit für die Reise.\n\nBuchungen, vereint\nFlüge, Unterkünfte und Bestätigungen\nEin Plan für jeden Tag\nSehen Sie auf einen Blick, was als Nächstes kommt\nGute Ideen speichern\nFür später bereithalten\nMit Google anmelden\nSo funktioniert's\nPrivat von Anfang an.\nDatenschutz\n·\nAGB\n·\nCookies\n·\nKontakt",
+  "buttons": [
+    {
+      "text": "Mit Google anmelden",
+      "label": "Mit Google anmelden",
+      "action": "preview-google"
+    },
+    {
+      "text": "So funktioniert's",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,34 @@
+{
+  "route": "weather",
+  "path": "/weather",
+  "screen": "weather",
+  "locale": "de",
+  "image": "weather-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Hotel Artemide\nRom\nNoch keine Vorhersage\n\nFür das Ziel dieser Reise konnten wir keine Vorhersage finden.\n\nErneut versuchen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Hotel Artemide",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Rom",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Erneut versuchen",
+      "label": null,
+      "action": "refresh-weather"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

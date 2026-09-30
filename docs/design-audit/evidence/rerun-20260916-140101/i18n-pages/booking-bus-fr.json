@@ -1,0 +1,27 @@
+{
+  "route": "booking-bus",
+  "path": "/bookings/new/bus",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-bus-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nBus\nEssentiels\nCompagnie de bus Facultatif\nArrêt de départ *\nArrêt d'arrivée *\nDate de départ *\nHeure de départ *\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

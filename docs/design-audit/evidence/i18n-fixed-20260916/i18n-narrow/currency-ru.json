@@ -1,0 +1,37 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "КУРС ОБМЕНА\n1 EUR = 1.16 USD\n\nРим · справочный курс для вашей поездки\n\nВЫ ПЛАТИТЕ\nEUR\nЕвро\nСумма в EUR\n1 EUR = 1.159 USD\nВЫ ПОЛУЧАЕТЕ\nUSD\nДоллар США\n115,91 $\nКурс обновлён · 2026-09-16\nОриентировочный курс для предпросмотра\nОбновить",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nЕвро",
+      "label": "Из валюты: EUR, Евро",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Поменять валюты местами",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nДоллар США",
+      "label": "В валюту: USD, Доллар США",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Обновить",
+      "label": "Обновить курс обмена",
+      "action": "refresh-currency"
+    }
+  ],
+  "locale": "ru",
+  "wideElements": []
+}

@@ -1,0 +1,20 @@
+{
+  "url": "/plans/absent-id",
+  "screen": "plan",
+  "text": "Plan unavailable\n\nThis plan is not available.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "evidence": [
+    "missing-plan-top.png"
+  ],
+  "fixtureSetup": "",
+  "trigger": []
+}

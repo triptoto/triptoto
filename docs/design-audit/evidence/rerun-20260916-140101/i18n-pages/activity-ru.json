@@ -1,0 +1,52 @@
+{
+  "route": "activity",
+  "path": "/plans/activity",
+  "screen": "plan",
+  "locale": "ru",
+  "image": "activity-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Активность\nДанные по расписанию\nМузеи Ватикана\n\nпт, 18 сент., 15:30 GMT+2\n\nМузеи Ватикана\nМесто\nVAT-29184\nПодтверждение · нажмите, чтобы скопировать\nДобавить документ\nДобавить заметку",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Изменить",
+      "action": "edit-booking",
+      "id": "activity"
+    },
+    {
+      "text": "",
+      "label": "Удалить",
+      "action": "delete-booking",
+      "id": "activity"
+    },
+    {
+      "text": "Музеи Ватикана\nМесто",
+      "label": null,
+      "action": "directions-item",
+      "id": "activity"
+    },
+    {
+      "text": "VAT-29184\nПодтверждение · нажмите, чтобы скопировать",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Добавить документ",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Добавить заметку",
+      "label": null,
+      "action": "edit-note",
+      "id": "activity"
+    }
+  ],
+  "dialogCount": 0
+}

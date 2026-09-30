@@ -1,0 +1,34 @@
+{
+  "url": "/travelers",
+  "screen": "travelers",
+  "text": "A\nArthur\nAdult · 3 bookings\n2 documentos verificados\nM\nMaya\nAdult · 2 bookings\n1 verified document\nAñadir viajero",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "A\nArthur\nAdult · 3 bookings\n2 documentos verificados",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "M\nMaya\nAdult · 2 bookings\n1 verified document",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Añadir viajero",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

@@ -1,0 +1,24 @@
+{
+  "route": "email",
+  "path": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "locale": "ru",
+  "image": "email-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Пересылайте подтверждения на\ngo@tripto.to\n\nВыберите поездку и подтвердите распознанные данные, прежде чем что-либо добавить.\n\nВойдите, чтобы пользоваться почтой для бронирований\n\nGoogle подтверждает, с какого адреса можно отправлять подтверждения.\n\nВойти через Google",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Войти через Google",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

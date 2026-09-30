@@ -1,0 +1,86 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "GUARDAR PARA DESPUÉS\nGuardar ideas para “Rome 2026”\n\nUna lista abierta de cosas que podrías hacer. Abre una para añadirla a un plan del día.\n\nVisit the museum of contemporary art\nSin programar\nAñadir una idea\nVisit the museum of contemporary art\nAñadir a un plan del día\nElige un día y, si quieres, una hora\nEditar idea\nNombre, dirección y notas\nEliminar idea\nQuítalo de Guardar para después",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 589.21875,
+        "width": 390,
+        "height": 254.78125,
+        "top": 589.21875,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Visit the museum of contemporary art\nSin programar",
+      "label": null,
+      "action": "open-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Añadir una idea",
+      "label": null,
+      "action": "add-save-later"
+    },
+    {
+      "text": "",
+      "label": "Cerrar",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Añadir a un plan del día\nElige un día y, si quieres, una hora",
+      "label": null,
+      "action": "idea-add-to-plan",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Editar idea\nNombre, dirección y notas",
+      "label": null,
+      "action": "edit-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Eliminar idea\nQuítalo de Guardar para después",
+      "label": null,
+      "action": "delete-idea",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Guardar para después",
+    "GUARDAR PARA DESPUÉS",
+    "Guardar ideas para “Rome 2026”",
+    "Una lista abierta de cosas que podrías hacer. Abre una para añadirla a un plan del día.",
+    "Visit the museum of contemporary art",
+    "Sin programar",
+    "Añadir una idea",
+    "Visit the museum of contemporary art",
+    "Añadir a un plan del día",
+    "Elige un día y, si quieres, una hora",
+    "Editar idea",
+    "Nombre, dirección y notas",
+    "Eliminar idea",
+    "Quítalo de Guardar para después"
+  ],
+  "errors": []
+}

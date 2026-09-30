@@ -1,0 +1,218 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "AT\nAlex Traveler\n\nGoogle identity\n\nSign out\n0\nCurrent\n2\nUpcoming\n1\nPast\nAll trips\nNew trip\nTripto Plus\nUnlock Tripto Plus\nUnlimited trips · Cancel anytime\nYour trips\nSwitch trip\n3 available\nEmail Inbox\n1 waiting for review\nTravel essentials\nFind a flight\nSearch flights and hotels\nFind a place to stay\nBrowse stays on Booking.com\nTravel eSIM\nGet connected before you land\n\nPartner links may earn Tripto a commission at no extra cost.\n\nAppearance\nNight\nDay\nLanguage\nEN\nEnglish\nDE\nDeutsch\nFR\nFrançais\nES\nEspañol\nRU\nРусский\nHelp & support\nTake the tour\nGet to know Tripto\nHelp, privacy & terms\nSupport and legal information\nCheck for updates\nReload the newest version of the app\nPrivacy & data\nRemove local data\nClears files and cached trips from this phone only\nDelete my account\nPermanently removes your server account and trips\ntripto.to\n\nProduct V2\n\nHow it works\n1\nCreate your trip\n2\nAdd your bookings\n3\nBookings and plans appear on your Timeline\n4\nKnow what matters next\nGot it",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 776,
+      "scroll": 1903
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 495.625,
+        "width": 390,
+        "height": 348.375,
+        "top": 495.625,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Sign out",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "All trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "New trip",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Unlock Tripto Plus\nUnlimited trips · Cancel anytime",
+      "label": null,
+      "action": "open-subscription"
+    },
+    {
+      "text": "Switch trip\n3 available",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Email Inbox\n1 waiting for review",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Night",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "Day",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "EN\nEnglish",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "DE\nDeutsch",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "FR\nFrançais",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "ES\nEspañol",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "RU\nРусский",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "Take the tour\nGet to know Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Help, privacy & terms\nSupport and legal information",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Check for updates\nReload the newest version of the app",
+      "label": null,
+      "action": "force-update"
+    },
+    {
+      "text": "Remove local data\nClears files and cached trips from this phone only",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "Delete my account\nPermanently removes your server account and trips",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Open welcome screen",
+      "screen": "home"
+    },
+    {
+      "text": "",
+      "label": "Close",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Got it",
+      "label": null,
+      "action": "finish-first-run-how"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "account",
+  "clicks": [
+    "[data-action=\"open-first-run-how\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Account",
+    "AT",
+    "Alex Traveler",
+    "Google identity",
+    "Sign out",
+    "0",
+    "Current",
+    "2",
+    "Upcoming",
+    "1",
+    "Past",
+    "All trips",
+    "New trip",
+    "Tripto Plus",
+    "Unlock Tripto Plus",
+    "Unlimited trips · Cancel anytime",
+    "Your trips",
+    "Switch trip",
+    "3 available",
+    "Email Inbox",
+    "1 waiting for review",
+    "Travel essentials",
+    "Find a flight",
+    "Search flights and hotels",
+    "Find a place to stay",
+    "Browse stays on Booking.com",
+    "Travel eSIM",
+    "Get connected before you land",
+    "Partner links may earn Tripto a commission at no extra cost.",
+    "Appearance",
+    "Night",
+    "Day",
+    "Language",
+    "EN",
+    "English",
+    "DE",
+    "Deutsch",
+    "FR",
+    "Français",
+    "ES",
+    "Español",
+    "RU",
+    "Русский",
+    "Help & support",
+    "Take the tour",
+    "Get to know Tripto",
+    "Help, privacy & terms",
+    "Support and legal information",
+    "Check for updates",
+    "Reload the newest version of the app",
+    "Privacy & data",
+    "Remove local data",
+    "Clears files and cached trips from this phone only",
+    "Delete my account",
+    "Permanently removes your server account and trips",
+    "tripto",
+    ".",
+    "to",
+    "Product V2",
+    "How it works",
+    "1",
+    "Create your trip",
+    "2",
+    "Add your bookings",
+    "3",
+    "Bookings and plans appear on your Timeline",
+    "4",
+    "Know what matters next",
+    "Got it"
+  ],
+  "errors": []
+}

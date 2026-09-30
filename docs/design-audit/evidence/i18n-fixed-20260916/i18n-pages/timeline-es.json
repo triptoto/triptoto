@@ -1,0 +1,67 @@
+{
+  "route": "timeline",
+  "path": "/timeline",
+  "screen": "timeline",
+  "locale": "es",
+  "image": "timeline-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Rome 2026\nsept 17–23, 2026\nJUE\nSep 17\nVIE\nSep 18\nDOM\nSep 20\n10:00\nSIGUIENTE\nFlight to Rome\nFlight · TLV → FCO\n3h 30m\n13:15\nAirport to hotel\nTaxi · Private transfer\n14:30\nHotel Artemide\nEntrada",
+  "buttons": [
+    {
+      "text": "Rome 2026\nsept 17–23, 2026",
+      "label": "Cambiar de viaje",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Añadir al viaje",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Opciones del viaje",
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Menú",
+      "action": "open-navigation"
+    },
+    {
+      "text": "JUE\nSep 17",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "VIE\nSep 18",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "DOM\nSep 20",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "10:00\nSIGUIENTE\nFlight to Rome\nFlight · TLV → FCO\n3h 30m",
+      "label": "10:00. Flight to Rome. Flight · TLV → FCO. 3h 30m. Mantén pulsado para ver acciones",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:15\nAirport to hotel\nTaxi · Private transfer",
+      "label": "13:15. Airport to hotel. Taxi · Private transfer. Mantén pulsado para ver acciones",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "14:30\nHotel Artemide\nEntrada",
+      "label": "14:30. Hotel Artemide. Check-in. Mantén pulsado para ver acciones",
+      "action": "timeline-detail",
+      "id": "stay"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

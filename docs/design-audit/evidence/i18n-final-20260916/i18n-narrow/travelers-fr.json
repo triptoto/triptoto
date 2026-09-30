@@ -1,0 +1,34 @@
+{
+  "url": "/travelers",
+  "screen": "travelers",
+  "text": "Ajouter un voyageur",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Ajouter un voyageur",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "locale": "fr",
+  "wideElements": []
+}

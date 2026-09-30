@@ -1,0 +1,43 @@
+{
+  "route": "traveler",
+  "path": "/travelers/traveler",
+  "screen": "traveler",
+  "locale": "en",
+  "image": "traveler-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "A\nArthur\n\nAdult\n\nEdit travelerRemove traveler\nAssignments\nFlight\nLY 383\nTrain\nFrecciarossa 9512\nTrain\nFrecciarossa 9551\nTravel details\nSEAT\n12A\nCABIN\nEconomy\nBAGGAGE\n1 checked\nTICKET\n114-1234567890\nDocuments\nChecklist\nPassport\nDocuments\nSave boarding pass offline\nDocuments\nPack medication\nPacking",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Edit traveler",
+      "label": null,
+      "action": "open-form",
+      "id": "traveler"
+    },
+    {
+      "text": "Remove traveler",
+      "label": null,
+      "action": "delete-traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "traveler-en-bottom.png"
+}

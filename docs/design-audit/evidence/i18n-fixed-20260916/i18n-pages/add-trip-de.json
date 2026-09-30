@@ -1,0 +1,34 @@
+{
+  "route": "add-trip",
+  "path": "/add",
+  "screen": "add-trip",
+  "locale": "de",
+  "image": "add-trip-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "ZUR REISE HINZUFÜGEN\nWas möchten Sie hinzufügen?\n\nBuchen Sie, planen Sie Ihre Tage oder speichern Sie eine Idee für Rome 2026.\n\nBuchung hinzufügen\nFlüge, Hotels und Züge, die Sie gebucht haben\nPlanen Sie Ihre Tage\nSehen und erleben\nIdee speichern\nIdeen für später aufheben",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Buchung hinzufügen\nFlüge, Hotels und Züge, die Sie gebucht haben",
+      "label": null,
+      "action": "open-add-booking"
+    },
+    {
+      "text": "Planen Sie Ihre Tage\nSehen und erleben",
+      "label": null,
+      "action": "open-day-plan"
+    },
+    {
+      "text": "Idee speichern\nIdeen für später aufheben",
+      "label": null,
+      "action": "open-save-later"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

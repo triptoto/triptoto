@@ -1,0 +1,12 @@
+{
+  "route": "add-trip",
+  "path": "/add",
+  "screen": "add-trip",
+  "locale": "es",
+  "image": "add-trip-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "tripto.to\nAbriendo tus viajes…\nUn pequeño momento para tu próxima aventura.",
+  "buttons": [],
+  "dialogCount": 0
+}

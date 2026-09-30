@@ -1,0 +1,28 @@
+{
+  "route": "booking-activity",
+  "path": "/bookings/new/activity",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-activity-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить\nБРОНИРОВАНИЕ ВРУЧНУЮ\nАктивность\nВсё для поездки\nНазвание активности *\nТип Необязательно\nАктивность\nТур\nКонцерт\nТеатр\nМузей\nДостопримечательность\nСпорт\nВстреча\nПоказать\nДругое\nДата *\nМестное время Необязательно\nМесто Необязательно\nБилеты и документы\n\nНеобязательно · Хранится на этом устройстве\n\nДобавить файлы\nPDF, изображения или карты · до 10 МБ каждый\n\nФайлы не выбраны. Вы можете сохранить бронирование без них.\n\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить",
+      "label": null
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-activity-ru-bottom.png"
+}

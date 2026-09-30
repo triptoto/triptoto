@@ -1,0 +1,27 @@
+{
+  "route": "trip-form",
+  "path": "/trips/new",
+  "screen": "form",
+  "locale": "fr",
+  "image": "trip-form-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Suivant\nNOUVEAU VOYAGE\nOù allez-vous ?\nChoisissez votre destination et vos dates pour commencer à planifier votre prochaine aventure.\nDESTINATION *\nDates du voyage\nSélectionner les dates\nChoisir les dates\nAucune période sélectionnée.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Suivant",
+      "label": null
+    },
+    {
+      "text": "Sélectionner les dates\nChoisir les dates",
+      "label": "Dates du voyage. Choisissez start date et end date",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0
+}

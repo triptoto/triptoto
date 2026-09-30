@@ -1,0 +1,161 @@
+{
+  "url": "/collections/a-morning-in-trastevere-rome",
+  "screen": "collection",
+  "text": "2\nBARRIO\nA morning in Trastevere\n\nRome · jue, 17 sept, 11:00 CEST\n\nExplore at your own pace.\n\nLUGARES\n8\n1 de 8 visitados\n09:30\n01\nSIGUIENTE\nSanta Maria in Trastevere\nMuseo\n—\n02\nPRÓXIMOS\nCoffee and pastries\nCafé\n11:30\n03\nPRÓXIMOS\nGalleria Corsini\nMuseo\nAllow time for the permanent collection.\n—\n04\nPRÓXIMOS\nLunch in the neighborhood\nRestaurante\n13:30\n05\nPRÓXIMOS\nBotanical garden\nParque\n—\n06\nPRÓXIMOS\nA quiet walk along the river\nCalle\n15:30\n07\nVISITADO\nPiazza Trilussa\nMirador\n—\n08\nOMITIDO\nEvening gelato\nCafé\nDelete this place?\n\n“Galleria Corsini” will be removed from this plan. This cannot be undone.\n\nCancel\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Añadir lugar",
+      "action": "collection-add-place",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "",
+      "label": "Opciones del viaje",
+      "screen": "trip-options"
+    },
+    {
+      "text": "2",
+      "label": "Menú, 2 notificaciones sin leer",
+      "action": "open-navigation"
+    },
+    {
+      "text": "09:30\n01\nSIGUIENTE\nSanta Maria in Trastevere\nMuseo",
+      "label": "09:30, Santa Maria in Trastevere. Next. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-0"
+    },
+    {
+      "text": "—\n02\nPRÓXIMOS\nCoffee and pastries\nCafé",
+      "label": "Coffee and pastries. Upcoming. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-1"
+    },
+    {
+      "text": "11:30\n03\nPRÓXIMOS\nGalleria Corsini\nMuseo\nAllow time for the permanent collection.",
+      "label": "11:30, Galleria Corsini. Upcoming. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "—\n04\nPRÓXIMOS\nLunch in the neighborhood\nRestaurante",
+      "label": "Lunch in the neighborhood. Upcoming. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-3"
+    },
+    {
+      "text": "13:30\n05\nPRÓXIMOS\nBotanical garden\nParque",
+      "label": "13:30, Botanical garden. Upcoming. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-4"
+    },
+    {
+      "text": "—\n06\nPRÓXIMOS\nA quiet walk along the river\nCalle",
+      "label": "A quiet walk along the river. Upcoming. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-5"
+    },
+    {
+      "text": "15:30\n07\nVISITADO\nPiazza Trilussa\nMirador",
+      "label": "15:30, Piazza Trilussa. Visited. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-6"
+    },
+    {
+      "text": "—\n08\nOMITIDO\nEvening gelato\nCafé",
+      "label": "Evening gelato. Skipped. Open details. Mantén pulsado para ver acciones",
+      "action": "open-stop-detail",
+      "id": "audit-stop-7"
+    },
+    {
+      "text": "Cancel",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "collection",
+  "clicks": [
+    "longpress:[data-longpress-stop][data-id=\"audit-stop-2\"]",
+    "[data-action=\"delete-stop\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Barrio",
+    "2",
+    "BARRIO",
+    "A morning in Trastevere",
+    "Rome · jue, 17 sept, 11:00 CEST",
+    "Explore at your own pace.",
+    "Lugares",
+    "8",
+    "1 de 8 visitados",
+    "09:30",
+    "01",
+    "Siguiente",
+    "Santa Maria in Trastevere",
+    "Museo",
+    "—",
+    "02",
+    "Próximos",
+    "Coffee and pastries",
+    "Café",
+    "11:30",
+    "03",
+    "Próximos",
+    "Galleria Corsini",
+    "Museo",
+    "Allow time for the permanent collection.",
+    "—",
+    "04",
+    "Próximos",
+    "Lunch in the neighborhood",
+    "Restaurante",
+    "13:30",
+    "05",
+    "Próximos",
+    "Botanical garden",
+    "Parque",
+    "—",
+    "06",
+    "Próximos",
+    "A quiet walk along the river",
+    "Calle",
+    "15:30",
+    "07",
+    "Visitado",
+    "Piazza Trilussa",
+    "Mirador",
+    "—",
+    "08",
+    "Omitido",
+    "Evening gelato",
+    "Café"
+  ],
+  "errors": []
+}

@@ -1,0 +1,122 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "VIAJE COMPARTIDO\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nUn solo viaje.\nTodos sincronizados.\n¿Por qué planear juntos?\nCrea un solo plan\nLos editores pueden añadir y actualizar reservas.\nManténganse todos en sintonía\nLos cambios del viaje se mantienen visibles para todos en un solo lugar.\nTú tienes el control\nElige quién puede editar o ver, y quita el acceso cuando quieras.\nInvitar a gente\nPersonas en este viaje\nAlex Traveler (You)\nPropietario\nSam Companion\nPuede editar\nTaylor Companion\nSolo lectura\n\nHasta 10 personas por viaje.\n\nInvitaciones pendientes\nfriend@example.test\nView only · pending · expires 2026-09-17T11:15:21.263Z\nInvitar a este viaje\n\nCualquier persona que invites inicia sesión con su propia cuenta gratuita para unirse. El enlace funciona una vez y puedes revocarlo cuando quieras.\n\nElige el acceso\nPuede editar\nAñade y modifica reservas\nSolo lectura\nVe el viaje, pero no puede cambiarlo\nCrear enlace de invitación",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1135
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 480.921875,
+        "width": 390,
+        "height": 363.078125,
+        "top": 480.921875,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Invitar a gente",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Gestionar el acceso de Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Gestionar el acceso de Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Revocar invitación",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Cerrar",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Puede editar\nAñade y modifica reservas",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Solo lectura\nVe el viaje, pero no puede cambiarlo",
+      "label": null,
+      "action": "share-role"
+    },
+    {
+      "text": "Crear enlace de invitación",
+      "label": null,
+      "action": "create-invite"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "collaboration",
+  "clicks": [
+    "[data-action=\"open-share\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Planificar juntos",
+    "Viaje compartido",
+    "Rome 2026",
+    "Invite people to view or edit",
+    "Rome 2026",
+    ". You stay the owner and can change roles or remove people at any time.",
+    "Un solo viaje.",
+    "Todos sincronizados.",
+    "¿Por qué planear juntos?",
+    "Crea un solo plan",
+    "Los editores pueden añadir y actualizar reservas.",
+    "Manténganse todos en sintonía",
+    "Los cambios del viaje se mantienen visibles para todos en un solo lugar.",
+    "Tú tienes el control",
+    "Elige quién puede editar o ver, y quita el acceso cuando quieras.",
+    "Invitar a gente",
+    "Personas en este viaje",
+    "Alex Traveler (You)",
+    "Propietario",
+    "Sam Companion",
+    "Puede editar",
+    "Taylor Companion",
+    "Solo lectura",
+    "Hasta 10 personas por viaje.",
+    "Invitaciones pendientes",
+    "friend@example.test",
+    "View only · pending · expires 2026-09-17T11:15:21.263Z",
+    "Invitar a este viaje",
+    "Cualquier persona que invites inicia sesión con su propia cuenta gratuita para unirse. El enlace funciona una vez y puedes revocarlo cuando quieras.",
+    "Elige el acceso",
+    "Puede editar",
+    "Añade y modifica reservas",
+    "Solo lectura",
+    "Ve el viaje, pero no puede cambiarlo",
+    "Crear enlace de invitación"
+  ],
+  "errors": []
+}

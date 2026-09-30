@@ -1,0 +1,22 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "GUARDAR PARA DESPUÉS\nGuardar ideas para “Rome 2026”\n\nUna lista abierta de cosas que podrías hacer. Abre una para añadirla a un plan del día.\n\nAún no hay ideas\n\nGuarda lugares, comida y cosas que quizá quieras hacer. Organízalas en un día cuando quieras.\n\nAñadir una idea",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Añadir una idea",
+      "label": null,
+      "action": "add-save-later"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

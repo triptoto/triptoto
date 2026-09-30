@@ -1,0 +1,65 @@
+{
+  "url": "/trips/rome-2026-2026-09-17",
+  "screen": "timeline",
+  "text": "Rome 2026\nSept. 17–23, 2026\nDO\nSep 17\nFR\nSep 18\nSO\nSep 20\n10:00\nWEITER\nFlight to Rome\nFlight · TLV → FCO\n3h 30m\n13:15\nAirport to hotel\nTaxi · Private transfer\n14:30\nHotel Artemide\nCheck-in",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSept. 17–23, 2026",
+      "label": "Reise wechseln",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Zur Reise hinzufügen",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Reiseoptionen",
+      "screen": "trip-options"
+    },
+    {
+      "text": "",
+      "label": "Menü",
+      "action": "open-navigation"
+    },
+    {
+      "text": "DO\nSep 17",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "FR\nSep 18",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SO\nSep 20",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "10:00\nWEITER\nFlight to Rome\nFlight · TLV → FCO\n3h 30m",
+      "label": "10:00. Flight to Rome. Flight · TLV → FCO. 3h 30m. Lange drücken für Aktionen",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:15\nAirport to hotel\nTaxi · Private transfer",
+      "label": "13:15. Airport to hotel. Taxi · Private transfer. Lange drücken für Aktionen",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "14:30\nHotel Artemide\nCheck-in",
+      "label": "14:30. Hotel Artemide. Check-in. Lange drücken für Aktionen",
+      "action": "timeline-detail",
+      "id": "stay"
+    }
+  ],
+  "locale": "de",
+  "wideElements": []
+}

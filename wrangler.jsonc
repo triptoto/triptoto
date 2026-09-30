@@ -27,11 +27,18 @@
     "ACCOUNT_AUTH_ENABLED": "true",
     "GOOGLE_CLIENT_ID": "832895442630-6enisft24gupqct0igg1uldv9hnqsjsh.apps.googleusercontent.com",
     "APP_BASE_URL": "https://tripto.to",
+    "ALLOWED_ORIGINS": "https://localhost",
+    "ANDROID_APP_PACKAGE": "to.tripto.app",
+    "ANDROID_APP_LINK_SHA256": "",
     "SHARING_ENABLED": "true",
     "DEMO_TOOLS_ENABLED": "false",
-    "BETA_RELEASE": "product-v2-production",
+    "BETA_RELEASE": "v827-offline-first",
     "BETA_METRICS_ENABLED": "true",
-    "OPS_ENABLED": "false"
+    "OPS_ENABLED": "false",
+    "TAX_FREE_SOURCE_CHECKS_ENABLED": "false",
+    "TAX_FREE_SOURCE_CHECK_BUDGET": "4",
+    "TAX_FREE_SOURCE_TIMEOUT_MS": "8000",
+    "TAX_FREE_SOURCE_MAX_BYTES": "750000"
   },
   "triggers": {
     "crons": ["*/30 * * * *"]
@@ -71,11 +78,18 @@
         "ACCOUNT_AUTH_ENABLED": "true",
         "GOOGLE_CLIENT_ID": "832895442630-6enisft24gupqct0igg1uldv9hnqsjsh.apps.googleusercontent.com",
         "APP_BASE_URL": "https://tripto.to",
+        "ALLOWED_ORIGINS": "https://localhost",
+        "ANDROID_APP_PACKAGE": "to.tripto.app",
+        "ANDROID_APP_LINK_SHA256": "",
         "SHARING_ENABLED": "true",
         "DEMO_TOOLS_ENABLED": "false",
         "BETA_RELEASE": "product-v2-preview",
         "BETA_METRICS_ENABLED": "true",
-        "OPS_ENABLED": "false"
+        "OPS_ENABLED": "false",
+        "TAX_FREE_SOURCE_CHECKS_ENABLED": "false",
+        "TAX_FREE_SOURCE_CHECK_BUDGET": "4",
+        "TAX_FREE_SOURCE_TIMEOUT_MS": "8000",
+        "TAX_FREE_SOURCE_MAX_BYTES": "750000"
       }
     }
   }

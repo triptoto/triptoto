@@ -2,7 +2,7 @@
   "use strict";
 
   const DB_NAME = "tripto-local-docs-v1";
-  const DB_VERSION = 2;
+  const DB_VERSION = 3;
   const DRAFT_STORE = "bookingDrafts";
   const DOC_STORE = "docs";
   const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -130,8 +130,18 @@
           drafts.createIndex("tripId", "tripId", { unique: false });
           drafts.createIndex("status", "status", { unique: false });
         }
+        // v3 (Saved Spots) is shared with mobile-app.js; both openers must
+        // agree on the version or the lower one fails with VersionError.
+        if (!db.objectStoreNames.contains("spots")) {
+          const spots = db.createObjectStore("spots", { keyPath: "id" });
+          spots.createIndex("owner", "owner", { unique: false });
+        }
       };
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        const db = request.result;
+        db.onversionchange = () => db.close();
+        resolve(db);
+      };
       request.onerror = () =>
         reject(
           request.error ||
@@ -249,7 +259,13 @@
     let databasePromise;
 
     const database = () =>
-      (databasePromise ||= openDatabase(indexedDb).catch((error) => {
+      (databasePromise ||= openDatabase(indexedDb).then((db) => {
+        // Drop the cached connection once it closes (version change) so the
+        // next call reopens instead of reusing a dead handle.
+        const close = db.close?.bind(db);
+        if (close) db.close = () => { databasePromise = null; close(); };
+        return db;
+      }).catch((error) => {
         databasePromise = null;
         throw error;
       }));

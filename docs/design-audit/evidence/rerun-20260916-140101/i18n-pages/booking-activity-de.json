@@ -1,0 +1,27 @@
+{
+  "route": "booking-activity",
+  "path": "/bookings/new/activity",
+  "screen": "form",
+  "locale": "de",
+  "image": "booking-activity-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Speichern\nMANUELLE BUCHUNG\nAktivität\nEssentials\nName der Aktivität *\nTyp Optional\nAktivität\nTour\nKonzert\nTheater\nMuseum\nSehenswürdigkeit\nSport\nTermin\nAnzeigen\nSonstiges\nDatum *\nOrtszeit Optional\nVeranstaltungsort Optional\nTickets & Dokumente\n\nOptional · Auf diesem Gerät gespeichert\n\nDateien hinzufügen\nPDF, Bilder oder Pässe · je bis zu 10 MB\n\nKeine Dateien ausgewählt. Sie können die Buchung auch ohne speichern.\n\nMehr Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Speichern",
+      "label": null
+    },
+    {
+      "text": "Mehr Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

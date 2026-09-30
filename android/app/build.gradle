@@ -1,0 +1,89 @@
+apply plugin: 'com.android.application'
+
+// Version: android/version.properties (bump versionCode for every Play upload).
+def versionProps = new Properties()
+file('../version.properties').withInputStream { versionProps.load(it) }
+
+// Release signing: android/keystore.properties (gitignored) or env vars
+// TRIPTO_UPLOAD_STORE_FILE / _STORE_PASSWORD / _KEY_ALIAS / _KEY_PASSWORD.
+// Without them the release build is produced UNSIGNED and must not be uploaded.
+def signingProps = new Properties()
+def signingFile = rootProject.file('keystore.properties')
+if (signingFile.exists()) {
+    signingFile.withInputStream { signingProps.load(it) }
+}
+def signingValue = { String key, String env -> signingProps.getProperty(key) ?: System.getenv(env) }
+def uploadStoreFile = signingValue('storeFile', 'TRIPTO_UPLOAD_STORE_FILE')
+def hasUploadKey = uploadStoreFile && signingValue('storePassword', 'TRIPTO_UPLOAD_STORE_PASSWORD') &&
+    signingValue('keyAlias', 'TRIPTO_UPLOAD_KEY_ALIAS') && signingValue('keyPassword', 'TRIPTO_UPLOAD_KEY_PASSWORD')
+
+android {
+    namespace = "to.tripto.app"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "to.tripto.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode Integer.parseInt(versionProps.getProperty('versionCode'))
+        versionName versionProps.getProperty('versionName')
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        if (hasUploadKey) {
+            upload {
+                storeFile rootProject.file(uploadStoreFile)
+                storePassword signingValue('storePassword', 'TRIPTO_UPLOAD_STORE_PASSWORD')
+                keyAlias signingValue('keyAlias', 'TRIPTO_UPLOAD_KEY_ALIAS')
+                keyPassword signingValue('keyPassword', 'TRIPTO_UPLOAD_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+        }
+        release {
+            if (hasUploadKey) {
+                signingConfig signingConfigs.upload
+            }
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    // Google sign-in through Android Credential Manager (TriptoNativePlugin).
+    implementation "androidx.credentials:credentials:$androidxCredentialsVersion"
+    implementation "androidx.credentials:credentials-play-services-auth:$androidxCredentialsVersion"
+    implementation "com.google.android.libraries.identity.googleid:googleid:$googleIdVersion"
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+gradle.taskGraph.whenReady { graph ->
+    if (!hasUploadKey && graph.allTasks.any { it.name in ['bundleRelease', 'assembleRelease'] }) {
+        logger.warn('WARNING: no upload key configured (android/keystore.properties or TRIPTO_UPLOAD_* env). ' +
+            'The release output is UNSIGNED and cannot be uploaded to Google Play.')
+    }
+}

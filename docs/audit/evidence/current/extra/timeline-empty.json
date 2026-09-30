@@ -1,0 +1,45 @@
+{
+  "url": "/trips/rome-2026-2026-09-10",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 10\u201316, 2026\nSTART BUILDING\nAdd to Rome 2026\n\nBook it, plan your days, or save an idea.\n\nAdd a booking\nFlights, stays, trains, restaurants and more\nDay Plan\nPlan what you want to see and do\nSave for Later\nKeep ideas you haven't scheduled yet",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 10\u201316, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Add to trip",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Menu",
+      "action": "open-navigation"
+    },
+    {
+      "text": "Add a booking\nFlights, stays, trains, restaurants and more",
+      "label": null,
+      "action": "open-add-booking"
+    },
+    {
+      "text": "Day Plan\nPlan what you want to see and do",
+      "label": null,
+      "action": "open-day-plan"
+    },
+    {
+      "text": "Save for Later\nKeep ideas you haven't scheduled yet",
+      "label": null,
+      "action": "open-save-later"
+    }
+  ],
+  "evidence": [
+    "timeline-empty-top.png"
+  ],
+  "trigger": "",
+  "qaState": "timeline-empty"
+}

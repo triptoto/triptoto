@@ -1,0 +1,52 @@
+{
+  "url": "/plans/vatican-museums",
+  "screen": "plan",
+  "text": "Activity\nScheduled data\nVatican Museums\n\nFri, Sep 11, 03:30 PM GMT+2\n\nVatican Museums\nLocation\nVAT-29184\nConfirmation \u00b7 tap to copy\nAdd document\nAdd note",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Edit",
+      "action": "edit-booking",
+      "id": "activity"
+    },
+    {
+      "text": "",
+      "label": "Delete",
+      "action": "delete-booking",
+      "id": "activity"
+    },
+    {
+      "text": "Vatican Museums\nLocation",
+      "label": null,
+      "action": "directions-item",
+      "id": "activity"
+    },
+    {
+      "text": "VAT-29184\nConfirmation \u00b7 tap to copy",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Add document",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Add note",
+      "label": null,
+      "action": "edit-note",
+      "id": "activity"
+    }
+  ],
+  "evidence": [
+    "activity-top.png"
+  ]
+}

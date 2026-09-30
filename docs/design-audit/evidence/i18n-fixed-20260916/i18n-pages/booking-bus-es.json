@@ -1,0 +1,28 @@
+{
+  "route": "booking-bus",
+  "path": "/bookings/new/bus",
+  "screen": "form",
+  "locale": "es",
+  "image": "booking-bus-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar\nRESERVA MANUAL\nAutobús\nEsenciales\nCompañía de autobús Opcional\nParada de salida *\nParada de llegada *\nFecha de salida *\nHora de salida *\nBilletes y documentos\n\nOpcional · Guardado en este dispositivo\n\nAñadir archivos\nPDF, imágenes o pases · hasta 10 MB cada uno\n\nNo se seleccionaron archivos. Puedes guardar la reserva sin ninguno.\n\nMás detalles",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar",
+      "label": null
+    },
+    {
+      "text": "Más detalles",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-bus-es-bottom.png"
+}

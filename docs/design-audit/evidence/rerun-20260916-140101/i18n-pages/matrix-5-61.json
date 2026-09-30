@@ -1,0 +1,1933 @@
+[
+  {
+    "route": "day-plan",
+    "locale": "en",
+    "image": "day-plan-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "day-plan",
+    "locale": "de",
+    "image": "day-plan-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "day-plan",
+    "locale": "fr",
+    "image": "day-plan-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "day-plan",
+    "locale": "es",
+    "image": "day-plan-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "day-plan",
+    "locale": "ru",
+    "image": "day-plan-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "en",
+    "image": "save-later-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "de",
+    "image": "save-later-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "fr",
+    "image": "save-later-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "es",
+    "image": "save-later-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "save-later",
+    "locale": "ru",
+    "image": "save-later-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "bookings",
+    "locale": "en",
+    "image": "bookings-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "bookings",
+    "locale": "de",
+    "image": "bookings-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "bookings",
+    "locale": "fr",
+    "image": "bookings-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "bookings",
+    "locale": "es",
+    "image": "bookings-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "bookings",
+    "locale": "ru",
+    "image": "bookings-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "en",
+    "image": "flight-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "de",
+    "image": "flight-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "fr",
+    "image": "flight-fr.png",
+    "missingTranslations": [
+      "Arrive"
+    ],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "es",
+    "image": "flight-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "flight",
+    "locale": "ru",
+    "image": "flight-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "hotel",
+    "locale": "en",
+    "image": "hotel-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "hotel",
+    "locale": "de",
+    "image": "hotel-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "hotel",
+    "locale": "fr",
+    "image": "hotel-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "hotel",
+    "locale": "es",
+    "image": "hotel-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "hotel",
+    "locale": "ru",
+    "image": "hotel-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "en",
+    "image": "train-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "de",
+    "image": "train-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "fr",
+    "image": "train-fr.png",
+    "missingTranslations": [
+      "Arrive"
+    ],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "es",
+    "image": "train-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "train",
+    "locale": "ru",
+    "image": "train-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "en",
+    "image": "activity-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "de",
+    "image": "activity-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "fr",
+    "image": "activity-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "es",
+    "image": "activity-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "activity",
+    "locale": "ru",
+    "image": "activity-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "documents",
+    "locale": "en",
+    "image": "documents-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "documents",
+    "locale": "de",
+    "image": "documents-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "documents",
+    "locale": "fr",
+    "image": "documents-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "documents",
+    "locale": "es",
+    "image": "documents-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "documents",
+    "locale": "ru",
+    "image": "documents-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "en",
+    "image": "ready-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "de",
+    "image": "ready-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "fr",
+    "image": "ready-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "es",
+    "image": "ready-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "ready",
+    "locale": "ru",
+    "image": "ready-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "health",
+    "locale": "en",
+    "image": "health-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "health",
+    "locale": "de",
+    "image": "health-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "health",
+    "locale": "fr",
+    "image": "health-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "health",
+    "locale": "es",
+    "image": "health-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "health",
+    "locale": "ru",
+    "image": "health-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "account",
+    "locale": "en",
+    "image": "account-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "account",
+    "locale": "de",
+    "image": "account-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "account",
+    "locale": "fr",
+    "image": "account-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "account",
+    "locale": "es",
+    "image": "account-es.png",
+    "missingTranslations": [
+      "Actual"
+    ],
+    "errors": []
+  },
+  {
+    "route": "account",
+    "locale": "ru",
+    "image": "account-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "subscription",
+    "locale": "en",
+    "image": "subscription-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "subscription",
+    "locale": "de",
+    "image": "subscription-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "subscription",
+    "locale": "fr",
+    "image": "subscription-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "subscription",
+    "locale": "es",
+    "image": "subscription-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "subscription",
+    "locale": "ru",
+    "image": "subscription-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "en",
+    "image": "map-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "de",
+    "image": "map-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "fr",
+    "image": "map-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "es",
+    "image": "map-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "map",
+    "locale": "ru",
+    "image": "map-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "en",
+    "image": "weather-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "de",
+    "image": "weather-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "fr",
+    "image": "weather-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "es",
+    "image": "weather-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "weather",
+    "locale": "ru",
+    "image": "weather-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "en",
+    "image": "currency-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "de",
+    "image": "currency-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "fr",
+    "image": "currency-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "es",
+    "image": "currency-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "currency",
+    "locale": "ru",
+    "image": "currency-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "options",
+    "locale": "en",
+    "image": "options-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "options",
+    "locale": "de",
+    "image": "options-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "options",
+    "locale": "fr",
+    "image": "options-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "options",
+    "locale": "es",
+    "image": "options-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "options",
+    "locale": "ru",
+    "image": "options-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist",
+    "locale": "en",
+    "image": "checklist-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist",
+    "locale": "de",
+    "image": "checklist-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist",
+    "locale": "fr",
+    "image": "checklist-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist",
+    "locale": "es",
+    "image": "checklist-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist",
+    "locale": "ru",
+    "image": "checklist-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "help",
+    "locale": "en",
+    "image": "help-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "help",
+    "locale": "de",
+    "image": "help-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "help",
+    "locale": "fr",
+    "image": "help-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "help",
+    "locale": "es",
+    "image": "help-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "help",
+    "locale": "ru",
+    "image": "help-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "travelers",
+    "locale": "en",
+    "image": "travelers-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "travelers",
+    "locale": "de",
+    "image": "travelers-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "travelers",
+    "locale": "fr",
+    "image": "travelers-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "travelers",
+    "locale": "es",
+    "image": "travelers-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "travelers",
+    "locale": "ru",
+    "image": "travelers-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler",
+    "locale": "en",
+    "image": "traveler-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler",
+    "locale": "de",
+    "image": "traveler-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler",
+    "locale": "fr",
+    "image": "traveler-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler",
+    "locale": "es",
+    "image": "traveler-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler",
+    "locale": "ru",
+    "image": "traveler-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import",
+    "locale": "en",
+    "image": "import-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import",
+    "locale": "de",
+    "image": "import-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import",
+    "locale": "fr",
+    "image": "import-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import",
+    "locale": "es",
+    "image": "import-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import",
+    "locale": "ru",
+    "image": "import-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-review",
+    "locale": "en",
+    "image": "import-review-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-review",
+    "locale": "de",
+    "image": "import-review-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-review",
+    "locale": "fr",
+    "image": "import-review-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-review",
+    "locale": "es",
+    "image": "import-review-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-review",
+    "locale": "ru",
+    "image": "import-review-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-history",
+    "locale": "en",
+    "image": "import-history-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-history",
+    "locale": "de",
+    "image": "import-history-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-history",
+    "locale": "fr",
+    "image": "import-history-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-history",
+    "locale": "es",
+    "image": "import-history-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "import-history",
+    "locale": "ru",
+    "image": "import-history-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "email",
+    "locale": "en",
+    "image": "email-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "email",
+    "locale": "de",
+    "image": "email-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "email",
+    "locale": "fr",
+    "image": "email-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "email",
+    "locale": "es",
+    "image": "email-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "email",
+    "locale": "ru",
+    "image": "email-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "sync",
+    "locale": "en",
+    "image": "sync-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "sync",
+    "locale": "de",
+    "image": "sync-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "sync",
+    "locale": "fr",
+    "image": "sync-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "sync",
+    "locale": "es",
+    "image": "sync-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "sync",
+    "locale": "ru",
+    "image": "sync-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "collaboration",
+    "locale": "en",
+    "image": "collaboration-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "collaboration",
+    "locale": "de",
+    "image": "collaboration-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "collaboration",
+    "locale": "fr",
+    "image": "collaboration-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "collaboration",
+    "locale": "es",
+    "image": "collaboration-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "collaboration",
+    "locale": "ru",
+    "image": "collaboration-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "join",
+    "locale": "en",
+    "image": "join-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "join",
+    "locale": "de",
+    "image": "join-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "join",
+    "locale": "fr",
+    "image": "join-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "join",
+    "locale": "es",
+    "image": "join-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "join",
+    "locale": "ru",
+    "image": "join-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trip-form",
+    "locale": "en",
+    "image": "trip-form-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trip-form",
+    "locale": "de",
+    "image": "trip-form-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trip-form",
+    "locale": "fr",
+    "image": "trip-form-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trip-form",
+    "locale": "es",
+    "image": "trip-form-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trip-form",
+    "locale": "ru",
+    "image": "trip-form-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler-form",
+    "locale": "en",
+    "image": "traveler-form-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler-form",
+    "locale": "de",
+    "image": "traveler-form-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler-form",
+    "locale": "fr",
+    "image": "traveler-form-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler-form",
+    "locale": "es",
+    "image": "traveler-form-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "traveler-form",
+    "locale": "ru",
+    "image": "traveler-form-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist-form",
+    "locale": "en",
+    "image": "checklist-form-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist-form",
+    "locale": "de",
+    "image": "checklist-form-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist-form",
+    "locale": "fr",
+    "image": "checklist-form-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist-form",
+    "locale": "es",
+    "image": "checklist-form-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "checklist-form",
+    "locale": "ru",
+    "image": "checklist-form-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "neighborhood-form",
+    "locale": "en",
+    "image": "neighborhood-form-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "neighborhood-form",
+    "locale": "de",
+    "image": "neighborhood-form-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "neighborhood-form",
+    "locale": "fr",
+    "image": "neighborhood-form-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "neighborhood-form",
+    "locale": "es",
+    "image": "neighborhood-form-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "neighborhood-form",
+    "locale": "ru",
+    "image": "neighborhood-form-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "museum-form",
+    "locale": "en",
+    "image": "museum-form-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "museum-form",
+    "locale": "de",
+    "image": "museum-form-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "museum-form",
+    "locale": "fr",
+    "image": "museum-form-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "museum-form",
+    "locale": "es",
+    "image": "museum-form-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "museum-form",
+    "locale": "ru",
+    "image": "museum-form-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-flight",
+    "locale": "en",
+    "image": "booking-flight-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-flight",
+    "locale": "de",
+    "image": "booking-flight-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-flight",
+    "locale": "fr",
+    "image": "booking-flight-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-flight",
+    "locale": "es",
+    "image": "booking-flight-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-flight",
+    "locale": "ru",
+    "image": "booking-flight-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-hotel",
+    "locale": "en",
+    "image": "booking-hotel-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-hotel",
+    "locale": "de",
+    "image": "booking-hotel-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-hotel",
+    "locale": "fr",
+    "image": "booking-hotel-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-hotel",
+    "locale": "es",
+    "image": "booking-hotel-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-hotel",
+    "locale": "ru",
+    "image": "booking-hotel-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-train",
+    "locale": "en",
+    "image": "booking-train-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-train",
+    "locale": "de",
+    "image": "booking-train-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-train",
+    "locale": "fr",
+    "image": "booking-train-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-train",
+    "locale": "es",
+    "image": "booking-train-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-train",
+    "locale": "ru",
+    "image": "booking-train-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-ferry",
+    "locale": "en",
+    "image": "booking-ferry-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-ferry",
+    "locale": "de",
+    "image": "booking-ferry-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-ferry",
+    "locale": "fr",
+    "image": "booking-ferry-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-ferry",
+    "locale": "es",
+    "image": "booking-ferry-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-ferry",
+    "locale": "ru",
+    "image": "booking-ferry-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-bus",
+    "locale": "en",
+    "image": "booking-bus-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-bus",
+    "locale": "de",
+    "image": "booking-bus-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-bus",
+    "locale": "fr",
+    "image": "booking-bus-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-bus",
+    "locale": "es",
+    "image": "booking-bus-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-bus",
+    "locale": "ru",
+    "image": "booking-bus-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-cruise",
+    "locale": "en",
+    "image": "booking-cruise-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-cruise",
+    "locale": "de",
+    "image": "booking-cruise-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-cruise",
+    "locale": "fr",
+    "image": "booking-cruise-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-cruise",
+    "locale": "es",
+    "image": "booking-cruise-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-cruise",
+    "locale": "ru",
+    "image": "booking-cruise-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-car-rental",
+    "locale": "en",
+    "image": "booking-car-rental-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-car-rental",
+    "locale": "de",
+    "image": "booking-car-rental-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-car-rental",
+    "locale": "fr",
+    "image": "booking-car-rental-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-car-rental",
+    "locale": "es",
+    "image": "booking-car-rental-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-car-rental",
+    "locale": "ru",
+    "image": "booking-car-rental-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-transfer",
+    "locale": "en",
+    "image": "booking-transfer-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-transfer",
+    "locale": "de",
+    "image": "booking-transfer-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-transfer",
+    "locale": "fr",
+    "image": "booking-transfer-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-transfer",
+    "locale": "es",
+    "image": "booking-transfer-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-transfer",
+    "locale": "ru",
+    "image": "booking-transfer-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-taxi",
+    "locale": "en",
+    "image": "booking-taxi-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-taxi",
+    "locale": "de",
+    "image": "booking-taxi-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-taxi",
+    "locale": "fr",
+    "image": "booking-taxi-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-taxi",
+    "locale": "es",
+    "image": "booking-taxi-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-taxi",
+    "locale": "ru",
+    "image": "booking-taxi-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-parking",
+    "locale": "en",
+    "image": "booking-parking-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-parking",
+    "locale": "de",
+    "image": "booking-parking-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-parking",
+    "locale": "fr",
+    "image": "booking-parking-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-parking",
+    "locale": "es",
+    "image": "booking-parking-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-parking",
+    "locale": "ru",
+    "image": "booking-parking-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-restaurant",
+    "locale": "en",
+    "image": "booking-restaurant-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-restaurant",
+    "locale": "de",
+    "image": "booking-restaurant-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-restaurant",
+    "locale": "fr",
+    "image": "booking-restaurant-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-restaurant",
+    "locale": "es",
+    "image": "booking-restaurant-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-restaurant",
+    "locale": "ru",
+    "image": "booking-restaurant-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-tour",
+    "locale": "en",
+    "image": "booking-tour-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-tour",
+    "locale": "de",
+    "image": "booking-tour-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-tour",
+    "locale": "fr",
+    "image": "booking-tour-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-tour",
+    "locale": "es",
+    "image": "booking-tour-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-tour",
+    "locale": "ru",
+    "image": "booking-tour-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-activity",
+    "locale": "en",
+    "image": "booking-activity-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-activity",
+    "locale": "de",
+    "image": "booking-activity-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-activity",
+    "locale": "fr",
+    "image": "booking-activity-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-activity",
+    "locale": "es",
+    "image": "booking-activity-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-activity",
+    "locale": "ru",
+    "image": "booking-activity-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-attraction",
+    "locale": "en",
+    "image": "booking-attraction-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-attraction",
+    "locale": "de",
+    "image": "booking-attraction-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-attraction",
+    "locale": "fr",
+    "image": "booking-attraction-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-attraction",
+    "locale": "es",
+    "image": "booking-attraction-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-attraction",
+    "locale": "ru",
+    "image": "booking-attraction-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-event",
+    "locale": "en",
+    "image": "booking-event-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-event",
+    "locale": "de",
+    "image": "booking-event-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-event",
+    "locale": "fr",
+    "image": "booking-event-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-event",
+    "locale": "es",
+    "image": "booking-event-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-event",
+    "locale": "ru",
+    "image": "booking-event-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-insurance",
+    "locale": "en",
+    "image": "booking-insurance-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-insurance",
+    "locale": "de",
+    "image": "booking-insurance-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-insurance",
+    "locale": "fr",
+    "image": "booking-insurance-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-insurance",
+    "locale": "es",
+    "image": "booking-insurance-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-insurance",
+    "locale": "ru",
+    "image": "booking-insurance-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-other",
+    "locale": "en",
+    "image": "booking-other-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-other",
+    "locale": "de",
+    "image": "booking-other-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-other",
+    "locale": "fr",
+    "image": "booking-other-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-other",
+    "locale": "es",
+    "image": "booking-other-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-other",
+    "locale": "ru",
+    "image": "booking-other-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-reservation",
+    "locale": "en",
+    "image": "booking-reservation-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-reservation",
+    "locale": "de",
+    "image": "booking-reservation-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-reservation",
+    "locale": "fr",
+    "image": "booking-reservation-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-reservation",
+    "locale": "es",
+    "image": "booking-reservation-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-reservation",
+    "locale": "ru",
+    "image": "booking-reservation-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-document",
+    "locale": "en",
+    "image": "booking-document-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-document",
+    "locale": "de",
+    "image": "booking-document-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-document",
+    "locale": "fr",
+    "image": "booking-document-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-document",
+    "locale": "es",
+    "image": "booking-document-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "booking-document",
+    "locale": "ru",
+    "image": "booking-document-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-attraction",
+    "locale": "en",
+    "image": "plan-attraction-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-attraction",
+    "locale": "de",
+    "image": "plan-attraction-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-attraction",
+    "locale": "fr",
+    "image": "plan-attraction-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-attraction",
+    "locale": "es",
+    "image": "plan-attraction-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-attraction",
+    "locale": "ru",
+    "image": "plan-attraction-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-food_drink",
+    "locale": "en",
+    "image": "plan-food_drink-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-food_drink",
+    "locale": "de",
+    "image": "plan-food_drink-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-food_drink",
+    "locale": "fr",
+    "image": "plan-food_drink-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-food_drink",
+    "locale": "es",
+    "image": "plan-food_drink-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-food_drink",
+    "locale": "ru",
+    "image": "plan-food_drink-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-museum_culture",
+    "locale": "en",
+    "image": "plan-museum_culture-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-museum_culture",
+    "locale": "de",
+    "image": "plan-museum_culture-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-museum_culture",
+    "locale": "fr",
+    "image": "plan-museum_culture-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-museum_culture",
+    "locale": "es",
+    "image": "plan-museum_culture-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-museum_culture",
+    "locale": "ru",
+    "image": "plan-museum_culture-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-idea",
+    "locale": "en",
+    "image": "plan-idea-en.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-idea",
+    "locale": "de",
+    "image": "plan-idea-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-idea",
+    "locale": "fr",
+    "image": "plan-idea-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-idea",
+    "locale": "es",
+    "image": "plan-idea-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "plan-idea",
+    "locale": "ru",
+    "image": "plan-idea-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  }
+]

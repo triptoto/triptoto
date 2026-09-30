@@ -1,0 +1,122 @@
+{
+  "url": "/trips/rome-2026-2026-09-17",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 17–23, 2026\n2\nTHU\nSep 17\nFRI\nSep 18\nSUN\nSep 20\nTHU\nSep 17\n10:00\nNEXT\nFlight to Rome\nFlight · TLV → FCO\n3h 30m\n13:15\nAirport to hotel\nTaxi · Private transfer\n14:30\nHotel Artemide\nCheck-in\nDelete this booking?\n\n“LY 383” will be removed from this trip. This cannot be undone.\n\nKeep booking\nDelete",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 32,
+        "y": 342.40625,
+        "width": 326,
+        "height": 159.1875,
+        "top": 342.40625,
+        "right": 358,
+        "bottom": 501.59375,
+        "left": 32
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 17–23, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Add to trip",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Trip Options",
+      "screen": "trip-options"
+    },
+    {
+      "text": "2",
+      "label": "Menu, 2 unread notifications",
+      "action": "open-navigation"
+    },
+    {
+      "text": "THU\nSep 17",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "FRI\nSep 18",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SUN\nSep 20",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "THU\nSep 17",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "10:00\nNEXT\nFlight to Rome\nFlight · TLV → FCO\n3h 30m",
+      "label": "10:00. Flight to Rome. Flight · TLV → FCO. 3h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:15\nAirport to hotel\nTaxi · Private transfer",
+      "label": "13:15. Airport to hotel. Taxi · Private transfer. Long press for actions",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "14:30\nHotel Artemide\nCheck-in",
+      "label": "14:30. Hotel Artemide. Check-in. Long press for actions",
+      "action": "timeline-detail",
+      "id": "stay"
+    },
+    {
+      "text": "Keep booking",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "timeline",
+  "clicks": [
+    "longpress:[data-longpress-booking]",
+    "[data-action=\"delete-booking\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Rome 2026",
+    "Sep 17–23, 2026",
+    "2",
+    "THU",
+    "Sep 17",
+    "FRI",
+    "Sep 18",
+    "SUN",
+    "Sep 20",
+    "THU",
+    "Sep 17",
+    "10:00",
+    "Next",
+    "Flight to Rome",
+    "Flight · TLV → FCO",
+    "3h 30m",
+    "13:15",
+    "Airport to hotel",
+    "Taxi · Private transfer",
+    "14:30",
+    "Hotel Artemide",
+    "Check-in"
+  ],
+  "errors": []
+}

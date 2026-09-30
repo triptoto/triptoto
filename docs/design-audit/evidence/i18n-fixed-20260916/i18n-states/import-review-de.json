@@ -1,0 +1,53 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Vor dem Hinzufügen prüfen\nEs wird nichts hinzugefügt, bis Sie bestätigen.\nHotel\nErkannt\nBuchungsart\nFlug\nHotel\nZug\nAuto\nTransfer\nFähre\nKreuzfahrt\nAktivität\nRestaurant\nBuchung\nAllgemeines Ticket\nHotel\nCheck-in\nCheck-out\nAdresse\nBestätigungsnummer\nZur Zeitachse hinzufügen\nDiese Buchung verwerfen",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 856
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Zur Zeitachse hinzufügen",
+      "label": null,
+      "action": "confirm-import",
+      "id": "audit-candidate"
+    },
+    {
+      "text": "Diese Buchung verwerfen",
+      "label": null,
+      "action": "reject-import",
+      "id": "audit-candidate"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "import-review",
+  "clicks": [],
+  "documentLang": "de",
+  "visibleText": [
+    "Import-Prüfung",
+    "Vor dem Hinzufügen prüfen",
+    "Es wird nichts hinzugefügt, bis Sie bestätigen.",
+    "Hotel",
+    "Erkannt",
+    "Buchungsart",
+    "Hotel",
+    "Check-in",
+    "Check-out",
+    "Adresse",
+    "Bestätigungsnummer",
+    "Zur Zeitachse hinzufügen",
+    "Diese Buchung verwerfen"
+  ],
+  "errors": []
+}

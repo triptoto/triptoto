@@ -1,0 +1,29 @@
+{
+  "route": "ready",
+  "path": "/ready-offline",
+  "screen": "ready",
+  "locale": "es",
+  "image": "ready-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "9 de 9 listos\nTus esenciales están guardados en este teléfono.\nCronología del viaje\nActualizado ahora\nReservas de transporte\nActualizado ahora\nHoteles y direcciones\nActualizado ahora\nUbicaciones\nActualizado ahora\nCambios pendientes\nNo hay cambios locales sin sincronizar\nArthur · Flight ticket / boarding pass\nChecksum verificado en este teléfono\nArthur · Train ticket\nChecksum verificado en este teléfono\nMaya · Train ticket\nChecksum verificado en este teléfono\nConfirmación del hotel\nChecksum verificado en este teléfono\nActualizar datos sin conexión",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Información sin conexión",
+      "action": "offline-info"
+    },
+    {
+      "text": "Actualizar datos sin conexión",
+      "label": null,
+      "action": "refresh-data"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "ready-es-bottom.png"
+}

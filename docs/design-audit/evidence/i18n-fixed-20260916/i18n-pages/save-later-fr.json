@@ -1,0 +1,24 @@
+{
+  "route": "save-later",
+  "path": "/save-later",
+  "screen": "save-later",
+  "locale": "fr",
+  "image": "save-later-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "À GARDER POUR PLUS TARD\nEnregistrer des idées pour « Rome 2026 »\n\nUne liste des choses que vous pourriez faire. Ouvrez-en une pour l'ajouter à un programme du jour.\n\nPas encore d’idées\n\nEnregistrez des lieux, des restaurants et des choses à faire. Répartissez-les sur un jour quand vous voulez.\n\nAjouter une idée",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Ajouter une idée",
+      "label": null,
+      "action": "add-save-later"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

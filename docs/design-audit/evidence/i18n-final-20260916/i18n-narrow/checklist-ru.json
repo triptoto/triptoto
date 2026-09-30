@@ -1,0 +1,55 @@
+{
+  "url": "/before-you-go",
+  "screen": "checklist",
+  "text": "ПЕРЕД ПОЕЗДКОЙ\nRome 2026\n\nОсталось задач: 2\n\n2/4\nДобавить задачу\nДобавить\nСборы\nPack power adapter\nPack medication\nДобавить всё для поездки\nЗавершено (2)",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Добавить",
+      "label": "Добавить задачу"
+    },
+    {
+      "text": "Pack power adapter",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "",
+      "label": "Изменить Pack power adapter",
+      "action": "edit-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "Pack medication",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "",
+      "label": "Изменить Pack medication",
+      "action": "edit-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "Добавить всё для поездки",
+      "label": null,
+      "action": "load-essentials"
+    },
+    {
+      "text": "Завершено (2)",
+      "label": null,
+      "action": "toggle-completed-checklist"
+    }
+  ],
+  "locale": "ru",
+  "wideElements": []
+}

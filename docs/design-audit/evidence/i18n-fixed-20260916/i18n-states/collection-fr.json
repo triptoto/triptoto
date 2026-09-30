@@ -1,0 +1,136 @@
+{
+  "url": "/collections/a-morning-in-trastevere-rome",
+  "screen": "collection",
+  "text": "2\nQUARTIER\nA morning in Trastevere\n\nRome · jeu. 17 sept., 11:00 UTC+2\n\nExplore at your own pace.\n\nLIEUX\n8\n1 sur 8 visités\n09:30\n01\nSUIVANT\nSanta Maria in Trastevere\nMusée\n—\n02\nÀ VENIR\nCoffee and pastries\nCafé\n11:30\n03\nÀ VENIR\nGalleria Corsini\nMusée\nAllow time for the permanent collection.\n—\n04\nÀ VENIR\nLunch in the neighborhood\nRestaurant\n13:30\n05\nÀ VENIR\nBotanical garden\nParc\n—\n06\nÀ VENIR\nA quiet walk along the river\nRue\n15:30\n07\nVISITÉ\nPiazza Trilussa\nPoint de vue\n—\n08\nIGNORÉ\nEvening gelato\nCafé",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Ajouter lieu",
+      "action": "collection-add-place",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "",
+      "label": "Options du voyage",
+      "screen": "trip-options"
+    },
+    {
+      "text": "2",
+      "label": "Menu, 2 notifications non lues",
+      "action": "open-navigation"
+    },
+    {
+      "text": "09:30\n01\nSUIVANT\nSanta Maria in Trastevere\nMusée",
+      "label": "09:30, Santa Maria in Trastevere. Next. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-0"
+    },
+    {
+      "text": "—\n02\nÀ VENIR\nCoffee and pastries\nCafé",
+      "label": "Coffee and pastries. Upcoming. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-1"
+    },
+    {
+      "text": "11:30\n03\nÀ VENIR\nGalleria Corsini\nMusée\nAllow time for the permanent collection.",
+      "label": "11:30, Galleria Corsini. Upcoming. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-2"
+    },
+    {
+      "text": "—\n04\nÀ VENIR\nLunch in the neighborhood\nRestaurant",
+      "label": "Lunch in the neighborhood. Upcoming. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-3"
+    },
+    {
+      "text": "13:30\n05\nÀ VENIR\nBotanical garden\nParc",
+      "label": "13:30, Botanical garden. Upcoming. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-4"
+    },
+    {
+      "text": "—\n06\nÀ VENIR\nA quiet walk along the river\nRue",
+      "label": "A quiet walk along the river. Upcoming. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-5"
+    },
+    {
+      "text": "15:30\n07\nVISITÉ\nPiazza Trilussa\nPoint de vue",
+      "label": "15:30, Piazza Trilussa. Visited. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-6"
+    },
+    {
+      "text": "—\n08\nIGNORÉ\nEvening gelato\nCafé",
+      "label": "Evening gelato. Skipped. Open details. Appui long pour les actions",
+      "action": "open-stop-detail",
+      "id": "audit-stop-7"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "collection",
+  "clicks": [],
+  "documentLang": "fr",
+  "visibleText": [
+    "Quartier",
+    "2",
+    "QUARTIER",
+    "A morning in Trastevere",
+    "Rome · jeu. 17 sept., 11:00 UTC+2",
+    "Explore at your own pace.",
+    "Lieux",
+    "8",
+    "1 sur 8 visités",
+    "09:30",
+    "01",
+    "Suivant",
+    "Santa Maria in Trastevere",
+    "Musée",
+    "—",
+    "02",
+    "À venir",
+    "Coffee and pastries",
+    "Café",
+    "11:30",
+    "03",
+    "À venir",
+    "Galleria Corsini",
+    "Musée",
+    "Allow time for the permanent collection.",
+    "—",
+    "04",
+    "À venir",
+    "Lunch in the neighborhood",
+    "Restaurant",
+    "13:30",
+    "05",
+    "À venir",
+    "Botanical garden",
+    "Parc",
+    "—",
+    "06",
+    "À venir",
+    "A quiet walk along the river",
+    "Rue",
+    "15:30",
+    "07",
+    "Visité",
+    "Piazza Trilussa",
+    "Point de vue",
+    "—",
+    "08",
+    "Ignoré",
+    "Evening gelato",
+    "Café"
+  ],
+  "errors": []
+}

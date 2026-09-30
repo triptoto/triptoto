@@ -1,0 +1,61 @@
+{
+  "url": "/trips/rome-2026-2026-09-10",
+  "screen": "timeline",
+  "text": "Rome 2026\nSep 10\u201316, 2026\nTHU\nSep 10\nFRI\nSep 11\nSUN\nSep 13\n10:00\nNEXT\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n3h 30m\n13:15\nAirport to hotel\nTaxi \u00b7 Private transfer\n14:30\nHotel Artemide\nCheck-in",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Rome 2026\nSep 10\u201316, 2026",
+      "label": "Switch trip",
+      "action": "switch-trip"
+    },
+    {
+      "text": "",
+      "label": "Add to trip",
+      "action": "open-add"
+    },
+    {
+      "text": "",
+      "label": "Menu",
+      "action": "open-navigation"
+    },
+    {
+      "text": "THU\nSep 10",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "FRI\nSep 11",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "SUN\nSep 13",
+      "label": null,
+      "action": "select-timeline-day"
+    },
+    {
+      "text": "10:00\nNEXT\nFlight to Rome\nFlight \u00b7 TLV \u2192 FCO\n3h 30m",
+      "label": "10:00. Flight to Rome. Flight \u00b7 TLV \u2192 FCO. 3h 30m. Long press for actions",
+      "action": "timeline-detail",
+      "id": "flight"
+    },
+    {
+      "text": "13:15\nAirport to hotel\nTaxi \u00b7 Private transfer",
+      "label": "13:15. Airport to hotel. Taxi \u00b7 Private transfer. Long press for actions",
+      "action": "timeline-detail",
+      "id": "transfer"
+    },
+    {
+      "text": "14:30\nHotel Artemide\nCheck-in",
+      "label": "14:30. Hotel Artemide. Check-in. Long press for actions",
+      "action": "timeline-detail",
+      "id": "stay"
+    }
+  ],
+  "evidence": [
+    "timeline-top.png"
+  ]
+}

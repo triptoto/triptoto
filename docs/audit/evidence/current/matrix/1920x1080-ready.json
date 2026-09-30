@@ -1,0 +1,53 @@
+{
+  "url": "/ready-offline",
+  "screen": "ready",
+  "text": "9 of 9 ready\nYour essentials are saved on this phone.\nTrip timeline\nUpdated now\nTransport bookings\nUpdated now\nStays and addresses\nUpdated now\nLocations\nUpdated now\nPending changes\nNo unsynced local changes\nArthur \u00b7 Flight ticket / boarding pass\nChecksum verified on this phone\nArthur \u00b7 Train ticket\nChecksum verified on this phone\nMaya \u00b7 Train ticket\nChecksum verified on this phone\nHotel confirmation\nChecksum verified on this phone\nRefresh Offline Data",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Offline information",
+      "action": "offline-info"
+    },
+    {
+      "text": "Refresh Offline Data",
+      "label": null,
+      "action": "refresh-data"
+    }
+  ],
+  "viewport": [
+    1920,
+    1080
+  ],
+  "geometry": {
+    "header": {
+      "x": 660,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 1260,
+      "bottom": 68,
+      "left": 660
+    },
+    "main": {
+      "x": 660,
+      "y": 68,
+      "width": 600,
+      "height": 1012,
+      "top": 68,
+      "right": 1260,
+      "bottom": 1080,
+      "left": 660
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

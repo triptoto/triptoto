@@ -1,0 +1,35 @@
+{
+  "route": "travelers",
+  "path": "/travelers",
+  "screen": "travelers",
+  "locale": "en",
+  "image": "travelers-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "A\nArthur\nAdult · 3 bookings\n2 verified documents\nM\nMaya\nAdult · 2 bookings\n1 verified document\nAdd traveler",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "A\nArthur\nAdult · 3 bookings\n2 verified documents",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "M\nMaya\nAdult · 2 bookings\n1 verified document",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Add traveler",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "dialogCount": 0
+}

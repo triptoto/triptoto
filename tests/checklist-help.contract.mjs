@@ -5,7 +5,8 @@ const app=read('public/mobile-app.js'),css=read('public/mobile-app.css'),routes=
 
 // ---- Current approved primary navigation ----
 const nav=app.slice(app.indexOf('function navigationSheet('),app.indexOf('function totalNotificationCount('));
-for(const item of ['["trips", "trips", "All trips"]','["trip-options", "route", "Trip Options"]','["checklist", "checklist", "To-Do List"]','["account", "user", "Account"]'])assert(nav.includes(item),`approved navigation item missing: ${item}`);
+for(const item of ['["trips", "trips", "All trips"','["checklist", "checklist", "To-Do List"','["account", "user", "Account"'])assert(nav.includes(item),`approved navigation item missing: ${item}`);
+assert(!nav.includes('"trip-options"'),'Trip Options moved to the FAB and must not be a menu entry');
 assert(!nav.includes('"help"'),'Help must remain contextual');
 
 // ---- Route registration (offline-capable deep links) ----
@@ -27,7 +28,7 @@ assert(help.includes('How can we help?')&&help.includes('Find a clear answer wit
 assert(help.includes('data-faq-search')&&help.includes('data-faq-row')&&help.includes('data-faq-section'),'FAQ search structure missing');
 assert(app.includes('const faqSearch = event.target.closest?.("[data-faq-search]")')&&app.includes('row.hidden = !match'),'FAQ search behavior missing');
 assert(help.includes('data-faq-empty')&&help.includes('No answer found'),'FAQ empty search state missing');
-assert(help.includes('Take the tour')&&help.includes('href="/privacy"')&&help.includes('href="/terms"'),'Help utility links missing');
+assert(help.includes('Take the tour')&&help.includes('href="/privacy"')&&help.includes('href="/terms"')&&help.includes('href="/cookies"')&&help.includes('href="/contact"'),'Help utility links missing');
 
 // ---- FAQ content grounded in the real product ----
 const faq=app.slice(app.indexOf('const FAQ_SECTIONS'),app.indexOf('function helpScreen('));
@@ -65,7 +66,7 @@ const checklistState={trip:{id:'trip-a',title:'Trip A'},checklist:[
   {id:'done',title:'Check passport',completed:true},
 ],expandedChecklistTripId:null};
 const renderChecklist=()=>runInNewContext(`${cl}\nchecklistScreen()`,{
-  state:checklistState,esc:String,icon:()=>'',mobilePage:(_title,body)=>body,
+  state:checklistState,esc:String,icon:()=>'',mobilePage:(_title,body)=>body,myPendingMutations:()=>[],
 });
 let rendered=renderChecklist();
 assert(rendered.includes('1 task left')&&rendered.includes('Completed (1)'),'remaining and completed counts wrong');

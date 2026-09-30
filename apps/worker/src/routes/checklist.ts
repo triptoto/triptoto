@@ -1,6 +1,7 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, readJson, requireString, uuid } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalInteger, readJson, requireString, uuid, requireChanged } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
+import { digestJson, findReplayedCreate, idempotencyInsert, readIdempotencyKey } from '../create-idempotency.ts';
 import { seedChecklist } from '../../../../packages/checklists/src/index.ts';
 
 const categories = ['documents','before_you_leave','packing','custom'] as const;
@@ -15,9 +16,26 @@ export async function listChecklist(request: Request, env: Env, auth: AuthContex
 export async function createChecklistItem(request: Request, env: Env, auth: AuthContext, tripId: string): Promise<Response> {
   await requireTripAccess(env, auth, tripId, true);
   const body = await readJson<{title?:unknown;category?:unknown;priority?:unknown;dueAtUtc?:unknown}>(request);
+  const title=requireString(body.title,'title',160), category=enumValue(body.category,'category',categories,'custom'), priority=enumValue(body.priority,'priority',priorities,'medium'), dueAtUtc=optionalInteger(body.dueAtUtc,'dueAtUtc');
+  const key=readIdempotencyKey(request);
+  const fingerprint=key?await digestJson({tripId,title,category,priority,dueAtUtc}):null;
+  if(key&&fingerprint){
+    const replay=await findReplayedCreate(env,auth.deviceId,key,fingerprint);
+    if(replay){const item=await env.DB.prepare('SELECT * FROM trip_checklist_items WHERE id=? AND trip_id=?').bind(replay.resourceId,tripId).first();if(item)return json({item,replayed:true},{},request,env);}
+  }
   const id=uuid(), now=nowMs();
-  await env.DB.prepare(`INSERT INTO trip_checklist_items(id,trip_id,title,category,priority,due_at_utc,completion_source,reminder_enabled,created_at,updated_at,version) VALUES(?,?,?,?,?,?,'none',0,?,?,1)`)
-    .bind(id,tripId,requireString(body.title,'title',160),enumValue(body.category,'category',categories,'custom'),enumValue(body.priority,'priority',priorities,'medium'),optionalInteger(body.dueAtUtc,'dueAtUtc'),now,now).run();
+  const statements=[env.DB.prepare(`INSERT INTO trip_checklist_items(id,trip_id,title,category,priority,due_at_utc,completion_source,reminder_enabled,created_at,updated_at,version) VALUES(?,?,?,?,?,?,'none',0,?,?,1)`)
+    .bind(id,tripId,title,category,priority,dueAtUtc,now,now)];
+  if(key&&fingerprint)statements.push(idempotencyInsert(env,auth.deviceId,key,fingerprint,'checklist_item',id,now));
+  try{await env.DB.batch(statements);}
+  catch(error){
+    if(!key||!fingerprint)throw error;
+    const replay=await findReplayedCreate(env,auth.deviceId,key,fingerprint);
+    if(!replay)throw error;
+    const item=await env.DB.prepare('SELECT * FROM trip_checklist_items WHERE id=? AND trip_id=?').bind(replay.resourceId,tripId).first();
+    if(!item)throw error;
+    return json({item,replayed:true},{},request,env);
+  }
   return json({item:await env.DB.prepare('SELECT * FROM trip_checklist_items WHERE id=?').bind(id).first()},{status:201},request,env);
 }
 
@@ -49,7 +67,7 @@ export async function updateChecklistItem(request: Request, env: Env, auth: Auth
   const due=body.dueAtUtc===undefined?current.due_at_utc as number|null:optionalInteger(body.dueAtUtc,'dueAtUtc');
   const now=nowMs(); let completedAt=current.completed_at as number|null; let source=current.completion_source as string;
   if(body.completed!==undefined){if(typeof body.completed!=='boolean')throw new HttpError(400,'VALIDATION_ERROR','completed must be boolean.');completedAt=body.completed?now:null;source=body.completed?'user':'none';}
-  await env.DB.prepare(`UPDATE trip_checklist_items SET title=?,priority=?,due_at_utc=?,completed_at=?,completion_source=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=?`).bind(title,priority,due,completedAt,source,now,itemId,tripId,body.version).run();
+  requireChanged(await env.DB.prepare(`UPDATE trip_checklist_items SET title=?,priority=?,due_at_utc=?,completed_at=?,completion_source=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`).bind(title,priority,due,completedAt,source,now,itemId,tripId,body.version).run());
   return json({item:await env.DB.prepare('SELECT * FROM trip_checklist_items WHERE id=?').bind(itemId).first()},{},request,env);
 }
 
@@ -61,5 +79,6 @@ export async function deleteChecklistItem(request: Request, env: Env, auth: Auth
   await env.DB.prepare(`UPDATE trip_checklist_items SET deleted_at=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`).bind(now,now,itemId,tripId,body.version).run();
   const row=await env.DB.prepare('SELECT version,deleted_at FROM trip_checklist_items WHERE id=? AND trip_id=?').bind(itemId,tripId).first<{version:number;deleted_at:number|null}>();
   if(!row?.deleted_at) throw new HttpError(409,'VERSION_CONFLICT','Checklist item changed on another client.');
+  await env.DB.prepare(`INSERT INTO tombstones(entity_type,entity_id,version,deleted_at) VALUES('checklist_item',?,?,?) ON CONFLICT(entity_type,entity_id) DO UPDATE SET version=excluded.version,deleted_at=excluded.deleted_at`).bind(itemId,row.version,row.deleted_at).run();
   return new Response(null,{status:204});
 }

@@ -1,0 +1,1064 @@
+{
+  "numeric": [
+    "count",
+    "n",
+    "total",
+    "day",
+    "days",
+    "num",
+    "stops",
+    "minutes",
+    "hours",
+    "done",
+    "completed",
+    "current",
+    "max",
+    "size",
+    "rate",
+    "plural",
+    "placed",
+    "ready",
+    "visited",
+    "age",
+    "expires",
+    "startDate",
+    "endDate"
+  ],
+  "countNouns": {
+    "{count} trip": "trip",
+    "{count} trips": "trip",
+    "{count} traveler": "traveler",
+    "{count} travelers": "traveler",
+    "{count} document": "document",
+    "{count} documents": "document",
+    "{count} task": "task",
+    "{count} tasks": "task",
+    "{count} day": "day",
+    "{count} days": "day",
+    "{count} place": "place",
+    "{count} places": "place",
+    "{count} booking": "booking",
+    "{count} bookings": "booking",
+    "{count} change": "change",
+    "{count} changes": "change",
+    "{count} night": "night",
+    "{count} nights": "night",
+    "{count} stop": "stop",
+    "{count} stops": "stop",
+    "{count} note": "note",
+    "{count} notes": "note",
+    "{count} item": "item",
+    "{count} items": "item",
+    "{count} photo": "photo",
+    "{count} photos": "photo",
+    "{count} answer": "answer",
+    "{count} answers": "answer"
+  },
+  "patterns": [
+    {
+      "en": "“{title}” will be removed from your import history and the inbound email feed everywhere. This cannot be undone.",
+      "key": "booking.title_will_be_removed_from_your_import",
+      "scope": "all"
+    },
+    {
+      "en": "“{title}” will be removed from Save for Later. Any neighborhood it was placed in stays. This cannot be undone.",
+      "key": "ui.title_will_be_removed_from_save_for",
+      "scope": "all"
+    },
+    {
+      "en": "Invite people to view or edit {name}. You stay the owner and can change roles or remove people at any time.",
+      "key": "ui.invite_people_to_view_or_edit_name",
+      "scope": "all"
+    },
+    {
+      "en": "“{title}” and its {stops} will be removed. Linked bookings stay on your trip. This cannot be undone.",
+      "key": "ui.title_and_its_stops_will_be_removed",
+      "scope": "all"
+    },
+    {
+      "en": "“{name}” will be removed from this trip. Their bookings stay, but they will be unassigned.",
+      "key": "ui.name_will_be_removed_from_this_trip",
+      "scope": "all"
+    },
+    {
+      "en": "{count} change{plural} still pending. The changes and local documents will stay on this phone.",
+      "key": "account.count_change_plural_still_pending_the_changes",
+      "scope": "all"
+    },
+    {
+      "en": "Make {name} the owner? You’ll become an editor and can no longer manage sharing.",
+      "key": "ui.make_name_the_owner_you_ll_become",
+      "scope": "all"
+    },
+    {
+      "en": "Permanently delete your account and {count} server trip{plural}? This cannot be undone.",
+      "key": "account.permanently_delete_your_account_and_count_server",
+      "scope": "all"
+    },
+    {
+      "en": "{name} is not supported. Choose a PDF, JPG, PNG, WEBP, or PKPASS file.",
+      "key": "document.name_is_not_supported_choose_a_pdf",
+      "scope": "all"
+    },
+    {
+      "en": "Booking {status}. {label}. {provenance}. Scheduled booking data is never presented as live.",
+      "key": "a11y.booking_status_label_provenance_scheduled_bookin",
+      "scope": "all"
+    },
+    {
+      "en": "{label} lists stay in planning and never appear on the main timeline.",
+      "key": "ui.label_lists_stay_in_planning_and_never",
+      "scope": "all"
+    },
+    {
+      "en": "Beta limit of {limit} booking-email imports per trip per day reached.",
+      "key": "ui.beta_limit_of_limit_booking_email_imports",
+      "scope": "all"
+    },
+    {
+      "en": "“{title}” and its bookings will be removed. This cannot be undone.",
+      "key": "ui.title_and_its_bookings_will_be_removed",
+      "scope": "all"
+    },
+    {
+      "en": "Leave {trip}? You’ll lose access until someone invites you again.",
+      "key": "ui.leave_trip_you_ll_lose_access_until",
+      "scope": "all"
+    },
+    {
+      "en": "“{title}” will be removed from this phone. This cannot be undone.",
+      "key": "document.title_will_be_removed_from_this_phone",
+      "scope": "all"
+    },
+    {
+      "en": "“{title}” will be removed from this plan. This cannot be undone.",
+      "key": "ui.title_will_be_removed_from_this_plan",
+      "scope": "all"
+    },
+    {
+      "en": "“{title}” will be removed from this trip. This cannot be undone.",
+      "key": "booking.title_will_be_removed_from_this_trip",
+      "scope": "all"
+    },
+    {
+      "en": "This {kind} needs a trip so it cannot become an orphan booking.",
+      "key": "empty.this_kind_needs_a_trip_so_it",
+      "scope": "all"
+    },
+    {
+      "en": "This trip can keep up to {count} local documents on this device.",
+      "key": "document.this_trip_can_keep_up_to_count",
+      "scope": "all"
+    },
+    {
+      "en": "{status}. Scheduled booking data is never presented as live.",
+      "key": "a11y.status_scheduled_booking_data_is_never_presented",
+      "scope": "all"
+    },
+    {
+      "en": "Book it, plan your days, or save an idea for {name}.",
+      "key": "ui.book_it_plan_your_days_or_save",
+      "scope": "all"
+    },
+    {
+      "en": "{count} changes need review before sync can finish.",
+      "key": "error.count_changes_need_review_before_sync_can",
+      "scope": "all"
+    },
+    {
+      "en": "{name} could not be read. Choose the file again.",
+      "key": "error.name_could_not_be_read_choose_the",
+      "scope": "all"
+    },
+    {
+      "en": "{count} items need attention before offline use.",
+      "key": "ui.count_items_need_attention_before_offline_use",
+      "scope": "all"
+    },
+    {
+      "en": "{name} must be a three-letter currency code.",
+      "key": "validation.name_must_be_a_three_letter_currency",
+      "scope": "all"
+    },
+    {
+      "en": "{timezone} — the selected location's local time",
+      "key": "ui.timezone_the_selected_location_s_local_time",
+      "scope": "all"
+    },
+    {
+      "en": "Request body exceeds the {bytes} byte limit.",
+      "key": "error.request_body_exceeds_the_bytes_byte_limit",
+      "scope": "all"
+    },
+    {
+      "en": "{timezone} — the selected airport's local time",
+      "key": "ui.timezone_the_selected_airport_s_local_time",
+      "scope": "all"
+    },
+    {
+      "en": "{timezone} — the selected station's local time",
+      "key": "ui.timezone_the_selected_station_s_local_time",
+      "scope": "all"
+    },
+    {
+      "en": "Add your first {stop} to start this plan.",
+      "key": "empty.add_your_first_stop_to_start_this",
+      "scope": "all"
+    },
+    {
+      "en": "Booking imported. {count} more to review.",
+      "key": "toast.booking_imported_count_more_to_review",
+      "scope": "all"
+    },
+    {
+      "en": "Import rejected. {count} more to review.",
+      "key": "toast.import_rejected_count_more_to_review",
+      "scope": "all"
+    },
+    {
+      "en": "{name} is already saved for this trip.",
+      "key": "document.name_is_already_saved_for_this_trip",
+      "scope": "all"
+    },
+    {
+      "en": "{verified} of {count} ready offline on this phone",
+      "key": "ui.verified_of_count_ready_offline_on_this",
+      "scope": "all"
+    },
+    {
+      "en": "Join as {role}. Collaboration is free.",
+      "key": "ui.join_as_role_collaboration_is_free",
+      "scope": "all"
+    },
+    {
+      "en": "{destination} · reference rate for your trip",
+      "key": "currency.destination_reference_rate_for_your_trip",
+      "scope": "all"
+    },
+    {
+      "en": "Match {them} to a trip before adding.",
+      "key": "notification.match_them_to_a_trip_before_adding",
+      "scope": "all"
+    },
+    {
+      "en": "{legend}. Dates not set. Choose dates.",
+      "key": "a11y.legend_dates_not_set_choose_dates",
+      "scope": "all"
+    },
+    {
+      "en": "Tripto Plus is active until {date}.",
+      "key": "account.tripto_plus_is_active_until_date",
+      "scope": "all"
+    },
+    {
+      "en": "You’re invited to help plan {name}.",
+      "key": "ui.you_re_invited_to_help_plan_name",
+      "scope": "all"
+    },
+    {
+      "en": "{name} is selected more than once.",
+      "key": "document.name_is_selected_more_than_once",
+      "scope": "all"
+    },
+    {
+      "en": "{count} waiting for review or sync",
+      "key": "seo.count_waiting_for_review_or_sync",
+      "scope": "all"
+    },
+    {
+      "en": "Choose no more than {count} files.",
+      "key": "document.choose_no_more_than_count_files",
+      "scope": "all"
+    },
+    {
+      "en": "Menu, {count} unread notifications",
+      "key": "nav.menu_count_unread_notifications",
+      "scope": "all"
+    },
+    {
+      "en": "{name} must be between 0 and 20.",
+      "key": "validation.name_must_be_between_0_and_20",
+      "scope": "all"
+    },
+    {
+      "en": "order[{i}] must be a stop id.",
+      "key": "validation.order_i_must_be_a_stop_id",
+      "scope": "all"
+    },
+    {
+      "en": "Removed {count} travel essentials",
+      "key": "toast.removed_count_travel_essentials",
+      "scope": "all"
+    },
+    {
+      "en": "{date}, outside your trip dates",
+      "key": "a11y.date_outside_your_trip_dates",
+      "scope": "all"
+    },
+    {
+      "en": "Added {count} travel essentials.",
+      "key": "toast.added_count_travel_essentials",
+      "scope": "all"
+    },
+    {
+      "en": "{details}. Long press for actions",
+      "key": "a11y.details_long_press_for_actions",
+      "scope": "all"
+    },
+    {
+      "en": "{name} is not a readable file.",
+      "key": "validation.name_is_not_a_readable_file",
+      "scope": "all"
+    },
+    {
+      "en": "{title} added to your timeline.",
+      "key": "toast.title_added_to_your_timeline",
+      "scope": "all"
+    },
+    {
+      "en": "{title} returned to your ideas.",
+      "key": "toast.title_returned_to_your_ideas",
+      "scope": "all"
+    },
+    {
+      "en": "Up to {count} people per trip.",
+      "key": "ui.up_to_count_people_per_trip",
+      "scope": "all"
+    },
+    {
+      "en": "{count} things need attention",
+      "key": "ui.count_things_need_attention",
+      "scope": "all"
+    },
+    {
+      "en": "{name} is larger than 10 MB.",
+      "key": "document.name_is_larger_than_10_mb",
+      "scope": "all"
+    },
+    {
+      "en": "{count} local attachments. {status}.",
+      "key": "document.count_local_attachments_status",
+      "scope": "all"
+    },
+    {
+      "en": "Choose the {startLabel} you want.",
+      "key": "ui.choose_the_startlabel_you_want",
+      "scope": "all"
+    },
+    {
+      "en": "Selected range: {startDate} to {endDate}.",
+      "key": "ui.selected_range_startdate_to_enddate",
+      "scope": "all"
+    },
+    {
+      "en": "{count} changes need review",
+      "key": "ui.count_changes_need_review",
+      "scope": "all"
+    },
+    {
+      "en": "{count} people on this trip",
+      "key": "ui.count_people_on_this_trip",
+      "scope": "all"
+    },
+    {
+      "en": "{n} must be YYYY-MM-DD.",
+      "key": "validation.n_must_be_yyyy_mm_dd",
+      "scope": "all"
+    },
+    {
+      "en": "{name} must be an integer.",
+      "key": "validation.name_must_be_an_integer",
+      "scope": "all"
+    },
+    {
+      "en": "{name} must be YYYY-MM-DD.",
+      "key": "validation.name_must_be_yyyy_mm_dd",
+      "scope": "all"
+    },
+    {
+      "en": "{count} bookings to review",
+      "key": "notification.count_bookings_to_review",
+      "scope": "all"
+    },
+    {
+      "en": "{count} verified documents",
+      "key": "ui.count_verified_documents",
+      "scope": "all"
+    },
+    {
+      "en": "{count} waiting for review",
+      "key": "seo.count_waiting_for_review",
+      "scope": "all"
+    },
+    {
+      "en": "{n} must be confirmed.",
+      "key": "validation.n_must_be_confirmed",
+      "scope": "all"
+    },
+    {
+      "en": "Choose your {startLabel} first.",
+      "key": "ui.choose_your_startlabel_first",
+      "scope": "all"
+    },
+    {
+      "en": "{name} must be a string.",
+      "key": "validation.name_must_be_a_string",
+      "scope": "all"
+    },
+    {
+      "en": "{name} must be one of: {allowed}.",
+      "key": "validation.name_must_be_one_of_allowed",
+      "scope": "all"
+    },
+    {
+      "en": "{status} saved in preview.",
+      "key": "toast.status_saved_in_preview",
+      "scope": "all"
+    },
+    {
+      "en": "Delete {title} everywhere",
+      "key": "booking.delete_title_everywhere",
+      "scope": "all"
+    },
+    {
+      "en": "Get directions to {name}",
+      "key": "a11y.get_directions_to_name",
+      "scope": "all"
+    },
+    {
+      "en": "Join {name} on tripto.to",
+      "key": "ui.join_name_on_tripto_to",
+      "scope": "all"
+    },
+    {
+      "en": "Manage access for {name}",
+      "key": "a11y.manage_access_for_name",
+      "scope": "all"
+    },
+    {
+      "en": "Request failed ({status}).",
+      "key": "error.request_failed_status",
+      "scope": "all"
+    },
+    {
+      "en": "{title} saved for later.",
+      "key": "toast.title_saved_for_later",
+      "scope": "all"
+    },
+    {
+      "en": "From currency: {code}, {name}",
+      "key": "a11y.from_currency_code_name",
+      "scope": "all"
+    },
+    {
+      "en": "Now choose your {endLabel}.",
+      "key": "ui.now_choose_your_endlabel",
+      "scope": "all"
+    },
+    {
+      "en": "Save ideas for “{name}”",
+      "key": "ui.save_ideas_for_name",
+      "scope": "all"
+    },
+    {
+      "en": "{count} changes waiting",
+      "key": "ui.count_changes_waiting",
+      "scope": "all"
+    },
+    {
+      "en": "{count} updates waiting",
+      "key": "ui.count_updates_waiting",
+      "scope": "all"
+    },
+    {
+      "en": "{size} · Ready to save",
+      "key": "ui.size_ready_to_save",
+      "scope": "all"
+    },
+    {
+      "en": "{theme} theme selected.",
+      "key": "toast.theme_theme_selected",
+      "scope": "all"
+    },
+    {
+      "en": "On this phone ({count})",
+      "key": "ui.on_this_phone_count",
+      "scope": "all"
+    },
+    {
+      "en": "Save idea for \"{title}\"",
+      "key": "ui.save_idea_for_title",
+      "scope": "all"
+    },
+    {
+      "en": "Selected date: {date}.",
+      "key": "ui.selected_date_date",
+      "scope": "all"
+    },
+    {
+      "en": "Type {text} to confirm",
+      "key": "ui.type_text_to_confirm",
+      "scope": "all"
+    },
+    {
+      "en": "{count} days of travel",
+      "key": "ui.count_days_of_travel",
+      "scope": "all"
+    },
+    {
+      "en": "Email hotel at {email}",
+      "key": "a11y.email_hotel_at_email",
+      "scope": "all"
+    },
+    {
+      "en": "Starts in {days} days",
+      "key": "ui.starts_in_days_days",
+      "scope": "all"
+    },
+    {
+      "en": "To currency: {code}, {name}",
+      "key": "a11y.to_currency_code_name",
+      "scope": "all"
+    },
+    {
+      "en": "{label}. Choose {startLabel} and {endLabel}",
+      "key": "a11y.label_choose_startlabel_and_endlabel",
+      "scope": "attr"
+    },
+    {
+      "en": "{n} must be >= 0.",
+      "key": "validation.n_must_be_0",
+      "scope": "all"
+    },
+    {
+      "en": "{startDate} · now choose {endLabel}",
+      "key": "ui.startdate_now_choose_endlabel",
+      "scope": "attr"
+    },
+    {
+      "en": "Call hotel at {phone}",
+      "key": "a11y.call_hotel_at_phone",
+      "scope": "all"
+    },
+    {
+      "en": "Live update · {age}",
+      "key": "ui.live_update_age",
+      "scope": "all"
+    },
+    {
+      "en": "Put it on {date} at {time}",
+      "key": "ui.put_it_on_date_at_time",
+      "scope": "attr"
+    },
+    {
+      "en": "Remove {name} from {trip}?",
+      "key": "ui.remove_name_from_trip",
+      "scope": "all"
+    },
+    {
+      "en": "Trip dates {startDate} – {endDate}",
+      "key": "ui.trip_dates_startdate_enddate",
+      "scope": "all"
+    },
+    {
+      "en": "{article} {noun} {verb} this trip.",
+      "key": "notification.article_noun_verb_this_trip",
+      "scope": "attr"
+    },
+    {
+      "en": "{n} is too long.",
+      "key": "validation.n_is_too_long",
+      "scope": "all"
+    },
+    {
+      "en": "{name} is required.",
+      "key": "validation.name_is_required",
+      "scope": "all"
+    },
+    {
+      "en": "{name} is too long.",
+      "key": "validation.name_is_too_long",
+      "scope": "attr"
+    },
+    {
+      "en": "{role} · pending · {expires}",
+      "key": "seo.role_pending_expires",
+      "scope": "attr"
+    },
+    {
+      "en": "Delete this {label}?",
+      "key": "ui.delete_this_label_2",
+      "scope": "all"
+    },
+    {
+      "en": "Last status: {status}",
+      "key": "ui.last_status_status",
+      "scope": "all"
+    },
+    {
+      "en": "Updated {n}d ago",
+      "key": "ui.updated_n_d_ago",
+      "scope": "all"
+    },
+    {
+      "en": "Updated {n}h ago",
+      "key": "ui.updated_n_h_ago",
+      "scope": "all"
+    },
+    {
+      "en": "Updated {n}m ago",
+      "key": "ui.updated_n_m_ago",
+      "scope": "all"
+    },
+    {
+      "en": "{date}, start date",
+      "key": "a11y.date_start_date",
+      "scope": "attr"
+    },
+    {
+      "en": "{name} is invalid.",
+      "key": "validation.name_is_invalid",
+      "scope": "attr"
+    },
+    {
+      "en": "{visited} of {total} visited",
+      "key": "ui.visited_of_total_visited",
+      "scope": "all"
+    },
+    {
+      "en": "Completed ({count})",
+      "key": "ui.completed_count",
+      "scope": "all"
+    },
+    {
+      "en": "Delayed {count} min",
+      "key": "transport.delayed_count_min",
+      "scope": "all"
+    },
+    {
+      "en": "Delete this {label}",
+      "key": "ui.delete_this_label",
+      "scope": "all"
+    },
+    {
+      "en": "Last synced {time}",
+      "key": "ui.last_synced_time",
+      "scope": "all"
+    },
+    {
+      "en": "Request ID: {id}",
+      "key": "error.request_id_id",
+      "scope": "attr"
+    },
+    {
+      "en": "Travellers: {names}",
+      "key": "seo.travellers_names",
+      "scope": "attr"
+    },
+    {
+      "en": "{count} tasks left",
+      "key": "checklist.count_tasks_left",
+      "scope": "all"
+    },
+    {
+      "en": "{role} access to {name}",
+      "key": "ui.role_access_to_name",
+      "scope": "attr"
+    },
+    {
+      "en": "{role} link ready",
+      "key": "ui.role_link_ready",
+      "scope": "attr"
+    },
+    {
+      "en": "{title} added to {date}.",
+      "key": "toast.title_added_to_date",
+      "scope": "attr"
+    },
+    {
+      "en": "{title} added to {name}.",
+      "key": "toast.title_added_to_name",
+      "scope": "attr"
+    },
+    {
+      "en": "Open trip: {title}",
+      "key": "a11y.open_trip_title",
+      "scope": "attr"
+    },
+    {
+      "en": "· Day {day} of {total}",
+      "key": "seo.day_day_of_total",
+      "scope": "all"
+    },
+    {
+      "en": "{count} available",
+      "key": "seo.count_available",
+      "scope": "all"
+    },
+    {
+      "en": "{current} of {max} ready",
+      "key": "ui.current_of_max_ready",
+      "scope": "all"
+    },
+    {
+      "en": "{date}, end date",
+      "key": "a11y.date_end_date",
+      "scope": "attr"
+    },
+    {
+      "en": "{ready} of {total} ready",
+      "key": "ui.ready_of_total_ready",
+      "scope": "all"
+    },
+    {
+      "en": "Amount in {code}",
+      "key": "a11y.amount_in_code",
+      "scope": "all"
+    },
+    {
+      "en": "Linked to {title}",
+      "key": "ui.linked_to_title",
+      "scope": "attr"
+    },
+    {
+      "en": "Removed \"{title}\"",
+      "key": "toast.removed_title",
+      "scope": "attr"
+    },
+    {
+      "en": "{label} updated.",
+      "key": "toast.label_updated",
+      "scope": "attr"
+    },
+    {
+      "en": "{name} deleted.",
+      "key": "toast.name_deleted",
+      "scope": "attr"
+    },
+    {
+      "en": "{name} updated.",
+      "key": "toast.name_updated",
+      "scope": "attr"
+    },
+    {
+      "en": "{type} deleted.",
+      "key": "toast.type_deleted",
+      "scope": "attr"
+    },
+    {
+      "en": "Download {name}",
+      "key": "a11y.download_name",
+      "scope": "attr"
+    },
+    {
+      "en": "No {filter} trips",
+      "key": "empty.no_filter_trips",
+      "scope": "attr"
+    },
+    {
+      "en": "Prepared {date}",
+      "key": "seo.prepared_date",
+      "scope": "attr"
+    },
+    {
+      "en": "Shared · {role}",
+      "key": "ui.shared_role",
+      "scope": "attr"
+    },
+    {
+      "en": "{count} checked",
+      "key": "ui.count_checked",
+      "scope": "all"
+    },
+    {
+      "en": "{count} waiting",
+      "key": "a11y.count_waiting",
+      "scope": "all"
+    },
+    {
+      "en": "{placed}/{total} mapped",
+      "key": "ui.placed_total_mapped",
+      "scope": "all"
+    },
+    {
+      "en": "Day {day} of {total}",
+      "key": "ui.day_day_of_total",
+      "scope": "all"
+    },
+    {
+      "en": "expires {date}",
+      "key": "ui.expires_date",
+      "scope": "attr"
+    },
+    {
+      "en": "Updated {age}",
+      "key": "ui.updated_age",
+      "scope": "all"
+    },
+    {
+      "en": "· {count} days",
+      "key": "ui.count_days",
+      "scope": "all"
+    },
+    {
+      "en": "{count} answer{plural}",
+      "key": "faq.count_answer_plural",
+      "scope": "all"
+    },
+    {
+      "en": "{count} unread",
+      "key": "notification.count_unread",
+      "scope": "all"
+    },
+    {
+      "en": "{date}, from {time}",
+      "key": "ui.date_from_time",
+      "scope": "attr"
+    },
+    {
+      "en": "{kind} Detail",
+      "key": "ui.kind_detail",
+      "scope": "attr"
+    },
+    {
+      "en": "{label} saved.",
+      "key": "toast.label_saved",
+      "scope": "attr"
+    },
+    {
+      "en": "{n} nights",
+      "key": "ui.n_nights",
+      "scope": "all"
+    },
+    {
+      "en": "{name} added.",
+      "key": "toast.name_added",
+      "scope": "attr"
+    },
+    {
+      "en": "Add to {name}",
+      "key": "ui.add_to_name",
+      "scope": "all"
+    },
+    {
+      "en": "Add to {trip}",
+      "key": "empty.add_to_trip",
+      "scope": "all"
+    },
+    {
+      "en": "Choose {startLabel}",
+      "key": "ui.choose_startlabel",
+      "scope": "attr"
+    },
+    {
+      "en": "Delete {document}",
+      "key": "a11y.delete_document",
+      "scope": "attr"
+    },
+    {
+      "en": "Delete {title}",
+      "key": "a11y.delete_title",
+      "scope": "attr"
+    },
+    {
+      "en": "Delete {trip}",
+      "key": "a11y.delete_trip",
+      "scope": "attr"
+    },
+    {
+      "en": "Manage {name}",
+      "key": "ui.manage_name",
+      "scope": "attr"
+    },
+    {
+      "en": "No {stops} yet",
+      "key": "empty.no_stops_yet",
+      "scope": "all"
+    },
+    {
+      "en": "Notes: {note}",
+      "key": "ui.notes_note",
+      "scope": "attr"
+    },
+    {
+      "en": "Remove {document}",
+      "key": "a11y.remove_document",
+      "scope": "attr"
+    },
+    {
+      "en": "Remove {name}",
+      "key": "a11y.remove_name",
+      "scope": "attr"
+    },
+    {
+      "en": "Select {startLabel}",
+      "key": "ui.select_startlabel",
+      "scope": "attr"
+    },
+    {
+      "en": "{count} bytes",
+      "key": "document.count_bytes",
+      "scope": "all"
+    },
+    {
+      "en": "{count} cabin",
+      "key": "ui.count_cabin",
+      "scope": "all"
+    },
+    {
+      "en": "{legend}. {startDate} to {endDate}",
+      "key": "a11y.legend_startdate_to_enddate",
+      "scope": "attr"
+    },
+    {
+      "en": "{name} (You)",
+      "key": "ui.name_you",
+      "scope": "attr"
+    },
+    {
+      "en": "Close {title}",
+      "key": "a11y.close_title",
+      "scope": "attr"
+    },
+    {
+      "en": "Retry {name}",
+      "key": "a11y.retry_name",
+      "scope": "attr"
+    },
+    {
+      "en": "{count}d ago",
+      "key": "notification.count_d_ago",
+      "scope": "all"
+    },
+    {
+      "en": "{count}h ago",
+      "key": "notification.count_h_ago",
+      "scope": "all"
+    },
+    {
+      "en": "{count}m ago",
+      "key": "notification.count_m_ago",
+      "scope": "all"
+    },
+    {
+      "en": "{date}, by {time}",
+      "key": "ui.date_by_time",
+      "scope": "attr"
+    },
+    {
+      "en": "{label} name",
+      "key": "ui.label_name",
+      "scope": "attr"
+    },
+    {
+      "en": "Edit {label}",
+      "key": "ui.edit_label",
+      "scope": "attr"
+    },
+    {
+      "en": "Edit {stop}",
+      "key": "marketing.edit_stop",
+      "scope": "attr"
+    },
+    {
+      "en": "Edit {title}",
+      "key": "a11y.edit_title",
+      "scope": "attr"
+    },
+    {
+      "en": "Edit {type}",
+      "key": "ui.edit_type",
+      "scope": "attr"
+    },
+    {
+      "en": "Join {title}",
+      "key": "ui.join_title",
+      "scope": "attr"
+    },
+    {
+      "en": "Open {name}",
+      "key": "a11y.open_name",
+      "scope": "attr"
+    },
+    {
+      "en": "Save {type}",
+      "key": "action.save_type",
+      "scope": "attr"
+    },
+    {
+      "en": "{from} to {to}",
+      "key": "a11y.from_to_to",
+      "scope": "attr"
+    },
+    {
+      "en": "{stops} in {title}",
+      "key": "a11y.stops_in_title",
+      "scope": "attr"
+    },
+    {
+      "en": "Add {label}",
+      "key": "ui.add_label",
+      "scope": "attr"
+    },
+    {
+      "en": "Add {stop}",
+      "key": "ui.add_stop",
+      "scope": "attr"
+    },
+    {
+      "en": "Add {title}",
+      "key": "ui.add_title",
+      "scope": "attr"
+    },
+    {
+      "en": "Add {type}",
+      "key": "action.add_type",
+      "scope": "attr"
+    },
+    {
+      "en": "Day {n}",
+      "key": "ui.day_n",
+      "scope": "all"
+    },
+    {
+      "en": "New {label}",
+      "key": "ui.new_label",
+      "scope": "attr"
+    },
+    {
+      "en": "New {stop}",
+      "key": "ui.new_stop",
+      "scope": "attr"
+    },
+    {
+      "en": "{count} KB",
+      "key": "document.count_kb",
+      "scope": "all"
+    },
+    {
+      "en": "{count} MB",
+      "key": "document.count_mb",
+      "scope": "all"
+    },
+    {
+      "en": "{hours}h {minutes}m",
+      "key": "ui.hours_h_minutes_m",
+      "scope": "all"
+    },
+    {
+      "en": "{n} KB",
+      "key": "document.n_kb",
+      "scope": "all"
+    },
+    {
+      "en": "{n} MB",
+      "key": "document.n_mb",
+      "scope": "all"
+    },
+    {
+      "en": "In {details}",
+      "key": "ui.in_details",
+      "scope": "attr"
+    }
+  ]
+}

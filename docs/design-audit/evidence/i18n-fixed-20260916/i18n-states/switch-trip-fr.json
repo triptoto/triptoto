@@ -1,0 +1,222 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "AT\nAlex Traveler\n\nIdentité Google\n\nSe déconnecter\n0\nActuel\n2\nÀ venir\n1\nPassés\nTous les voyages\nNouveau voyage\nTripto Plus\nDébloquer Tripto Plus\nVoyages illimités · Annulez à tout moment\nVos voyages\nChanger de voyage\n3 disponibles\nBoîte de réception\n1 en attente de vérification\nEssentiels de voyage\nTrouver un vol\nRechercher des vols et des hôtels\nTrouver un hébergement\nParcourir les hôtels sur Booking.com\neSIM de voyage\nConnectez-vous avant d'atterrir\n\nLes liens partenaires peuvent rapporter une commission à Tripto, sans frais supplémentaires.\n\nApparence\nNuit\nJour\nLangue\nEN\nEnglish\nDE\nDeutsch\nFR\nFrançais\nES\nEspañol\nRU\nРусский\nAide et assistance\nFaire la visite\nDécouvrez Tripto\nAide, confidentialité et conditions\nInformations d’assistance et mentions légales\nRechercher des mises à jour\nRecharger la dernière version de l’application\nConfidentialité et données\nSupprimer les données locales\nEfface les fichiers et les voyages en cache de ce téléphone uniquement\nSupprimer mon compte\nSupprime définitivement votre compte serveur et vos voyages\ntripto.to\n\nProduct V2\n\nChoisir le voyage\n🇮🇹\nRome 2026\nsept. 17–23, 2026\n🇬🇷\nAthens Weekend\noct. 15–18, 2026",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 776,
+      "scroll": 1980
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 656,
+        "width": 390,
+        "height": 188,
+        "top": 656,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Se déconnecter",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "Tous les voyages",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Nouveau voyage",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Débloquer Tripto Plus\nVoyages illimités · Annulez à tout moment",
+      "label": null,
+      "action": "open-subscription"
+    },
+    {
+      "text": "Changer de voyage\n3 disponibles",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Boîte de réception\n1 en attente de vérification",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Nuit",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "Jour",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "EN\nEnglish",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "DE\nDeutsch",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "FR\nFrançais",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "ES\nEspañol",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "RU\nРусский",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "Faire la visite\nDécouvrez Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Aide, confidentialité et conditions\nInformations d’assistance et mentions légales",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Rechercher des mises à jour\nRecharger la dernière version de l’application",
+      "label": null,
+      "action": "force-update"
+    },
+    {
+      "text": "Supprimer les données locales\nEfface les fichiers et les voyages en cache de ce téléphone uniquement",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "Supprimer mon compte\nSupprime définitivement votre compte serveur et vos voyages",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Ouvrir l'écran d'accueil",
+      "screen": "home"
+    },
+    {
+      "text": "",
+      "label": "Fermer",
+      "action": "close-sheet"
+    },
+    {
+      "text": "🇮🇹\nRome 2026\nsept. 17–23, 2026",
+      "label": null,
+      "action": "select-trip",
+      "id": "preview-trip"
+    },
+    {
+      "text": "🇬🇷\nAthens Weekend\noct. 15–18, 2026",
+      "label": null,
+      "action": "select-trip",
+      "id": "preview-trip-next"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "account",
+  "clicks": [
+    "[data-action=\"switch-trip\"]"
+  ],
+  "documentLang": "fr",
+  "visibleText": [
+    "Compte",
+    "AT",
+    "Alex Traveler",
+    "Identité Google",
+    "Se déconnecter",
+    "0",
+    "Actuel",
+    "2",
+    "À venir",
+    "1",
+    "Passés",
+    "Tous les voyages",
+    "Nouveau voyage",
+    "Tripto Plus",
+    "Débloquer Tripto Plus",
+    "Voyages illimités · Annulez à tout moment",
+    "Vos voyages",
+    "Changer de voyage",
+    "3 disponibles",
+    "Boîte de réception",
+    "1 en attente de vérification",
+    "Essentiels de voyage",
+    "Trouver un vol",
+    "Rechercher des vols et des hôtels",
+    "Trouver un hébergement",
+    "Parcourir les hôtels sur Booking.com",
+    "eSIM de voyage",
+    "Connectez-vous avant d'atterrir",
+    "Les liens partenaires peuvent rapporter une commission à Tripto, sans frais supplémentaires.",
+    "Apparence",
+    "Nuit",
+    "Jour",
+    "Langue",
+    "EN",
+    "English",
+    "DE",
+    "Deutsch",
+    "FR",
+    "Français",
+    "ES",
+    "Español",
+    "RU",
+    "Русский",
+    "Aide et assistance",
+    "Faire la visite",
+    "Découvrez Tripto",
+    "Aide, confidentialité et conditions",
+    "Informations d’assistance et mentions légales",
+    "Rechercher des mises à jour",
+    "Recharger la dernière version de l’application",
+    "Confidentialité et données",
+    "Supprimer les données locales",
+    "Efface les fichiers et les voyages en cache de ce téléphone uniquement",
+    "Supprimer mon compte",
+    "Supprime définitivement votre compte serveur et vos voyages",
+    "tripto",
+    ".",
+    "to",
+    "Product V2",
+    "Choisir le voyage",
+    "🇮🇹",
+    "Rome 2026",
+    "sept. 17–23, 2026",
+    "🇬🇷",
+    "Athens Weekend",
+    "oct. 15–18, 2026"
+  ],
+  "errors": []
+}

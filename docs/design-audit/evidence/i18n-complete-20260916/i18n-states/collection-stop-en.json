@@ -1,0 +1,25 @@
+{
+  "url": "/timeline",
+  "screen": "collection-stop",
+  "text": "Place unavailable\n\nThis place is not available.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "collection-stop",
+  "clicks": [],
+  "documentLang": "en",
+  "visibleText": [
+    "Place unavailable",
+    "Place unavailable",
+    "This place is not available."
+  ],
+  "errors": []
+}

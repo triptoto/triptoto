@@ -1,0 +1,25 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Your travel documents\n\n0 of 0 ready offline on this phone\n\nSaved documents\nNo offline documents\n\nAdd a ticket, boarding pass, or confirmation.\n\nAdd Document",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add Document",
+      "label": null,
+      "action": "document-sheet"
+    }
+  ],
+  "evidence": [
+    "documents-empty-top.png"
+  ],
+  "fixtureSetup": "s.localDocs=[];",
+  "trigger": []
+}

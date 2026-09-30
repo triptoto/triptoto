@@ -1,0 +1,14 @@
+{
+  "route": "trips",
+  "path": "/trips",
+  "screen": "trips",
+  "locale": "en",
+  "image": "trips-en.png",
+  "missingTranslations": [],
+  "errors": [
+    "wrong document language"
+  ],
+  "text": "tripto.to\nOpening your trips…\nA little moment for your next adventure.",
+  "buttons": [],
+  "dialogCount": 0
+}

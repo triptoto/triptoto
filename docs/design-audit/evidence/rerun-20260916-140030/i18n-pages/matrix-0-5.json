@@ -1,0 +1,156 @@
+[
+  {
+    "route": "welcome",
+    "locale": "en",
+    "image": "welcome-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "welcome",
+    "locale": "de",
+    "image": "welcome-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "fr",
+    "image": "welcome-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "es",
+    "image": "welcome-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "welcome",
+    "locale": "ru",
+    "image": "welcome-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "en",
+    "image": "trips-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "trips",
+    "locale": "de",
+    "image": "trips-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "fr",
+    "image": "trips-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "es",
+    "image": "trips-es.png",
+    "missingTranslations": [
+      "Actual"
+    ],
+    "errors": []
+  },
+  {
+    "route": "trips",
+    "locale": "ru",
+    "image": "trips-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "timeline",
+    "error": "{'exceptionId': 4, 'text': 'Uncaught (in promise) TypeError: countNouns is not iterable', 'lineNumber': 65, 'columnNumber': 21, 'scriptId': '7', 'stackTrace': {'callFrames': [{'functionName': 'translateDynamic', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 64, 'columnNumber': 20}, {'functionName': 'translateText', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 87, 'columnNumber': 16}, {'functionName': 'translateRoot', 'scriptId': '7', 'url': 'http://127.0.0.1:4174/i18n.js?v=i18n-v4', 'lineNumber': 102, 'columnNumber': 86}, {'functionName': 'I', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 25, 'columnNumber': 58453}, {'functionName': 'Se', 'scriptId': '12', 'url': 'http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa', 'lineNumber': 0, 'columnNumber': 98396}, {'functionName': '', 'scriptId': '16', 'url': '', 'lineNumber': 0, 'columnNumber': 16}]}, 'exception': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'TypeError: countNouns is not iterable\\n    at translateDynamic (http://127.0.0.1:4174/i18n.js?v=i18n-v4:65:21)\\n    at translateText (http://127.0.0.1:4174/i18n.js?v=i18n-v4:88:17)\\n    at Array.forEach (<anonymous>)\\n    at Object.translateRoot [as translate] (http://127.0.0.1:4174/i18n.js?v=i18n-v4:103:87)\\n    at I (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:26:58454)\\n    at Object.Se [as reload] (http://127.0.0.1:4174/mobile-app.min.js?v=prod-release-v524-i18n-popup-qa:1:98397)\\n    at <anonymous>:1:17', 'objectId': '-5680582714536585861.4.2'}}"
+  },
+  {
+    "route": "add-trip",
+    "locale": "en",
+    "image": "add-trip-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "add-trip",
+    "locale": "de",
+    "image": "add-trip-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "fr",
+    "image": "add-trip-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "es",
+    "image": "add-trip-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-trip",
+    "locale": "ru",
+    "image": "add-trip-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "en",
+    "image": "add-booking-en.png",
+    "missingTranslations": [],
+    "errors": [
+      "wrong document language"
+    ]
+  },
+  {
+    "route": "add-booking",
+    "locale": "de",
+    "image": "add-booking-de.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "fr",
+    "image": "add-booking-fr.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "es",
+    "image": "add-booking-es.png",
+    "missingTranslations": [],
+    "errors": []
+  },
+  {
+    "route": "add-booking",
+    "locale": "ru",
+    "image": "add-booking-ru.png",
+    "missingTranslations": [],
+    "errors": []
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "route": "add-booking",
+  "path": "/bookings/add",
+  "screen": "add-booking",
+  "locale": "en",
+  "image": "add-booking-en.png",
+  "missingTranslations": [],
+  "errors": [
+    "wrong document language"
+  ],
+  "text": "tripto.to\nOpening your trips…\nA little moment for your next adventure.",
+  "buttons": [],
+  "dialogCount": 0
+}

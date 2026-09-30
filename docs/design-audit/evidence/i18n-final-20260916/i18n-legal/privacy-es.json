@@ -1,0 +1,44 @@
+{
+  "lang": "es",
+  "title": "La privacidad, explicada con claridad · tripto.to",
+  "text": "tripto.to\nEnglish\nDeutsch\nFrançais\nEspañol\nРусский\nAbrir app\n\nTUS DATOS, TU VIAJE\n\nLa privacidad, explicada con claridad\n\nTripto está diseñado para ayudarte a organizar un viaje sin convertir tus planes de viaje en datos publicitarios. Esta política explica qué recopilamos, por qué lo usamos y las opciones que tienes.\n\nÚltima actualización: 16 de septiembre de 2026\ntripto.to\nQué recopilamos\nInformación de la cuenta\nTu correo verificado de Google y el identificador de tu cuenta cuando eliges iniciar sesión.\nInformación del viaje\nViajes, reservas, fechas, notas y detalles de viajes compartidos que decidas añadir.\nDatos del servicio\nRegistros técnicos mínimos, necesarios para mantener el servicio seguro, fiable y sincronizado.\nDocumentos en el dispositivo\nLos archivos que guardas para usar sin conexión se quedan en tu dispositivo; su contenido no se sube a los servidores de Tripto.\nCómo la usamos\nPara mostrar, sincronizar y proteger los viajes que creas.\nPara procesar los datos de reserva que añades o reenvías expresamente para su revisión.\nPara evitar sobrescrituras accidentales y mantener la seguridad de tu cuenta.\nPara responderte cuando solicitas soporte o la eliminación de tu cuenta.\n\nNo vendemos el contenido de tu itinerario ni lo usamos para mostrarte publicidad.\n\nCorreos de reservas e importaciones\n\nWhen you forward a confirmation to go@tripto.to, Tripto processes it to identify travel details for your review. Smart Import processes supported files on your device; raw files and extracted text are not uploaded through that flow.\n\nTus opciones\nPuedes cerrar sesión desde Cuenta en cualquier momento.\nPuedes quitar los archivos locales y los datos del viaje en caché del dispositivo donde se guardan.\nPuedes solicitar la eliminación de los datos de tu cuenta contactándonos.\nPrivacidad desde el diseño\nLos diagnósticos de soporte usan información operativa general. No incluyen números de confirmación, tokens de invitación, contenido de correos, nombres de viajeros, direcciones ni los bytes de los archivos de documentos.\n¿Aún necesitas ayuda?\n\nEscríbenos con la mínima información necesaria para entender tu solicitud.\n\nEscribe a go@tripto.to\nPrivacidad\nTérminos\nCookies\nContacto\nAbrir app",
+  "overflow": false,
+  "links": [
+    {
+      "text": "tripto.to",
+      "href": "/landing"
+    },
+    {
+      "text": "Abrir app",
+      "href": "/account"
+    },
+    {
+      "text": "go@tripto.to",
+      "href": "mailto:go@tripto.to"
+    },
+    {
+      "text": "Escribe a go@tripto.to",
+      "href": "mailto:go@tripto.to?subject=Tripto%20support"
+    },
+    {
+      "text": "Privacidad",
+      "href": "/privacy"
+    },
+    {
+      "text": "Términos",
+      "href": "/terms"
+    },
+    {
+      "text": "Cookies",
+      "href": "/cookies"
+    },
+    {
+      "text": "Contacto",
+      "href": "/contact"
+    },
+    {
+      "text": "Abrir app",
+      "href": "/account"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "url": "/before-you-go",
+  "screen": "checklist",
+  "text": "ANTES DE SALIR\nRome 2026\n\n2 tareas pendientes\n\n2/4\nAñadir una tarea\nAñadir\nEquipaje\nPack power adapter\nPack medication\nAñadir esenciales de viaje\nCompletadas (2)",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Añadir",
+      "label": "Añadir tarea"
+    },
+    {
+      "text": "Pack power adapter",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "",
+      "label": "Editar Pack power adapter",
+      "action": "edit-checklist",
+      "id": "check-adapter"
+    },
+    {
+      "text": "Pack medication",
+      "label": null,
+      "action": "toggle-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "",
+      "label": "Editar Pack medication",
+      "action": "edit-checklist",
+      "id": "check-med"
+    },
+    {
+      "text": "Añadir esenciales de viaje",
+      "label": null,
+      "action": "load-essentials"
+    },
+    {
+      "text": "Completadas (2)",
+      "label": null,
+      "action": "toggle-completed-checklist"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

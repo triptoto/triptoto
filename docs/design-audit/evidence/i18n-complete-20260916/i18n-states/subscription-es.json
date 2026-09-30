@@ -1,0 +1,55 @@
+{
+  "url": "/timeline",
+  "screen": "subscription",
+  "text": "TU PRIMER VIAJE ES GRATIS\n\n¿Listo para otra aventura?\n\nCrea y organiza todos los viajes que quieras con Tripto Plus.\n\nViajes ilimitados\nTodas las herramientas de planificación\nCancela cuando quieras\nAnual\nAhorra un 35 % frente al plan mensual\n$39\nal año\nMEJOR PRECIO\nMensual\nAcceso mensual flexible\n$4.99\nal mes\n\nPreparando el pago seguro… Inténtalo de nuevo en un momento.\n\nAhora no",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Anual\nAhorra un 35 % frente al plan mensual\n$39\nal año\nMEJOR PRECIO",
+      "label": null,
+      "action": "choose-subscription-plan"
+    },
+    {
+      "text": "Mensual\nAcceso mensual flexible\n$4.99\nal mes",
+      "label": null,
+      "action": "choose-subscription-plan"
+    },
+    {
+      "text": "Ahora no",
+      "label": null,
+      "action": "subscription-back"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "subscription",
+  "clicks": [],
+  "documentLang": "es",
+  "visibleText": [
+    "Mejorar",
+    "TU PRIMER VIAJE ES GRATIS",
+    "¿Listo para otra aventura?",
+    "Crea y organiza todos los viajes que quieras con Tripto Plus.",
+    "Viajes ilimitados",
+    "Todas las herramientas de planificación",
+    "Cancela cuando quieras",
+    "Anual",
+    "Ahorra un 35 % frente al plan mensual",
+    "$39",
+    "al año",
+    "MEJOR PRECIO",
+    "Mensual",
+    "Acceso mensual flexible",
+    "$4.99",
+    "al mes",
+    "Preparando el pago seguro… Inténtalo de nuevo en un momento.",
+    "Ahora no"
+  ],
+  "errors": []
+}

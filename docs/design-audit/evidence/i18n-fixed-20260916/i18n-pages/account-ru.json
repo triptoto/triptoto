@@ -1,0 +1,104 @@
+{
+  "route": "account",
+  "path": "/account",
+  "screen": "account",
+  "locale": "ru",
+  "image": "account-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "GT\nГость\n\nГостевой профиль\n\n0\nТекущая\n2\nПредстоящие\n1\nПрошедшие\nВсе поездки\nНовая поездка\nTripto Plus\nОткрыть Tripto Plus\nНеограниченное число поездок · Отмена в любой момент\nВаши поездки\nСменить поездку\n3 доступно\nВходящие письма\nВойдите, чтобы проверить отправителя\nВсё для поездки\nНайти рейс\nПоиск рейсов и отелей\nНайти жильё\nСмотреть варианты жилья на Booking.com\neSIM для поездки\nОставайтесь на связи ещё до посадки\n\nПо партнёрским ссылкам Tripto может получать комиссию без доплаты с вашей стороны.\n\nОформление\nНочь\nДень\nЯзык\nEN\nEnglish\nDE\nDeutsch\nFR\nFrançais\nES\nEspañol\nRU\nРусский\nПомощь и поддержка\nПройти тур\nЗнакомство с Tripto\nПомощь, конфиденциальность и условия\nПоддержка и правовая информация\nПроверить обновления\nЗагрузить последнюю версию приложения\nКонфиденциальность и данные\nУдалить локальные данные\nУдаляет файлы и сохранённые поездки только с этого телефона\ntripto.to\n\nПродукт V2",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Все поездки",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Новая поездка",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Открыть Tripto Plus\nНеограниченное число поездок · Отмена в любой момент",
+      "label": null,
+      "action": "open-subscription"
+    },
+    {
+      "text": "Сменить поездку\n3 доступно",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Входящие письма\nВойдите, чтобы проверить отправителя",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Ночь",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "День",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "EN\nEnglish",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "DE\nDeutsch",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "FR\nFrançais",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "ES\nEspañol",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "RU\nРусский",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "Пройти тур\nЗнакомство с Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Помощь, конфиденциальность и условия\nПоддержка и правовая информация",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Проверить обновления\nЗагрузить последнюю версию приложения",
+      "label": null,
+      "action": "force-update"
+    },
+    {
+      "text": "Удалить локальные данные\nУдаляет файлы и сохранённые поездки только с этого телефона",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Открыть приветственный экран",
+      "screen": "home"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "account-ru-bottom.png"
+}

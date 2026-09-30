@@ -27,6 +27,7 @@ class Browser:
         for method in ['Page.enable','Runtime.enable','Network.enable']:
             self.cmd(method)
         self.cmd('Network.setCacheDisabled', {'cacheDisabled':True})
+        self.cmd('Network.setBypassServiceWorker', {'bypass':True})
         self.cmd('Network.setBlockedURLs',{'urls':['*://tripto.to/*','*://accounts.google.com/*','*://www.googletagmanager.com/*','*://www.stay22.com/*']})
     def cmd(self,method,params=None):
         self.seq+=1
@@ -52,6 +53,7 @@ class Browser:
         self.cmd('Target.closeTarget',{'targetId':old})
         for method in ['Page.enable','Runtime.enable','Network.enable']:self.cmd(method)
         self.cmd('Network.setCacheDisabled',{'cacheDisabled':True})
+        self.cmd('Network.setBypassServiceWorker', {'bypass':True})
         self.cmd('Network.setBlockedURLs',{'urls':['*://tripto.to/*','*://accounts.google.com/*','*://www.googletagmanager.com/*','*://www.stay22.com/*']})
         self.viewport(self.width,self.height)
         self.cmd('Page.navigate',{'url':BASE_URL+path})

@@ -1,0 +1,93 @@
+{
+  "url": "/plan-idea/visit-the-museum-of-contemporary-art-museum-culture",
+  "screen": "add-to-plan",
+  "text": "ДОБАВИТЬ В ПЛАН\nAdd Visit the museum of contemporary art\n\nВыберите день поездки и, при желании, время, затем добавьте в план дня.\n\nВЫБЕРИТЕ ДЕНЬ\nЧТ\nSEP 17\nПТ\nSEP 18\nСБ\nSEP 19\nВС\nSEP 20\nMON\nSEP 21\nTUE\nSEP 22\nWED\nSEP 23\nВремя начала\nНеобязательно — используется для плана дня\nДОБАВИТЬ В ЭТОТ ДЕНЬ\nДобавить в план дня\nPut it on SEP 17",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "ЧТ\nSEP 17",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "ПТ\nSEP 18",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "СБ\nSEP 19",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "ВС\nSEP 20",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "MON\nSEP 21",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "TUE\nSEP 22",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "WED\nSEP 23",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "Добавить в план дня\nPut it on SEP 17",
+      "label": null,
+      "action": "plan-general",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]",
+    "[data-action=\"idea-add-to-plan\"]"
+  ],
+  "documentLang": "ru",
+  "visibleText": [
+    "Добавить в план",
+    "ДОБАВИТЬ В ПЛАН",
+    "Add Visit the museum of contemporary art",
+    "Выберите день поездки и, при желании, время, затем добавьте в план дня.",
+    "Выберите день",
+    "ЧТ",
+    "SEP 17",
+    "ПТ",
+    "SEP 18",
+    "СБ",
+    "SEP 19",
+    "ВС",
+    "SEP 20",
+    "MON",
+    "SEP 21",
+    "TUE",
+    "SEP 22",
+    "WED",
+    "SEP 23",
+    "Время начала",
+    "Необязательно — используется для плана дня",
+    "Добавить в этот день",
+    "Добавить в план дня",
+    "Put it on SEP 17"
+  ],
+  "errors": [
+    "screen mismatch",
+    "popup did not open"
+  ]
+}

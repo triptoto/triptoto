@@ -1,0 +1,28 @@
+{
+  "url": "/home",
+  "screen": "home",
+  "text": "tripto.to\n\nTRAVEL FEELS LIGHTER HERE\n\nYour trip.\nBeautifully together.\n\nKeep every reservation, plan, and idea ready for the journey ahead.\n\nBookings, together\nFlights, stays, and confirmations\nA plan for every day\nKnow what is next, at a glance\nSave great ideas\nKeep them ready for later\nContinue with Google\nSee how it works\nPrivate by design.\nPrivacy\n\u00b7\nTerms",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "Continue with Google",
+      "label": "Continue with Google",
+      "action": "preview-google"
+    },
+    {
+      "text": "See how it works",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "viewport": [
+    320,
+    568
+  ],
+  "geometry": {
+    "heroContentBottom": null
+  },
+  "errors": []
+}

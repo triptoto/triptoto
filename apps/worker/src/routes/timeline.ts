@@ -1,5 +1,5 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid, requireChanged } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordBookingMilestones } from '../beta-events.ts';
 
@@ -41,8 +41,8 @@ export async function updateTimelineItem(request: Request, env: Env, auth: AuthC
   if (existing.version !== body.version) throw new HttpError(409, 'VERSION_CONFLICT', 'Timeline item changed on another client.', { currentVersion: existing.version });
   const values = normalize(body, true, existing);
   const now = nowMs();
-  await env.DB.prepare(`UPDATE trip_items SET type=?,status=?,title=?,subtitle=?,starts_at_utc=?,ends_at_utc=?,start_local_datetime=?,end_local_datetime=?,start_timezone=?,end_timezone=?,source_type=?,confidence=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`)
-    .bind(values.type, values.status, values.title, values.subtitle, values.startsAtUtc, values.endsAtUtc, values.startLocalDatetime, values.endLocalDatetime, values.startTimezone, values.endTimezone, values.sourceType, values.confidence, now, itemId, tripId, body.version).run();
+  requireChanged(await env.DB.prepare(`UPDATE trip_items SET type=?,status=?,title=?,subtitle=?,starts_at_utc=?,ends_at_utc=?,start_local_datetime=?,end_local_datetime=?,start_timezone=?,end_timezone=?,source_type=?,confidence=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`)
+    .bind(values.type, values.status, values.title, values.subtitle, values.startsAtUtc, values.endsAtUtc, values.startLocalDatetime, values.endLocalDatetime, values.startTimezone, values.endTimezone, values.sourceType, values.confidence, now, itemId, tripId, body.version).run());
   const item = await env.DB.prepare('SELECT * FROM trip_items WHERE id=?').bind(itemId).first();
   return json({ item }, {}, request, env);
 }

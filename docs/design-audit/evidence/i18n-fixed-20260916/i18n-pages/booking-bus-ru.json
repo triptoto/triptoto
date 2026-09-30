@@ -1,0 +1,28 @@
+{
+  "route": "booking-bus",
+  "path": "/bookings/new/bus",
+  "screen": "form",
+  "locale": "ru",
+  "image": "booking-bus-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Сохранить\nБРОНИРОВАНИЕ ВРУЧНУЮ\nАвтобус\nВсё для поездки\nАвтобусный перевозчик Необязательно\nОстановка отправления *\nОстановка прибытия *\nДата отправления *\nВремя отправления *\nБилеты и документы\n\nНеобязательно · Хранится на этом устройстве\n\nДобавить файлы\nPDF, изображения или карты · до 10 МБ каждый\n\nФайлы не выбраны. Вы можете сохранить бронирование без них.\n\nПодробнее",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Сохранить",
+      "label": null
+    },
+    {
+      "text": "Подробнее",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-bus-ru-bottom.png"
+}

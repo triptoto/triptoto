@@ -1,0 +1,44 @@
+{
+  "lang": "fr",
+  "title": "La confidentialité, expliquée clairement · tripto.to",
+  "text": "tripto.to\nEnglish\nDeutsch\nFrançais\nEspañol\nРусский\nOuvrir l’app\n\nVOS DONNÉES, VOTRE VOYAGE\n\nLa confidentialité, expliquée clairement\n\nTripto est conçu pour vous aider à organiser un voyage sans transformer vos plans en données publicitaires. Cette politique explique ce que nous collectons, pourquoi nous l’utilisons et les choix dont vous disposez.\n\nDernière mise à jour le 16 septembre 2026\ntripto.to\nCe que nous collectons\nInformations du compte\nVotre adresse e-mail Google vérifiée et votre identifiant de compte lorsque vous choisissez de vous connecter.\nInformations du voyage\nVoyages, réservations, dates, notes et détails de voyage partagé que vous choisissez d’ajouter.\nDonnées du service\nDonnées techniques limitées, nécessaires pour garder le service sécurisé, fiable et synchronisé.\nDocuments sur l’appareil\nLes fichiers que vous enregistrez pour une utilisation hors ligne restent sur votre appareil ; leur contenu n'est pas envoyé aux serveurs de Tripto.\nComment nous l'utilisons\nPour afficher, synchroniser et protéger les voyages que vous créez.\nPour traiter les détails de réservation que vous ajoutez ou transférez explicitement pour vérification.\nPour éviter les écrasements accidentels et préserver la sécurité de votre compte.\nPour vous répondre lorsque vous demandez de l’aide ou la suppression de votre compte.\n\nNous ne vendons pas le contenu de vos itinéraires et ne l’utilisons pas à des fins publicitaires.\n\nE-mails de réservation et imports\n\nWhen you forward a confirmation to go@tripto.to, Tripto processes it to identify travel details for your review. Smart Import processes supported files on your device; raw files and extracted text are not uploaded through that flow.\n\nVos choix\nVous pouvez vous déconnecter depuis le Compte à tout moment.\nVous pouvez supprimer les fichiers locaux et les données de voyage en cache de l’appareil qui les stocke.\nVous pouvez demander la suppression des données de votre compte en nous contactant.\nConfidentialité dès la conception\nLes diagnostics d’assistance utilisent des informations opérationnelles générales. Ils excluent les numéros de confirmation, les jetons d’invitation, le contenu des e-mails, les noms des voyageurs, les adresses et les fichiers de documents.\nBesoin d’aide supplémentaire ?\n\nÉcrivez-nous avec le minimum d’informations nécessaires pour comprendre votre demande.\n\nÉcrire à go@tripto.to\nConfidentialité\nConditions\nCookies\nContact\nOuvrir l’app",
+  "overflow": false,
+  "links": [
+    {
+      "text": "tripto.to",
+      "href": "/landing"
+    },
+    {
+      "text": "Ouvrir l’app",
+      "href": "/account"
+    },
+    {
+      "text": "go@tripto.to",
+      "href": "mailto:go@tripto.to"
+    },
+    {
+      "text": "Écrire à go@tripto.to",
+      "href": "mailto:go@tripto.to?subject=Tripto%20support"
+    },
+    {
+      "text": "Confidentialité",
+      "href": "/privacy"
+    },
+    {
+      "text": "Conditions",
+      "href": "/terms"
+    },
+    {
+      "text": "Cookies",
+      "href": "/cookies"
+    },
+    {
+      "text": "Contact",
+      "href": "/contact"
+    },
+    {
+      "text": "Ouvrir l’app",
+      "href": "/account"
+    }
+  ]
+}

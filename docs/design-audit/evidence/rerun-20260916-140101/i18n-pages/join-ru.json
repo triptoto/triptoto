@@ -1,0 +1,18 @@
+{
+  "route": "join",
+  "path": "/join/sample",
+  "screen": "join",
+  "locale": "ru",
+  "image": "join-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Проверяем ваше приглашение…",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    }
+  ],
+  "dialogCount": 0
+}

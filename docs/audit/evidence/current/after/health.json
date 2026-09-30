@@ -1,0 +1,28 @@
+{
+  "url": "/trip-health",
+  "screen": "health",
+  "text": "Everything looks good\n\nNo known trip issues.\n\nNo known issues\n\nNo known trip issues.\n\nRecalculate Trip Health",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Trip Health information",
+      "action": "health-info"
+    },
+    {
+      "text": "Recalculate Trip Health",
+      "label": null,
+      "action": "recalculate-health"
+    }
+  ],
+  "evidence": [
+    "health-top.png"
+  ]
+}

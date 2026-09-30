@@ -1,0 +1,25 @@
+{
+  "url": "/plan-idea",
+  "screen": "add-to-plan",
+  "text": "Idea no disponible\n\nEsta idea ya no está disponible. Puede que ya esté en tu cronología.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "add-to-plan",
+  "clicks": [],
+  "documentLang": "es",
+  "visibleText": [
+    "Idea no disponible",
+    "Idea no disponible",
+    "Esta idea ya no está disponible. Puede que ya esté en tu cronología."
+  ],
+  "errors": []
+}

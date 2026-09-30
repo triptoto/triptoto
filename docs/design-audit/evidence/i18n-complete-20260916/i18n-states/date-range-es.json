@@ -1,0 +1,358 @@
+{
+  "url": "/trips/new",
+  "screen": "form",
+  "text": "Siguiente\nNUEVO VIAJE\n¿A dónde vas?\nElige tu destino y las fechas de viaje para empezar a planear tu próxima aventura.\nDESTINO *\nFechas del viaje\nSeleccionar fechas\nElige las fechas\nNo se seleccionó ningún rango de fechas.\nSeleccionar fechas\nBorrar\n\nElige primero tu start date.\n\nFECHA DE INICIO\nSeleccionar\nFECHA DE FIN\nSeleccionar\nseptiembre de 2026\nS\nM\nT\nW\nT\nF\nS\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n\nChoose start date\n\nConfirmar fechas\nAún no sé mis fechas",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Siguiente",
+      "label": null
+    },
+    {
+      "text": "Seleccionar fechas\nElige las fechas",
+      "label": "Fechas del viaje. Elige start date y end date",
+      "action": "open-date-range"
+    },
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Borrar",
+      "label": null,
+      "action": "clear-date-range"
+    },
+    {
+      "text": "",
+      "label": "Mes anterior",
+      "action": "range-month"
+    },
+    {
+      "text": "",
+      "label": "Mes siguiente",
+      "action": "range-month"
+    },
+    {
+      "text": "30",
+      "label": "domingo, 30 de agosto de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "31",
+      "label": "lunes, 31 de agosto de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "1",
+      "label": "martes, 1 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "2",
+      "label": "miércoles, 2 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "3",
+      "label": "jueves, 3 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "4",
+      "label": "viernes, 4 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "5",
+      "label": "sábado, 5 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "6",
+      "label": "domingo, 6 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "7",
+      "label": "lunes, 7 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "8",
+      "label": "martes, 8 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "9",
+      "label": "miércoles, 9 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "10",
+      "label": "jueves, 10 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "11",
+      "label": "viernes, 11 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "12",
+      "label": "sábado, 12 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "13",
+      "label": "domingo, 13 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "14",
+      "label": "lunes, 14 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "15",
+      "label": "martes, 15 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "16",
+      "label": "miércoles, 16 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "17",
+      "label": "jueves, 17 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "18",
+      "label": "viernes, 18 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "19",
+      "label": "sábado, 19 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "20",
+      "label": "domingo, 20 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "21",
+      "label": "lunes, 21 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "22",
+      "label": "martes, 22 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "23",
+      "label": "miércoles, 23 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "24",
+      "label": "jueves, 24 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "25",
+      "label": "viernes, 25 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "26",
+      "label": "sábado, 26 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "27",
+      "label": "domingo, 27 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "28",
+      "label": "lunes, 28 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "29",
+      "label": "martes, 29 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "30",
+      "label": "miércoles, 30 de septiembre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "1",
+      "label": "jueves, 1 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "2",
+      "label": "viernes, 2 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "3",
+      "label": "sábado, 3 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "4",
+      "label": "domingo, 4 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "5",
+      "label": "lunes, 5 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "6",
+      "label": "martes, 6 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "7",
+      "label": "miércoles, 7 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "8",
+      "label": "jueves, 8 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "9",
+      "label": "viernes, 9 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "10",
+      "label": "sábado, 10 de octubre de 2026",
+      "action": "select-range-day"
+    },
+    {
+      "text": "Confirmar fechas",
+      "label": null,
+      "action": "apply-date-range"
+    },
+    {
+      "text": "Aún no sé mis fechas",
+      "label": null,
+      "action": "skip-date-range"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "form",
+  "clicks": [
+    "[data-action=\"open-date-range\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Crear viaje",
+    "Siguiente",
+    "Nuevo viaje",
+    "¿A dónde vas?",
+    "Elige tu destino y las fechas de viaje para empezar a planear tu próxima aventura.",
+    "Destino",
+    "*",
+    "Fechas del viaje",
+    "Seleccionar fechas",
+    "Elige las fechas",
+    "No se seleccionó ningún rango de fechas.",
+    "Seleccionar fechas",
+    "Borrar",
+    "Elige primero tu start date.",
+    "Fecha de inicio",
+    "Seleccionar",
+    "Fecha de fin",
+    "Seleccionar",
+    "septiembre de 2026",
+    "S",
+    "M",
+    "T",
+    "W",
+    "T",
+    "F",
+    "S",
+    "30",
+    "31",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "Choose start date",
+    "Confirmar fechas",
+    "Aún no sé mis fechas"
+  ],
+  "errors": []
+}

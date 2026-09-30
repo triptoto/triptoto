@@ -1,0 +1,23 @@
+{
+  "route": "checklist-form",
+  "path": "/before-you-go/new",
+  "screen": "form",
+  "locale": "es",
+  "image": "checklist-form-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar lista\nESENCIAL DE VIAJE\nAñadir esencial\nElemento *\nGrupo *\nDocumentos\nAntes de salir\nEquipaje\nPrioridad *\nNormal\nImportante\nCrítico",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar lista",
+      "label": null
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

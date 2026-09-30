@@ -1,0 +1,270 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "WECHSELKURS\nTippen Sie auf „Aktualisieren“, um den Kurs zu laden\n\nRom · Referenzkurs für Ihre Reise\n\nSIE ZAHLEN\nEUR\nEuro\nBetrag in EUR\nAktualisieren, um diesen Kurs zu laden\nSIE ERHALTEN\nUSD\nUS-Dollar\n—\nKurs nicht geladen\nTägliche Referenzkurse\nAktualisieren\n\nNur Referenzkurs; Anbieter können Gebühren erheben. Beträge werden auf diesem Telefon berechnet.\n\nSie zahlen in\nAUD\nAustralischer Dollar\nCAD\nKanadischer Dollar\nCHF\nSchweizer Franken\nCNY\nChinesischer Yuan\nCZK\nTschechische Krone\nDKK\nDänische Krone\nEUR\nEuro\nGBP\nBritisches Pfund\nHKD\nHongkong-Dollar\nHUF\nUngarischer Forint\nILS\nIsraelischer neuer Schekel\nINR\nIndische Rupie\nISK\nIsländische Krone\nJPY\nJapanischer Yen\nKRW\nSüdkoreanischer Won\nMXN\nMexikanischer Peso\nNOK\nNorwegische Krone\nNZD\nNeuseeland-Dollar\nPLN\nPolnischer Złoty\nRON\nRumänischer Leu\nSEK\nSchwedische Krone\nSGD\nSingapur-Dollar\nTHB\nThailändischer Baht\nTRY\nTürkische Lira\nUSD\nUS-Dollar\nZAR\nSüdafrikanischer Rand",
+  "scroll": [
+    {
+      "class": "sheet-scroll",
+      "height": 458,
+      "scroll": 800
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 324,
+        "width": 390,
+        "height": 520,
+        "top": 324,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "Ausgangswährung: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Währungen tauschen",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nUS-Dollar",
+      "label": "Zielwährung: USD, US-Dollar",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Aktualisieren",
+      "label": "Wechselkurs aktualisieren",
+      "action": "refresh-currency"
+    },
+    {
+      "text": "",
+      "label": "Schließen",
+      "action": "close-sheet"
+    },
+    {
+      "text": "AUD\nAustralischer Dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CAD\nKanadischer Dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CHF\nSchweizer Franken",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CNY\nChinesischer Yuan",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CZK\nTschechische Krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "DKK\nDänische Krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "GBP\nBritisches Pfund",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HKD\nHongkong-Dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HUF\nUngarischer Forint",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ILS\nIsraelischer neuer Schekel",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "INR\nIndische Rupie",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ISK\nIsländische Krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "JPY\nJapanischer Yen",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "KRW\nSüdkoreanischer Won",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "MXN\nMexikanischer Peso",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NOK\nNorwegische Krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NZD\nNeuseeland-Dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "PLN\nPolnischer Złoty",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "RON\nRumänischer Leu",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SEK\nSchwedische Krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SGD\nSingapur-Dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "THB\nThailändischer Baht",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "TRY\nTürkische Lira",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "USD\nUS-Dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ZAR\nSüdafrikanischer Rand",
+      "label": null,
+      "action": "select-currency"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "currency",
+  "clicks": [
+    "[data-action=\"open-currency-picker\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Währung",
+    "Rome 2026",
+    "WECHSELKURS",
+    "Tippen Sie auf „Aktualisieren“, um den Kurs zu laden",
+    "Rom · Referenzkurs für Ihre Reise",
+    "Sie zahlen",
+    "EUR",
+    "Euro",
+    "Betrag in EUR",
+    "Aktualisieren, um diesen Kurs zu laden",
+    "Sie erhalten",
+    "USD",
+    "US-Dollar",
+    "—",
+    "Kurs nicht geladen",
+    "Tägliche Referenzkurse",
+    "Aktualisieren",
+    "Nur Referenzkurs; Anbieter können Gebühren erheben. Beträge werden auf diesem Telefon berechnet.",
+    "Sie zahlen in",
+    "AUD",
+    "Australischer Dollar",
+    "CAD",
+    "Kanadischer Dollar",
+    "CHF",
+    "Schweizer Franken",
+    "CNY",
+    "Chinesischer Yuan",
+    "CZK",
+    "Tschechische Krone",
+    "DKK",
+    "Dänische Krone",
+    "EUR",
+    "Euro",
+    "GBP",
+    "Britisches Pfund",
+    "HKD",
+    "Hongkong-Dollar",
+    "HUF",
+    "Ungarischer Forint",
+    "ILS",
+    "Israelischer neuer Schekel",
+    "INR",
+    "Indische Rupie",
+    "ISK",
+    "Isländische Krone",
+    "JPY",
+    "Japanischer Yen",
+    "KRW",
+    "Südkoreanischer Won",
+    "MXN",
+    "Mexikanischer Peso",
+    "NOK",
+    "Norwegische Krone",
+    "NZD",
+    "Neuseeland-Dollar",
+    "PLN",
+    "Polnischer Złoty",
+    "RON",
+    "Rumänischer Leu",
+    "SEK",
+    "Schwedische Krone",
+    "SGD",
+    "Singapur-Dollar",
+    "THB",
+    "Thailändischer Baht",
+    "TRY",
+    "Türkische Lira",
+    "USD",
+    "US-Dollar",
+    "ZAR",
+    "Südafrikanischer Rand"
+  ],
+  "errors": []
+}

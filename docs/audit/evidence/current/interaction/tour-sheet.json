@@ -1,0 +1,108 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "AT\nAlex Traveler\n\nGoogle identity\n\nSign out\n0\nCurrent\n2\nUpcoming\n1\nPast\nAll trips\nNew trip\nYour trips\nSwitch trip\n3 available\nEmail Inbox\n1 waiting for review\nTravel essentials\nFind a flight\nCompare routes on Aviasales\nFind a place to stay\nBrowse stays on Booking.com\nTravel eSIM\nGet connected before you land\n\nPartner links may earn Tripto a commission at no extra cost.\n\nHelp & support\nTake the tour\nGet to know Tripto\nHelp, privacy & terms\nSupport and legal information\nPrivacy & data\nRemove local data\nClears files and cached trips from this phone only\nDelete my account\nPermanently removes your server account and trips\ntripto.to\n\nProduct V2\n\nHow it works\n1\nCreate your trip\n2\nAdd your bookings\n3\nBookings and plans appear on your Timeline\n4\nKnow what matters next\nGot it",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 776,
+      "scroll": 1287
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 495.625,
+        "width": 390,
+        "height": 348.375,
+        "top": 495.625,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Sign out",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "All trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "New trip",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Switch trip\n3 available",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Email Inbox\n1 waiting for review",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Travel eSIM\nGet connected before you land",
+      "label": null,
+      "action": "open-esim"
+    },
+    {
+      "text": "Take the tour\nGet to know Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Help, privacy & terms\nSupport and legal information",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Remove local data\nClears files and cached trips from this phone only",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "Delete my account\nPermanently removes your server account and trips",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Open welcome screen",
+      "screen": "home"
+    },
+    {
+      "text": "",
+      "label": "Close How it works",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Got it",
+      "label": null,
+      "action": "finish-first-run-how"
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"open-first-run-how\"]"
+  ],
+  "bottomEvidence": "tour-sheet-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"ds-flat-row \" data-action=\"open-first-run-how\"><span class=\"ds-flat-row__icon\"><span class=\"ds-pastel-icon ds-pastel-icon--activity \" aria-hidden=\"true\"><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"22\" height=\"22\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:22px\"><use href=\"#info\"></use></svg></span></span><span class=\"ds-flat-row__copy\"><strong>Take the tour</strong><small>Get to know Tripto</small></span><svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg ds-flat-row__chevron\" width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:18px\"><use href=\"#chevron-right\"></use></svg></button>"
+}

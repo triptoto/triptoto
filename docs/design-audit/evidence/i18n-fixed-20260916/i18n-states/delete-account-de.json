@@ -1,0 +1,186 @@
+{
+  "url": "/account",
+  "screen": "account",
+  "text": "AT\nAlex Traveler\n\nGoogle-Identität\n\nAbmelden\n0\nAktuell\n2\nBevorstehend\n1\nVergangen\nAlle Reisen\nNeue Reise\nTripto Plus\nTripto Plus freischalten\nUnbegrenzte Reisen · Jederzeit kündbar\nIhre Reisen\nReise wechseln\n3 verfügbar\nE-Mail-Posteingang\n1 warten auf Prüfung\nReise-Essentials\nFlug finden\nFlüge und Hotels suchen\nUnterkunft finden\nUnterkünfte auf Booking.com durchsuchen\nReise-eSIM\nVerbunden sein, bevor Sie landen\n\nÜber Partnerlinks kann Tripto ohne Zusatzkosten für Sie eine Provision erhalten.\n\nDarstellung\nNacht\nTag\nSprache\nEN\nEnglish\nDE\nDeutsch\nFR\nFrançais\nES\nEspañol\nRU\nРусский\nHilfe & Support\nTour starten\nLernen Sie Tripto kennen\nHilfe, Datenschutz & AGB\nSupport- und Rechtsinformationen\nNach Updates suchen\nNeueste App-Version neu laden\nDatenschutz & Daten\nLokale Daten entfernen\nLeert Dateien und zwischengespeicherte Reisen nur von diesem Gerät\nMein Konto löschen\nEntfernt Ihr Server-Konto und Ihre Reisen dauerhaft\ntripto.to\n\nProdukt V2\n\nPreview mode does not call the API.",
+  "scroll": [
+    {
+      "class": "account-section mobile-page",
+      "height": 776,
+      "scroll": 1952
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Abmelden",
+      "label": null,
+      "action": "sign-out"
+    },
+    {
+      "text": "Alle Reisen",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "Neue Reise",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Tripto Plus freischalten\nUnbegrenzte Reisen · Jederzeit kündbar",
+      "label": null,
+      "action": "open-subscription"
+    },
+    {
+      "text": "Reise wechseln\n3 verfügbar",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "E-Mail-Posteingang\n1 warten auf Prüfung",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Nacht",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "Tag",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "EN\nEnglish",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "DE\nDeutsch",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "FR\nFrançais",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "ES\nEspañol",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "RU\nРусский",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "Tour starten\nLernen Sie Tripto kennen",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Hilfe, Datenschutz & AGB\nSupport- und Rechtsinformationen",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Nach Updates suchen\nNeueste App-Version neu laden",
+      "label": null,
+      "action": "force-update"
+    },
+    {
+      "text": "Lokale Daten entfernen\nLeert Dateien und zwischengespeicherte Reisen nur von diesem Gerät",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "Mein Konto löschen\nEntfernt Ihr Server-Konto und Ihre Reisen dauerhaft",
+      "label": null,
+      "action": "delete-account"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Willkommensbildschirm öffnen",
+      "screen": "home"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "account",
+  "clicks": [
+    "[data-action=\"delete-account\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Konto",
+    "AT",
+    "Alex Traveler",
+    "Google-Identität",
+    "Abmelden",
+    "0",
+    "Aktuell",
+    "2",
+    "Bevorstehend",
+    "1",
+    "Vergangen",
+    "Alle Reisen",
+    "Neue Reise",
+    "Tripto Plus",
+    "Tripto Plus freischalten",
+    "Unbegrenzte Reisen · Jederzeit kündbar",
+    "Ihre Reisen",
+    "Reise wechseln",
+    "3 verfügbar",
+    "E-Mail-Posteingang",
+    "1 warten auf Prüfung",
+    "Reise-Essentials",
+    "Flug finden",
+    "Flüge und Hotels suchen",
+    "Unterkunft finden",
+    "Unterkünfte auf Booking.com durchsuchen",
+    "Reise-eSIM",
+    "Verbunden sein, bevor Sie landen",
+    "Über Partnerlinks kann Tripto ohne Zusatzkosten für Sie eine Provision erhalten.",
+    "Darstellung",
+    "Nacht",
+    "Tag",
+    "Sprache",
+    "EN",
+    "English",
+    "DE",
+    "Deutsch",
+    "FR",
+    "Français",
+    "ES",
+    "Español",
+    "RU",
+    "Русский",
+    "Hilfe & Support",
+    "Tour starten",
+    "Lernen Sie Tripto kennen",
+    "Hilfe, Datenschutz & AGB",
+    "Support- und Rechtsinformationen",
+    "Nach Updates suchen",
+    "Neueste App-Version neu laden",
+    "Datenschutz & Daten",
+    "Lokale Daten entfernen",
+    "Leert Dateien und zwischengespeicherte Reisen nur von diesem Gerät",
+    "Mein Konto löschen",
+    "Entfernt Ihr Server-Konto und Ihre Reisen dauerhaft",
+    "tripto",
+    ".",
+    "to",
+    "Produkt V2",
+    "Preview mode does not call the API."
+  ],
+  "errors": [],
+  "previewLimit": "Account deletion requires a real authenticated API; preview intentionally refuses it."
+}

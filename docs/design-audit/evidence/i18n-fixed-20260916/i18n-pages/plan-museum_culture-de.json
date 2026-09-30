@@ -1,0 +1,28 @@
+{
+  "route": "plan-museum_culture",
+  "path": "/day-plan/new/museum_culture",
+  "screen": "day-plan-form",
+  "locale": "de",
+  "image": "plan-museum_culture-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Speichern\nTAGESPLAN\nMuseum & Kultur\n\nMuseen, Galerien und kulturelle Orte\n\nDetails zur Planung\nName oder Ort *\nTag\nDaten auswählen\nDaten auswählen\nKein Zeitraum ausgewählt.\nStartzeit Optional\nEndzeit Optional\nAdresse Optional\nNotizen Optional\nTickets & Dokumente\n\nOptional · Auf diesem Gerät gespeichert\n\nDateien hinzufügen\nPDF, Bilder oder Pässe · je bis zu 10 MB\n\nKeine Dateien ausgewählt. Sie können die Buchung auch ohne speichern.\n\nLassen Sie den Tag leer, um dies als Idee unter „Für später speichern“ zu behalten. Wählen Sie einen Tag innerhalb Ihrer Reise, und es erscheint auf Ihrer Zeitachse.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Speichern",
+      "label": null
+    },
+    {
+      "text": "Daten auswählen\nDaten auswählen",
+      "label": "Tag. day und day wählen",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "plan-museum_culture-de-bottom.png"
+}

@@ -1,0 +1,48 @@
+{
+  "route": "import-history",
+  "path": "/bookings/import/history",
+  "screen": "import-history",
+  "locale": "fr",
+  "image": "import-history-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Importer une réservation",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Supprimer Your flight to Rome partout",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Supprimer Hotel Artemide confirmation partout",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Importer une réservation",
+      "label": null,
+      "screen": "import"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

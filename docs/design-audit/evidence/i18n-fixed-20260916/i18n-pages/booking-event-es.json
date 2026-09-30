@@ -1,0 +1,28 @@
+{
+  "route": "booking-event",
+  "path": "/bookings/new/event",
+  "screen": "form",
+  "locale": "es",
+  "image": "booking-event-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar\nRESERVA MANUAL\nEvento\nEsenciales\nNombre del evento *\nFecha *\nHora local Opcional\nLugar Opcional\nBilletes y documentos\n\nOpcional · Guardado en este dispositivo\n\nAñadir archivos\nPDF, imágenes o pases · hasta 10 MB cada uno\n\nNo se seleccionaron archivos. Puedes guardar la reserva sin ninguno.\n\nMás detalles",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar",
+      "label": null
+    },
+    {
+      "text": "Más detalles",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-event-es-bottom.png"
+}

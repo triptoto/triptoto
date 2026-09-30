@@ -1,0 +1,52 @@
+{
+  "url": "/trips/new",
+  "screen": "form",
+  "text": "Next\nNEW TRIP\nWhere are you going?\nChoose a destination, then select your travel dates.\nDESTINATION *\nTravel dates\nSelect dates\nChoose dates\nNo date range selected.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Next",
+      "label": null
+    },
+    {
+      "text": "Select dates\nChoose dates",
+      "label": "Travel dates. Choose start date and end date",
+      "action": "open-date-range"
+    }
+  ],
+  "viewport": [
+    430,
+    932
+  ],
+  "geometry": {
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 430,
+      "height": 68,
+      "top": 0,
+      "right": 430,
+      "bottom": 68,
+      "left": 0
+    },
+    "main": {
+      "x": 0,
+      "y": 68,
+      "width": 430,
+      "height": 864,
+      "top": 68,
+      "right": 430,
+      "bottom": 932,
+      "left": 0
+    },
+    "heroContentBottom": null
+  },
+  "errors": []
+}

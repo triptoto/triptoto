@@ -1,0 +1,64 @@
+{
+  "route": "options",
+  "path": "/trip-options",
+  "screen": "trip-options",
+  "locale": "de",
+  "image": "options-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "IHR REISEBEGLEITER\n🇮🇹\nRome 2026\n\nSept. 17–23, 2026\n\nREISE-TOOLS\nWetter\nWährungsrechner\nDok.\nKarte\nGemeinsam planen\nREISE VERWALTEN\nReise bearbeiten\nBenachrichtigungen\nPDF exportieren\nHilfe & FAQ\nBRAUCHEN SIE HILFE?\nReise-eSIM\nTransfer buchen\nFlug finden\nUnterkunft finden\nUnternehmungen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Wetter",
+      "label": null,
+      "action": "open-weather"
+    },
+    {
+      "text": "Währungsrechner",
+      "label": null,
+      "action": "open-currency"
+    },
+    {
+      "text": "Dok.",
+      "label": "Tickets und Dokumente",
+      "screen": "documents"
+    },
+    {
+      "text": "Karte",
+      "label": null,
+      "action": "open-trip-map"
+    },
+    {
+      "text": "Gemeinsam planen",
+      "label": null,
+      "action": "open-collaboration"
+    },
+    {
+      "text": "Reise bearbeiten",
+      "label": null,
+      "action": "edit-trip"
+    },
+    {
+      "text": "Benachrichtigungen",
+      "label": null,
+      "action": "open-notifications"
+    },
+    {
+      "text": "PDF exportieren",
+      "label": null,
+      "action": "export-pdf"
+    },
+    {
+      "text": "Hilfe & FAQ",
+      "label": null,
+      "screen": "help"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

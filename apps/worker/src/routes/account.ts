@@ -1,5 +1,5 @@
 import type { AuthContext, Env } from '../types.ts';
-import { json } from '../http.ts';
+import { HttpError, json, readJson } from '../http.ts';
 
 export async function accountStatus(request: Request, env: Env, auth: AuthContext): Promise<Response> {
   const device = await env.DB.prepare(`SELECT id,platform,app_version,api_version,created_at,last_seen_at,user_id FROM devices WHERE id=?`)
@@ -69,4 +69,19 @@ async function guestMigrationPreview(env: Env, deviceId: string): Promise<{trips
     timelineItems: Number(rows?.timeline_items ?? 0),
     checklistItems: Number(rows?.checklist_items ?? 0),
   };
+}
+
+
+const SUPPORTED_LOCALES = new Set(['en', 'de', 'fr', 'es', 'ru']);
+
+export async function updateAccountLocale(request: Request, env: Env, auth: AuthContext): Promise<Response> {
+  if (!auth.userId) throw new HttpError(401, 'ACCOUNT_REQUIRED', 'Sign in to save your language preference.');
+  const body = await readJson<{locale?: unknown}>(request);
+  const locale = typeof body.locale === 'string' ? body.locale.trim().toLowerCase().split(/[-_]/)[0] : '';
+  if (!SUPPORTED_LOCALES.has(locale)) throw new HttpError(400, 'LOCALE_UNSUPPORTED', 'Choose a supported language.');
+  const now = Date.now();
+  const result = await env.DB.prepare(`UPDATE users SET locale=?,updated_at=?,version=version+1 WHERE id=? AND deleted_at IS NULL`)
+    .bind(locale, now, auth.userId).run();
+  if (!result.meta?.changes) throw new HttpError(404, 'ACCOUNT_NOT_FOUND', 'Account is unavailable.');
+  return json({ locale }, {}, request, env);
 }

@@ -1,0 +1,28 @@
+{
+  "route": "health",
+  "path": "/trip-health",
+  "screen": "health",
+  "locale": "fr",
+  "image": "health-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Tout est en ordre\n\nAucun problème connu pour ce voyage.\n\nAucun problème connu\n\nAucun problème connu pour ce voyage.\n\nRecalculer l'état du voyage",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Informations sur l’état du voyage",
+      "action": "health-info"
+    },
+    {
+      "text": "Recalculer l'état du voyage",
+      "label": null,
+      "action": "recalculate-health"
+    }
+  ],
+  "dialogCount": 0
+}

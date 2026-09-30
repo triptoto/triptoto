@@ -1,0 +1,88 @@
+{
+  "url": "/collections/a-morning-in-trastevere-rome/edit",
+  "screen": "collection-form",
+  "text": "Save\nEDIT PLAN\nA morning in Trastevere\n\nGroup several places in one district into one plan. It shows once on your timeline and opens its own list of places.\n\nDetails\nNeighborhood name *\nCity or area Optional\nDate on timeline\nSelected date\nSep 10, 2026\nSelected date: Sep 10, 2026.\n\nOptional \u2014 choose a date when this neighborhood belongs on your timeline. Leave it blank to keep planning it later.\n\nStart time Optional\nNotes Optional\nDelete this neighborhood\nDelete this neighborhood?\n\n\u201cA morning in Trastevere\u201d and its places will be removed. Linked bookings stay on your trip. This cannot be undone.\n\nCancel\nDelete",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 322,
+      "scroll": 978
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 252,
+        "y": 105.609375,
+        "width": 340,
+        "height": 178.78125,
+        "top": 105.609375,
+        "right": 592,
+        "bottom": 284.390625,
+        "left": 252
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "Selected date\nSep 10, 2026",
+      "label": "Date on timeline. Sep 10, 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Delete this neighborhood",
+      "label": null,
+      "action": "delete-collection",
+      "id": "audit-neighborhood"
+    },
+    {
+      "text": "Cancel",
+      "label": null
+    },
+    {
+      "text": "Delete",
+      "label": null
+    }
+  ],
+  "viewport": [
+    844,
+    390
+  ],
+  "geometry": {
+    "header": {
+      "x": 122,
+      "y": 0,
+      "width": 600,
+      "height": 68,
+      "top": 0,
+      "right": 722,
+      "bottom": 68,
+      "left": 122
+    },
+    "main": {
+      "x": 122,
+      "y": 68,
+      "width": 600,
+      "height": 322,
+      "top": 68,
+      "right": 722,
+      "bottom": 390,
+      "left": 122
+    },
+    "heroContentBottom": null
+  },
+  "errors": [],
+  "focusTrapped": true,
+  "escapeClosed": true
+}

@@ -1,0 +1,23 @@
+# tripto.to
+
+> tripto.to is a free, privacy-first travel planner and progressive web app (PWA). It organizes trips, flights, hotels, day plans, documents and offline itineraries, and includes on-device tools for weather, currency conversion, tax-free (VAT refund) guidance and eSIM options. Trip data stays private: purchase amounts and precise location are never sent to tripto.to.
+
+## Pages
+
+- [tripto.to app](https://tripto.to/): The tripto.to travel-planning progressive web app.
+- [Overview](https://tripto.to/landing): What tripto.to does and who it is for.
+- [Privacy Policy](https://tripto.to/privacy): How tripto.to handles trip data.
+- [Terms of Service](https://tripto.to/terms): The agreement for using tripto.to.
+- [Cookies & local storage](https://tripto.to/cookies): How tripto.to stores data on your device.
+- [Contact](https://tripto.to/contact): Get help with your account or a trip.
+
+## Resources
+
+- [AI catalog](https://tripto.to/ai-catalog.json): Machine-readable catalog of tripto.to resources for AI agents.
+- [Sitemap](https://tripto.to/sitemap.xml): XML sitemap of public pages.
+- [Web app manifest](https://tripto.to/manifest.webmanifest): PWA installation manifest.
+
+## Notes
+
+- tripto.to is client-rendered. Public, crawlable content lives on `/`, `/landing` and the legal pages; the in-app trip routes are private and marked `noindex`.
+- Currency, tax-free and weather calculations run on the device. tripto.to never stores or receives your precise location or purchase amounts.

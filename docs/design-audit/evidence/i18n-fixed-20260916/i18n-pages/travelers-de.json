@@ -1,0 +1,36 @@
+{
+  "route": "travelers",
+  "path": "/travelers",
+  "screen": "travelers",
+  "locale": "de",
+  "image": "travelers-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Reisende:n hinzufügen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Reisende:n hinzufügen",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

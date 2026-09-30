@@ -1,0 +1,37 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "TAUX DE CHANGE\n1 EUR = 1.16 USD\n\nRome · taux de référence pour votre voyage\n\nVOUS PAYEZ\nEUR\nEuro\nMontant en EUR\n1 EUR = 1.159 USD\nVOUS RECEVEZ\nUSD\nDollar américain\n115,91 $US\nTaux mis à jour · 2026-09-16\nAperçu du taux de référence\nMettre à jour",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "Devise source : EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Inverser les devises",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nDollar américain",
+      "label": "Vers la devise : USD, Dollar américain",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Mettre à jour",
+      "label": "Mettre à jour le taux de change",
+      "action": "refresh-currency"
+    }
+  ],
+  "locale": "fr",
+  "wideElements": []
+}

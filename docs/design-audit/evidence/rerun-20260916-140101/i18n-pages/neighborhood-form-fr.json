@@ -1,0 +1,27 @@
+{
+  "route": "neighborhood-form",
+  "path": "/collections/new/neighborhood",
+  "screen": "collection-form",
+  "locale": "fr",
+  "image": "neighborhood-form-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Créer\nNOUVEAU PLAN\nQuartier\n\nRegroupez plusieurs lieux d'un même quartier dans un seul programme. Il apparaît une seule fois sur votre chronologie et ouvre sa propre liste de lieux.\n\nDétails\nNeighborhood name *\nVille ou région Facultatif\nDate sur la chronologie\nDate sélectionnée\n17 sept. 2026\nDate sélectionnée : 17 sept. 2026.\n\nFacultatif — choisissez une date à laquelle ce quartier a sa place dans votre chronologie. Laissez vide pour le planifier plus tard.\n\nHeure de début Facultatif\nNotes Facultatif",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Créer",
+      "label": null
+    },
+    {
+      "text": "Date sélectionnée\n17 sept. 2026",
+      "label": "Date on timeline. 17 sept. 2026",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0
+}

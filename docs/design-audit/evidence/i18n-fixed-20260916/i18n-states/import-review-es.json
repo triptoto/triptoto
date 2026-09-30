@@ -1,0 +1,53 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Revisa antes de añadir\nNo se añade nada hasta que confirmes.\nHotel\nReconocido\nTipo de reserva\nVuelo\nHotel\nTren\nCoche\nTraslado\nFerry\nCrucero\nActividad\nRestaurante\nReserva\nEntrada genérica\nHotel\nEntrada\nSalida\nDirección\nNúmero de confirmación\nAñadir a la cronología\nDescartar esta reserva",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 856
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Añadir a la cronología",
+      "label": null,
+      "action": "confirm-import",
+      "id": "audit-candidate"
+    },
+    {
+      "text": "Descartar esta reserva",
+      "label": null,
+      "action": "reject-import",
+      "id": "audit-candidate"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "import-review",
+  "clicks": [],
+  "documentLang": "es",
+  "visibleText": [
+    "Revisión de importación",
+    "Revisa antes de añadir",
+    "No se añade nada hasta que confirmes.",
+    "Hotel",
+    "Reconocido",
+    "Tipo de reserva",
+    "Hotel",
+    "Entrada",
+    "Salida",
+    "Dirección",
+    "Número de confirmación",
+    "Añadir a la cronología",
+    "Descartar esta reserva"
+  ],
+  "errors": []
+}

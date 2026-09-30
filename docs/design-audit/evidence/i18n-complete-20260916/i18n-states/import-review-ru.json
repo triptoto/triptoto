@@ -1,0 +1,53 @@
+{
+  "url": "/bookings/import/review/audit-import",
+  "screen": "import-review",
+  "text": "Проверьте перед добавлением\nНичего не добавляется, пока вы не подтвердите.\nОтель\nРаспознано\nТип бронирования\nРейс\nОтель\nПоезд\nАвтомобиль\nТрансфер\nПаром\nКруиз\nАктивность\nРесторан\nБронирование\nGeneric ticket\nОтель\nЗаезд\nВыезд\nАдрес\nНомер подтверждения\nДобавить в хронологию\nОтменить это бронирование",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 871
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Добавить в хронологию",
+      "label": null,
+      "action": "confirm-import",
+      "id": "audit-candidate"
+    },
+    {
+      "text": "Отменить это бронирование",
+      "label": null,
+      "action": "reject-import",
+      "id": "audit-candidate"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "import-review",
+  "clicks": [],
+  "documentLang": "ru",
+  "visibleText": [
+    "Проверка импорта",
+    "Проверьте перед добавлением",
+    "Ничего не добавляется, пока вы не подтвердите.",
+    "Отель",
+    "Распознано",
+    "Тип бронирования",
+    "Отель",
+    "Заезд",
+    "Выезд",
+    "Адрес",
+    "Номер подтверждения",
+    "Добавить в хронологию",
+    "Отменить это бронирование"
+  ],
+  "errors": []
+}

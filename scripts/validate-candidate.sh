@@ -32,10 +32,12 @@ test ! -f public/app.js
 test -f docs/MOBILE_APP_UI_V1.md
 
 echo '5/8 PWA and disabled integrations'
-grep -q "tripto-shell-product-v348-prod-release" public/sw.js
+grep -q "tripto-shell-product-v827-offline-first" public/sw.js
 grep -q "/icons/tripto-system.svg" public/sw.js
 grep -q "/canonical-host.js" public/sw.js
 grep -q "/google-auth-client.js" public/sw.js
+grep -q "/i18n.js" public/sw.js
+grep -q "/lang/ru.json" public/sw.js
 grep -q "tripto-places-2026-08-26" public/sw.js
 grep -q "/places-search-worker.js" public/sw.js
 grep -q "/data/places-2026-08-26.json" public/sw.js

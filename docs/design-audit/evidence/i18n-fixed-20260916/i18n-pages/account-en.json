@@ -1,0 +1,104 @@
+{
+  "route": "account",
+  "path": "/account",
+  "screen": "account",
+  "locale": "en",
+  "image": "account-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "GT\nGuest traveler\n\nGuest profile\n\n0\nCurrent\n2\nUpcoming\n1\nPast\nAll trips\nNew trip\nTripto Plus\nUnlock Tripto Plus\nUnlimited trips · Cancel anytime\nYour trips\nSwitch trip\n3 available\nEmail Inbox\nSign in to verify a sender\nTravel essentials\nFind a flight\nSearch flights and hotels\nFind a place to stay\nBrowse stays on Booking.com\nTravel eSIM\nGet connected before you land\n\nPartner links may earn Tripto a commission at no extra cost.\n\nAppearance\nNight\nDay\nLanguage\nEN\nEnglish\nDE\nDeutsch\nFR\nFrançais\nES\nEspañol\nRU\nРусский\nHelp & support\nTake the tour\nGet to know Tripto\nHelp, privacy & terms\nSupport and legal information\nCheck for updates\nReload the newest version of the app\nPrivacy & data\nRemove local data\nClears files and cached trips from this phone only\ntripto.to\n\nProduct V2",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "All trips",
+      "label": null,
+      "screen": "trips"
+    },
+    {
+      "text": "New trip",
+      "label": null,
+      "action": "create-trip"
+    },
+    {
+      "text": "Unlock Tripto Plus\nUnlimited trips · Cancel anytime",
+      "label": null,
+      "action": "open-subscription"
+    },
+    {
+      "text": "Switch trip\n3 available",
+      "label": null,
+      "action": "switch-trip"
+    },
+    {
+      "text": "Email Inbox\nSign in to verify a sender",
+      "label": null,
+      "screen": "booking-email-inbox"
+    },
+    {
+      "text": "Night",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "Day",
+      "label": null,
+      "action": "set-theme"
+    },
+    {
+      "text": "EN\nEnglish",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "DE\nDeutsch",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "FR\nFrançais",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "ES\nEspañol",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "RU\nРусский",
+      "label": null,
+      "action": "set-locale"
+    },
+    {
+      "text": "Take the tour\nGet to know Tripto",
+      "label": null,
+      "action": "open-first-run-how"
+    },
+    {
+      "text": "Help, privacy & terms\nSupport and legal information",
+      "label": null,
+      "action": "open-help"
+    },
+    {
+      "text": "Check for updates\nReload the newest version of the app",
+      "label": null,
+      "action": "force-update"
+    },
+    {
+      "text": "Remove local data\nClears files and cached trips from this phone only",
+      "label": null,
+      "action": "remove-local-data"
+    },
+    {
+      "text": "tripto.to",
+      "label": "Open welcome screen",
+      "screen": "home"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "account-en-bottom.png"
+}

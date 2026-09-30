@@ -1,0 +1,20 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["public"],
+  "locale": "en",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": ["Select/Listbox", "Date", "Form", "Scrollbar", "Toast", "CRUD"],
+  "ownership": {
+    "Select/Listbox": "authored",
+    "Date": "native"
+  },
+  "requiredCommands": ["ui", "viewport"],
+  "commands": {
+    "ui": "npm run check:ui",
+    "viewport": "node tests/app-viewport.contract.mjs"
+  },
+  "evidence": {
+    "crudFullFlow": "tests/scenarios/core.scenarios.ts",
+    "failurePaths": "tests/scenarios/major.scenarios.ts"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "route": "import-history",
+  "path": "/bookings/import/history",
+  "screen": "import-history",
+  "locale": "es",
+  "image": "import-history-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Importar reserva",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": "Eliminar Your flight to Rome en todas partes",
+      "action": "remove-import",
+      "id": "import-1"
+    },
+    {
+      "text": "",
+      "label": null,
+      "action": "review-import",
+      "id": "import-2"
+    },
+    {
+      "text": "",
+      "label": "Eliminar Hotel Artemide confirmation en todas partes",
+      "action": "remove-import",
+      "id": "import-2"
+    },
+    {
+      "text": "Importar reserva",
+      "label": null,
+      "screen": "import"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

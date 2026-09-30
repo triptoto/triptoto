@@ -1,0 +1,25 @@
+{
+  "url": "/timeline",
+  "screen": "collection-stop",
+  "text": "Место недоступно\n\nЭто место недоступно.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "collection-stop",
+  "clicks": [],
+  "documentLang": "ru",
+  "visibleText": [
+    "Место недоступно",
+    "Место недоступно",
+    "Это место недоступно."
+  ],
+  "errors": []
+}

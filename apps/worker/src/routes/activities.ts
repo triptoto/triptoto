@@ -1,5 +1,5 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, requireChanged } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
 import { claimManualBookingCreate, completeManualBookingCreate, manualBookingLocationFingerprint, recoverManualBookingCreate } from '../manual-booking-idempotency.ts';
@@ -48,7 +48,7 @@ export async function updateActivity(request:Request,env:Env,auth:AuthContext,tr
   if(values.kind!==existing.type)throw new HttpError(400,'KIND_IMMUTABLE','Activity kind cannot be changed after creation.');
   await ensureLocation(env,tripId,values.locationId);
   const now=nowMs();
-  await env.DB.prepare(`UPDATE trip_items SET status=?,title=?,start_location_id=?,starts_at_utc=?,ends_at_utc=?,start_timezone=?,end_timezone=?,confidence=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`).bind(values.status,values.title,values.locationId,values.startsAtUtc,values.endsAtUtc,values.timezone,values.timezone,values.confidence,now,itemId,tripId,body.version).run();
+  requireChanged(await env.DB.prepare(`UPDATE trip_items SET status=?,title=?,start_location_id=?,starts_at_utc=?,ends_at_utc=?,start_timezone=?,end_timezone=?,confidence=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`).bind(values.status,values.title,values.locationId,values.startsAtUtc,values.endsAtUtc,values.timezone,values.timezone,values.confidence,now,itemId,tripId,body.version).run());
   if(values.kind==='activity')await env.DB.prepare(`UPDATE activities SET activity_type=?,venue_location_id=?,reservation_reference=?,arrival_deadline_utc=?,notes=? WHERE trip_item_id=?`).bind(values.activityType,values.locationId,values.reference,values.arrivalDeadlineUtc,values.notes,itemId).run();
   else await env.DB.prepare(`UPDATE reservations SET reservation_type=?,confirmation_number=?,window_start_utc=?,window_end_utc=?,notes=? WHERE trip_item_id=?`).bind(values.reservationType,values.reference,values.windowStartUtc,values.windowEndUtc,values.notes,itemId).run();
   const item=await env.DB.prepare(`SELECT * FROM trip_items WHERE id=?`).bind(itemId).first();

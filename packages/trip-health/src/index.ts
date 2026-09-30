@@ -68,9 +68,13 @@ export function assessTripHealth(input: HealthInput): HealthIssue[] {
     }
   }
 
-  for (let i = 1; i < activeItems.length; i++) {
-    const previous = activeItems[i - 1];
-    const current = activeItems[i];
+  // Stays are container/lodging spans that legitimately envelop other items
+  // (an activity or flight during a hotel stay is normal, not a conflict).
+  // Only compare non-container items against each other for timeline overlap.
+  const overlapItems = activeItems.filter(item => item.type !== 'stay');
+  for (let i = 1; i < overlapItems.length; i++) {
+    const previous = overlapItems[i - 1];
+    const current = overlapItems[i];
     if (previous.endsAtUtc != null && current.startsAtUtc != null && current.startsAtUtc < previous.endsAtUtc) {
       issues.push(issue('TIMELINE_OVERLAP', 'high', 10, 'timing', 'confirmed', 'Plans overlap', `${previous.title} ends after ${current.title} starts.`, 'Review the times or move one plan.', [previous.id, current.id]));
     }

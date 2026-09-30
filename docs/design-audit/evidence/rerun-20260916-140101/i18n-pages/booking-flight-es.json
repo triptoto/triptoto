@@ -1,0 +1,32 @@
+{
+  "route": "booking-flight",
+  "path": "/bookings/new/flight",
+  "screen": "form",
+  "locale": "es",
+  "image": "booking-flight-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar\nRESERVA MANUAL\nVuelo\nEsenciales\nIda y vuelta\nElige ambas fechas en un solo calendario\nAerolínea *\nNúmero de vuelo *\nDesde *\nHasta *\nFechas del viaje\nFecha seleccionada\n17 sept 2026\nFecha seleccionada: 17 sept 2026.\nHora de salida *\nBilletes y documentos\n\nOpcional · Guardado en este dispositivo\n\nAñadir archivos\nPDF, imágenes o pases · hasta 10 MB cada uno\n\nNo se seleccionaron archivos. Puedes guardar la reserva sin ninguno.\n\nMás detalles",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar",
+      "label": null
+    },
+    {
+      "text": "Fecha seleccionada\n17 sept 2026",
+      "label": "Travel dates. 17 sept 2026",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Más detalles",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,52 @@
+{
+  "route": "flight",
+  "path": "/flights/flight",
+  "screen": "flight",
+  "locale": "es",
+  "image": "flight-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "LY 383\nConfirmed\nDatos programados\nTLV\nBen Gurion Airport\nFCO\nRome Fiumicino\nSALE\n10:00\njue, 17 sept\n3h 30m\nLLEGA\n12:30\njue, 17 sept\nTERMINAL\n3\nPUERTA\nSin asignar\nASIENTO\n12A\nTurista\nCómo llegar\nTarjeta de embarque\nGuardado y verificado en este teléfono\nAñadir documento\nDetalles del vuelo\nAñadir nota",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Editar",
+      "action": "edit-booking",
+      "id": "flight"
+    },
+    {
+      "text": "",
+      "label": "Eliminar",
+      "action": "delete-booking",
+      "id": "flight"
+    },
+    {
+      "text": "Cómo llegar",
+      "label": null,
+      "action": "directions-flight",
+      "id": "flight"
+    },
+    {
+      "text": "Añadir documento",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Detalles del vuelo",
+      "label": null,
+      "action": "toggle-flight-details"
+    },
+    {
+      "text": "Añadir nota",
+      "label": null,
+      "action": "edit-note",
+      "id": "flight"
+    }
+  ],
+  "dialogCount": 0
+}

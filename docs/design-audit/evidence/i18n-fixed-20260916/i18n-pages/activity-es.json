@@ -1,0 +1,53 @@
+{
+  "route": "activity",
+  "path": "/plans/activity",
+  "screen": "plan",
+  "locale": "es",
+  "image": "activity-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Actividad\nDatos programados\nMuseos Vaticanos\n\nvie, 18 sept, 15:30 CEST\n\nMuseos Vaticanos\nUbicación\nVAT-29184\nConfirmación · toca para copiar\nAñadir documento\nAñadir nota",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Editar",
+      "action": "edit-booking",
+      "id": "activity"
+    },
+    {
+      "text": "",
+      "label": "Eliminar",
+      "action": "delete-booking",
+      "id": "activity"
+    },
+    {
+      "text": "Museos Vaticanos\nUbicación",
+      "label": null,
+      "action": "directions-item",
+      "id": "activity"
+    },
+    {
+      "text": "VAT-29184\nConfirmación · toca para copiar",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Añadir documento",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Añadir nota",
+      "label": null,
+      "action": "edit-note",
+      "id": "activity"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

@@ -144,7 +144,7 @@ export async function runScheduledLiveFlightRefresh(env: Env, dependencies: { pr
   }
   const now = dependencies.now ?? nowMs();
   const candidates = (await env.DB.prepare(`${dueFlightSelect()}
-    WHERE f.live_data_enabled=1 AND ti.deleted_at IS NULL
+    WHERE f.live_data_enabled=1 AND ti.deleted_at IS NULL AND t.deleted_at IS NULL
       AND ti.status NOT IN ('cancelled','skipped','completed')
       AND (fls.next_refresh_at IS NULL OR fls.next_refresh_at<=?)
       AND (fls.backoff_until IS NULL OR fls.backoff_until<=?)
@@ -240,13 +240,17 @@ async function refreshLiveFlightRow(env: Env, row: DueFlightRow, provider: Fligh
     nowUtc: now,
     scheduledDepartureUtc: Number(row.scheduled_departure_utc),
     scheduledArrivalUtc: nullableNumber(row.scheduled_arrival_utc) ?? undefined,
+    estimatedArrivalUtc: nullableNumber(row.estimated_arrival_utc) ?? undefined,
+    actualArrivalUtc: nullableNumber(row.actual_arrival_utc) ?? undefined,
     operationalPhase: normalizePhase(row.operational_phase),
     disruptionState: normalizeDisruption(row.disruption_state),
     cancellationConfirmed: Boolean(row.cancellation_confirmed_at),
     minRefreshMinutes: config.minRefreshMinutes,
   });
   if (!policy.eligibleNow) {
-    await env.DB.prepare(`UPDATE flight_live_status SET next_refresh_at=?,updated_at=? WHERE trip_item_id=?`).bind(policy.nextRefreshAt ?? null, now, row.trip_item_id).run();
+    // Finished flights get a daily recheck instead of NULL, which the cron would
+    // re-pick every run and crowd out flights that are actually due.
+    await env.DB.prepare(`UPDATE flight_live_status SET next_refresh_at=?,updated_at=? WHERE trip_item_id=?`).bind(policy.nextRefreshAt ?? now + 86_400_000, now, row.trip_item_id).run();
     return { itemId: row.trip_item_id, outcome: 'not_due', providerCalled: false };
   }
   if (row.backoff_until != null && Number(row.backoff_until) > now) return { itemId: row.trip_item_id, outcome: 'not_due', providerCalled: false };
@@ -306,6 +310,8 @@ async function applyFlightStatus(env: Env, row: DueFlightRow, incoming: FlightSt
     nowUtc: now,
     scheduledDepartureUtc: Number(row.scheduled_departure_utc),
     scheduledArrivalUtc: nullableNumber(row.scheduled_arrival_utc) ?? merged.scheduledArrivalUtc,
+    estimatedArrivalUtc: merged.estimatedArrivalUtc,
+    actualArrivalUtc: merged.actualArrivalUtc,
     operationalPhase: merged.operationalPhase,
     disruptionState: merged.disruptionState,
     cancellationConfirmed: Boolean(cancellation.confirmedAt),

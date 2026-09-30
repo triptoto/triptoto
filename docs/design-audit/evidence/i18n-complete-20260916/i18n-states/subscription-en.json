@@ -1,0 +1,55 @@
+{
+  "url": "/timeline",
+  "screen": "subscription",
+  "text": "YOUR FIRST TRIP IS FREE\n\nReady for another adventure?\n\nCreate and organize as many trips as you like with Tripto Plus.\n\nUnlimited trips\nAll planning tools\nCancel anytime\nYearly\nSave 35% compared with monthly\n$39\nper year\nBEST VALUE\nMonthly\nFlexible month-to-month access\n$4.99\nper month\n\nPreparing secure checkout… Please try again in a moment.\n\nNot now",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Yearly\nSave 35% compared with monthly\n$39\nper year\nBEST VALUE",
+      "label": null,
+      "action": "choose-subscription-plan"
+    },
+    {
+      "text": "Monthly\nFlexible month-to-month access\n$4.99\nper month",
+      "label": null,
+      "action": "choose-subscription-plan"
+    },
+    {
+      "text": "Not now",
+      "label": null,
+      "action": "subscription-back"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "subscription",
+  "clicks": [],
+  "documentLang": "en",
+  "visibleText": [
+    "Upgrade",
+    "YOUR FIRST TRIP IS FREE",
+    "Ready for another adventure?",
+    "Create and organize as many trips as you like with Tripto Plus.",
+    "Unlimited trips",
+    "All planning tools",
+    "Cancel anytime",
+    "Yearly",
+    "Save 35% compared with monthly",
+    "$39",
+    "per year",
+    "BEST VALUE",
+    "Monthly",
+    "Flexible month-to-month access",
+    "$4.99",
+    "per month",
+    "Preparing secure checkout… Please try again in a moment.",
+    "Not now"
+  ],
+  "errors": []
+}

@@ -1,0 +1,68 @@
+{
+  "url": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "text": "Forward confirmations to\ngo@tripto.to\n\nChoose the trip and confirm the extracted details before anything is added.\n\nYour travel booking confirmation\nWed, Sep 9, 10:50 PM GMT+3\nChoose a trip\nChoose trip\nRefresh inbox\nChoose trip\n\nYour travel booking confirmation\n\nRome 2026\nSep 10\u201316, 2026\nAthens Weekend\nOct 8\u201311, 2026\nParis Spring\nApr 3\u20138, 2026",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 566.609375,
+        "width": 390,
+        "height": 277.390625,
+        "top": 566.609375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Choose trip",
+      "label": null,
+      "action": "choose-booking-email-trip",
+      "id": "audit-email"
+    },
+    {
+      "text": "Refresh inbox",
+      "label": null,
+      "action": "refresh-booking-email-inbox"
+    },
+    {
+      "text": "",
+      "label": "Close Choose trip",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Rome 2026\nSep 10\u201316, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "Athens Weekend\nOct 8\u201311, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    },
+    {
+      "text": "Paris Spring\nApr 3\u20138, 2026",
+      "label": null,
+      "action": "assign-booking-email"
+    }
+  ],
+  "focusInside": true,
+  "trigger": [
+    "[data-action=\"choose-booking-email-trip\"]"
+  ],
+  "bottomEvidence": "email-trip-bottom.png",
+  "focusTrapped": true,
+  "closedByEscape": true,
+  "returnedFocus": "<button type=\"button\" class=\"booking-email-row__action\" data-action=\"choose-booking-email-trip\" data-id=\"audit-email\">Choose trip <svg aria-hidden=\"true\" focusable=\"false\" class=\"app-icon ph-svg\" width=\"17\" height=\"17\" viewBox=\"0 0 256 256\" fill=\"currentColor\" style=\"--icon-size:17px\"><use href=\"#chevron-right\"></use></svg></button>"
+}

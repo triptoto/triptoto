@@ -1,0 +1,28 @@
+{
+  "route": "plan-idea",
+  "path": "/day-plan/new/idea",
+  "screen": "day-plan-form",
+  "locale": "es",
+  "image": "plan-idea-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar\nPLAN DEL DÍA\nGuardar idea para \"Rome 2026\"\n\nPonle nombre ahora; añade el día y los detalles cuando quieras.\n\nDetalles\nNombre o lugar *\nDía\nSeleccionar fechas\nElige las fechas\nNo se seleccionó ningún rango de fechas.\nHora de inicio Opcional\nHora de fin Opcional\nDirección Opcional\nNotas Opcional\nBilletes y documentos\n\nOpcional · Guardado en este dispositivo\n\nAñadir archivos\nPDF, imágenes o pases · hasta 10 MB cada uno\n\nNo se seleccionaron archivos. Puedes guardar la reserva sin ninguno.\n\nDeja el día en blanco para mantener esto como idea en Guardar para después. Elige un día dentro de tu viaje y aparecerá en tu cronología.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar",
+      "label": null
+    },
+    {
+      "text": "Seleccionar fechas\nElige las fechas",
+      "label": "Día. Elige day y day",
+      "action": "open-date-range"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "plan-idea-es-bottom.png"
+}

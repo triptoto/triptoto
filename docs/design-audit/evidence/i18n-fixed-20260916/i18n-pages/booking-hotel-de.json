@@ -1,0 +1,33 @@
+{
+  "route": "booking-hotel",
+  "path": "/bookings/new/hotel",
+  "screen": "form",
+  "locale": "de",
+  "image": "booking-hotel-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Speichern\nMANUELLE BUCHUNG\nHotel\nDas Wichtigste\nName der Unterkunft *\nStadt / Ort Optional\nHoteldaten\nDaten auswählen\nDaten auswählen\nKein Zeitraum ausgewählt.\nTickets & Dokumente\n\nOptional · Auf diesem Gerät gespeichert\n\nDateien hinzufügen\nPDF, Bilder oder Pässe · je bis zu 10 MB\n\nKeine Dateien ausgewählt. Sie können die Buchung auch ohne speichern.\n\nMehr Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Speichern",
+      "label": null
+    },
+    {
+      "text": "Daten auswählen\nDaten auswählen",
+      "label": "Hoteldaten. check-in und check-out wählen",
+      "action": "open-date-range"
+    },
+    {
+      "text": "Mehr Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-hotel-de-bottom.png"
+}

@@ -1,0 +1,59 @@
+{
+  "route": "hotel",
+  "path": "/hotels/stay",
+  "screen": "hotel",
+  "locale": "es",
+  "image": "hotel-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Hotel Artemide\nConfirmado\nDatos programados\nENTRADA\n17 sept\n15:00\n6 noches\nSALIDA\n23 sept\n11:00\nMostrar al conductor\nVia Nazionale 22, Roma\nDirección guardada\n+39 06 489911\nLlamar al hotel\ninfo@hotelartemide.it\nEscribir al hotel\nHTL-48291\nConfirmación · toca para copiar\nAñadir documento\nAñadir nota",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Editar",
+      "action": "edit-booking",
+      "id": "stay"
+    },
+    {
+      "text": "",
+      "label": "Eliminar",
+      "action": "delete-booking",
+      "id": "stay"
+    },
+    {
+      "text": "Mostrar al conductor",
+      "label": null,
+      "action": "show-driver",
+      "id": "stay"
+    },
+    {
+      "text": "Via Nazionale 22, Roma\nDirección guardada",
+      "label": null,
+      "action": "directions-hotel",
+      "id": "stay"
+    },
+    {
+      "text": "HTL-48291\nConfirmación · toca para copiar",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Añadir documento",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Añadir nota",
+      "label": null,
+      "action": "edit-note",
+      "id": "stay"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

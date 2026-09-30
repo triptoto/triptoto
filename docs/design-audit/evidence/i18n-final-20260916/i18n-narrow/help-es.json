@@ -1,0 +1,136 @@
+{
+  "url": "/help",
+  "screen": "help",
+  "text": "AYUDA DE VIAJE\n¿Cómo podemos ayudarte?\n\nEncuentra una respuesta clara sin salir de tu viaje.\n\nBuscar ayuda\nTu viaje en tres pasos\n\nEmpieza con lo básico. Añade detalles cuando los tengas.\n\n1\nCrea un viaje\n2\nAñadir reservas\n3\nSigue la Cronología\nPrimeros pasos\n3 respuestas\n¿Cómo creo un viaje?\n¿Cómo edito mi viaje?\n¿Cómo cambio de un viaje a otro?\nReservas\n5 respuestas\n¿Cómo añado una reserva?\n¿Cómo funciona Subir reserva?\n¿Cómo añado una reserva manualmente?\n¿Cómo edito una reserva?\n¿Cómo quito una reserva?\nTu viaje\n5 respuestas\n¿Qué es la Cronología?\n¿Cómo funciona la lista de tareas?\n¿Dónde están mis billetes y documentos?\n¿Cuándo puedo usar el Mapa del viaje?\n¿Qué funciona sin conexión?\nPlanificar juntos\n4 respuestas\n¿Puedo planificar un viaje con otras personas?\n¿Qué pueden hacer las personas invitadas?\n¿Cómo funcionan los enlaces de invitación?\n¿Cómo dejo de compartir o salgo de un viaje?\nCuenta\n1 respuesta\n¿Cómo cierro sesión?\nEnlaces útiles\n\nAprende lo básico, contáctanos o revisa cómo se tratan tus datos.\n\nHacer el recorrido\nContactar con soporte\nPrivacidad\nTérminos\nCookies",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 632,
+      "scroll": 2228
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "¿Cómo creo un viaje?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "create-trip"
+    },
+    {
+      "text": "¿Cómo edito mi viaje?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-trip"
+    },
+    {
+      "text": "¿Cómo cambio de un viaje a otro?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "switch-trip"
+    },
+    {
+      "text": "¿Cómo añado una reserva?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "add-booking"
+    },
+    {
+      "text": "¿Cómo funciona Subir reserva?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "upload-booking"
+    },
+    {
+      "text": "¿Cómo añado una reserva manualmente?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "manual-booking"
+    },
+    {
+      "text": "¿Cómo edito una reserva?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "edit-booking"
+    },
+    {
+      "text": "¿Cómo quito una reserva?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "remove-booking"
+    },
+    {
+      "text": "¿Qué es la Cronología?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "timeline"
+    },
+    {
+      "text": "¿Cómo funciona la lista de tareas?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "checklist"
+    },
+    {
+      "text": "¿Dónde están mis billetes y documentos?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "documents"
+    },
+    {
+      "text": "¿Cuándo puedo usar el Mapa del viaje?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "trip-map"
+    },
+    {
+      "text": "¿Qué funciona sin conexión?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "offline"
+    },
+    {
+      "text": "¿Puedo planificar un viaje con otras personas?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-what"
+    },
+    {
+      "text": "¿Qué pueden hacer las personas invitadas?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-roles"
+    },
+    {
+      "text": "¿Cómo funcionan los enlaces de invitación?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-invite"
+    },
+    {
+      "text": "¿Cómo dejo de compartir o salgo de un viaje?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "collab-leave"
+    },
+    {
+      "text": "¿Cómo cierro sesión?",
+      "label": null,
+      "action": "faq-toggle",
+      "id": "sign-out"
+    },
+    {
+      "text": "Hacer el recorrido",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

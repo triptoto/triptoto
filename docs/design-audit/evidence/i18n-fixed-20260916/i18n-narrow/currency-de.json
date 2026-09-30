@@ -1,0 +1,45 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "WECHSELKURS\n1 EUR = 1.16 USD\n\nRom · Referenzkurs für Ihre Reise\n\nSIE ZAHLEN\nEUR\nEuro\nBetrag in EUR\n1 EUR = 1.159 USD\nSIE ERHALTEN\nUSD\nUS-Dollar\n115,91 $\nKurs aktualisiert · 2026-09-16\nReferenzkurs-Vorschau\nAktualisieren",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "Ausgangswährung: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Währungen tauschen",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nUS-Dollar",
+      "label": "Zielwährung: USD, US-Dollar",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Aktualisieren",
+      "label": "Wechselkurs aktualisieren",
+      "action": "refresh-currency"
+    }
+  ],
+  "locale": "de",
+  "wideElements": [
+    {
+      "tag": "DIV",
+      "cls": "",
+      "text": "Kurs aktualisiert · 2026-09-16\nReferenzkurs-Vorschau",
+      "width": 144,
+      "scroll": 155
+    }
+  ]
+}

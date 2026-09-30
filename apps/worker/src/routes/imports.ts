@@ -1,5 +1,5 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid } from '../http.ts';
+import { HttpError, dateOnlyToUtcMs, enumValue, json, nowMs, optionalInteger, optionalString, readJson, requireString, uuid } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
 import { parseForwardedEmail } from '../../../../packages/importer/src/index.ts';
@@ -227,9 +227,9 @@ async function materializeStay(env:Env,tripId:string,importId:string,p:Record<st
   if(checkIn&&checkOut&&checkOut<checkIn)throw new HttpError(400,'VALIDATION_ERROR','checkOutDate cannot be before checkInDate.');
   const address=optionalText(p.address,500); let locationId:string|null=null;
   if(address){locationId=await ensureNamedLocation(env,tripId,'hotel',property,address);}
-  const id=uuid(),now=nowMs();
+  const id=uuid(),now=nowMs(),startsAt=dateOnlyToUtcMs(checkIn),endsAt=dateOnlyToUtcMs(checkOut);
   await env.DB.batch([
-    env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,start_location_id,source_type,confidence,created_at,updated_at,version) VALUES (?,?,'stay','confirmed',?,?,?,'confirmed',?,?,1)`).bind(id,tripId,property,locationId,source,now,now),
+    env.DB.prepare(`INSERT INTO trip_items(id,trip_id,type,status,title,start_location_id,starts_at_utc,ends_at_utc,source_type,confidence,created_at,updated_at,version) VALUES (?,?,'stay','confirmed',?,?,?,?,?,'confirmed',?,?,1)`).bind(id,tripId,property,locationId,startsAt,endsAt,source,now,now),
     env.DB.prepare(`INSERT INTO stays(trip_item_id,property_name,property_location_id,check_in_date,check_out_date,confirmation_number,booking_status) VALUES (?,?,?,?,?,?,'confirmed')`).bind(id,property,locationId,checkIn,checkOut,optionalText(p.confirmationNumber,100)),
   ]);
   await recordChangeEvent(env,tripId,'trip_item',id,'import_confirmed',null,{importId,candidateType:'stay',title:property},source,importId);

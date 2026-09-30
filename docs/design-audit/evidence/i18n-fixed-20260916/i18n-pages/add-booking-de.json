@@ -1,0 +1,89 @@
+{
+  "route": "add-booking",
+  "path": "/bookings/add",
+  "screen": "add-booking",
+  "locale": "de",
+  "image": "add-booking-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "BUCHUNG HINZUFÜGEN\nBuchung hinzufügen\n\nFür bereits gebuchte Reisen. Um zu planen, was Sie sehen und unternehmen möchten, nutzen Sie den Tagesplan.\n\nFlug\nFlugreise\nZug\nZugfahrt\nFähre\nBoot oder Überfahrt\nBus / Reisebus\nFahrt zwischen Städten\nKreuzfahrt\nSchiffsroute\nMietwagen\nAbholung und Rückgabe\nTransfer\nGebuchte Beförderung\nTaxi / Fahrt\nAbholung und Rückgabe\nParken\nReservierter Parkplatz\nHotel / Unterkunft\nHotel oder Apartment\nReiseversicherung\nPolicendetails\nSonstiges\nJeder bestätigte Plan\nBEREITS EINE BESTÄTIGUNG ERHALTEN?\nDatei hochladen\nTicket oder Bestätigung prüfen\nE-Mail weiterleiten\nSenden Sie es an go@tripto.to",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Flug\nFlugreise",
+      "label": "Flug hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Zug\nZugfahrt",
+      "label": "Zug hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Fähre\nBoot oder Überfahrt",
+      "label": "Fähre hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Bus / Reisebus\nFahrt zwischen Städten",
+      "label": "Bus / Reisebus hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Kreuzfahrt\nSchiffsroute",
+      "label": "Kreuzfahrt hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Mietwagen\nAbholung und Rückgabe",
+      "label": "Mietwagen hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Transfer\nGebuchte Beförderung",
+      "label": "Transfer hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Taxi / Fahrt\nAbholung und Rückgabe",
+      "label": "Taxi / Fahrt hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Parken\nReservierter Parkplatz",
+      "label": "Parkplatz hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Hotel / Unterkunft\nHotel oder Apartment",
+      "label": "Hotel / Unterkunft hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Reiseversicherung\nPolicendetails",
+      "label": "Reiseversicherung hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Sonstiges\nJeder bestätigte Plan",
+      "label": "Sonstiges hinzufügen",
+      "action": "add-type"
+    },
+    {
+      "text": "Datei hochladen\nTicket oder Bestätigung prüfen",
+      "label": null,
+      "action": "open-upload-booking"
+    },
+    {
+      "text": "E-Mail weiterleiten\nSenden Sie es an go@tripto.to",
+      "label": null,
+      "action": "open-forward-booking"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "add-booking-de-bottom.png"
+}

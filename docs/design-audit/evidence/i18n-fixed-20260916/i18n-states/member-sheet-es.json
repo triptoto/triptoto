@@ -1,0 +1,125 @@
+{
+  "url": "/collaboration",
+  "screen": "collaboration",
+  "text": "VIAJE COMPARTIDO\nRome 2026\n\nInvite people to view or edit Rome 2026. You stay the owner and can change roles or remove people at any time.\n\nUn solo viaje.\nTodos sincronizados.\n¿Por qué planear juntos?\nCrea un solo plan\nLos editores pueden añadir y actualizar reservas.\nManténganse todos en sintonía\nLos cambios del viaje se mantienen visibles para todos en un solo lugar.\nTú tienes el control\nElige quién puede editar o ver, y quita el acceso cuando quieras.\nInvitar a gente\nPersonas en este viaje\nAlex Traveler (You)\nPropietario\nSam Companion\nPuede editar\nTaylor Companion\nSolo lectura\n\nHasta 10 personas por viaje.\n\nInvitaciones pendientes\nfriend@example.test\nView only · pending · expires 2026-09-17T11:15:31.810Z\nManage Sam Companion\n\nCan edit access to Rome 2026\n\nSolo lectura\nPueden ver el plan, pero no cambiarlo.\nHacer propietario\nPasarás a ser editor y perderás los controles para compartir.\nQuitar del viaje\nYa no tendrán acceso a este viaje.",
+  "scroll": [
+    {
+      "class": "focused-page",
+      "height": 776,
+      "scroll": 1135
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 536.234375,
+        "width": 390,
+        "height": 307.765625,
+        "top": 536.234375,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Invitar a gente",
+      "label": null,
+      "action": "open-share"
+    },
+    {
+      "text": "",
+      "label": "Gestionar el acceso de Sam Companion",
+      "action": "open-member-actions",
+      "id": "audit-editor"
+    },
+    {
+      "text": "",
+      "label": "Gestionar el acceso de Taylor Companion",
+      "action": "open-member-actions",
+      "id": "audit-viewer"
+    },
+    {
+      "text": "",
+      "label": "Revocar invitación",
+      "action": "invite-revoke",
+      "id": "audit-invite"
+    },
+    {
+      "text": "",
+      "label": "Cerrar",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Solo lectura\nPueden ver el plan, pero no cambiarlo.",
+      "label": null,
+      "action": "member-role",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Hacer propietario\nPasarás a ser editor y perderás los controles para compartir.",
+      "label": null,
+      "action": "member-transfer",
+      "id": "audit-editor"
+    },
+    {
+      "text": "Quitar del viaje\nYa no tendrán acceso a este viaje.",
+      "label": null,
+      "action": "member-remove",
+      "id": "audit-editor"
+    }
+  ],
+  "locale": "es",
+  "requestedScreen": "collaboration",
+  "clicks": [
+    "[data-action=\"open-member-actions\"]"
+  ],
+  "documentLang": "es",
+  "visibleText": [
+    "Planificar juntos",
+    "Viaje compartido",
+    "Rome 2026",
+    "Invite people to view or edit",
+    "Rome 2026",
+    ". You stay the owner and can change roles or remove people at any time.",
+    "Un solo viaje.",
+    "Todos sincronizados.",
+    "¿Por qué planear juntos?",
+    "Crea un solo plan",
+    "Los editores pueden añadir y actualizar reservas.",
+    "Manténganse todos en sintonía",
+    "Los cambios del viaje se mantienen visibles para todos en un solo lugar.",
+    "Tú tienes el control",
+    "Elige quién puede editar o ver, y quita el acceso cuando quieras.",
+    "Invitar a gente",
+    "Personas en este viaje",
+    "Alex Traveler (You)",
+    "Propietario",
+    "Sam Companion",
+    "Puede editar",
+    "Taylor Companion",
+    "Solo lectura",
+    "Hasta 10 personas por viaje.",
+    "Invitaciones pendientes",
+    "friend@example.test",
+    "View only · pending · expires 2026-09-17T11:15:31.810Z",
+    "Manage Sam Companion",
+    "Can edit access to Rome 2026",
+    "Solo lectura",
+    "Pueden ver el plan, pero no cambiarlo.",
+    "Hacer propietario",
+    "Pasarás a ser editor y perderás los controles para compartir.",
+    "Quitar del viaje",
+    "Ya no tendrán acceso a este viaje."
+  ],
+  "errors": []
+}

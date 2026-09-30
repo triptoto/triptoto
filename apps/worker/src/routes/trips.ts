@@ -1,7 +1,8 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalString, readJson, requireString, uuid } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalString, readJson, requireString, uuid, requireChanged } from '../http.ts';
 import { requireTripAccess, requireTripOwner } from '../access.ts';
 import { recordBetaEvent } from '../beta-events.ts';
+import { hasTriptoPlus } from './subscriptions.ts';
 
 const states = ['draft', 'upcoming', 'active', 'completed', 'cancelled'] as const;
 
@@ -45,7 +46,10 @@ export async function createTrip(request: Request, env: Env, auth: AuthContext):
 
   const activeCount = await env.DB.prepare(`SELECT COUNT(*) AS count FROM trips WHERE deleted_at IS NULL AND lifecycle_state IN ('draft','upcoming','active') AND ${auth.userId ? 'owner_user_id=?' : 'created_by_device_id=? AND owner_user_id IS NULL'}`)
     .bind(auth.userId ?? auth.deviceId).first<{ count: number }>();
-  if (Number(activeCount?.count ?? 0) >= 10) throw new HttpError(409, 'TRIP_LIMIT_REACHED', 'Beta limit of 10 active trips reached.');
+  const activeTrips = Number(activeCount?.count ?? 0);
+  if (env.TRIPTO_PLUS_ENFORCEMENT !== 'false' && activeTrips >= 1 && !(await hasTriptoPlus(env, auth))) {
+    throw new HttpError(402, 'TRIPTO_PLUS_REQUIRED', 'Your first trip is free. Upgrade to Tripto Plus to create another active trip.');
+  }
 
   const id = uuid();
   const now = nowMs();
@@ -109,9 +113,8 @@ export async function updateTrip(request: Request, env: Env, auth: AuthContext, 
   const endsOn = body.endsOn === undefined ? existing.ends_on as string | null : optionalDate(body.endsOn, 'endsOn');
   if (startsOn && endsOn && endsOn < startsOn) throw new HttpError(400, 'VALIDATION_ERROR', 'endsOn cannot be before startsOn.');
   const now = nowMs();
-  const result = await env.DB.prepare(`UPDATE trips SET title=?, lifecycle_state=?, starts_on=?, ends_on=?, updated_at=?, version=version+1, cancelled_at=CASE WHEN ?='cancelled' THEN COALESCE(cancelled_at,?) ELSE cancelled_at END WHERE id=? AND version=? AND deleted_at IS NULL`)
-    .bind(title, state, startsOn, endsOn, now, state, now, tripId, body.version).run();
-  if (!result.success) throw new HttpError(500, 'UPDATE_FAILED', 'Trip could not be updated.');
+  requireChanged(await env.DB.prepare(`UPDATE trips SET title=?, lifecycle_state=?, starts_on=?, ends_on=?, updated_at=?, version=version+1, cancelled_at=CASE WHEN ?='cancelled' THEN COALESCE(cancelled_at,?) ELSE cancelled_at END WHERE id=? AND version=? AND deleted_at IS NULL`)
+    .bind(title, state, startsOn, endsOn, now, state, now, tripId, body.version).run());
   const trip = await env.DB.prepare('SELECT * FROM trips WHERE id=?').bind(tripId).first();
   if(state==='completed')await recordBetaEvent(env,auth,'trip_completed',tripId);
   return json({ trip }, {}, request, env);

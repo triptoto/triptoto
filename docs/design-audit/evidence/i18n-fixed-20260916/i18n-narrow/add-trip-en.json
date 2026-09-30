@@ -1,0 +1,32 @@
+{
+  "url": "/add",
+  "screen": "add-trip",
+  "text": "ADD TO TRIP\nWhat would you like to add?\n\nBook it, plan your days, or save an idea for Rome 2026.\n\nAdd a booking\nFlights, hotels, trains you've booked\nPlan your days\nThings to see and do\nSave an idea\nKeep ideas for later",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add a booking\nFlights, hotels, trains you've booked",
+      "label": null,
+      "action": "open-add-booking"
+    },
+    {
+      "text": "Plan your days\nThings to see and do",
+      "label": null,
+      "action": "open-day-plan"
+    },
+    {
+      "text": "Save an idea\nKeep ideas for later",
+      "label": null,
+      "action": "open-save-later"
+    }
+  ],
+  "locale": "en",
+  "wideElements": []
+}

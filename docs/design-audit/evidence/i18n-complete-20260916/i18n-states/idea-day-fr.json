@@ -1,0 +1,93 @@
+{
+  "url": "/plan-idea/visit-the-museum-of-contemporary-art-museum-culture",
+  "screen": "add-to-plan",
+  "text": "AJOUTER AU PROGRAMME\nAdd Visit the museum of contemporary art\n\nChoisissez un jour du voyage et une heure facultative, puis ajoutez-le au programme du jour.\n\nCHOISIR UN JOUR\nJEU\nSEP 17\nVEN\nSEP 18\nSAM\nSEP 19\nDIM\nSEP 20\nMON\nSEP 21\nTUE\nSEP 22\nWED\nSEP 23\nHeure de début\nFacultatif — utilisé pour le programme du jour\nAJOUTER À LA JOURNÉE\nAjouter au programme du jour\nPut it on SEP 17",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "JEU\nSEP 17",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "VEN\nSEP 18",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SAM\nSEP 19",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "DIM\nSEP 20",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "MON\nSEP 21",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "TUE\nSEP 22",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "WED\nSEP 23",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "Ajouter au programme du jour\nPut it on SEP 17",
+      "label": null,
+      "action": "plan-general",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]",
+    "[data-action=\"idea-add-to-plan\"]"
+  ],
+  "documentLang": "fr",
+  "visibleText": [
+    "Ajouter au programme",
+    "AJOUTER AU PROGRAMME",
+    "Add Visit the museum of contemporary art",
+    "Choisissez un jour du voyage et une heure facultative, puis ajoutez-le au programme du jour.",
+    "Choisir un jour",
+    "JEU",
+    "SEP 17",
+    "VEN",
+    "SEP 18",
+    "SAM",
+    "SEP 19",
+    "DIM",
+    "SEP 20",
+    "MON",
+    "SEP 21",
+    "TUE",
+    "SEP 22",
+    "WED",
+    "SEP 23",
+    "Heure de début",
+    "Facultatif — utilisé pour le programme du jour",
+    "Ajouter à la journée",
+    "Ajouter au programme du jour",
+    "Put it on SEP 17"
+  ],
+  "errors": [
+    "screen mismatch",
+    "popup did not open"
+  ]
+}

@@ -72,7 +72,7 @@ assert(!/\.mini-stop[^{]*\{[^}]*(gradient|backdrop-filter|#[0-9a-fA-F]{3,6}\b)/.
 for(const act of ['add-collection','edit-collection','delete-collection','collection-add-place','edit-stop','delete-stop','stop-move','stop-status'])assert(app.includes(`"${act}"`),`action not implemented: ${act}`);
 assert(/VIEWER_BLOCKED_ACTIONS[\s\S]*?"add-collection"[\s\S]*?"stop-status"/.test(app),'mutating collection actions must be viewer-blocked');
 const collectionScreen=app.slice(app.indexOf('function collectionScreen()'),app.indexOf('function collectionFormScreen()'));
-assert(app.includes('function HeaderNavigation(')&&app.includes('collection-header-add')&&app.includes('data-action="collection-add-place"'),'Add place must remain available in the shared header');
+assert(app.includes('function screenAddFab(')&&app.includes('data-action="collection-add-place"'),'Add place must remain available in the FAB');
 assert(!collectionScreen.includes('primaryCta(`Add ${cfg.stop}`'),'collection detail must not repeat Add place as a large body row');
 assert(collectionScreen.includes('class="collection-timeline-scroll"')&&collectionScreen.includes('aria-label="Places timeline"'),'collection stop list must have its own labelled scrolling region');
 assert(/html body \.phone-app > \.collection-page > main\.focused-page\{[^}]*overflow:hidden/.test(css),'collection page shell must keep its context fixed while the list scrolls');

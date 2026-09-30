@@ -1,0 +1,53 @@
+{
+  "route": "activity",
+  "path": "/plans/activity",
+  "screen": "plan",
+  "locale": "de",
+  "image": "activity-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Aktivität\nPlanmäßige Daten\nVatikanische Museen\n\nFr., 18. Sept., 15:30 MESZ\n\nVatikanische Museen\nOrt\nVAT-29184\nBestätigung · zum Kopieren tippen\nDokument hinzufügen\nNotiz hinzufügen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": "Bearbeiten",
+      "action": "edit-booking",
+      "id": "activity"
+    },
+    {
+      "text": "",
+      "label": "Löschen",
+      "action": "delete-booking",
+      "id": "activity"
+    },
+    {
+      "text": "Vatikanische Museen\nOrt",
+      "label": null,
+      "action": "directions-item",
+      "id": "activity"
+    },
+    {
+      "text": "VAT-29184\nBestätigung · zum Kopieren tippen",
+      "label": null,
+      "action": "copy"
+    },
+    {
+      "text": "Dokument hinzufügen",
+      "label": null,
+      "action": "add-document"
+    },
+    {
+      "text": "Notiz hinzufügen",
+      "label": null,
+      "action": "edit-note",
+      "id": "activity"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

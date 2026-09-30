@@ -1,0 +1,64 @@
+{
+  "route": "options",
+  "path": "/trip-options",
+  "screen": "trip-options",
+  "locale": "en",
+  "image": "options-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "YOUR TRAVEL COMPANION\n🇮🇹\nRome 2026\n\nSep 17–23, 2026\n\nTRAVEL TOOLS\nWeather\nCurrency converter\nDocs\nMap\nPlan together\nMANAGE TRIP\nEdit trip\nAlerts\nExport PDF\nHelp & FAQ\nNEED HELP?\nTravel eSIM\nBook a transfer\nFind a flight\nFind a stay\nThings to do",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Weather",
+      "label": null,
+      "action": "open-weather"
+    },
+    {
+      "text": "Currency converter",
+      "label": null,
+      "action": "open-currency"
+    },
+    {
+      "text": "Docs",
+      "label": "Tickets and documents",
+      "screen": "documents"
+    },
+    {
+      "text": "Map",
+      "label": null,
+      "action": "open-trip-map"
+    },
+    {
+      "text": "Plan together",
+      "label": null,
+      "action": "open-collaboration"
+    },
+    {
+      "text": "Edit trip",
+      "label": null,
+      "action": "edit-trip"
+    },
+    {
+      "text": "Alerts",
+      "label": null,
+      "action": "open-notifications"
+    },
+    {
+      "text": "Export PDF",
+      "label": null,
+      "action": "export-pdf"
+    },
+    {
+      "text": "Help & FAQ",
+      "label": null,
+      "screen": "help"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

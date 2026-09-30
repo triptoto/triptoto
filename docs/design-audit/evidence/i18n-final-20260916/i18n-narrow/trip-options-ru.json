@@ -1,0 +1,62 @@
+{
+  "url": "/trip-options",
+  "screen": "trip-options",
+  "text": "ВАШ СПУТНИК В ПУТЕШЕСТВИЯХ\n🇮🇹\nRome 2026\n\nсент. 17–23, 2026\n\nИНСТРУМЕНТЫ ДЛЯ ПОЕЗДКИ\nПогода\nКонвертер валют\nДокументы\nКарта\nПланируйте вместе\nУПРАВЛЕНИЕ ПОЕЗДКОЙ\nИзменить поездку\nОповещения\nЭкспорт в PDF\nПомощь и FAQ\nНУЖНА ПОМОЩЬ?\neSIM для поездки\nЗаказать трансфер\nНайти рейс\nНайти отель\nЧем заняться",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Погода",
+      "label": null,
+      "action": "open-weather"
+    },
+    {
+      "text": "Конвертер валют",
+      "label": null,
+      "action": "open-currency"
+    },
+    {
+      "text": "Документы",
+      "label": "Билеты и документы",
+      "screen": "documents"
+    },
+    {
+      "text": "Карта",
+      "label": null,
+      "action": "open-trip-map"
+    },
+    {
+      "text": "Планируйте вместе",
+      "label": null,
+      "action": "open-collaboration"
+    },
+    {
+      "text": "Изменить поездку",
+      "label": null,
+      "action": "edit-trip"
+    },
+    {
+      "text": "Оповещения",
+      "label": null,
+      "action": "open-notifications"
+    },
+    {
+      "text": "Экспорт в PDF",
+      "label": null,
+      "action": "export-pdf"
+    },
+    {
+      "text": "Помощь и FAQ",
+      "label": null,
+      "screen": "help"
+    }
+  ],
+  "locale": "ru",
+  "wideElements": []
+}

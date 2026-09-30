@@ -1,0 +1,28 @@
+{
+  "route": "import",
+  "path": "/bookings/import",
+  "screen": "import",
+  "locale": "es",
+  "image": "import-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Revisar\nSube una reserva\n\nEl reconocimiento se queda en este teléfono. Revisa cada campo antes de guardar.\n\nDocumento de la reserva\nMáxima precisión: el PDF, .eml, .ics o .pkpass original. Las fotos y capturas se leen con OCR y pueden necesitar correcciones. · 10 MB máx.\nHistorial de importaciones",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Revisar",
+      "label": null
+    },
+    {
+      "text": "Historial de importaciones",
+      "label": null,
+      "screen": "import-history"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

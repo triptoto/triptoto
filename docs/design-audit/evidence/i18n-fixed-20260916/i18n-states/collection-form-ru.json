@@ -1,0 +1,25 @@
+{
+  "url": "/day-plan",
+  "screen": "collection-form",
+  "text": "План недоступен\n\nЭтот план недоступен.",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "collection-form",
+  "clicks": [],
+  "documentLang": "ru",
+  "visibleText": [
+    "План недоступен",
+    "План недоступен",
+    "Этот план недоступен."
+  ],
+  "errors": []
+}

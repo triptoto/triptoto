@@ -1,0 +1,34 @@
+{
+  "route": "weather",
+  "path": "/weather",
+  "screen": "weather",
+  "locale": "ru",
+  "image": "weather-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Hotel Artemide\nРим\nПрогноза пока нет\n\nНе удалось найти прогноз для места назначения этой поездки.\n\nПопробуйте снова",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "Hotel Artemide",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Рим",
+      "label": null,
+      "action": "weather-place"
+    },
+    {
+      "text": "Попробуйте снова",
+      "label": null,
+      "action": "refresh-weather"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

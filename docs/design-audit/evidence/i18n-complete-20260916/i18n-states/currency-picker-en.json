@@ -1,0 +1,270 @@
+{
+  "url": "/currency",
+  "screen": "currency",
+  "text": "EXCHANGE RATE\nTap Update to load the rate\n\nRome · reference rate for your trip\n\nYOU PAY\nEUR\nEuro\nAmount in EUR\nUpdate to load this rate\nYOU GET\nUSD\nUS dollar\n—\nRate not loaded\nDaily reference rates\nUpdate\n\nReference rate only; providers may add fees. Amounts are calculated on this phone.\n\nYou pay in\nAUD\nAustralian dollar\nCAD\nCanadian dollar\nCHF\nSwiss franc\nCNY\nChinese yuan\nCZK\nCzech koruna\nDKK\nDanish krone\nEUR\nEuro\nGBP\nBritish pound\nHKD\nHong Kong dollar\nHUF\nHungarian forint\nILS\nIsraeli new shekel\nINR\nIndian rupee\nISK\nIcelandic króna\nJPY\nJapanese yen\nKRW\nSouth Korean won\nMXN\nMexican peso\nNOK\nNorwegian krone\nNZD\nNew Zealand dollar\nPLN\nPolish złoty\nRON\nRomanian leu\nSEK\nSwedish krona\nSGD\nSingapore dollar\nTHB\nThai baht\nTRY\nTurkish lira\nUSD\nUS dollar\nZAR\nSouth African rand",
+  "scroll": [
+    {
+      "class": "sheet-scroll",
+      "height": 458,
+      "scroll": 800
+    }
+  ],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 324,
+        "width": 390,
+        "height": 520,
+        "top": 324,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "From currency: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Swap currencies",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nUS dollar",
+      "label": "To currency: USD, US dollar",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Update",
+      "label": "Update exchange rate",
+      "action": "refresh-currency"
+    },
+    {
+      "text": "",
+      "label": "Close",
+      "action": "close-sheet"
+    },
+    {
+      "text": "AUD\nAustralian dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CAD\nCanadian dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CHF\nSwiss franc",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CNY\nChinese yuan",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "CZK\nCzech koruna",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "DKK\nDanish krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "GBP\nBritish pound",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HKD\nHong Kong dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "HUF\nHungarian forint",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ILS\nIsraeli new shekel",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "INR\nIndian rupee",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ISK\nIcelandic króna",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "JPY\nJapanese yen",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "KRW\nSouth Korean won",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "MXN\nMexican peso",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NOK\nNorwegian krone",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "NZD\nNew Zealand dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "PLN\nPolish złoty",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "RON\nRomanian leu",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SEK\nSwedish krona",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "SGD\nSingapore dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "THB\nThai baht",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "TRY\nTurkish lira",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "USD\nUS dollar",
+      "label": null,
+      "action": "select-currency"
+    },
+    {
+      "text": "ZAR\nSouth African rand",
+      "label": null,
+      "action": "select-currency"
+    }
+  ],
+  "locale": "en",
+  "requestedScreen": "currency",
+  "clicks": [
+    "[data-action=\"open-currency-picker\"]"
+  ],
+  "documentLang": "en",
+  "visibleText": [
+    "Currency",
+    "Rome 2026",
+    "EXCHANGE RATE",
+    "Tap Update to load the rate",
+    "Rome · reference rate for your trip",
+    "You pay",
+    "EUR",
+    "Euro",
+    "Amount in EUR",
+    "Update to load this rate",
+    "You get",
+    "USD",
+    "US dollar",
+    "—",
+    "Rate not loaded",
+    "Daily reference rates",
+    "Update",
+    "Reference rate only; providers may add fees. Amounts are calculated on this phone.",
+    "You pay in",
+    "AUD",
+    "Australian dollar",
+    "CAD",
+    "Canadian dollar",
+    "CHF",
+    "Swiss franc",
+    "CNY",
+    "Chinese yuan",
+    "CZK",
+    "Czech koruna",
+    "DKK",
+    "Danish krone",
+    "EUR",
+    "Euro",
+    "GBP",
+    "British pound",
+    "HKD",
+    "Hong Kong dollar",
+    "HUF",
+    "Hungarian forint",
+    "ILS",
+    "Israeli new shekel",
+    "INR",
+    "Indian rupee",
+    "ISK",
+    "Icelandic króna",
+    "JPY",
+    "Japanese yen",
+    "KRW",
+    "South Korean won",
+    "MXN",
+    "Mexican peso",
+    "NOK",
+    "Norwegian krone",
+    "NZD",
+    "New Zealand dollar",
+    "PLN",
+    "Polish złoty",
+    "RON",
+    "Romanian leu",
+    "SEK",
+    "Swedish krona",
+    "SGD",
+    "Singapore dollar",
+    "THB",
+    "Thai baht",
+    "TRY",
+    "Turkish lira",
+    "USD",
+    "US dollar",
+    "ZAR",
+    "South African rand"
+  ],
+  "errors": []
+}

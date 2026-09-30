@@ -1,0 +1,27 @@
+{
+  "route": "booking-document",
+  "path": "/bookings/new/document",
+  "screen": "form",
+  "locale": "en",
+  "image": "booking-document-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Add File\nMANUAL BOOKING\nAdd Document\nEssentials\nChoose a filePDF, image, or Wallet pass · up to 10 MB\nNo file selected\nMore Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Add File",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0
+}

@@ -1,0 +1,38 @@
+{
+  "url": "/hotels/hotel-artemide-hotel-artemide",
+  "screen": "hotel",
+  "text": "Показать водителю\nПожалуйста, поезжайте в\nПУНКТ НАЗНАЧЕНИЯ\nHotel Artemide\nАДРЕС\nVia Nazionale 22, Roma\n\nПокажите этот экран водителю. Пункт назначения сохранён в вашей поездке.\n\nОткрыть маршрут",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Закрыть",
+      "action": "close-driver"
+    },
+    {
+      "text": "Открыть маршрут",
+      "label": null,
+      "action": "directions-hotel",
+      "id": "stay"
+    }
+  ],
+  "locale": "ru",
+  "requestedScreen": "hotel",
+  "clicks": [
+    "[data-action=\"show-driver\"]"
+  ],
+  "documentLang": "ru",
+  "visibleText": [
+    "Показать водителю",
+    "Пожалуйста, поезжайте в",
+    "Пункт назначения",
+    "Hotel Artemide",
+    "Адрес",
+    "Via Nazionale 22, Roma",
+    "Покажите этот экран водителю. Пункт назначения сохранён в вашей поездке.",
+    "Открыть маршрут"
+  ],
+  "errors": []
+}

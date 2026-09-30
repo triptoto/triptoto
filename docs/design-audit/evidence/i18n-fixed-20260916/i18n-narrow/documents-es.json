@@ -1,0 +1,59 @@
+{
+  "url": "/documents",
+  "screen": "documents",
+  "text": "Documentos de viaje\n\n3 de 3 listos sin conexión en este teléfono\n\nAñade un documento\nPDF, imagen o pase de Wallet · hasta 10 MB\nEn este teléfono (3)\nLY 383 Boarding Pass\nArthur\nListo sin conexión\nHotel Artemide Confirmation\nRome stay\nListo sin conexión\nFrecciarossa 9512 Tickets\nArthur, Maya\nListo sin conexión",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 632,
+      "scroll": 761
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "LY 383 Boarding Pass\nArthur\nListo sin conexión",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "",
+      "label": "Eliminar LY 383 Boarding Pass",
+      "action": "remove-document",
+      "id": "boarding"
+    },
+    {
+      "text": "Hotel Artemide Confirmation\nRome stay\nListo sin conexión",
+      "label": null,
+      "action": "open-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "",
+      "label": "Eliminar Hotel Artemide Confirmation",
+      "action": "remove-document",
+      "id": "hotel-doc"
+    },
+    {
+      "text": "Frecciarossa 9512 Tickets\nArthur, Maya\nListo sin conexión",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    },
+    {
+      "text": "",
+      "label": "Eliminar Frecciarossa 9512 Tickets",
+      "action": "remove-document",
+      "id": "train-ticket"
+    }
+  ],
+  "locale": "es",
+  "wideElements": []
+}

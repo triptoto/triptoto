@@ -1,0 +1,38 @@
+{
+  "route": "currency",
+  "path": "/currency",
+  "screen": "currency",
+  "locale": "de",
+  "image": "currency-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "WECHSELKURS\n1 EUR = 1.16 USD\n\n0 Reisen\n\nSIE ZAHLEN\nEUR\nEuro\nAmount in EUR\n1 EUR = 1.159 USD\nSIE ERHALTEN\nUSD\nUS-Dollar\n115,91 $\nRate updated · 2026-09-16\nReferenzkurs-Vorschau\nAktualisieren\n\nNur Referenzkurs; Anbieter können Gebühren erheben. Beträge werden auf diesem Telefon berechnet.",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "EUR\nEuro",
+      "label": "Ausgangswährung: EUR, Euro",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "",
+      "label": "Währungen tauschen",
+      "action": "currency-swap"
+    },
+    {
+      "text": "USD\nUS-Dollar",
+      "label": "Zielwährung: USD, US-Dollar",
+      "action": "open-currency-picker"
+    },
+    {
+      "text": "Aktualisieren",
+      "label": "Wechselkurs aktualisieren",
+      "action": "refresh-currency"
+    }
+  ],
+  "dialogCount": 0
+}

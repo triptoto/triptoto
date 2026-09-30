@@ -1,0 +1,27 @@
+{
+  "appId": "to.tripto.app",
+  "appName": "tripto.to",
+  "webDir": "android-web",
+  "loggingBehavior": "none",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": false,
+    "resolveServiceWorkerRequests": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 600,
+      "backgroundColor": "#f6f4f1",
+      "showSpinner": false
+    },
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DEFAULT"
+    }
+  }
+}

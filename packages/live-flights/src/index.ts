@@ -4,6 +4,8 @@ export interface RefreshPolicyInput {
   nowUtc: number;
   scheduledDepartureUtc: number;
   scheduledArrivalUtc?: number;
+  estimatedArrivalUtc?: number;
+  actualArrivalUtc?: number;
   operationalPhase?: FlightOperationalPhase;
   disruptionState?: FlightDisruptionState;
   cancellationConfirmed?: boolean;
@@ -37,7 +39,8 @@ const HOUR = 60 * MINUTE;
 export function refreshPolicy(input: RefreshPolicyInput): RefreshPolicy {
   const min = Math.max(30, Math.floor(input.minRefreshMinutes || 60));
   const departureIn = input.scheduledDepartureUtc - input.nowUtc;
-  const arrival = input.scheduledArrivalUtc ?? input.scheduledDepartureUtc + 8 * HOUR;
+  // A delayed flight is still live after its scheduled arrival; prefer the real times.
+  const arrival = input.actualArrivalUtc ?? input.estimatedArrivalUtc ?? input.scheduledArrivalUtc ?? input.scheduledDepartureUtc + 8 * HOUR;
   if (input.operationalPhase === 'landed' || input.nowUtc > arrival + 2 * HOUR) return { eligibleNow: false, reason: 'finished' };
   if (input.cancellationConfirmed) {
     if (input.nowUtc > arrival + 24 * HOUR) return { eligibleNow: false, reason: 'finished' };
@@ -158,14 +161,19 @@ export function meaningfulLiveEvents(previous: FlightStatus | undefined, next: F
 }
 
 export function mergeProviderFields(previous: FlightStatus | undefined, incoming: FlightStatus): FlightStatus {
+  // Estimated/actual departure and arrival times reflect the flight's *current*
+  // predicted/observed schedule. When a fresh observation omits an estimate
+  // (e.g. a recovered flight no longer running late), that omission is
+  // meaningful: the estimate has cleared. Never carry a previous estimate
+  // forward, or a recovered flight keeps showing a phantom delay. These fields
+  // therefore fall through to the `...incoming` value (including null/undefined).
+  // Scheduled times and descriptive fields (gate, terminal, baggage, carrier,
+  // status) are legitimately omitted by the provider when unchanged, so they
+  // keep carrying forward.
   return {
     ...incoming,
     scheduledDepartureUtc: incoming.scheduledDepartureUtc ?? previous?.scheduledDepartureUtc,
     scheduledArrivalUtc: incoming.scheduledArrivalUtc ?? previous?.scheduledArrivalUtc,
-    estimatedDepartureUtc: incoming.estimatedDepartureUtc ?? previous?.estimatedDepartureUtc,
-    estimatedArrivalUtc: incoming.estimatedArrivalUtc ?? previous?.estimatedArrivalUtc,
-    actualDepartureUtc: incoming.actualDepartureUtc ?? previous?.actualDepartureUtc,
-    actualArrivalUtc: incoming.actualArrivalUtc ?? previous?.actualArrivalUtc,
     departureTerminal: incoming.departureTerminal ?? previous?.departureTerminal,
     departureGate: incoming.departureGate ?? previous?.departureGate,
     arrivalTerminal: incoming.arrivalTerminal ?? previous?.arrivalTerminal,

@@ -5,24 +5,188 @@
   // bounded when a traveler visits many time zones in one session.
   const dateFormatters = new Map();
   function dateFormatter(locale, options = {}) {
-    const key = JSON.stringify([locale || null, options]);
+    const resolvedLocale = locale || globalThis.TriptoI18n?.locale || "en";
+    const key = JSON.stringify([resolvedLocale, options]);
     let formatter = dateFormatters.get(key);
     if (!formatter) {
-      formatter = new Intl.DateTimeFormat(locale, options);
+      formatter = new Intl.DateTimeFormat(resolvedLocale, options);
       if (dateFormatters.size >= 128) dateFormatters.delete(dateFormatters.keys().next().value);
       dateFormatters.set(key, formatter);
     }
     return formatter;
   }
 
-  const API = "";
+  // Android app (Capacitor): the same client is bundled in the APK and served
+  // from https://localhost, so API calls go to the real backend over CORS with
+  // the Bearer session. On the web NATIVE is false and nothing below changes.
+  const NATIVE = Boolean(globalThis.Capacitor?.isNativePlatform?.());
+  const NATIVE_PLATFORM = NATIVE ? String(globalThis.Capacitor.getPlatform?.() || "unknown") : "web";
+  const API = NATIVE ? "https://tripto.to" : "";
   const CACHE_PREFIX = "tripto_cache_v3:";
   const LOCAL_DOC_DB = "tripto-local-docs-v1";
   const PENDING_KEY = "tripto_pending_mutations_v1";
   const POST_AUTH_DESTINATION_KEY = "tripto_post_auth_destination_v1";
-  const AVIASALES_AFFILIATE_URL = "https://tp.media/r?campaign_id=100&marker=465464&p=4114&trs=570553&u=https%3A%2F%2Faviasales.com";
+  const AVIASALES_AFFILIATE_URL = "https://aviasales.tpm.li/ljNx3Z10";
+  const ESIM_AFFILIATE_URL = "https://yesim.tpm.li/Gug53pWr";
+  const TRANSFER_AFFILIATE_URL = "https://tpm.li/rgaiibyx";
+  const ACTIVITIES_AFFILIATE_URL = "https://tiqets.tpm.li/LVArwRaf";
+  const LEMON_CHECKOUTS = Object.freeze({
+    month: "https://beartpresets.lemonsqueezy.com/checkout/buy/7bb689b1-67eb-4dc8-8080-a0baf9f2b356?embed=1&media=0&logo=0",
+    year: "https://beartpresets.lemonsqueezy.com/checkout/buy/e0b7daea-b024-4b51-b807-1a5fca2e1469?embed=1&media=0&logo=0",
+  });
+  function subscriptionCheckoutUrl(plan) {
+    const subject = state.subscription?.checkoutSubject;
+    if (!subject || !LEMON_CHECKOUTS[plan]) return null;
+    const url = new URL(LEMON_CHECKOUTS[plan]);
+    url.searchParams.set("checkout[custom][tripto_subject]", subject);
+    url.searchParams.set("checkout[custom][tripto_plan]", plan);
+    return url.toString();
+  }
+  // ---- Android app bridge (Capacitor). Every helper is a no-op on the web. ----
+  function nativePlugin(name) {
+    return NATIVE ? globalThis.Capacitor?.Plugins?.[name] || null : null;
+  }
+  // Pages that exist only on the website (not bundled in the app).
+  const NATIVE_WEB_ONLY_PATHS = new Set(["/privacy", "/terms", "/cookies", "/contact", "/landing", "/delete-account"]);
+  // The URL another app should open, or null when the link stays inside the app.
+  function nativeExternalUrl(href) {
+    let url;
+    try { url = new URL(String(href || ""), location.href); } catch (_) { return null; }
+    if (url.protocol === "mailto:" || url.protocol === "tel:") return url.href;
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (url.origin !== location.origin) return url.href;
+    const path = url.pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+    return NATIVE_WEB_ONLY_PATHS.has(path) ? `${API}${path}${url.search}${url.hash}` : null;
+  }
+  async function openNativeExternal(url) {
+    try {
+      await nativePlugin("TriptoNative").openExternal({ url });
+      return true;
+    } catch (error) {
+      showToast(error?.code === "NO_APP" ? "No app on this phone can open this link." : "That link is unavailable.", "alert");
+      return false;
+    }
+  }
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || "").split(",")[1] || "");
+      reader.onerror = () => reject(reader.error || new Error("The file could not be read."));
+      reader.readAsDataURL(blob);
+    });
+  }
+  const NATIVE_MIME_BY_EXT = Object.freeze({
+    pdf: "application/pdf", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp",
+    gif: "image/gif", heic: "image/heic", heif: "image/heif", json: "application/json", txt: "text/plain",
+  });
+  function nativeMimeType(blob, name) {
+    if (blob?.type) return blob.type;
+    const ext = String(name || "").split(".").pop().toLowerCase();
+    return NATIVE_MIME_BY_EXT[ext] || "application/octet-stream";
+  }
+  // Downloads/exports on Android: the system "Save to" picker (Storage Access
+  // Framework), so nothing lands in public storage without the user choosing it.
+  async function saveNativeFile(blob, name) {
+    try {
+      await nativePlugin("TriptoNative").saveFile({ name: name || "tripto-file", mimeType: nativeMimeType(blob, name), data: await blobToBase64(blob) });
+      showToast("File saved.");
+      return true;
+    } catch (error) {
+      if (error?.code === "CANCELED") return false;
+      showToast(error?.code === "STORAGE_ERROR" ? "The file could not be saved there. Choose another place." : "The file could not be saved.", "alert");
+      return false;
+    }
+  }
+  // Temporary private copy (app cache, cleared on start) for share/open intents.
+  async function writeNativeShareFile(blob, name) {
+    return nativePlugin("TriptoNative").writeShareFile({ name: name || "tripto-file", data: await blobToBase64(blob) });
+  }
+  async function openNativeFile(blob, name) {
+    try {
+      const file = await writeNativeShareFile(blob, name);
+      await nativePlugin("TriptoNative").openFile({ name: file.name, mimeType: nativeMimeType(blob, name) });
+      return true;
+    } catch (error) {
+      showToast(error?.code === "NO_APP" ? "No app on this phone can open this file." : "The file could not be opened.", "alert");
+      return false;
+    }
+  }
+  // Android WebView has no Web Share API; route navigator.share to the system
+  // share sheet so every existing share button keeps its web behaviour.
+  function installNativeShare() {
+    const Share = nativePlugin("Share");
+    if (!Share || !nativePlugin("TriptoNative")) return;
+    const hasContent = (data) => Boolean(data && (data.url || data.text || data.files?.length));
+    const share = async (data = {}) => {
+      if (!hasContent(data)) throw new TypeError("Nothing to share.");
+      const files = [];
+      for (const file of data.files || []) files.push((await writeNativeShareFile(file, file.name)).uri);
+      const url = data.url && /^https?:/i.test(String(data.url)) ? String(data.url) : undefined;
+      try {
+        await Share.share({
+          title: data.title || undefined,
+          text: data.text || undefined,
+          url: files.length ? undefined : url,
+          files: files.length ? files : undefined,
+          dialogTitle: data.title || undefined,
+        });
+      } catch (error) {
+        if (/cancel/i.test(String(error?.message || ""))) throw new DOMException("Share canceled", "AbortError");
+        throw error;
+      }
+    };
+    Object.defineProperty(navigator, "share", { configurable: true, writable: true, value: share });
+    Object.defineProperty(navigator, "canShare", { configurable: true, writable: true, value: (data) => hasContent(data) && (data.files?.length || 0) <= 10 });
+  }
+  // External links, legal pages, map/airline links and downloads leave the app
+  // through the system (browser, Maps, Waze, mail, dialer, "Save to" picker).
+  function installNativeLinks() {
+    // Bubble phase on window: runs after the app's own delegated handlers, which
+    // prevent the default when they handle a click themselves.
+    window.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button > 0) return;
+      const anchor = event.target?.closest?.("a[href]");
+      if (!anchor) return;
+      if (anchor.hasAttribute("download") && /^(blob|data):/i.test(anchor.href)) {
+        event.preventDefault();
+        const name = anchor.getAttribute("download") || "tripto-file";
+        fetch(anchor.href)
+          .then((response) => response.blob())
+          .then((blob) => saveNativeFile(blob, name))
+          .catch(() => showToast("The file could not be saved.", "alert"));
+        return;
+      }
+      const external = nativeExternalUrl(anchor.href);
+      if (!external) return;
+      event.preventDefault();
+      void openNativeExternal(external);
+    });
+    const openInApp = window.open.bind(window);
+    window.open = (target, name, features) => {
+      const href = String(target ?? "");
+      if (!href || href === "about:blank") {
+        // A placeholder window opened before an async lookup (airline status):
+        // the later location assignment goes to the browser instead.
+        const stub = { closed: false, opener: null, focus() {}, close() { stub.closed = true; } };
+        const go = (value) => {
+          if (stub.closed) return;
+          const external = nativeExternalUrl(value);
+          if (external) void openNativeExternal(external);
+        };
+        stub.location = { get href() { return "about:blank"; }, set href(value) { go(value); }, assign: go, replace: go };
+        return stub;
+      }
+      if (/^blob:/i.test(href)) return null;
+      const external = nativeExternalUrl(href);
+      if (external) {
+        void openNativeExternal(external);
+        return { closed: false, opener: null, focus() {}, close() {}, location: { href: external } };
+      }
+      return openInApp(target, name, features);
+    };
+  }
   const STAY22_SCRIPT_URL = "https://scripts.stay22.com/letmeallez.js";
-  const STAY22_LMA_ID = "6a9af4cdf80ccf1a0115f703";
+  const STAY22_LMA_ID = "4803217a-982b-4186-9aea-db4f30b3717d";
   const PREVIEW_MODE =
     new URLSearchParams(location.search).get("preview") === "1";
   const LOCAL_QA_MODE =
@@ -30,6 +194,10 @@
   const QA_STATE = LOCAL_QA_MODE
     ? new URLSearchParams(location.search).get("qaState")
     : null;
+  // Forward-by-email (send confirmations to go@tripto.to) is hidden from the UI.
+  // Upload Booking + manual entry remain the supported import paths. Flip to true
+  // to bring the go@tripto.to inbox, its add-screen entry and menu links back.
+  const FORWARD_EMAIL_ENABLED = false;
   const tripRules = globalThis.TriptoTripRules;
   const routes = globalThis.TriptoRoutes;
   const googleAuth = globalThis.TriptoGoogleAuth;
@@ -77,6 +245,11 @@
       "/airport-timezones.js?v=airport-timezones-v1",
       "TriptoAirportTimezones",
     );
+  const ensureAirlineDirectory = () =>
+    loadModule(
+      "/airline-directory.js?v=airline-directory-v1",
+      "TriptoAirlineDirectory",
+    );
   const ensurePlacesProvider = () =>
     loadModule(
       "/places-provider.js?v=places-2026-08-26",
@@ -85,8 +258,11 @@
   const ensureSmartImport = () =>
     loadModule("/smart-import.js?v=product-v2-conf6", "TriptoSmartImport");
   const ensureStay22 = () => {
-    globalThis.Stay22 = globalThis.Stay22 || {};
-    globalThis.Stay22.params = { lmaID: STAY22_LMA_ID };
+    if (PREVIEW_MODE) return Promise.resolve(null);
+    try {
+      globalThis.Stay22 = globalThis.Stay22 || {};
+      globalThis.Stay22.params = { lmaID: STAY22_LMA_ID };
+    } catch (_) { return Promise.resolve(null); }
     return loadModule(STAY22_SCRIPT_URL, null);
   };
   // Keep the airport-timezone table fully on demand. Loading and parsing it in
@@ -114,8 +290,20 @@
   // instance on each full render — the cause of icon pop-in and scroll lag.
   const ICON_SPRITE = "";
   const FILLED_ICON_IDS = new Set(["flight", "map", "route", "notifications", "checklist", "traveler"]);
+  const THEME_STORAGE_KEY = "tripto_theme_v3";
+  const THEME_IDS = new Set(["night", "day", "mono", "ember", "studio"]);
+  // Studio is the default look; Night, Day, Ember and Mono stay selectable in Account.
+  function normalizeTheme(theme) {
+    return THEME_IDS.has(theme) ? theme : "studio";
+  }
+  const LIGHT_THEMES = new Set(["day", "mono", "ember", "studio"]);
+  const FLAT_THEMES = new Set(["mono", "ember"]);
+  function loadStoredTheme() {
+    try { return normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY)); } catch (_) { return "studio"; }
+  }
   const state = {
     token: localStorage.getItem("tripto_token") || "",
+    theme: loadStoredTheme(),
     loading: true,
     tripDetailsLoading: false,
     offline: !navigator.onLine,
@@ -130,6 +318,10 @@
     error: null,
     requestId: null,
     sessionRejected: false,
+    sessionNeedsReconnect: false,
+    syncing: false,
+    pendingCount: 0,
+    lastSyncedAt: 0,
     routeMotion: "forward",
     refreshingOffline: false,
     flightDetailsOpen: false,
@@ -140,6 +332,7 @@
     checklist: [],
     editingChecklistId: null,
     expandedChecklistTripId: null,
+    loadingEssentials: false,
     focusChecklistEdit: false,
     brain: null,
     impacts: [],
@@ -156,6 +349,18 @@
     currencyPickerField: null,
     currencyLoading: false,
     currencyError: "",
+    taxFree: null,
+    taxFreeCountry: null,
+    taxFreeRegion: null,
+    taxFreeAirportCode: null,
+    taxFreeSearch: "",
+    taxFreeCollapsed: false,
+    taxFreeLoading: false,
+    taxFreeRefreshing: false,
+    taxFreeError: "",
+    taxFreeGrossText: "",
+    taxFreeRate: null,
+    taxFreeFeeText: "",
     travelers: [],
     connections: [],
     health: null,
@@ -164,7 +369,16 @@
     syncStatus: null,
     syncConflicts: [],
     localDocs: [],
+    spots: [],
+    spotDetectBusy: false,
+    spotDraft: null,
+    spotActiveId: null,
+    spotTravelMode: (() => { try { const m = localStorage.getItem("tripto.spotTravelMode"); return ["driving", "transit", "walking"].includes(m) ? m : "driving"; } catch { return "driving"; } })(),
+    spotEditMode: "name",
     account: null,
+    subscription: null,
+    subscriptionPlan: "year",
+    subscriptionOrigin: "trips",
     importLocalDocumentId: null,
     importUploadRequest: null,
     imports: [],
@@ -175,7 +389,9 @@
     bookingFilter: "all",
     importMode: "upload",
     manualLabel: null,
-    editingEntity: null,
+    // A reload of an edit form restores what it was editing from history, so it
+    // never turns into an empty "new" form that saves a duplicate.
+    editingEntity: history.state?.tripto === true && history.state.edit ? history.state.edit : null,
     editingNote: null,
     formDraft: null,
     dateRange: null,
@@ -196,12 +412,20 @@
     shareInvite: null,
     shareBusy: false,
     memberMenu: null,
+    exportPdf: null,
     joinToken: null,
     joinPreview: null,
     joinCheckedToken: null,
     joinRequestId: 0,
     joinLoading: false,
     joinError: null,
+    tripMapDay: null,
+    mapLayersOpen: false,
+    mapLayers: { route: true, saved: true, location: true },
+    mapLocation: null,
+    mapLocateBusy: false,
+    mapLoadError: false,
+    mapSheetCollapsed: false,
   };
   let flightDetailsCloseTimer = null;
   const app = document.getElementById("app");
@@ -419,6 +643,12 @@
   }
   function openDocumentViewer(blob, name) {
     if (document.getElementById("doc-viewer")) return;
+    // Android app: PDFs and other files open in the phone's own viewer app from
+    // a temporary private copy (content:// URI with a one-time read grant).
+    if (NATIVE && !(/^image\//i.test(blob.type || "") || /\.(png|jpe?g|gif|webp|bmp)$/i.test(name || ""))) {
+      void openNativeFile(blob, name || "Travel document");
+      return;
+    }
     const url = URL.createObjectURL(blob),
       safeName = esc(name || "Travel document"),
       isImage =
@@ -481,6 +711,140 @@
         try { window.open(url, "_blank"); } catch (_) {}
       });
   }
+  // Beautiful in-app time picker. Replaces the browser-native <input type=time>
+  // popover (uncontrollable UA shadow DOM) with a themed wheel sheet so the
+  // "choose time" experience matches the app in every theme, mono included.
+  function openTimeSheet(input) {
+    if (document.querySelector(".time-sheet-backdrop")) return;
+    const ITEM = 44,
+      match = String(input.value || "").match(/^(\d{1,2}):(\d{2})$/),
+      hIdx = match ? Math.min(23, Math.max(0, parseInt(match[1], 10))) : 12,
+      mIdx = match ? Math.min(59, Math.max(0, parseInt(match[2], 10))) : 0,
+      label = (input.closest("label")?.querySelector("span")?.textContent || "")
+        .replace(/\s+/g, " ").replace(/\s*\*\s*$/, "").replace(/\s*Optional\s*$/i, "").trim()
+        || input.getAttribute("aria-label") || "Choose time",
+      col = (count) => Array.from({ length: count }, (_, i) =>
+        `<button type="button" class="time-wheel__item" role="option" data-index="${i}">${String(i).padStart(2, "0")}</button>`).join(""),
+      backdrop = document.createElement("div");
+    backdrop.className = "time-sheet-backdrop";
+    backdrop.innerHTML = `<section class="time-sheet" role="dialog" aria-modal="true" aria-label="${esc(label)}"><span class="time-sheet__grip" aria-hidden="true"></span><h2 class="time-sheet__title">${esc(label)}</h2><div class="time-sheet__wheels"><span class="time-sheet__band" aria-hidden="true"></span><div class="time-wheel" data-unit="h" role="listbox" aria-label="Hour" tabindex="0">${col(24)}</div><span class="time-sheet__colon" aria-hidden="true">:</span><div class="time-wheel" data-unit="m" role="listbox" aria-label="Minute" tabindex="0">${col(60)}</div></div><div class="time-sheet__actions"><button type="button" class="time-sheet__reset" data-time-reset>Reset</button><button type="button" class="time-sheet__confirm" data-time-confirm aria-label="Confirm time">${icon("check", 24)}</button></div></section>`;
+    document.body.appendChild(backdrop);
+    try { input.blur(); } catch (_) {}
+    const hWheel = backdrop.querySelector('[data-unit="h"]'),
+      mWheel = backdrop.querySelector('[data-unit="m"]'),
+      selected = (wheel) => Math.max(0, Math.min(wheel.children.length - 1, Math.round(wheel.scrollTop / ITEM))),
+      mark = (wheel) => {
+        const idx = selected(wheel);
+        for (const child of wheel.children) child.classList.toggle("is-active", Number(child.dataset.index) === idx);
+      },
+      centre = (wheel, idx, smooth) => wheel.scrollTo({ top: idx * ITEM, behavior: smooth ? "smooth" : "auto" });
+    let raf;
+    for (const [wheel, idx] of [[hWheel, hIdx], [mWheel, mIdx]]) {
+      requestAnimationFrame(() => { centre(wheel, idx, false); mark(wheel); });
+      wheel.addEventListener("scroll", () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => mark(wheel)); }, { passive: true });
+      wheel.addEventListener("click", (event) => {
+        const item = event.target.closest(".time-wheel__item");
+        if (item) centre(wheel, Number(item.dataset.index), true);
+      });
+    }
+    const close = () => {
+      backdrop.classList.add("is-closing");
+      document.removeEventListener("keydown", onKey, true);
+      setTimeout(() => backdrop.remove(), 180);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); close(); }
+    };
+    const commit = (value) => {
+      input.value = value;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      close();
+    };
+    document.addEventListener("keydown", onKey, true);
+    backdrop.addEventListener("click", (event) => { if (event.target === backdrop) close(); });
+    backdrop.querySelector("[data-time-confirm]").addEventListener("click", () =>
+      commit(`${String(selected(hWheel)).padStart(2, "0")}:${String(selected(mWheel)).padStart(2, "0")}`));
+    backdrop.querySelector("[data-time-reset]").addEventListener("click", () => commit(""));
+  }
+  // Beautiful in-app date picker. Replaces the browser-native <input type=date>
+  // calendar popover (uncontrollable UA shadow DOM) with a themed calendar sheet
+  // so choosing a date matches the app in every theme, mono included. The <input>
+  // keeps type=date, so the field itself still shows the localized date string —
+  // only the picker surface is ours.
+  function openDateSheet(input) {
+    if (document.querySelector(".date-sheet-backdrop")) return;
+    const parseISO = (value) => {
+        const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!match) return null;
+        const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        return Number.isNaN(date.getTime()) ? null : date;
+      },
+      toISO = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
+      floor = (date) => date && new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+      minD = floor(parseISO(input.min)),
+      maxD = floor(parseISO(input.max)),
+      today = new Date(),
+      label = (input.closest("label")?.querySelector("span")?.textContent || "")
+        .replace(/\s+/g, " ").replace(/\s*\*\s*$/, "").replace(/\s*Optional\s*$/i, "").trim()
+        || input.getAttribute("aria-label") || "Choose date",
+      WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      backdrop = document.createElement("div");
+    let selected = parseISO(input.value),
+      view = new Date((selected || today).getFullYear(), (selected || today).getMonth(), 1);
+    const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(),
+      outOfRange = (date) => (minD && date < minD) || (maxD && date > maxD);
+    backdrop.className = "time-sheet-backdrop date-sheet-backdrop";
+    document.body.appendChild(backdrop);
+    try { input.blur(); } catch (_) {}
+    const render = () => {
+      const year = view.getFullYear(),
+        month = view.getMonth(),
+        monthName = view.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+        firstDow = new Date(year, month, 1).getDay(),
+        days = new Date(year, month + 1, 0).getDate(),
+        cells = [];
+      for (let i = 0; i < firstDow; i++) cells.push('<span class="date-cell date-cell--pad" aria-hidden="true"></span>');
+      for (let d = 1; d <= days; d++) {
+        const date = new Date(year, month, d),
+          disabled = outOfRange(date),
+          classes = ["date-cell"];
+        if (sameDay(date, selected)) classes.push("is-selected");
+        if (sameDay(date, today)) classes.push("is-today");
+        cells.push(`<button type="button" class="${classes.join(" ")}" data-day="${d}"${disabled ? " disabled" : ""}>${d}</button>`);
+      }
+      backdrop.innerHTML = `<section class="time-sheet date-sheet" role="dialog" aria-modal="true" aria-label="${esc(label)}"><span class="time-sheet__grip" aria-hidden="true"></span><header class="date-sheet__head"><h2 class="date-sheet__month">${esc(monthName)}</h2><div class="date-sheet__nav"><button type="button" class="date-sheet__arrow" data-date-prev aria-label="Previous month">${icon("chevron-left", 20)}</button><button type="button" class="date-sheet__arrow" data-date-next aria-label="Next month">${icon("chevron-right", 20)}</button></div></header><div class="date-sheet__week" aria-hidden="true">${WEEK.map((w) => `<span>${w.toUpperCase()}</span>`).join("")}</div><div class="date-sheet__grid" role="grid">${cells.join("")}</div><div class="time-sheet__actions"><button type="button" class="time-sheet__reset" data-date-reset>Reset</button><button type="button" class="time-sheet__confirm" data-date-confirm aria-label="Confirm date">${icon("check", 24)}</button></div></section>`;
+    };
+    render();
+    const close = () => {
+      backdrop.classList.add("is-closing");
+      document.removeEventListener("keydown", onKey, true);
+      setTimeout(() => backdrop.remove(), 180);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); close(); }
+    };
+    const commit = (value) => {
+      input.value = value;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      close();
+    };
+    document.addEventListener("keydown", onKey, true);
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) { close(); return; }
+      const dayBtn = event.target.closest("[data-day]");
+      if (dayBtn && !dayBtn.disabled) {
+        selected = new Date(view.getFullYear(), view.getMonth(), Number(dayBtn.dataset.day));
+        render();
+        return;
+      }
+      if (event.target.closest("[data-date-prev]")) { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render(); return; }
+      if (event.target.closest("[data-date-next]")) { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render(); return; }
+      if (event.target.closest("[data-date-confirm]")) { commit(selected ? toISO(selected) : ""); return; }
+      if (event.target.closest("[data-date-reset]")) { commit(""); return; }
+    });
+  }
   async function openManualAttachment(scope, id) {
     const record = await listManualAttachments(scope),
       file = (record?.files || []).find((row) => String(row.id) === String(id));
@@ -490,25 +854,35 @@
   async function clearLocalDeviceData() {
     clearApiCache(sessionIdentity());
     localStorage.removeItem(PENDING_KEY);
+    localStorage.removeItem(PENDING_IDMAP_KEY);
     localStorage.removeItem("tripto_selected_trip");
     for (const key of Object.keys(localStorage)) {
-      if (key.startsWith(CACHE_PREFIX) || key.startsWith("tripto_quick_draft")) localStorage.removeItem(key);
+      if (key.startsWith(CACHE_PREFIX) || key.startsWith("tripto_quick_draft") || key.startsWith("tripto_quick_add_draft:")) localStorage.removeItem(key);
     }
+    // Form drafts (may hold booking codes) live in sessionStorage.
+    try {
+      for (const key of Object.keys(sessionStorage)) {
+        if (key.startsWith("tripto_quick_add_draft:")) sessionStorage.removeItem(key);
+      }
+    } catch (_) {}
     try {
       const db = await openLocalDocDb();
       await new Promise((resolve, reject) => {
-        const transaction = db.transaction(["docs", "bookingDrafts"], "readwrite");
+        const transaction = db.transaction(["docs", "bookingDrafts", "spots"], "readwrite");
         transaction.objectStore("docs").clear();
         transaction.objectStore("bookingDrafts").clear();
+        transaction.objectStore("spots").clear();
         transaction.oncomplete = resolve;
         transaction.onerror = () => reject(transaction.error || new Error("Local data could not be removed."));
         transaction.onabort = transaction.onerror;
       });
+      localDocDbPromise = null;
       db.close();
     } catch (error) {
       if (error?.name !== "NotFoundError") throw error;
     }
     state.localDocs = [];
+    state.spots = [];
   }
   async function commitManualAttachments(scope, bookingId, kind, travelerIds) {
     const normalized = normalizeManualAttachmentScope(scope),
@@ -563,17 +937,33 @@
     }
     return null;
   }
-  function themeChromeColor() {
-    return "#0f1f29";
+  function themeChromeColor(theme = state.theme) {
+    // The welcome uses the Studio paper in every theme.
+    if (document.documentElement.classList.contains("first-run-open")) return "#f6f4f1";
+    const resolved = normalizeTheme(theme);
+    if (resolved === "mono") return "#ffffff";
+    if (resolved === "ember") return "#f6f4f1";
+    if (resolved === "studio") return "#f6f4f1";
+    return resolved === "day" ? "#fbf8f7" : "#0f1f29";
   }
-  function applyNightTheme() {
-    // Night is Tripto's single appearance. The legacy class name is retained
-    // because it scopes the established Night token set in the stylesheet.
-    document.documentElement.classList.add("theme-beart");
+  function applyTheme(theme) {
+    const resolved = normalizeTheme(theme || state.theme);
+    state.theme = resolved;
+    try { localStorage.setItem(THEME_STORAGE_KEY, resolved); } catch (_) {}
+    const root = document.documentElement;
+    const light = LIGHT_THEMES.has(resolved);
+    root.classList.toggle("theme-beart", resolved === "night");
+    root.classList.toggle("theme-day", light);
+    root.classList.toggle("theme-flat", FLAT_THEMES.has(resolved));
+    root.classList.toggle("theme-mono", resolved === "mono" || resolved === "ember");
+    root.classList.toggle("theme-ember", resolved === "ember");
+    root.classList.toggle("theme-studio", resolved === "studio");
     const themeMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeMeta) themeMeta.setAttribute("content", themeChromeColor());
+    if (themeMeta) themeMeta.setAttribute("content", themeChromeColor(resolved));
     const schemeMeta = document.querySelector('meta[name="color-scheme"]');
-    if (schemeMeta) schemeMeta.setAttribute("content", "dark");
+    if (schemeMeta) schemeMeta.setAttribute("content", light ? "light" : "dark");
+    // Android status/navigation bar icons follow the theme (LIGHT = dark icons).
+    nativePlugin("SystemBars")?.setStyle?.({ style: light ? "LIGHT" : "DARK" })?.catch?.(() => {});
   }
   function itemId(item) {
     return String(val(item, "id", "trip_item_id") || "");
@@ -619,7 +1009,9 @@
     const id = itemId(entity), label = routeEntityLabel(screen, entity), base = routes?.slugify?.(label) || "item";
     if (!id) return base;
     const peers = routeEntities(screen).filter((candidate) => (routes?.slugify?.(routeEntityLabel(screen, candidate)) || "item") === base);
-    if (peers.length <= 1) return base;
+    // "new" / "edit" are route keywords (/collections/new/…); a record titled
+    // "New" must not produce a URL that parses as the create form.
+    if (peers.length <= 1 && base !== "new" && base !== "edit") return base;
     const disambiguator = routes?.slugify?.(id) || id.replace(/[^a-z0-9]+/gi, "-") || "item";
     return `${base}-${disambiguator.slice(0, 8)}`;
   }
@@ -665,15 +1057,17 @@
     const parsed = parseRoute();
     if (parsed.screen !== "timeline" || !parsed.id) return;
     const tripId = resolveRouteId("timeline", parsed.id), trip = (state.trips || []).find((row) => String(row.id) === String(tripId));
-    if (trip) {
-      state.trip = trip;
-      try { localStorage.setItem("tripto_selected_trip", trip.id); } catch (_) {}
-    }
+    if (!trip) return false;
+    const changed = String(state.trip?.id || "") !== String(trip.id);
+    state.trip = trip;
+    try { localStorage.setItem("tripto_selected_trip", trip.id); } catch (_) {}
+    return changed;
   }
   function resolveRouteSelection() {
     const parsed = parseRoute();
     if (parsed.screen === "timeline" && parsed.id) {
       applyRouteTripSelection();
+      if (PREVIEW_MODE) switchPreviewTrip();
       state.selectedId = null;
       return true;
     }
@@ -786,14 +1180,12 @@
     if (discard) {
       const form = document.getElementById("native-form"), scope = form?.dataset.attachmentScope;
       if (scope) {
+        // Local file storage can stall on some phones; never let that leave
+        // Discard doing nothing. Wait briefly, then leave either way.
         try {
-          await clearManualAttachment(scope);
+          await Promise.race([clearManualAttachment(scope), new Promise((resolve) => setTimeout(resolve, 2500))]);
         } catch (_) {
-          const message = "The selected local files could not be discarded. Your booking details and files are still on this phone.";
-          if (form) showFormSubmissionError(form, message);
-          else showToast(message, "alert");
-          discardReturnFocus?.focus?.();
-          return;
+          // Leftover staged files stay local to this phone; still discard.
         }
       }
       clearActiveFormDraft();
@@ -843,9 +1235,19 @@
       });
     }
     state.trips = state.trips.filter((row) => String(row.id) !== String(trip.id));
+    // Clear the edit draft while editingEntity still scopes its key.
+    if (state.screen === "form") clearQuickDraft("trip");
     state.editingEntity = null;
     formHasMeaningfulChanges = false;
-    if (state.screen === "form") clearQuickDraft("trip");
+    // Drop the deleted trip's cached API responses so they can't resurface offline.
+    const tripCachePrefix = cacheKey(`/api/v1/trips/${encodeURIComponent(trip.id)}`);
+    try {
+      for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+        const key = localStorage.key(index);
+        if (key && (key === tripCachePrefix || key.startsWith(`${tripCachePrefix}/`) || key.startsWith(`${tripCachePrefix}?`))) localStorage.removeItem(key);
+      }
+      localStorage.removeItem(cacheKey("/api/v1/trips"));
+    } catch (_) {}
     const next = selectRelevantTrip(state.trips) || null;
     state.trip = next;
     if (next) {
@@ -1286,16 +1688,29 @@
       : `<p class="sheet-note">Add trip dates first to move this booking between days.</p>`;
     return bottomSheet("move-booking", "Move to another day", `<div class="sheet-options-group sheet-options-group--v2 move-day-list">${options}</div>`);
   }
+  function zoneOffsetMinutes(instant, timeZone) {
+    const parts = dateFormatter("en-CA", { timeZone: timeZone || "UTC", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(instant)), row = {};
+    parts.forEach((part) => { if (part.type !== "literal") row[part.type] = part.value; });
+    return Math.round((Date.UTC(+row.year, +row.month - 1, +row.day, +row.hour, +row.minute) - instant) / 60000);
+  }
   function shiftMsToDay(ms, timeZone, dayDelta) {
     const value = Number(ms) || null;
     if (!value) return null;
     const parts = zonedDateTimeParts(value, timeZone);
     if (!parts.date || !parts.time) return value + dayDelta * 86400000;
+    const targetDate = addCalendarDays(parts.date, dayDelta);
     try {
-      return resolveEventLocalDateTime(`${addCalendarDays(parts.date, dayDelta)}T${parts.time}`, timeZone || "UTC");
+      return resolveEventLocalDateTime(`${targetDate}T${parts.time}`, timeZone || "UTC");
     } catch (_) {
-      // DST-ambiguous wall time on the target day: fall back to a raw shift.
-      return value + dayDelta * 86400000;
+      // DST-invalid/ambiguous wall time on the target day. A raw
+      // value + dayDelta*86400000 shift would drift the wall clock by the
+      // transition's ±1h; instead reconstruct the instant from the intended
+      // wall time using the target day's own UTC offset (sampled at that wall
+      // time), which keeps the local time stable and only absorbs the gap.
+      const [hh, mm] = String(parts.time).split(":").map(Number);
+      const wallAsUTC = Date.parse(`${targetDate}T00:00:00Z`) + ((hh * 60 + mm) || 0) * 60000;
+      if (Number.isNaN(wallAsUTC)) return value + dayDelta * 86400000;
+      return wallAsUTC - zoneOffsetMinutes(wallAsUTC, timeZone || "UTC") * 60000;
     }
   }
   async function moveBookingToDay(kind, id, targetDate) {
@@ -1305,6 +1720,7 @@
     if (!current || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate) || targetDate === current) { closeSheet(); return; }
     const dayDelta = Math.round((Date.UTC(+targetDate.slice(0, 4), +targetDate.slice(5, 7) - 1, +targetDate.slice(8, 10)) - Date.UTC(+current.slice(0, 4), +current.slice(5, 7) - 1, +current.slice(8, 10))) / 86400000);
     if (!dayDelta) { closeSheet(); return; }
+    if (PREVIEW_MODE) { state.moveBooking = null; closeSheet(); showToast("Preview mode does not call the API."); return; }
     const e = record.entity, tripId = encodeURIComponent(state.trip?.id || ""), version = Number(val(e, "version")) || 1;
     try {
       if (record.path === "stays") {
@@ -1381,18 +1797,30 @@
   }
   const BACK_FALLBACKS = Object.freeze({
     home: "trips", trips: "timeline", timeline: "trips", bookings: "timeline", flight: "timeline", hotel: "timeline",
-    train: "timeline", plan: "timeline", documents: "timeline", ready: "timeline",
-    health: "timeline", account: "trips", collaboration: "timeline",
-    "trip-options": "timeline", travelers: "account", traveler: "travelers", checklist: "timeline",
+    train: "timeline", plan: "timeline", documents: "trip-options", ready: "timeline",
+    health: "timeline", account: "trips", collaboration: "trip-options",
+    "trip-options": "timeline", "tax-free": "trip-options", travelers: "account", traveler: "travelers", checklist: "timeline",
     import: "add-booking", "import-review": "import", "import-history": "import",
     "booking-email-inbox": "bookings", sync: "trip-options", join: "trips",
     collection: "timeline", "collection-form": "day-plan", "stop-form": "collection", "collection-stop": "collection",
     "add-trip": "timeline", "add-booking": "add-trip", "day-plan": "add-trip",
     "day-plan-form": "day-plan", "save-later": "add-trip", "add-to-plan": "save-later",
-    "trip-map": "timeline", weather: "trip-options", currency: "trip-options", esim: "trip-options",
+    "trip-map": "trip-options", weather: "trip-options", currency: "trip-options",
+    spots: "trip-options",
+    help: "trip-options",
   });
+  // Screens whose Back must always land on their fixed parent, no matter how
+  // they were reached (FAB, redirect, relaunch restore, edit-trip round-trip).
+  const STRICT_BACK_SCREENS = new Set(["trip-options"]);
+  // History entries written during THIS page session, keyed by triptoIndex.
+  // After a reload / PWA relaunch the browser keeps older entries whose content
+  // we can't see — Back must not blindly history.back() into them.
+  const sessionRouteEntries = new Map();
   function routeHistoryState(screen, id, index = 0) {
-    return { tripto: true, triptoIndex: Math.max(0, Number(index) || 0), screen, id: id || null };
+    const triptoIndex = Math.max(0, Number(index) || 0);
+    sessionRouteEntries.set(triptoIndex, { screen, id: id || null });
+    const edit = DIRTY_TASK_SCREENS.has(screen) && state.editingEntity ? { ...state.editingEntity } : null;
+    return { tripto: true, triptoIndex, screen, id: id || null, ...(edit ? { edit } : {}) };
   }
   function routeHistoryIndex() {
     return history.state?.tripto === true ? Math.max(0, Number(history.state.triptoIndex) || 0) : 0;
@@ -1400,23 +1828,94 @@
   function backDestination() {
     const screen = state.screen, id = String(state.selectedId || "");
     if (screen === "form") {
-      if (id === "trip") return { screen: "trips", id: null };
+      if (id === "trip") return state.editingEntity?.kind === "trip" && state.trip ? { screen: "timeline", id: null } : { screen: "trips", id: null };
       if (id === "document") return { screen: "documents", id: null };
+      // Editing an existing booking returns to that booking, not the type picker.
+      const edited = QUICK_ADD_KINDS.has(id) && state.editingEntity?.id ? detailRouteForItem(state.editingEntity.id) : null;
+      if (edited) return edited;
       if (QUICK_ADD_KINDS.has(id)) return { screen: "add-booking", id: null };
       return { screen: "timeline", id: null };
     }
     if (screen === "stop-form" && id) return { screen: "collection", id };
+    // collection-stop detail carries "<collectionId>::<stopId>" — strip the stop
+    // so back returns to its plan rather than a null-id "Plan unavailable".
+    if (screen === "collection-stop" && id) return { screen: "collection", id: id.split("::")[0] };
     if (screen === "collection-form" && id && !id.startsWith("new:")) return { screen: "collection", id };
     if (screen === "day-plan-form" && state.dayPlanContext === "save-later") return { screen: "save-later", id: null };
     return { screen: BACK_FALLBACKS[screen] || "timeline", id: null };
   }
+  // An overlay (menu, picker, bottom sheet, place search, driver, doc viewer)
+  // must always absorb a back tap or gesture instead of letting it navigate the
+  // screen beneath — otherwise back appears to "skip" a step. Returns true when
+  // an overlay was dismissed so callers can stop before touching the route.
+  function dismissOpenOverlay() {
+    if (document.getElementById("doc-viewer")) { closeDocumentViewer(); return true; }
+    if (document.documentElement.classList.contains("place-search-open")) {
+      const closer = document.querySelector("[data-place-search-close]");
+      if (closer) { closer.click(); return true; }
+    }
+    if (state.sheet === "driver") { state.sheet = null; route("hotel", state.selectedId, true); return true; }
+    if (state.sheet) { closeSheet(); return true; }
+    return false;
+  }
+  // Android system Back: close the top dialog, then any overlay, then step back
+  // through the app's own screens. On a root screen the app goes to the
+  // background (like Home) instead of closing, so nothing is lost.
+  const NATIVE_ROOT_SCREENS = new Set(["trips", "home"]);
+  function handleNativeBack() {
+    const modal = [...document.querySelectorAll(".time-sheet-backdrop,.date-sheet-backdrop,.discard-dialog-backdrop")].pop();
+    if (modal) {
+      modal.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      return;
+    }
+    if (dismissOpenOverlay()) return;
+    if (NATIVE_ROOT_SCREENS.has(state.screen)) {
+      nativePlugin("App")?.minimizeApp?.().catch?.(() => {});
+      return;
+    }
+    goBackFromCurrentScreen();
+  }
+  // Invitation App Links: https://tripto.to/join/<token> opens the join screen.
+  let lastNativeLaunchUrl = "";
+  function openNativeLaunchUrl(raw) {
+    if (!raw || raw === lastNativeLaunchUrl) return;
+    lastNativeLaunchUrl = raw;
+    let url;
+    try { url = new URL(raw); } catch (_) { return; }
+    if (url.protocol !== "https:" || url.hostname !== "tripto.to") return;
+    const match = url.pathname.match(/^\/join\/([^/?#]{1,512})\/?$/);
+    if (!match) return;
+    let token = match[1];
+    try { token = decodeURIComponent(token); } catch (_) {}
+    route("join", token);
+  }
+  function installNativeApp() {
+    installNativeLinks();
+    installNativeShare();
+    nativePlugin("TriptoNative")?.clearShareFiles?.().catch?.(() => {});
+    const App = nativePlugin("App");
+    if (!App) return;
+    App.addListener("backButton", handleNativeBack);
+    App.addListener("appUrlOpen", (event) => openNativeLaunchUrl(event?.url));
+    App.getLaunchUrl?.().then((launch) => openNativeLaunchUrl(launch?.url)).catch?.(() => {});
+  }
   function goBackFromCurrentScreen() {
+    if (dismissOpenOverlay()) return;
     const destination = backDestination();
     const goBack = () => {
       formHasMeaningfulChanges = false;
       state.routeMotion = "back";
-      if (routeHistoryIndex() > 0) history.back();
-      else route(destination.screen, destination.id, false, "back");
+      const index = routeHistoryIndex();
+      const previous = index > 0 ? sessionRouteEntries.get(index - 1) : null;
+      const parentId = destination.id || (destination.screen === "timeline" ? state.trip?.id : null);
+      const previousIsParent = Boolean(previous) &&
+        previous.screen === destination.screen &&
+        (!parentId || !previous.id || String(previous.id) === String(parentId));
+      // Only step back through history when the previous entry is one we
+      // wrote this session (and, for strict screens, is the real parent).
+      // Otherwise replace this entry with the parent so Back is predictable.
+      if (previous && (previousIsParent || !STRICT_BACK_SCREENS.has(state.screen))) history.back();
+      else route(destination.screen, destination.id, true, "back");
     };
     if (formHasMeaningfulChanges && DIRTY_TASK_SCREENS.has(state.screen)) requestDiscardChanges(goBack);
     else goBack();
@@ -1447,6 +1946,8 @@
     state.selectedId = id || null;
     if (screen !== "checklist") state.editingChecklistId = null;
     if (screen !== "trips") state.tripFilter = null;
+    if (screen !== "documents") state.pendingDocFile = null;
+    if (screen !== "trip-map") state.mapLayersOpen = false;
     state.sheet = null;
     if (
       DIRTY_TASK_SCREENS.has(screen) &&
@@ -1464,15 +1965,20 @@
     requestAnimationFrame(() =>
       window.scrollTo({ top: restore, behavior: "instant" }),
     );
+    if(screen==="tax-free")void ensureTaxFree();
   }
-  function sessionIdentity(token = state.token) {
+  function sessionPayload(token = state.token) {
     try {
       const body = String(token || "").split(".")[0];
-      if (!body) return "anonymous";
+      if (!body) return null;
       const padded = body.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - body.length % 4) % 4);
-      const payload = JSON.parse(decodeURIComponent(Array.from(atob(padded), (c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")));
-      return String(payload.userId || payload.deviceId || "anonymous").replace(/[^A-Za-z0-9._:-]/g, "_");
-    } catch (_) { return "anonymous"; }
+      return JSON.parse(decodeURIComponent(Array.from(atob(padded), (c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")));
+    } catch (_) { return null; }
+  }
+  function sessionIdentity(token = state.token) {
+    const payload = sessionPayload(token);
+    if (!payload) return "anonymous";
+    return String(payload.userId || payload.deviceId || "anonymous").replace(/[^A-Za-z0-9._:-]/g, "_");
   }
   function cacheKey(path) {
     return `${CACHE_PREFIX}${sessionIdentity()}:${path}`;
@@ -1506,6 +2012,13 @@
       ? { ok: true, at: Number(row.at) || null }
       : { ok: false, at: null };
   }
+  // Offline change queue (localStorage, survives app kill). Every row is
+  // persisted before and after each send attempt, so a killed sync resumes
+  // instead of losing or duplicating a change: creates send the row id as the
+  // Idempotency-Key and edits carry the record version. Row status:
+  // pending | sending | failed (retry with backoff) | conflict (kept for review).
+  // Rows belong to the session identity that queued them.
+  const PENDING_IDMAP_KEY = "tripto_pending_idmap_v1";
   function pendingMutations() {
     try {
       const rows = JSON.parse(localStorage.getItem(PENDING_KEY) || "[]");
@@ -1514,10 +2027,115 @@
       return [];
     }
   }
-  function queuePendingMutation(row) {
-    const rows=pendingMutations();rows.push({id:`pending_${crypto.randomUUID()}`,createdAt:Date.now(),status:"pending",...row});localStorage.setItem(PENDING_KEY,JSON.stringify(rows));
+  function writePendingMutations(rows) {
+    try { localStorage.setItem(PENDING_KEY, JSON.stringify(rows)); return true; } catch (_) { return false; }
   }
-  async function flushSmartImportQueue(){if(PREVIEW_MODE||!navigator.onLine||!state.token)return;const rows=pendingMutations(),keep=[];for(const row of rows){if(row.kind!=="smart-import-preview"||row.status==="done"){keep.push(row);continue;}try{await api(row.path,{method:"POST",body:JSON.stringify(row.body)});}catch{keep.push({...row,status:"retry"});}}localStorage.setItem(PENDING_KEY,JSON.stringify(keep));}
+  function pendingRowIsMine(row, identity = sessionIdentity()) {
+    return !row.owner || row.owner === identity;
+  }
+  function myPendingMutations() {
+    const identity = sessionIdentity();
+    return pendingMutations().filter((row) => row.status !== "done" && pendingRowIsMine(row, identity));
+  }
+  function queuePendingMutation(row) {
+    const rows = pendingMutations();
+    rows.push({ id: `pending_${crypto.randomUUID()}`, createdAt: Date.now(), status: "pending", attempts: 0, owner: sessionIdentity(), ...row });
+    const saved = writePendingMutations(rows);
+    state.pendingCount = myPendingMutations().length;
+    return saved;
+  }
+  function updatePendingRow(id, patch) {
+    const rows = pendingMutations();
+    const index = rows.findIndex((row) => row.id === id);
+    if (index < 0) return null;
+    rows[index] = patch ? { ...rows[index], ...patch } : null;
+    writePendingMutations(rows.filter(Boolean));
+    return rows[index];
+  }
+  function migratePendingOwner(from, to) {
+    if (!from || !to || from === to) return;
+    writePendingMutations(pendingMutations().map((row) => (row.owner === from ? { ...row, owner: to } : row)));
+  }
+  // Temporary local ids (local-<uuid>) created offline map to server ids once
+  // their create lands, so later queued edits of the same record resolve.
+  function pendingIdMap() {
+    try { return JSON.parse(localStorage.getItem(PENDING_IDMAP_KEY) || "{}") || {}; } catch (_) { return {}; }
+  }
+  function rememberServerId(tempId, serverId) {
+    if (!tempId || !serverId) return;
+    const map = pendingIdMap();
+    map[tempId] = String(serverId);
+    try { localStorage.setItem(PENDING_IDMAP_KEY, JSON.stringify(map)); } catch (_) {}
+  }
+  function resolvePendingId(id) {
+    const value = String(id || "");
+    return value.startsWith("local-") ? pendingIdMap()[value] || null : value;
+  }
+  // A network-level failure (no HTTP status: offline, DNS, timeout) means the
+  // change should wait on this phone. A server answer means it was rejected.
+  function isNetworkFailure(error) {
+    return !navigator.onLine || !Number(error?.status);
+  }
+  let pendingFlushLock = Promise.resolve();
+  function isPermanentFailure(error) {
+    const status = Number(error?.status) || 0;
+    return status >= 400 && status < 500 && ![401, 408, 409, 429].includes(status);
+  }
+  const PENDING_BACKOFF_MS = [0, 5000, 15000, 60000, 300000, 900000];
+  function flushPendingKind(kind, send) {
+    const run = pendingFlushLock.then(async () => {
+      if (PREVIEW_MODE || !navigator.onLine || !state.token) return false;
+      const identity = sessionIdentity();
+      let touched = false;
+      // Later changes to a record wait while an earlier one for it is stuck.
+      const blocked = new Set();
+      const recordKey = (row) => String(row.itemId || row.stopId || row.collectionId || row.tempId || "");
+      for (const queued of pendingMutations()) {
+        if (queued.kind !== kind || queued.status === "done" || !pendingRowIsMine(queued, identity)) continue;
+        const key = recordKey(queued);
+        if (queued.status === "conflict" || (key && blocked.has(key))) { if (key) blocked.add(key); if (queued.tempId) blocked.add(queued.tempId); continue; }
+        const attempts = Number(queued.attempts) || 0;
+        const wait = PENDING_BACKOFF_MS[Math.min(attempts, PENDING_BACKOFF_MS.length - 1)];
+        if (queued.status === "failed" && Date.now() - (Number(queued.lastAttemptAt) || 0) < wait) { if (key) blocked.add(key); if (queued.tempId) blocked.add(queued.tempId); continue; }
+        // Persist the attempt first: if the app dies mid-request the row stays
+        // queued and the idempotent resend is harmless.
+        const row = updatePendingRow(queued.id, { status: "sending", attempts: attempts + 1, lastAttemptAt: Date.now() });
+        if (!row) continue;
+        try {
+          await send(row);
+          updatePendingRow(row.id, null);
+          touched = true;
+        } catch (error) {
+          if (isNetworkFailure(error)) {
+            updatePendingRow(row.id, { status: "failed", lastError: "network" });
+            break;
+          }
+          if (Number(error?.status) === 409) updatePendingRow(row.id, { status: "conflict", lastError: "VERSION_CONFLICT", conflict: error?.details || null });
+          else if (isPermanentFailure(error) || row.attempts >= 10) updatePendingRow(row.id, { status: "conflict", lastError: String(error?.code || error?.status || "REJECTED") });
+          else updatePendingRow(row.id, { status: "failed", lastError: String(error?.status || "") });
+          if (key) blocked.add(key);
+          if (row.tempId) blocked.add(row.tempId);
+        }
+      }
+      state.pendingCount = myPendingMutations().length;
+      return touched;
+    });
+    pendingFlushLock = run.catch(() => {});
+    return run;
+  }
+  // Rows interrupted mid-send by an app kill are retried on the next flush.
+  function recoverInterruptedPending() {
+    const rows = pendingMutations();
+    if (!rows.some((row) => row.status === "sending")) return;
+    writePendingMutations(rows.map((row) => (row.status === "sending" ? { ...row, status: "failed" } : row)));
+  }
+  function discardPendingRow(id) {
+    updatePendingRow(id, null);
+    state.pendingCount = myPendingMutations().length;
+  }
+  function flushSmartImportQueue() {
+    return flushPendingKind("smart-import-preview", (row) => api(row.path, { method: "POST", body: JSON.stringify(row.body) }));
+  }
   function ageLabel(timestamp) {
     if (!timestamp) return "Not cached";
     const age = Math.max(0, Date.now() - Number(timestamp));
@@ -1541,10 +2159,10 @@
     }, 3600);
   }
   let toastActionFn = null;
-  function showUndoToast(message, onUndo, ms = 5000) {
+  function showUndoToast(message, onUndo, ms = 5000, label = "Undo") {
     state.toast = String(message || "");
     state.toastKind = "status";
-    state.toastAction = { label: "Undo" };
+    state.toastAction = { label };
     toastActionFn = typeof onUndo === "function" ? onUndo : null;
     renderToast();
     clearTimeout(toastTimer);
@@ -1554,6 +2172,9 @@
       toastActionFn = null;
       renderToast();
     }, ms);
+  }
+  function showToastWithAction(message, label, onAction, ms = 8000) {
+    showUndoToast(message, onAction, ms, label);
   }
   function statusText(value) {
     const s = String(value || "unavailable").replace(/_/g, " ");
@@ -1626,16 +2247,111 @@
     ["HUF", "Hungarian forint"], ["ILS", "Israeli new shekel"], ["INR", "Indian rupee"],
     ["ISK", "Icelandic króna"], ["JPY", "Japanese yen"], ["KRW", "South Korean won"],
     ["MXN", "Mexican peso"], ["NOK", "Norwegian krone"], ["NZD", "New Zealand dollar"],
-    ["PLN", "Polish złoty"], ["RON", "Romanian leu"], ["SEK", "Swedish krona"],
-    ["SGD", "Singapore dollar"], ["THB", "Thai baht"], ["TRY", "Turkish lira"],
-    ["USD", "US dollar"], ["ZAR", "South African rand"],
+    ["PLN", "Polish złoty"], ["RON", "Romanian leu"], ["RUB", "Russian ruble"],
+    ["SEK", "Swedish krona"], ["SGD", "Singapore dollar"], ["THB", "Thai baht"],
+    ["TRY", "Turkish lira"], ["USD", "US dollar"], ["ZAR", "South African rand"],
   ]);
   const COUNTRY_CURRENCY = Object.freeze({
     AT:"EUR",BE:"EUR",BG:"EUR",HR:"EUR",CY:"EUR",EE:"EUR",FI:"EUR",FR:"EUR",DE:"EUR",GR:"EUR",IE:"EUR",IT:"EUR",LV:"EUR",LT:"EUR",LU:"EUR",MT:"EUR",NL:"EUR",PT:"EUR",SK:"EUR",SI:"EUR",ES:"EUR",
-    AU:"AUD",CA:"CAD",CH:"CHF",CN:"CNY",CZ:"CZK",DK:"DKK",GB:"GBP",HK:"HKD",HU:"HUF",IL:"ILS",IN:"INR",IS:"ISK",JP:"JPY",KR:"KRW",MX:"MXN",NO:"NOK",NZ:"NZD",PL:"PLN",RO:"RON",SE:"SEK",SG:"SGD",TH:"THB",TR:"TRY",US:"USD",ZA:"ZAR",
+    AU:"AUD",CA:"CAD",CH:"CHF",CN:"CNY",CZ:"CZK",DK:"DKK",GB:"GBP",HK:"HKD",HU:"HUF",IL:"ILS",IN:"INR",IS:"ISK",JP:"JPY",KR:"KRW",MX:"MXN",NO:"NOK",NZ:"NZD",PL:"PLN",RO:"RON",RU:"RUB",SE:"SEK",SG:"SGD",TH:"THB",TR:"TRY",US:"USD",ZA:"ZAR",
   });
+  // ISO 3166-1 alpha-2 territories. The selector always exposes the complete
+  // list; verified rules are a deliberately smaller, clearly labelled subset.
+  const TAX_FREE_COUNTRIES = Object.freeze("AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW".split(" "));
+  const TAX_FREE_FALLBACK_NAMES = Object.freeze({ FR:"France",IT:"Italy",JP:"Japan",GB:"United Kingdom" });
+  const TF_COPY = Object.freeze({
+    en:{title:"Tax Free",subtitle:"Tourist tax refund",tripCountries:"Trip countries",country:"Country or territory",available:"Verified available",unavailable:"Verified unavailable",partial:"Partly verified",unverified:"Needs verification",recheck:"Recheck required",update:"Update information",updating:"Checking…",updated:"You already have the latest published information.",offline:"Showing the last published information saved on this phone.",official:"Official sources",verified:"Content verified",checked:"Source checked",loaded:"Loaded on this phone",eligibility:"Who can use it",purchases:"Qualifying purchases",store:"At the shop",documents:"Documents",goods:"Goods and baggage",deadline:"Deadlines",customs:"Customs validation",electronic:"Electronic validation",payout:"Refund payment",calculator:"Tax in the price",gross:"Price including tax",rate:"Tax rate",fee:"Known operator fee (optional)",taxAmount:"Tax included before fees",afterFee:"After the fee you entered",calcNote:"This is the tax contained in the price before operator or retailer fees. It is not a promised refund.",mixed:"Different categories can use different rates. Calculate them separately.",noRule:"No verified rule is published for this country yet.",noRuleBody:"We will not guess. Check the official tax or customs authority before relying on a refund.",region:"Regional rules",future:"Published change",effective:"Effective",thresholds:"Purchase thresholds",basis:"Basis",refreshFailed:"Could not check for an update. Saved information is still available.",select:"Select country",privacy:"The calculator runs on this phone. Purchase amounts are not sent to tripto.to.",sourcesNote:"Open official pages to confirm details before purchase and departure.",newVersion:"New verified Tax Free information is available.",noConnection:"No connection. Saved information remains available.",searchOfficial:"Search for official rules",noResults:"No matching country or territory",clearSearch:"Clear search"},
+    de:{title:"Tax Free",subtitle:"Steuerrückerstattung für Reisende",tripCountries:"Länder der Reise",country:"Land oder Gebiet",available:"Verifiziert verfügbar",unavailable:"Verifiziert nicht verfügbar",partial:"Teilweise verifiziert",unverified:"Prüfung erforderlich",recheck:"Erneute Prüfung nötig",update:"Informationen aktualisieren",updating:"Wird geprüft…",updated:"Du hast bereits die neuesten veröffentlichten Informationen.",offline:"Die zuletzt auf diesem Gerät gespeicherten Informationen werden angezeigt.",official:"Offizielle Quellen",verified:"Inhalt geprüft",checked:"Quelle technisch geprüft",loaded:"Auf diesem Gerät geladen",eligibility:"Wer es nutzen kann",purchases:"Geeignete Einkäufe",store:"Im Geschäft",documents:"Dokumente",goods:"Waren und Gepäck",deadline:"Fristen",customs:"Zollvalidierung",electronic:"Elektronische Validierung",payout:"Auszahlung",calculator:"Steuer im Preis",gross:"Preis inklusive Steuer",rate:"Steuersatz",fee:"Bekannte Betreibergebühr (optional)",taxAmount:"Enthaltene Steuer vor Gebühren",afterFee:"Nach deiner eingegebenen Gebühr",calcNote:"Dies ist die im Preis enthaltene Steuer vor Betreiber- oder Händlergebühren. Es ist keine zugesagte Erstattung.",mixed:"Für verschiedene Kategorien können verschiedene Sätze gelten. Berechne sie getrennt.",noRule:"Für dieses Land ist noch keine verifizierte Regel veröffentlicht.",noRuleBody:"Wir raten nicht. Prüfe die offizielle Steuer- oder Zollbehörde.",region:"Regionale Regeln",future:"Veröffentlichte Änderung",effective:"Gültig ab",thresholds:"Kaufgrenzen",basis:"Grundlage",refreshFailed:"Aktualisierung nicht möglich. Gespeicherte Informationen bleiben verfügbar.",select:"Land wählen",privacy:"Die Berechnung erfolgt auf diesem Gerät. Kaufbeträge werden nicht an tripto.to gesendet.",sourcesNote:"Prüfe die offiziellen Seiten vor Kauf und Abreise.",newVersion:"Neue verifizierte Tax-Free-Informationen sind verfügbar.",noConnection:"Keine Verbindung. Gespeicherte Informationen bleiben verfügbar.",searchOfficial:"Offizielle Regeln suchen",noResults:"Kein passendes Land oder Gebiet",clearSearch:"Suche löschen"},
+    fr:{title:"Détaxe",subtitle:"Remboursement de taxe touristique",tripCountries:"Pays du voyage",country:"Pays ou territoire",available:"Disponibilité vérifiée",unavailable:"Indisponibilité vérifiée",partial:"Vérification partielle",unverified:"À vérifier",recheck:"Nouvelle vérification requise",update:"Actualiser les informations",updating:"Vérification…",updated:"Vous disposez déjà des dernières informations publiées.",offline:"Dernières informations publiées enregistrées sur cet appareil.",official:"Sources officielles",verified:"Contenu vérifié",checked:"Source vérifiée techniquement",loaded:"Chargé sur cet appareil",eligibility:"Qui peut en bénéficier",purchases:"Achats éligibles",store:"Dans le magasin",documents:"Documents",goods:"Marchandises et bagages",deadline:"Délais",customs:"Validation douanière",electronic:"Validation électronique",payout:"Paiement du remboursement",calculator:"Taxe comprise dans le prix",gross:"Prix TTC",rate:"Taux de taxe",fee:"Frais d’opérateur connus (facultatif)",taxAmount:"Taxe incluse avant frais",afterFee:"Après les frais saisis",calcNote:"Il s’agit de la taxe incluse dans le prix avant les frais. Ce n’est pas un remboursement promis.",mixed:"Les catégories peuvent avoir des taux différents. Calculez-les séparément.",noRule:"Aucune règle vérifiée n’est encore publiée pour ce pays.",noRuleBody:"Nous ne devinons pas. Vérifiez l’administration fiscale ou douanière officielle.",region:"Règles régionales",future:"Changement publié",effective:"En vigueur",thresholds:"Seuils d’achat",basis:"Base",refreshFailed:"Actualisation impossible. Les informations enregistrées restent disponibles.",select:"Choisir un pays",privacy:"Le calcul reste sur cet appareil. Les montants ne sont pas envoyés à tripto.to.",sourcesNote:"Consultez les pages officielles avant l’achat et le départ.",newVersion:"De nouvelles informations vérifiées sont disponibles.",noConnection:"Pas de connexion. Les informations enregistrées restent disponibles.",searchOfficial:"Rechercher les règles officielles",noResults:"Aucun pays ou territoire correspondant",clearSearch:"Effacer la recherche"},
+    es:{title:"Tax Free",subtitle:"Devolución de impuestos para turistas",tripCountries:"Países del viaje",country:"País o territorio",available:"Disponible y verificado",unavailable:"No disponible y verificado",partial:"Verificación parcial",unverified:"Requiere verificación",recheck:"Revisión necesaria",update:"Actualizar información",updating:"Comprobando…",updated:"Ya tienes la información publicada más reciente.",offline:"Se muestra la última información publicada guardada en este dispositivo.",official:"Fuentes oficiales",verified:"Contenido verificado",checked:"Fuente comprobada",loaded:"Cargado en este dispositivo",eligibility:"Quién puede usarlo",purchases:"Compras admitidas",store:"En la tienda",documents:"Documentos",goods:"Bienes y equipaje",deadline:"Plazos",customs:"Validación aduanera",electronic:"Validación electrónica",payout:"Pago del reembolso",calculator:"Impuesto incluido en el precio",gross:"Precio con impuestos",rate:"Tipo impositivo",fee:"Comisión conocida (opcional)",taxAmount:"Impuesto incluido antes de comisiones",afterFee:"Después de la comisión indicada",calcNote:"Es el impuesto incluido antes de las comisiones. No es un reembolso prometido.",mixed:"Las categorías pueden usar tipos distintos. Calcúlalas por separado.",noRule:"Aún no hay una regla verificada publicada para este país.",noRuleBody:"No hacemos suposiciones. Consulta la autoridad fiscal o aduanera oficial.",region:"Reglas regionales",future:"Cambio publicado",effective:"Vigente",thresholds:"Umbrales de compra",basis:"Base",refreshFailed:"No se pudo actualizar. La información guardada sigue disponible.",select:"Elegir país",privacy:"El cálculo se realiza en este dispositivo. Los importes no se envían a tripto.to.",sourcesNote:"Consulta las páginas oficiales antes de comprar y salir.",newVersion:"Hay nueva información verificada disponible.",noConnection:"Sin conexión. La información guardada sigue disponible.",searchOfficial:"Buscar las reglas oficiales",noResults:"Ningún país o territorio coincide",clearSearch:"Borrar búsqueda"},
+    ru:{title:"Tax Free",subtitle:"Возврат налога туристам",tripCountries:"Страны поездки",country:"Страна или территория",available:"Доступность подтверждена",unavailable:"Недоступность подтверждена",partial:"Проверено частично",unverified:"Требует проверки",recheck:"Нужна повторная проверка",update:"Обновить информацию",updating:"Проверяем…",updated:"У вас уже последняя опубликованная информация.",offline:"Показана последняя опубликованная информация, сохранённая на этом устройстве.",official:"Официальные источники",verified:"Содержание проверено",checked:"Источник проверен технически",loaded:"Загружено на устройство",eligibility:"Кто может воспользоваться",purchases:"Подходящие покупки",store:"В магазине",documents:"Документы",goods:"Товары и багаж",deadline:"Сроки",customs:"Подтверждение таможни",electronic:"Электронное подтверждение",payout:"Выплата возврата",calculator:"Налог в цене",gross:"Цена с налогом",rate:"Ставка налога",fee:"Известная комиссия оператора (необязательно)",taxAmount:"Налог в цене до комиссий",afterFee:"После введённой комиссии",calcNote:"Это налог в составе цены до комиссий оператора или магазина, а не обещанная сумма возврата.",mixed:"Для разных категорий могут действовать разные ставки. Считайте их отдельно.",noRule:"Для этой страны пока нет опубликованных проверенных правил.",noRuleBody:"Мы не будем угадывать. Проверьте официальный сайт налоговой или таможни.",region:"Региональные правила",future:"Опубликованное изменение",effective:"Вступает в силу",thresholds:"Пороги покупки",basis:"Основание",refreshFailed:"Не удалось проверить обновление. Сохранённая информация остаётся доступной.",select:"Выбрать страну",privacy:"Расчёт выполняется на этом устройстве. Суммы покупок не отправляются в tripto.to.",sourcesNote:"Проверьте официальные страницы перед покупкой и выездом.",newVersion:"Доступна новая проверенная информация Tax Free.",noConnection:"Нет соединения. Сохранённая информация остаётся доступной.",searchOfficial:"Найти официальные правила",noResults:"Нет подходящей страны или территории",clearSearch:"Очистить поиск"},
+  });
+  const TF_AIRPORT_COPY = Object.freeze({
+    en:{airportGuide:"At the airport",airportGuideBody:"Customs validation and refund payment can happen at different desks. Choose your departure airport.",tripAirport:"In your trip",terminal:"Terminal",area:"Where to go",hours:"Opening hours",hoursNotPublished:"The airport has not published fixed hours. Check the official page on your departure day.",hoursVaries:"Hours vary by flight schedule and operator.",hoursNotRequired:"No airport refund desk is required for this procedure.",hoursBeforeFlight:"Available from {hours} hours before departure",beforeSecurity:"Before security",afterSecurity:"After security",serviceCustoms:"Customs validation",serviceElectronic:"Electronic validation",serviceRefund:"Refund payment",serviceCombined:"Validation and refund",serviceDeparture:"Departure check",airportSource:"Official airport information",contact:"Contact",inst_arrive_early:"Arrive early and allow time for queues and a possible goods inspection.",inst_show_documents_goods:"Keep your passport, boarding pass, tax-free form, receipts and goods ready.",inst_follow_otello:"Follow the OTELLO validation instructions shown by customs or the operator.",inst_use_form_operator:"Use the operator named on your tax-free form.",inst_validation_before_payment:"Customs or electronic validation is separate from the refund payment.",inst_arrive_within_flight_window:"At Fiumicino, request validation within five hours before departure.",inst_before_checkin:"Complete this step before checking in the relevant baggage.",inst_hand_luggage_only:"Use this point only when the goods remain in hand baggage.",inst_customs_if_closed:"If the operator office is closed, go to the nearby customs desk.",inst_dropbox_if_closed:"After customs validation, use the operator drop box when instructed.",inst_scan_pablo:"Scan the form barcode at a PABLO kiosk in your departure terminal.",inst_no_refund_desk_current:"Under the current Japanese system, tax exemption is handled by the shop; there is no airport refund counter.",inst_keep_goods_accessible:"Keep the goods accessible until any inspection is complete.",inst_follow_customs_request:"Follow any inspection or departure-confirmation request from customs.",bag_hold_before_checkin:"Checked baggage: validate before the bag is sent.",bag_hand_after_security:"Hand baggage: use the airside point after security when indicated.",bag_keep_accessible:"Do not pack the goods where customs cannot inspect them."},
+    ru:{airportGuide:"В аэропорту",airportGuideBody:"Подтверждение таможни и выплата могут проходить в разных местах. Выберите аэропорт вылета.",tripAirport:"В вашей поездке",terminal:"Терминал",area:"Куда идти",hours:"Часы работы",hoursNotPublished:"Аэропорт не опубликовал постоянный график. Проверьте официальный сайт в день вылета.",hoursVaries:"График зависит от рейсов и оператора.",hoursNotRequired:"Для этой процедуры стойка возврата в аэропорту не нужна.",hoursBeforeFlight:"Доступно за {hours} ч. до вылета",beforeSecurity:"До контроля безопасности",afterSecurity:"После контроля безопасности",serviceCustoms:"Подтверждение таможни",serviceElectronic:"Электронное подтверждение",serviceRefund:"Выплата возврата",serviceCombined:"Подтверждение и выплата",serviceDeparture:"Проверка при вылете",airportSource:"Официальная информация аэропорта",contact:"Контакт",inst_arrive_early:"Приезжайте заранее: возможны очередь и проверка товаров.",inst_show_documents_goods:"Подготовьте паспорт, посадочный талон, форму Tax Free, чеки и товары.",inst_follow_otello:"Следуйте инструкциям OTELLO от таможни или оператора.",inst_use_form_operator:"Обращайтесь к оператору, указанному в вашей форме Tax Free.",inst_validation_before_payment:"Подтверждение таможни или системы и выплата возврата — разные этапы.",inst_arrive_within_flight_window:"В Fiumicino запросите подтверждение не ранее чем за пять часов до вылета.",inst_before_checkin:"Пройдите этот этап до сдачи соответствующего багажа.",inst_hand_luggage_only:"Используйте эту стойку, только если товары остаются в ручной клади.",inst_customs_if_closed:"Если офис оператора закрыт, обратитесь в расположенную рядом таможню.",inst_dropbox_if_closed:"После подтверждения таможни используйте ящик оператора, если это указано.",inst_scan_pablo:"Отсканируйте штрихкод формы в терминале PABLO вашего терминала вылета.",inst_no_refund_desk_current:"По действующей системе Японии освобождение оформляет магазин; стойка выплаты в аэропорту не нужна.",inst_keep_goods_accessible:"Держите товары доступными до завершения возможной проверки.",inst_follow_customs_request:"Выполните запрос таможни на проверку или подтверждение вывоза.",bag_hold_before_checkin:"Багаж: получите подтверждение до его отправки.",bag_hand_after_security:"Ручная кладь: при указании используйте стойку после контроля.",bag_keep_accessible:"Не упаковывайте товары так, чтобы таможня не могла их проверить."},
+    de:{airportGuide:"Am Flughafen",airportGuideBody:"Zollvalidierung und Auszahlung können an verschiedenen Stellen erfolgen. Wähle deinen Abflughafen.",tripAirport:"In deiner Reise",terminal:"Terminal",area:"Anlaufstelle",hours:"Öffnungszeiten",hoursNotPublished:"Der Flughafen veröffentlicht keine festen Zeiten. Prüfe die offizielle Seite am Abflugtag.",hoursVaries:"Die Zeiten hängen vom Flugplan und Betreiber ab.",hoursNotRequired:"Für dieses Verfahren ist kein Erstattungsschalter am Flughafen nötig.",hoursBeforeFlight:"Ab {hours} Stunden vor Abflug verfügbar",beforeSecurity:"Vor der Sicherheitskontrolle",afterSecurity:"Nach der Sicherheitskontrolle",serviceCustoms:"Zollvalidierung",serviceElectronic:"Elektronische Validierung",serviceRefund:"Auszahlung",serviceCombined:"Validierung und Auszahlung",serviceDeparture:"Abflugkontrolle",airportSource:"Offizielle Flughafeninformation",contact:"Kontakt",inst_arrive_early:"Komme frühzeitig und plane Zeit für Warteschlangen und Warenkontrolle ein.",inst_show_documents_goods:"Halte Pass, Bordkarte, Tax-Free-Formular, Belege und Waren bereit.",inst_follow_otello:"Folge den OTELLO-Anweisungen von Zoll oder Betreiber.",inst_use_form_operator:"Nutze den Betreiber auf deinem Tax-Free-Formular.",inst_validation_before_payment:"Validierung und Auszahlung sind getrennte Schritte.",inst_arrive_within_flight_window:"In Fiumicino ist die Validierung innerhalb von fünf Stunden vor Abflug möglich.",inst_before_checkin:"Erledige diesen Schritt vor der Gepäckaufgabe.",inst_hand_luggage_only:"Nur für Waren im Handgepäck.",inst_customs_if_closed:"Ist das Betreiberbüro geschlossen, gehe zum Zollschalter in der Nähe.",inst_dropbox_if_closed:"Nutze nach der Zollvalidierung bei Bedarf die Abgabebox des Betreibers.",inst_scan_pablo:"Scanne den Barcode am PABLO-Terminal deines Abflugterminals.",inst_no_refund_desk_current:"Im aktuellen japanischen System erfolgt die Steuerbefreiung im Geschäft; kein Flughafenschalter ist nötig.",inst_keep_goods_accessible:"Halte die Waren bis zum Ende einer möglichen Kontrolle zugänglich.",inst_follow_customs_request:"Befolge Aufforderungen des Zolls zur Kontrolle oder Ausfuhrbestätigung.",bag_hold_before_checkin:"Aufgabegepäck: vor der Gepäckaufgabe validieren.",bag_hand_after_security:"Handgepäck: wenn angegeben, den Schalter nach der Kontrolle nutzen.",bag_keep_accessible:"Waren für eine Zollkontrolle zugänglich halten."},
+    fr:{airportGuide:"À l’aéroport",airportGuideBody:"La validation douanière et le paiement peuvent se faire à des comptoirs différents. Choisissez votre aéroport de départ.",tripAirport:"Dans votre voyage",terminal:"Terminal",area:"Où aller",hours:"Horaires",hoursNotPublished:"L’aéroport ne publie pas d’horaires fixes. Vérifiez la page officielle le jour du départ.",hoursVaries:"Les horaires varient selon les vols et l’opérateur.",hoursNotRequired:"Aucun comptoir de remboursement n’est requis pour cette procédure.",hoursBeforeFlight:"Disponible à partir de {hours} h avant le départ",beforeSecurity:"Avant le contrôle de sécurité",afterSecurity:"Après le contrôle de sécurité",serviceCustoms:"Validation douanière",serviceElectronic:"Validation électronique",serviceRefund:"Paiement du remboursement",serviceCombined:"Validation et remboursement",serviceDeparture:"Contrôle au départ",airportSource:"Information officielle de l’aéroport",contact:"Contact",inst_arrive_early:"Arrivez tôt et prévoyez les files et un éventuel contrôle des marchandises.",inst_show_documents_goods:"Préparez passeport, carte d’embarquement, formulaire, reçus et marchandises.",inst_follow_otello:"Suivez les instructions OTELLO de la douane ou de l’opérateur.",inst_use_form_operator:"Utilisez l’opérateur indiqué sur votre formulaire.",inst_validation_before_payment:"La validation et le paiement sont deux étapes distinctes.",inst_arrive_within_flight_window:"À Fiumicino, demandez la validation dans les cinq heures avant le départ.",inst_before_checkin:"Effectuez cette étape avant d’enregistrer le bagage concerné.",inst_hand_luggage_only:"Utilisez ce point uniquement pour les biens en cabine.",inst_customs_if_closed:"Si le bureau est fermé, rendez-vous au guichet douanier voisin.",inst_dropbox_if_closed:"Après validation, utilisez la boîte de dépôt de l’opérateur si indiqué.",inst_scan_pablo:"Scannez le code-barres à une borne PABLO de votre terminal.",inst_no_refund_desk_current:"Avec le système japonais actuel, l’exonération est faite en magasin; aucun comptoir à l’aéroport n’est requis.",inst_keep_goods_accessible:"Gardez les biens accessibles jusqu’à la fin d’un éventuel contrôle.",inst_follow_customs_request:"Suivez toute demande de contrôle ou de confirmation de la douane.",bag_hold_before_checkin:"Bagage en soute : validez avant son envoi.",bag_hand_after_security:"Bagage cabine : utilisez le point après sécurité si indiqué.",bag_keep_accessible:"Gardez les biens accessibles pour la douane."},
+    es:{airportGuide:"En el aeropuerto",airportGuideBody:"La validación aduanera y el pago pueden estar en mostradores distintos. Elige tu aeropuerto de salida.",tripAirport:"En tu viaje",terminal:"Terminal",area:"Dónde ir",hours:"Horario",hoursNotPublished:"El aeropuerto no publica un horario fijo. Consulta la página oficial el día de salida.",hoursVaries:"El horario varía según los vuelos y el operador.",hoursNotRequired:"Este procedimiento no requiere un mostrador de devolución en el aeropuerto.",hoursBeforeFlight:"Disponible desde {hours} h antes de la salida",beforeSecurity:"Antes del control de seguridad",afterSecurity:"Después del control de seguridad",serviceCustoms:"Validación aduanera",serviceElectronic:"Validación electrónica",serviceRefund:"Pago del reembolso",serviceCombined:"Validación y reembolso",serviceDeparture:"Control de salida",airportSource:"Información oficial del aeropuerto",contact:"Contacto",inst_arrive_early:"Llega con antelación y prevé colas y una posible inspección de los bienes.",inst_show_documents_goods:"Ten listos pasaporte, tarjeta de embarque, formulario, recibos y bienes.",inst_follow_otello:"Sigue las instrucciones OTELLO de aduanas o del operador.",inst_use_form_operator:"Usa el operador indicado en tu formulario.",inst_validation_before_payment:"La validación y el pago son pasos distintos.",inst_arrive_within_flight_window:"En Fiumicino, solicita la validación dentro de las cinco horas previas al vuelo.",inst_before_checkin:"Completa este paso antes de facturar el equipaje correspondiente.",inst_hand_luggage_only:"Usa este punto solo para bienes en el equipaje de mano.",inst_customs_if_closed:"Si la oficina está cerrada, acude al puesto de aduanas cercano.",inst_dropbox_if_closed:"Tras la validación, usa el buzón del operador si se indica.",inst_scan_pablo:"Escanea el código en un terminal PABLO de tu terminal de salida.",inst_no_refund_desk_current:"Con el sistema japonés actual, la exención se gestiona en la tienda; no hace falta un mostrador en el aeropuerto.",inst_keep_goods_accessible:"Mantén los bienes accesibles hasta completar cualquier inspección.",inst_follow_customs_request:"Sigue cualquier solicitud de inspección o confirmación de aduanas.",bag_hold_before_checkin:"Equipaje facturado: valida antes de entregarlo.",bag_hand_after_security:"Equipaje de mano: usa el punto tras seguridad cuando se indique.",bag_keep_accessible:"Mantén los bienes accesibles para aduanas."},
+  });
+  const TF_WORLD_COPY = Object.freeze({
+    en:{worldCoverage:"Worldwide directory",worldCountries:"{count} countries and territories",worldPublished:"{count} with published evidence",worldReview:"{count} with no confirmed public program",worldScreened:"{count} tax systems reviewed",researchStatus:"Research result",researchBody:"The tax system and public traveler-refund evidence were reviewed. A search result is not a legal guarantee; official evidence is labeled separately.",sourcesChecked:"Evidence reviewed",taxSystem:"Tax system",standardRate:"Published rate summary",evidenceLevel:"Evidence level",sourceReviewed:"Source reviewed",resultNoProgram:"No confirmed public tourist refund program found",resultAvailable:"Traveler refund program confirmed",resultUnavailable:"General traveler refund unavailable",resultPartial:"Program evidence found; operating details incomplete",evidenceOfficial:"Official authority",evidenceRule:"Published Tripto rule",evidencePartial:"Partial published evidence",evidenceScreening:"Cross-source screening",airportPending:"Departure details under review",airportPendingBody:"Tripto has confirmed a tax-free route for this country, but exact desks and opening hours are not fully reviewed yet. Open the linked country source before departure.",openCountryGuide:"Open country guide"},
+    ru:{worldCoverage:"Справочник по всему миру",worldCountries:"{count} стран и территорий",worldPublished:"{count} с опубликованными данными",worldReview:"{count} без подтверждённой публичной программы",worldScreened:"{count} налоговых систем проверено",researchStatus:"Результат проверки",researchBody:"Проверены налоговая система и публичные сведения о возврате туристам. Результат поиска не является юридической гарантией; официальные данные отмечены отдельно.",sourcesChecked:"Проверенные сведения",taxSystem:"Налоговая система",standardRate:"Опубликованные ставки",evidenceLevel:"Уровень доказательности",sourceReviewed:"Источник проверен",resultNoProgram:"Подтверждённая публичная программа возврата туристам не найдена",resultAvailable:"Программа возврата туристам подтверждена",resultUnavailable:"Общий возврат налога туристам недоступен",resultPartial:"Программа найдена, но операционные детали неполны",evidenceOfficial:"Официальное ведомство",evidenceRule:"Опубликованное правило Tripto",evidencePartial:"Частично подтверждённые данные",evidenceScreening:"Перекрёстная проверка источников",airportPending:"Пункты выезда проверяются",airportPendingBody:"Tripto подтвердил наличие маршрута Tax Free в этой стране, но точные стойки и часы работы ещё проверены не полностью. Перед вылетом откройте источник по стране.",openCountryGuide:"Открыть справочник страны"},
+    de:{worldCoverage:"Weltweites Verzeichnis",worldCountries:"{count} Länder und Gebiete",worldPublished:"{count} mit veröffentlichten Nachweisen",worldReview:"{count} ohne bestätigtes öffentliches Programm",worldScreened:"{count} Steuersysteme geprüft",researchStatus:"Prüfergebnis",researchBody:"Steuersystem und öffentliche Hinweise zur Touristenerstattung wurden geprüft. Ein Suchergebnis ist keine rechtliche Garantie; amtliche Nachweise sind gesondert gekennzeichnet.",sourcesChecked:"Geprüfte Nachweise",taxSystem:"Steuersystem",standardRate:"Veröffentlichte Steuersätze",evidenceLevel:"Nachweisstufe",sourceReviewed:"Quelle geprüft",resultNoProgram:"Kein bestätigtes öffentliches Touristenerstattungsprogramm gefunden",resultAvailable:"Touristenerstattungsprogramm bestätigt",resultUnavailable:"Allgemeine Touristenerstattung nicht verfügbar",resultPartial:"Programmhinweise gefunden; Betriebsdetails unvollständig",evidenceOfficial:"Amtliche Behörde",evidenceRule:"Veröffentlichte Tripto-Regel",evidencePartial:"Teilweise veröffentlichte Nachweise",evidenceScreening:"Quellenübergreifende Prüfung",airportPending:"Abflugdetails werden geprüft",airportPendingBody:"Tripto hat für dieses Land einen Tax-Free-Weg bestätigt. Genaue Schalter und Öffnungszeiten sind noch nicht vollständig geprüft. Öffne vor der Abreise die Länderquelle.",openCountryGuide:"Länderleitfaden öffnen"},
+    fr:{worldCoverage:"Répertoire mondial",worldCountries:"{count} pays et territoires",worldPublished:"{count} avec des données publiées",worldReview:"{count} sans programme public confirmé",worldScreened:"{count} systèmes fiscaux examinés",researchStatus:"Résultat de la recherche",researchBody:"Le système fiscal et les informations publiques sur le remboursement aux touristes ont été examinés. Un résultat de recherche n’est pas une garantie juridique; les preuves officielles sont identifiées séparément.",sourcesChecked:"Éléments examinés",taxSystem:"Système fiscal",standardRate:"Résumé des taux publiés",evidenceLevel:"Niveau de preuve",sourceReviewed:"Source examinée",resultNoProgram:"Aucun programme public confirmé de remboursement touristique trouvé",resultAvailable:"Programme de remboursement touristique confirmé",resultUnavailable:"Remboursement touristique général indisponible",resultPartial:"Programme identifié; détails opérationnels incomplets",evidenceOfficial:"Autorité officielle",evidenceRule:"Règle Tripto publiée",evidencePartial:"Éléments publiés partiels",evidenceScreening:"Examen croisé des sources",airportPending:"Détails de départ en cours de vérification",airportPendingBody:"Tripto a confirmé un parcours de détaxe dans ce pays, mais les comptoirs et horaires exacts ne sont pas encore entièrement vérifiés. Consultez la source du pays avant le départ.",openCountryGuide:"Ouvrir le guide du pays"},
+    es:{worldCoverage:"Directorio mundial",worldCountries:"{count} países y territorios",worldPublished:"{count} con datos publicados",worldReview:"{count} sin programa público confirmado",worldScreened:"{count} sistemas fiscales revisados",researchStatus:"Resultado de la revisión",researchBody:"Se revisaron el sistema fiscal y la información pública sobre reembolsos a turistas. Un resultado de búsqueda no es una garantía jurídica; la evidencia oficial se identifica por separado.",sourcesChecked:"Evidencia revisada",taxSystem:"Sistema fiscal",standardRate:"Resumen de tipos publicados",evidenceLevel:"Nivel de evidencia",sourceReviewed:"Fuente revisada",resultNoProgram:"No se encontró un programa público confirmado de reembolso turístico",resultAvailable:"Programa de reembolso turístico confirmado",resultUnavailable:"Reembolso turístico general no disponible",resultPartial:"Se encontró evidencia del programa; faltan detalles operativos",evidenceOfficial:"Autoridad oficial",evidenceRule:"Regla publicada de Tripto",evidencePartial:"Evidencia publicada parcial",evidenceScreening:"Revisión cruzada de fuentes",airportPending:"Detalles de salida en revisión",airportPendingBody:"Tripto ha confirmado una vía Tax Free para este país, pero los mostradores y horarios exactos aún no están totalmente verificados. Abre la fuente del país antes de salir.",openCountryGuide:"Abrir guía del país"},
+  });
+  const TF_SIMPLE_COPY = Object.freeze({
+    en:{countrySummary:"Tax refund summary",informationLinks:"Tax refund information",informationLinksBody:"Open the source pages for current requirements, limits and departure procedures.",taxSystemLine:"Tax system",rateLine:"Published rate summary",reviewedLine:"Information reviewed",simpleDisclaimer:"Rules and procedures can change. Confirm the current information on the linked pages before buying or departing.",noSummary:"No confirmed public tourist tax-refund program was found in the reviewed sources."},
+    ru:{countrySummary:"Кратко о возврате налога",informationLinks:"Информация о Tax Free",informationLinksBody:"Откройте страницы источников, чтобы проверить актуальные требования, лимиты и порядок оформления при выезде.",taxSystemLine:"Налоговая система",rateLine:"Опубликованные ставки",reviewedLine:"Информация проверена",simpleDisclaimer:"Правила и процедуры могут меняться. Перед покупкой или выездом проверьте актуальные сведения по ссылкам.",noSummary:"В проверенных источниках не найдена подтверждённая публичная программа возврата налога туристам."},
+    de:{countrySummary:"Zusammenfassung zur Steuererstattung",informationLinks:"Informationen zur Steuererstattung",informationLinksBody:"Öffne die Quellseiten für aktuelle Voraussetzungen, Grenzen und Abläufe bei der Ausreise.",taxSystemLine:"Steuersystem",rateLine:"Veröffentlichte Steuersätze",reviewedLine:"Information geprüft",simpleDisclaimer:"Regeln und Verfahren können sich ändern. Prüfe vor Kauf oder Abreise die aktuellen Angaben auf den verlinkten Seiten.",noSummary:"In den geprüften Quellen wurde kein bestätigtes öffentliches Touristenerstattungsprogramm gefunden."},
+    fr:{countrySummary:"Résumé du remboursement de taxe",informationLinks:"Informations sur la détaxe",informationLinksBody:"Consultez les pages sources pour connaître les conditions, plafonds et démarches de départ actuels.",taxSystemLine:"Système fiscal",rateLine:"Résumé des taux publiés",reviewedLine:"Informations vérifiées",simpleDisclaimer:"Les règles et procédures peuvent changer. Vérifiez les informations actuelles sur les pages liées avant l’achat ou le départ.",noSummary:"Aucun programme public confirmé de remboursement touristique n’a été trouvé dans les sources examinées."},
+    es:{countrySummary:"Resumen de devolución de impuestos",informationLinks:"Información sobre Tax Free",informationLinksBody:"Abre las páginas fuente para consultar requisitos, límites y trámites de salida vigentes.",taxSystemLine:"Sistema fiscal",rateLine:"Resumen de tipos publicados",reviewedLine:"Información revisada",simpleDisclaimer:"Las normas y los procedimientos pueden cambiar. Comprueba la información actual en las páginas enlazadas antes de comprar o salir.",noSummary:"No se encontró un programa público confirmado de devolución turística en las fuentes revisadas."},
+  });
+  const TF_REFUND_COPY = Object.freeze({
+    en:{refundEstimate:"Expected refund",refundAvailable:"Up to about {percent}% of the purchase price before fees, based on a {rate}% tax rate. The amount paid can be lower.",refundZero:"0% through a general tourist tax-refund program.",refundUnknown:"A reliable refund percentage is not confirmed for this country."},
+    ru:{refundEstimate:"Ожидаемый возврат",refundAvailable:"До примерно {percent}% от цены покупки до комиссий при налоговой ставке {rate}%. Фактическая выплата может быть ниже.",refundZero:"0% через общую программу возврата налога туристам.",refundUnknown:"Надёжный процент возврата для этой страны не подтверждён."},
+    de:{refundEstimate:"Voraussichtliche Erstattung",refundAvailable:"Bis zu etwa {percent}% des Kaufpreises vor Gebühren, basierend auf einem Steuersatz von {rate}%. Die Auszahlung kann niedriger sein.",refundZero:"0% über ein allgemeines Touristenerstattungsprogramm.",refundUnknown:"Für dieses Land ist kein verlässlicher Erstattungssatz bestätigt."},
+    fr:{refundEstimate:"Remboursement estimé",refundAvailable:"Jusqu’à environ {percent}% du prix d’achat avant frais, sur la base d’un taux de {rate}%. Le montant versé peut être inférieur.",refundZero:"0% via un programme général de remboursement touristique.",refundUnknown:"Aucun pourcentage de remboursement fiable n’est confirmé pour ce pays."},
+    es:{refundEstimate:"Reembolso estimado",refundAvailable:"Hasta aproximadamente el {percent}% del precio de compra antes de comisiones, con un tipo impositivo del {rate}%. El importe pagado puede ser inferior.",refundZero:"0% mediante un programa general de devolución turística.",refundUnknown:"No hay un porcentaje de devolución fiable confirmado para este país."},
+  });
+  const TF_GUIDE_COPY = Object.freeze({
+    en:{guideTitle:"Tax refund guide",quickFacts:"At a glance",taxRate:"Standard tax rate",minimumSpend:"Minimum purchase",refundPotential:"Tax contained in the price",beforeFees:"maximum before fees",notConfirmed:"Not confirmed",howItWorks:"How it works",whoCanClaim:"Who can claim",whatQualifies:"Eligible purchases",whatExcluded:"Usually excluded",atPurchase:"At the shop",atDeparture:"At departure",deadline:"Export deadline",refundAndFees:"Refund and fees",importantChange:"Important change",sourceDetails:"Sources and freshness",verifiedOn:"Last verified",confidence:"Confidence",refreshAdvice:"Refresh before travel",yes:"Yes",recommended:"Recommended",sourcePrimary:"Primary source",sourceSecondary:"Additional source",dataCaution:"This guide is travel information, not a guarantee. Rules, retailer participation and fees can change.",checkLocal:"Check local rules before relying on a refund.",pickerTitle:"Choose a destination",pickerHint:"Search any country or territory",aboutTitle:"About Tax Free",aboutBody:"Many countries let visitors reclaim the sales tax (VAT or GST) paid on eligible purchases. This guide shows whether your destination offers a tourist refund, how much of the price is tax, and how to claim it at the shop and when you leave."},
+    ru:{guideTitle:"Гид по возврату налога",quickFacts:"Главное",taxRate:"Стандартная ставка",minimumSpend:"Минимальная покупка",refundPotential:"Налог в составе цены",beforeFees:"максимум до комиссий",notConfirmed:"Не подтверждено",howItWorks:"Как это работает",whoCanClaim:"Кто может получить",whatQualifies:"Какие покупки подходят",whatExcluded:"Что обычно исключено",atPurchase:"В магазине",atDeparture:"При выезде",deadline:"Срок вывоза",refundAndFees:"Возврат и комиссии",importantChange:"Важное изменение",sourceDetails:"Источники и актуальность",verifiedOn:"Проверено",confidence:"Достоверность",refreshAdvice:"Обновить перед поездкой",yes:"Да",recommended:"Рекомендуется",sourcePrimary:"Основной источник",sourceSecondary:"Дополнительный источник",dataCaution:"Это справочная информация для путешественников, а не гарантия. Правила, участие магазинов и комиссии могут меняться.",checkLocal:"Проверьте местные правила, прежде чем рассчитывать на возврат.",pickerTitle:"Выберите направление",pickerHint:"Найдите страну или территорию",aboutTitle:"О Tax Free",aboutBody:"Многие страны возвращают туристам налог с продаж (НДС) за подходящие покупки. Этот гид показывает, есть ли в вашем направлении возврат, какая часть цены — это налог, и как оформить возврат в магазине и при выезде."},
+    de:{guideTitle:"Leitfaden zur Steuererstattung",quickFacts:"Auf einen Blick",taxRate:"Standardsteuersatz",minimumSpend:"Mindesteinkauf",refundPotential:"Steueranteil im Preis",beforeFees:"maximal vor Gebühren",notConfirmed:"Nicht bestätigt",howItWorks:"So funktioniert es",whoCanClaim:"Wer berechtigt ist",whatQualifies:"Geeignete Einkäufe",whatExcluded:"Meist ausgeschlossen",atPurchase:"Im Geschäft",atDeparture:"Bei der Ausreise",deadline:"Ausfuhrfrist",refundAndFees:"Erstattung und Gebühren",importantChange:"Wichtige Änderung",sourceDetails:"Quellen und Aktualität",verifiedOn:"Zuletzt geprüft",confidence:"Verlässlichkeit",refreshAdvice:"Vor der Reise aktualisieren",yes:"Ja",recommended:"Empfohlen",sourcePrimary:"Hauptquelle",sourceSecondary:"Weitere Quelle",dataCaution:"Dieser Leitfaden ist Reiseinformation, keine Garantie. Regeln, Händlerteilnahme und Gebühren können sich ändern.",checkLocal:"Prüfe die örtlichen Regeln, bevor du mit einer Erstattung rechnest.",pickerTitle:"Reiseziel wählen",pickerHint:"Land oder Gebiet suchen",aboutTitle:"Über Tax Free",aboutBody:"Viele Länder erstatten Reisenden die Verkaufssteuer (MwSt.) auf geeignete Einkäufe. Dieser Leitfaden zeigt, ob dein Reiseziel eine Erstattung anbietet, wie viel vom Preis Steuer ist und wie du sie im Geschäft und bei der Ausreise beantragst."},
+    fr:{guideTitle:"Guide de détaxe",quickFacts:"En bref",taxRate:"Taux standard",minimumSpend:"Achat minimum",refundPotential:"Taxe comprise dans le prix",beforeFees:"maximum avant frais",notConfirmed:"Non confirmé",howItWorks:"Comment ça marche",whoCanClaim:"Qui peut en bénéficier",whatQualifies:"Achats éligibles",whatExcluded:"Généralement exclus",atPurchase:"Dans le magasin",atDeparture:"Au départ",deadline:"Délai d’exportation",refundAndFees:"Remboursement et frais",importantChange:"Changement important",sourceDetails:"Sources et actualité",verifiedOn:"Dernière vérification",confidence:"Fiabilité",refreshAdvice:"Actualiser avant le voyage",yes:"Oui",recommended:"Recommandé",sourcePrimary:"Source principale",sourceSecondary:"Source supplémentaire",dataCaution:"Ce guide fournit des informations de voyage, sans garantie. Les règles, la participation des magasins et les frais peuvent changer.",checkLocal:"Vérifiez les règles locales avant de compter sur un remboursement.",pickerTitle:"Choisir une destination",pickerHint:"Rechercher un pays ou territoire",aboutTitle:"À propos de la détaxe",aboutBody:"De nombreux pays remboursent aux voyageurs la taxe (TVA) payée sur les achats éligibles. Ce guide indique si votre destination propose un remboursement, quelle part du prix est de la taxe et comment le demander en magasin et au départ."},
+    es:{guideTitle:"Guía de devolución de impuestos",quickFacts:"De un vistazo",taxRate:"Tipo estándar",minimumSpend:"Compra mínima",refundPotential:"Impuesto incluido en el precio",beforeFees:"máximo antes de comisiones",notConfirmed:"No confirmado",howItWorks:"Cómo funciona",whoCanClaim:"Quién puede solicitarlo",whatQualifies:"Compras elegibles",whatExcluded:"Normalmente excluido",atPurchase:"En la tienda",atDeparture:"Al salir",deadline:"Plazo de exportación",refundAndFees:"Reembolso y comisiones",importantChange:"Cambio importante",sourceDetails:"Fuentes y vigencia",verifiedOn:"Última revisión",confidence:"Confianza",refreshAdvice:"Actualizar antes del viaje",yes:"Sí",recommended:"Recomendado",sourcePrimary:"Fuente principal",sourceSecondary:"Fuente adicional",dataCaution:"Esta guía es información de viaje, no una garantía. Las normas, la participación de comercios y las comisiones pueden cambiar.",checkLocal:"Comprueba las normas locales antes de contar con un reembolso.",pickerTitle:"Elegir un destino",pickerHint:"Busca un país o territorio",aboutTitle:"Sobre Tax Free",aboutBody:"Muchos países devuelven a los viajeros el impuesto sobre las ventas (IVA) de las compras admitidas. Esta guía muestra si tu destino ofrece devolución, qué parte del precio es impuesto y cómo solicitarla en la tienda y al salir."},
+  });
+  function tfCopy(key){const locale=globalThis.TriptoI18n?.locale||"en";return TF_GUIDE_COPY[locale]?.[key]||TF_REFUND_COPY[locale]?.[key]||TF_SIMPLE_COPY[locale]?.[key]||TF_COPY[locale]?.[key]||TF_AIRPORT_COPY[locale]?.[key]||TF_WORLD_COPY[locale]?.[key]||TF_GUIDE_COPY.en[key]||TF_REFUND_COPY.en[key]||TF_SIMPLE_COPY.en[key]||TF_COPY.en[key]||TF_AIRPORT_COPY.en[key]||TF_WORLD_COPY.en[key]||key;}
+  function taxFreeCountryName(code){try{return new Intl.DisplayNames([globalThis.TriptoI18n?.locale||"en"],{type:"region"}).of(code)||TAX_FREE_FALLBACK_NAMES[code]||code;}catch(_){return TAX_FREE_FALLBACK_NAMES[code]||code;}}
+  function tripTaxFreeCountries(){
+    // Only count real destinations (where you stay/shop), not transit hubs. A
+    // border airport or station often geocodes to a neighbouring country, which
+    // would list a country you never actually visit (e.g. Germany for a Swiss
+    // trip routed through a border airport).
+    const TRANSIT_TYPES=new Set(["airport","station","port"]);
+    const codes=[];
+    for(const location of state.locations||[]){if(TRANSIT_TYPES.has(String(val(location,"type")||"").toLowerCase()))continue;const code=String(val(location,"country_code","countryCode")||"").toUpperCase();if(/^[A-Z]{2}$/.test(code)&&!codes.includes(code))codes.push(code);}
+    const context=`${state.trip?.title||""} ${(state.locations||[]).map(l=>`${val(l,"city")||""} ${val(l,"display_name")||""}`).join(" ")}`.toLowerCase();
+    for(const [hint,code] of [["france","FR"],["paris","FR"],["italy","IT"],["rome","IT"],["japan","JP"],["tokyo","JP"],["united kingdom","GB"],["london","GB"]])if(context.includes(hint)&&!codes.includes(code))codes.push(code);
+    return codes;
+  }
+  // Preview-only reference figures so the demo guide matches the chosen country.
+  function previewTaxFreeFigures(code){const table={IT:{iso3:"ITA",rate:22,min:70,minLabel:"€70.01",source:"https://www.adm.gov.it/portale/en/tax-free-shopping"},GR:{iso3:"GRC",rate:24,min:50,minLabel:"€50.00",source:"https://www.aade.gr/en"},FR:{iso3:"FRA",rate:20,min:100,minLabel:"€100.01",source:"https://www.douane.gouv.fr/fiche/la-detaxe-en-france-pour-les-touristes-pablo"}};return table[code]||table.FR;}
+  function taxFreePath(country=state.taxFreeCountry,region=state.taxFreeRegion){const locale=globalThis.TriptoI18n?.locale||"en";return `/api/v1/tax-free/${encodeURIComponent(country||"FR")}?locale=${encodeURIComponent(locale)}${region?`&region=${encodeURIComponent(region)}`:""}`;}
+  async function ensureTaxFree(force=false){
+    const tripCountries=tripTaxFreeCountries();
+    if(!state.taxFreeCountry)state.taxFreeCountry=tripCountries[0]||"FR";
+    const path=taxFreePath();
+    state.taxFreeLoading=!state.taxFree;state.taxFreeRefreshing=force;state.taxFreeError="";render();
+    try{
+      let data;
+      if(PREVIEW_MODE){const pv=previewTaxFreeFigures(state.taxFreeCountry);data={taxFree:{countryCode:state.taxFreeCountry,name:taxFreeCountryName(state.taxFreeCountry),status:"verified_available",regions:[],coverage:{totalCountries:249,verifiedAvailable:9,verifiedUnavailable:3,partial:53,recheck:0,unverified:184,publishedEvidence:65,researchChecked:249,authorityReviewed:10,resolvedProfiles:249,noConfirmedProgram:177,officialProfiles:7},loadedAt:Date.now(),datasetVersion:"preview-v694",systemProfile:{taxSystemStatus:"vat_or_consumption_tax",rateSummary:String(pv.rate),programStatus:"confirmed_available",evidenceLevel:"published_rule",findingSummary:"A published traveler refund rule is available in Tripto.",sourceUrl:"https://taxsummaries.pwc.com/quick-charts/value-added-tax-vat-rates",sourcePublisher:"PwC Worldwide Tax Summaries",sourceReviewedOn:"2026-09-27"},rule:{version:1,programName:"Official tourist tax refund",summary:"Eligible visitors can request tax-free shopping from participating retailers and validate export with customs.",eligibility:["Your tax residence must meet the destination’s visitor rules","The purchase must be for personal export"],purchases:["Qualifying retail goods from a participating shop"],storeSteps:["Show your passport before the invoice is issued","Check every detail on the tax-free form"],documents:["Passport","Tax-free form","Receipts"],goods:["Keep goods available for customs inspection"],deadlines:{export:"Complete export within the official deadline"},customsValidation:["Validate at the required final exit point"],electronicValidation:["Electronic validation proves export; it does not pay the refund"],payout:["The retailer or operator pays after validation","Fees and timing vary by operator"],disclaimer:"Confirm the current procedure with the retailer and customs before travel.",effectiveFrom:"2026-01-01",contentVerifiedAt:Date.now(),sourceCheckedAt:Date.now(),rates:[{category:"Standard goods",rate:pv.rate,priceIncludesTax:true}],thresholds:[{label:"Example minimum",amount:pv.min,maximumAmount:null,currency:"EUR",basis:"invoice",comparison:"gt",notes:"The exact threshold depends on the destination."}],sources:[{url:pv.source,publisher:"Official customs authority",claimScope:"Eligibility, validation and deadlines",contentCheckedAt:Date.now(),technicalCheckedAt:Date.now()}]}}};}
+      if(PREVIEW_MODE&&data?.taxFree){const pv=previewTaxFreeFigures(state.taxFreeCountry);data.taxFree.guide={iso2:state.taxFreeCountry,iso3:pv.iso3,destination:taxFreeCountryName(state.taxFreeCountry),refundStatus:"AVAILABLE",taxType:"VAT",standardTaxRate:`${pv.rate}%`,minimumPurchase:pv.minLabel,eligibility:"Habitual residence outside the EU; proof of residence or identity is required.",eligiblePurchases:"Qualifying goods for personal use that leave the EU in the traveler's baggage.",excludedPurchases:"Services, goods consumed before export and commercial quantities.",exportDeadline:"Normally within 3 months of purchase.",atPurchase:"Ask the retailer for the tax-free document and present your passport before the invoice is issued.",departureProcess:"Present goods, receipts and refund documents for customs validation at the final EU exit point.",refundMethodFees:"The retailer or an authorized intermediary pays the refund. Fees can reduce the amount received.",futureChange:"",travelerSummary:"Eligible non-EU residents can claim a refund on qualifying purchases from participating retailers. Keep the goods and documents ready for export validation.",sourceQuality:"Official framework and country rate cross-check",sourceUrlPrimary:"https://taxation-customs.ec.europa.eu/taxation/vat/vat-directive/vat-refunds_en",sourceUrlSecondary:pv.source,lastVerifiedAt:"2026-09-27",confidence:"MEDIUM-HIGH",manualReviewRequired:"YES",appDisplayPolicy:"Show tax refund available and keep the threshold visible.",statusLabel:"Tax refund available",dataVersion:"tripto.to-tax-refund-v1.0",staleAfterDays:180,refreshBeforeTrip:"YES"};}
+      if(PREVIEW_MODE&&data?.taxFree?.rule){const italian=state.taxFreeCountry==="IT";data.taxFree.rule.departurePoints=[{locationType:"airport",locationCode:italian?"FCO":"CDG",locationName:italian?"Rome Fiumicino Leonardo da Vinci":"Paris Charles de Gaulle",city:italian?"Rome":"Paris",terminal:italian?"T1, T3 and boarding area E":"Your departure terminal",zone:italian?"T3 near check-in 196–225; T1 near 111–140":"PABLO kiosk near the customs counter",serviceType:italian?"refund":"electronic_validation",operatorName:italian?"Global Blue, Planet and Tax Refund":"PABLO",hoursStatus:"not_published",hours:{kind:"not_published"},locationDetails:"Follow the airport signs and keep documents and goods ready.",beforeSecurity:true,instructionCodes:italian?["arrive_early","use_form_operator","validation_before_payment"]:["scan_pablo","show_documents_goods","validation_before_payment"],baggageCode:"hold_before_checkin",sourceUrl:italian?"https://www.adr.it/immigrazione-e-dogana":"https://www.douane.gouv.fr/dossier/la-detaxe-pour-les-voyageurs",sourcePublisher:italian?"Aeroporti di Roma":"French Customs"}];}
+      else if(force){if(!navigator.onLine)throw new Error("offline");data=await api(path);cacheWrite(path,data);}
+      else data=await apiGet(path);
+      const previous=state.taxFree?.datasetVersion;
+      state.taxFree=data?.taxFree||null;
+      // The server dates describe editorial and technical verification. Keep
+      // the device-load date separate and derive it from the offline cache.
+      if(state.taxFree){
+        const cachedAt=PREVIEW_MODE?Date.now():Number(cacheRead(path)?.at);
+        state.taxFree.loadedAt=Number.isFinite(cachedAt)&&cachedAt>0?cachedAt:Date.now();
+      }
+      state.taxFreeRegion=state.taxFree?.regionCode||state.taxFreeRegion||null;
+      if(force)showToast(previous&&previous!==state.taxFree?.datasetVersion?tfCopy("newVersion"):tfCopy("updated"));
+      // Save all trip-country rules after a successful load so they remain
+      // available on the phone even if the traveler opens this screen offline.
+      if(!force&&!PREVIEW_MODE&&navigator.onLine)for(const code of tripCountries.filter(code=>code!==state.taxFreeCountry).slice(0,8))void apiGet(taxFreePath(code,null)).catch(()=>{});
+    }catch(error){state.taxFreeError=!navigator.onLine?tfCopy("noConnection"):tfCopy("refreshFailed");if(!state.taxFree)state.taxFree=null;}
+    finally{state.taxFreeLoading=false;state.taxFreeRefreshing=false;render();}
+  }
   function localeCurrency() {
-    const locale = String(navigator.language || "en-US"), region = locale.match(/[-_]([A-Za-z]{2})\b/)?.[1]?.toUpperCase();
+    // TriptoI18n.locale is a bare language ("de"); the region lives in the
+    // browser locale ("de-DE"), so check both.
+    const region = [globalThis.TriptoI18n?.locale, navigator.language, ...(navigator.languages || [])]
+      .map((locale) => String(locale || "").match(/[-_]([A-Za-z]{2})\b/)?.[1]?.toUpperCase())
+      .find(Boolean);
     return COUNTRY_CURRENCY[region] || "USD";
   }
   function destinationCurrency() {
@@ -1655,13 +2371,41 @@
     const from = TRAVEL_CURRENCIES.some(([code]) => code === saved?.from) ? saved.from : destinationCurrency();
     let to = TRAVEL_CURRENCIES.some(([code]) => code === saved?.to) ? saved.to : localeCurrency();
     if (to === from) to = from === "USD" ? "EUR" : "USD";
-    state.currency = { from, to, amount: Number(saved?.amount) > 0 ? Number(saved.amount) : 100, rate: null, date: null, fetchedAt: null, source: "", cached: false };
+    // Keep the text separately from the numeric value. A numeric input may be
+    // deliberately empty while someone is replacing an amount; coercing that
+    // transient state to the default made Backspace bring 100 straight back.
+    const savedAmountText = typeof saved?.amountInput === "string"
+      ? saved.amountInput
+      : Number.isFinite(Number(saved?.amount)) && Number(saved.amount) >= 0
+        ? String(saved.amount)
+        : "100";
+    const parsedAmount = savedAmountText.trim() === "" ? 0 : parseAmountInput(savedAmountText);
+    const amount = Number.isFinite(parsedAmount) && parsedAmount >= 0 ? parsedAmount : 100;
+    state.currency = { from, to, amount, amountText: savedAmountText, rate: null, date: null, fetchedAt: null, source: "", cached: false };
     return state.currency;
+  }
+  // Accepts "1234.5", "1234,5", "1,234.56", "1.234,56", "1 234,56". The last
+  // separator is the decimal one when followed by 1-2 digits (or 3+ when it is
+  // the only separator kind and not a thousands group).
+  function parseAmountInput(text) {
+    let raw = String(text || "").replace(/[\s\u00a0']/g, "");
+    if (!raw) return 0;
+    const lastDot = raw.lastIndexOf("."), lastComma = raw.lastIndexOf(",");
+    if (lastDot >= 0 && lastComma >= 0) {
+      const decimal = lastDot > lastComma ? "." : ",", group = decimal === "." ? "," : ".";
+      raw = raw.split(group).join("").replace(decimal, ".");
+    } else if (lastComma >= 0 || lastDot >= 0) {
+      const sep = lastComma >= 0 ? "," : ".", parts = raw.split(sep);
+      const grouped = parts.length > 2 || (parts.length === 2 && parts[1].length === 3 && parts[0].length > 0 && parts[0] !== "0");
+      raw = grouped && parts.slice(1).every((part) => part.length === 3) ? parts.join("") : parts.length === 2 ? parts.join(".") : raw;
+    }
+    return Number(raw);
   }
   function currencyCacheKey(from, to) { return `tripto_currency_rate_v1:${from}:${to}`; }
   function saveCurrencyPreferences() {
     const currency = initCurrency();
-    try { localStorage.setItem("tripto_currency_preferences_v1", JSON.stringify({ from:currency.from, to:currency.to, amount:currency.amount })); } catch (_) {}
+    const amountInput = typeof currency.amountText === "string" ? currency.amountText : String(currency.amount);
+    try { localStorage.setItem("tripto_currency_preferences_v1", JSON.stringify({ from:currency.from, to:currency.to, amount:currency.amount, amountInput })); } catch (_) {}
   }
   function readCurrencyCache(from, to) {
     try { return JSON.parse(localStorage.getItem(currencyCacheKey(from, to)) || "null"); } catch (_) { return null; }
@@ -1690,18 +2434,26 @@
     state.currencyLoading = true;
     state.currencyError = "";
     if (state.screen === "currency") render();
+    // The pair can change (swap / picker) while this request is in flight;
+    // only apply the answer to the pair it was requested for.
+    const from = currency.from, to = currency.to;
+    const samePair = () => currency.from === from && currency.to === to;
     try {
-      const response = await fetchWithTimeout(`${API}/api/v1/currency?base=${encodeURIComponent(currency.from)}&quotes=${encodeURIComponent(currency.to)}`, { headers:{ accept:"application/json" } });
+      const response = await fetchWithTimeout(`${API}/api/v1/currency?base=${encodeURIComponent(from)}&quotes=${encodeURIComponent(to)}`, { headers:{ accept:"application/json" } });
       if (!response.ok) throw new Error("Rates could not be updated.");
-      const payload = await response.json(), data = payload?.currency, rate = Number(data?.rates?.[currency.to]);
+      const payload = await response.json(), data = payload?.currency, rate = Number(data?.rates?.[to]);
       if (!Number.isFinite(rate) || rate <= 0) throw new Error("This currency pair is unavailable.");
-      Object.assign(currency, { rate, date:data.date || null, fetchedAt:Number(data.fetchedAt) || Date.now(), source:data.source || "Reference rate", cached:false });
-      try { localStorage.setItem(currencyCacheKey(currency.from, currency.to), JSON.stringify({ rate:currency.rate, date:currency.date, fetchedAt:currency.fetchedAt, source:currency.source })); } catch (_) {}
+      const entry = { rate, date:data.date || null, fetchedAt:Number(data.fetchedAt) || Date.now(), source:data.source || "Reference rate" };
+      try { localStorage.setItem(currencyCacheKey(from, to), JSON.stringify(entry)); } catch (_) {}
+      if (samePair()) Object.assign(currency, entry, { cached:false });
     } catch (error) {
-      state.currencyError = cached?.rate ? "" : (error?.message || "Rates could not be updated.");
-      if (cached?.rate) Object.assign(currency, cached, { cached:true });
+      if (samePair()) {
+        state.currencyError = cached?.rate ? "" : (error?.message || "Rates could not be updated.");
+        if (cached?.rate) Object.assign(currency, cached, { cached:true });
+      }
     } finally {
       state.currencyLoading = false;
+      if (!samePair()) { ensureCurrencyRates(); return; }
       if (state.screen === "currency") render();
     }
   }
@@ -1772,15 +2524,15 @@
           arr = val(t, "arrival_location_id", "end_location_id"),
           depWhen = Number(val(t, "scheduled_departure_utc", "starts_at_utc")) || null,
           arrWhen = Number(val(t, "scheduled_arrival_utc", "ends_at_utc")) || depWhen;
-        if (dep) refs.push({ kind, item: t, entityKind: kind, locId: dep, when: depWhen, role: "from" });
-        if (arr) refs.push({ kind, item: t, entityKind: kind, locId: arr, when: arrWhen, role: "to" });
+        if (dep) refs.push({ kind, item: t, entityKind: kind, locId: dep, when: depWhen, zone: val(t, "departure_timezone"), role: "from" });
+        if (arr) refs.push({ kind, item: t, entityKind: kind, locId: arr, when: arrWhen, zone: val(t, "arrival_timezone") || val(t, "departure_timezone"), role: "to" });
       });
     (state.stays || [])
       .filter((s) => !isCancelled(s))
       .forEach((s) => {
         const loc = val(s, "property_location_id", "start_location_id"),
           when = Date.parse(`${val(s, "check_in_date") || ""}T12:00:00Z`) || null;
-        if (loc) refs.push({ kind: "hotel", item: s, entityKind: "hotel", locId: loc, when, role: "stay" });
+        if (loc) refs.push({ kind: "hotel", item: s, entityKind: "hotel", locId: loc, when, zone: "UTC", role: "stay" });
       });
     (state.timeline || [])
       .filter((it) => !isCancelled(it))
@@ -1796,6 +2548,7 @@
           entityKind: String(val(it, "type") || kind || "plan"),
           locId: loc,
           when: Number(val(it, "starts_at_utc")) || null,
+          zone: val(it, "start_timezone"),
           role: "plan",
         });
       });
@@ -1841,7 +2594,7 @@
   }
   // Canonical rule: 2+ distinct usable places → Trip Map is available.
   function canShowTripMap() {
-    return getMappableTripLocations().length >= 2;
+    return getMappableTripLocations().length >= 1;
   }
   function geocodeQueryFor(loc) {
     return (
@@ -1852,14 +2605,53 @@
       ""
     );
   }
-  // --- keyless geocode cache (server proxies Open-Meteo; same-origin, CSP-safe)
+  // The geocoder (Nominatim, address-capable) resolves POI names AND street
+  // addresses ("Colosseum, Rome" lands on the monument, not the city centre).
+  // Try the most specific query first so distinct stops in one city each get
+  // their own pin; fall back to progressively coarser city/region/country
+  // candidates so a stop always maps somewhere sensible.
+  function geocodeCandidates(loc) {
+    const out = [],
+      push = (v) => {
+        const s = String(v || "").trim();
+        if (s && s.length > 1 && !out.includes(s)) out.push(s);
+      };
+    const name = val(loc, "display_name", "local_name"),
+      city = val(loc, "city"),
+      addr = val(loc, "formatted_address", "local_address");
+    // Precise first.
+    if (name && city && name !== city) push(name + ", " + city);
+    push(addr);
+    push(name);
+    push(city);
+    if (addr) {
+      const parts = String(addr).split(",").map((s) => s.trim()).filter(Boolean);
+      // Walk from the end (tail = locality/region/country); strip postal codes and
+      // house numbers so "00184 Roma RM" -> "Roma RM" -> also its first word "Roma".
+      for (let i = parts.length - 1; i >= 1; i--) {
+        const clean = parts[i].replace(/\b\d[\d\s-]*\b/g, "").replace(/\s+/g, " ").trim();
+        if (clean && /[a-zÀ-ɏ]/i.test(clean)) {
+          push(clean);
+          const first = clean.split(" ")[0];
+          if (first !== clean) push(first);
+        }
+      }
+      // Country (last part) as a final low-confidence fallback.
+      if (parts.length) push(parts[parts.length - 1]);
+    }
+    return out;
+  }
+  // --- keyless geocode cache (server proxies Nominatim/Open-Meteo; same-origin,
+  // CSP-safe). Key is versioned: bump the suffix to invalidate coarser
+  // city-level results cached before address geocoding landed.
+  const GEOCODE_CACHE_KEY = "tripto_geocode_cache_v2";
   const geocodeCache = new Map();
   let geocodeCacheLoaded = false;
   function loadGeocodeCache() {
     if (geocodeCacheLoaded) return;
     geocodeCacheLoaded = true;
     try {
-      const raw = JSON.parse(localStorage.getItem("tripto_geocode_cache") || "{}");
+      const raw = JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY) || "{}");
       Object.entries(raw).forEach(([k, v]) => {
         if (v && Number.isFinite(v.lat) && Number.isFinite(v.lon)) geocodeCache.set(k, v);
       });
@@ -1874,46 +2666,65 @@
     try {
       const obj = {};
       geocodeCache.forEach((v, k) => (obj[k] = v));
-      localStorage.setItem("tripto_geocode_cache", JSON.stringify(obj));
+      localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(obj));
     } catch (_) {}
   }
   async function geocodeMissingTripPlaces() {
     if (state.offline) return false;
     loadGeocodeCache();
-    const pending = getMappableTripLocations().filter(
-      (p) => p.lat == null && geocodeQueryFor(p.location),
-    );
+    const pending = getMappableTripLocations().filter((p) => p.lat == null);
     let changed = false;
     // Resolve sequentially (respect the free geocoder) and cap per open.
-    for (const place of pending.slice(0, 8)) {
-      const query = geocodeQueryFor(place.location),
-        key = query.trim().toLowerCase();
-      if (geocodeCache.has(key)) continue;
-      try {
-        const res = await fetch(`/api/v1/geocode?q=${encodeURIComponent(query)}`, {
-          headers: { accept: "application/json" },
-        });
-        if (!res.ok) {
+    for (const place of pending.slice(0, 16)) {
+      const primary = geocodeQueryFor(place.location).trim().toLowerCase();
+      if (!primary) continue;
+      const already = geocodeCache.get(primary);
+      if (already && Number.isFinite(already.lat)) continue;
+      let resolved = null,
+        exhausted = true;
+      for (const q of geocodeCandidates(place.location)) {
+        const key = q.trim().toLowerCase(),
+          hit = geocodeCache.get(key);
+        if (hit && Number.isFinite(hit.lat)) { resolved = hit; break; }
+        if (hit && hit.failed) continue;
+        try {
+          const res = await fetch(`${API}/api/v1/geocode?q=${encodeURIComponent(q)}`, {
+            headers: { accept: "application/json" },
+          });
+          if (!res.ok) { geocodeCache.set(key, { lat: NaN, lon: NaN, failed: true }); continue; }
+          const payload = await res.json(),
+            h = payload?.location;
+          if (h && Number.isFinite(Number(h.latitude)) && Number.isFinite(Number(h.longitude))) {
+            resolved = { lat: Number(h.latitude), lon: Number(h.longitude) };
+            geocodeCache.set(key, resolved);
+            break;
+          }
           geocodeCache.set(key, { lat: NaN, lon: NaN, failed: true });
-          continue;
+        } catch (_) {
+          exhausted = false; // network died — stop; Timeline/list still work
+          break;
         }
-        const payload = await res.json(),
-          hit = payload?.location;
-        if (hit && Number.isFinite(Number(hit.latitude)) && Number.isFinite(Number(hit.longitude))) {
-          geocodeCache.set(key, { lat: Number(hit.latitude), lon: Number(hit.longitude) });
-          changed = true;
-        } else {
-          geocodeCache.set(key, { lat: NaN, lon: NaN, failed: true });
-        }
-      } catch (_) {
-        return changed; // network died — stop; Timeline/list still work
+      }
+      if (resolved) {
+        // Store under the primary key too, so getMappableTripLocations (which
+        // looks up geocodeQueryFor) finds the coordinates on the next render.
+        geocodeCache.set(primary, { lat: resolved.lat, lon: resolved.lon });
+        changed = true;
+      } else if (exhausted) {
+        geocodeCache.set(primary, { lat: NaN, lon: NaN, failed: true });
+      } else {
+        if (changed) persistGeocodeCache();
+        return changed;
       }
     }
     if (changed) persistGeocodeCache();
     return changed;
   }
-  function tripMapDayKey(when) {
-    return when ? new Date(when).toISOString().slice(0, 10) : null;
+  function tripMapDayKey(when, zone) {
+    // Group by the booking's own event-local day (matching the timeline), not the
+    // UTC day — otherwise an evening-Americas / early-morning-Asia booking files
+    // under the wrong day chip. zonedDateTimeParts yields a sortable YYYY-MM-DD.
+    return when ? zonedDateTimeParts(when, zone).date || null : null;
   }
   function tripMapDayLabel(dayKey) {
     try {
@@ -1938,64 +2749,372 @@
     return best?.key || null;
   }
   function tripMapNavQuery(place) {
+    // Precise stored coordinates win; otherwise the stored address is more
+    // accurate for directions than a coarse city-level geocode.
+    if (place.hasCoords && place.lat != null) return `${place.lat},${place.lon}`;
+    if (place.address) return place.address;
     if (place.lat != null && place.lon != null) return `${place.lat},${place.lon}`;
-    return place.address || place.name || "";
+    return place.name || "";
   }
   // The trip's mappable places for a given day (or the whole trip), ordered by
   // time. Falls back to the whole trip when a stale/empty day filter is passed.
   function orderedTripMapPlaces(dayKey) {
     const all = getMappableTripLocations();
     const filtered = dayKey
-      ? all.filter((p) => p.bookings.some((b) => tripMapDayKey(b.when) === dayKey))
+      ? all.filter((p) => p.bookings.some((b) => tripMapDayKey(b.when, b.zone) === dayKey))
       : all;
     const use = filtered.length ? filtered : all;
     return use
       .slice()
       .sort((a, b) => (a.when || Infinity) - (b.when || Infinity));
   }
+  // ---------------------------------------------------------------------------
+  // Live interactive map (MapLibre GL JS + OpenFreeMap vector tiles).
+  //
+  // render() rewrites #app on every state change, which would destroy a WebGL
+  // canvas. The map therefore lives in a persistent element appended to <body>
+  // (behind the overlay); the controls (top bar, day chips, layers panel, FABs,
+  // bottom sheet) are rendered inside #app so the existing delegated click
+  // handling keeps working. syncLiveMapScreen() shows/hides the map root and
+  // pushes the current trip's pins/route/location into it after every render.
+  // Tiles require the network — offline (or on load failure) the map is hidden
+  // and the same place list, rendered in the bottom sheet, is the full fallback.
+  // ---------------------------------------------------------------------------
+  const MAP_SDK_URL = "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js";
+  const MAP_SDK_CSS = "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css";
+  const MAP_CATEGORY = {
+    stay: { label: "Stays", color: "#38bdf8" },
+    food: { label: "Food", color: "#f59e0b" },
+    activity: { label: "Activities", color: "#34d399" },
+    event: { label: "Events", color: "#fb7185" },
+    transport: { label: "Transport", color: "#a78bfa" },
+    place: { label: "Places", color: "#94a3b8" },
+  };
+  // Group a booking's marker kind into one of the legend categories above.
+  function mapCategory(kind) {
+    const k = String(kind || "").toLowerCase();
+    if (["hotel", "stay", "lodging", "accommodation"].includes(k)) return "stay";
+    if (["restaurant", "dining", "food"].includes(k)) return "food";
+    if (["activity", "tour", "attraction", "museum", "sightseeing"].includes(k)) return "activity";
+    if (["event", "concert", "theatre", "theater", "show"].includes(k)) return "event";
+    if (["flight", "plane", "air", "train", "rail", "ferry", "cruise", "boat", "port", "car", "car_rental", "transfer", "taxi", "shuttle", "bus"].includes(k)) return "transport";
+    return "place";
+  }
+  let maplibrePromise = null, liveMap = null, liveMapMarkers = [], liveMapLocMarker = null, liveMapFitSig = "", liveMapStyled = false, liveMapData = null, geocodeInFlight = false;
+  // Runtime-load MapLibre GL from jsDelivr (allow-listed in CSP). It is only
+  // needed when the interactive map is opened, and tiles require the network
+  // anyway, so there is no offline cost to loading it lazily.
+  function ensureMapLibre() {
+    if (window.maplibregl) return Promise.resolve(window.maplibregl);
+    if (maplibrePromise) return maplibrePromise;
+    maplibrePromise = new Promise((resolve, reject) => {
+      if (!document.querySelector("link[data-maplibre]")) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = MAP_SDK_CSS;
+        link.setAttribute("data-maplibre", "1");
+        document.head.appendChild(link);
+      }
+      const s = document.createElement("script");
+      s.src = MAP_SDK_URL;
+      s.async = true;
+      s.setAttribute("data-maplibre", "1");
+      s.onload = () => (window.maplibregl ? resolve(window.maplibregl) : (maplibrePromise = null, reject(new Error("maplibre-missing"))));
+      s.onerror = () => { maplibrePromise = null; reject(new Error("maplibre-load-failed")); };
+      document.head.appendChild(s);
+    });
+    return maplibrePromise;
+  }
+  // A compact dark style over OpenFreeMap's keyless global vector tiles. Only
+  // the layers we care about are drawn, tuned to the app's night palette so no
+  // client-side recolouring is needed.
+  function mapDarkStyle() {
+    return {
+      version: 8,
+      glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+      sources: { openmaptiles: { type: "vector", url: "https://tiles.openfreemap.org/planet" } },
+      layers: [
+        { id: "bg", type: "background", paint: { "background-color": "#0d1c25" } },
+        { id: "water", type: "fill", source: "openmaptiles", "source-layer": "water", paint: { "fill-color": "#0a151c" } },
+        { id: "landcover", type: "fill", source: "openmaptiles", "source-layer": "landcover", paint: { "fill-color": "#12242e", "fill-opacity": 0.5 } },
+        { id: "park", type: "fill", source: "openmaptiles", "source-layer": "park", paint: { "fill-color": "#123a2c", "fill-opacity": 0.45 } },
+        { id: "building", type: "fill", source: "openmaptiles", "source-layer": "building", minzoom: 13, paint: { "fill-color": "#172a35" } },
+        { id: "road-minor", type: "line", source: "openmaptiles", "source-layer": "transportation", filter: ["in", "class", "minor", "service", "track"], paint: { "line-color": "#22333f", "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.4, 18, 4] } },
+        { id: "road", type: "line", source: "openmaptiles", "source-layer": "transportation", filter: ["in", "class", "primary", "secondary", "tertiary", "trunk", "street"], paint: { "line-color": "#2b3f4d", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 18, 8] } },
+        { id: "road-major", type: "line", source: "openmaptiles", "source-layer": "transportation", filter: ["==", "class", "motorway"], paint: { "line-color": "#3a5163", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.6, 18, 10] } },
+        { id: "boundary", type: "line", source: "openmaptiles", "source-layer": "boundary", filter: ["<=", "admin_level", 4], paint: { "line-color": "#2f4453", "line-dasharray": [2, 2], "line-width": 1 } },
+        { id: "road-label", type: "symbol", source: "openmaptiles", "source-layer": "transportation_name", minzoom: 13, filter: ["in", "class", "motorway", "trunk", "primary", "secondary", "tertiary", "minor", "street", "service"], layout: { "symbol-placement": "line", "symbol-spacing": 300, "text-field": ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 13, 10, 18, 13] }, paint: { "text-color": "#93a4b6", "text-halo-color": "#0a151c", "text-halo-width": 1.3 } },
+        { id: "place-city", type: "symbol", source: "openmaptiles", "source-layer": "place", filter: ["in", "class", "city", "town"], layout: { "text-field": ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 11, 10, 15] }, paint: { "text-color": "#c8d2df", "text-halo-color": "#0a151c", "text-halo-width": 1.4 } },
+        { id: "place-minor", type: "symbol", source: "openmaptiles", "source-layer": "place", filter: ["in", "class", "village", "suburb", "neighbourhood"], layout: { "text-field": ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": 11 }, paint: { "text-color": "#8ea0b2", "text-halo-color": "#0a151c", "text-halo-width": 1.2 } },
+      ],
+    };
+  }
+  // A light grayscale style used only in the monochrome theme, so the live map
+  // matches the app's black-on-white flat look instead of the night palette.
+  function mapMonoStyle() {
+    return {
+      version: 8,
+      glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+      sources: { openmaptiles: { type: "vector", url: "https://tiles.openfreemap.org/planet" } },
+      layers: [
+        { id: "bg", type: "background", paint: { "background-color": "#ffffff" } },
+        { id: "water", type: "fill", source: "openmaptiles", "source-layer": "water", paint: { "fill-color": "#e2e2e2" } },
+        { id: "landcover", type: "fill", source: "openmaptiles", "source-layer": "landcover", paint: { "fill-color": "#f0f0f0", "fill-opacity": 0.6 } },
+        { id: "park", type: "fill", source: "openmaptiles", "source-layer": "park", paint: { "fill-color": "#eaeaea", "fill-opacity": 0.7 } },
+        { id: "building", type: "fill", source: "openmaptiles", "source-layer": "building", minzoom: 13, paint: { "fill-color": "#e6e6e6" } },
+        { id: "road-minor", type: "line", source: "openmaptiles", "source-layer": "transportation", filter: ["in", "class", "minor", "service", "track"], paint: { "line-color": "#d6d6d6", "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.4, 18, 4] } },
+        { id: "road", type: "line", source: "openmaptiles", "source-layer": "transportation", filter: ["in", "class", "primary", "secondary", "tertiary", "trunk", "street"], paint: { "line-color": "#c6c6c6", "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 18, 8] } },
+        { id: "road-major", type: "line", source: "openmaptiles", "source-layer": "transportation", filter: ["==", "class", "motorway"], paint: { "line-color": "#b0b0b0", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.6, 18, 10] } },
+        { id: "boundary", type: "line", source: "openmaptiles", "source-layer": "boundary", filter: ["<=", "admin_level", 4], paint: { "line-color": "#b5b5b5", "line-dasharray": [2, 2], "line-width": 1 } },
+        { id: "road-label", type: "symbol", source: "openmaptiles", "source-layer": "transportation_name", minzoom: 13, filter: ["in", "class", "motorway", "trunk", "primary", "secondary", "tertiary", "minor", "street", "service"], layout: { "symbol-placement": "line", "symbol-spacing": 300, "text-field": ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 13, 10, 18, 13] }, paint: { "text-color": "#666666", "text-halo-color": "#ffffff", "text-halo-width": 1.3 } },
+        { id: "place-city", type: "symbol", source: "openmaptiles", "source-layer": "place", filter: ["in", "class", "city", "town"], layout: { "text-field": ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 4, 11, 10, 15] }, paint: { "text-color": "#111111", "text-halo-color": "#ffffff", "text-halo-width": 1.4 } },
+        { id: "place-minor", type: "symbol", source: "openmaptiles", "source-layer": "place", filter: ["in", "class", "village", "suburb", "neighbourhood"], layout: { "text-field": ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": 11 }, paint: { "text-color": "#444444", "text-halo-color": "#ffffff", "text-halo-width": 1.2 } },
+      ],
+    };
+  }
+  // Studio (the only shipped theme) uses a warm light map built on the mono layers.
+  function mapStudioStyle() {
+    const style = mapMonoStyle();
+    const paint = {
+      bg: { "background-color": "#f6f4f1" },
+      water: { "fill-color": "#d6e4f2" },
+      landcover: { "fill-color": "#e7eee0" },
+      park: { "fill-color": "#dcebd6" },
+      building: { "fill-color": "#ebe6df" },
+      "road-minor": { "line-color": "#ffffff" },
+      road: { "line-color": "#ffffff" },
+      "road-major": { "line-color": "#e4d7fb" },
+    };
+    style.layers.forEach((layer) => Object.assign(layer.paint, paint[layer.id] || {}));
+    return style;
+  }
+  function isMonoTheme() { return document.documentElement.classList.contains("theme-mono"); }
+  function isStudioTheme() { return document.documentElement.classList.contains("theme-studio"); }
+  function liveMapRoot() {
+    let root = document.getElementById("live-map-root");
+    if (!root) {
+      root = document.createElement("div");
+      root.id = "live-map-root";
+      root.setAttribute("aria-hidden", "true");
+      root.style.display = "none";
+      const canvas = document.createElement("div");
+      canvas.id = "live-map-canvas";
+      root.appendChild(canvas);
+      document.body.appendChild(root);
+    }
+    return root;
+  }
+  function initLiveMap(maplibregl) {
+    if (liveMap) return liveMap;
+    const canvas = liveMapRoot().querySelector("#live-map-canvas");
+    liveMap = new maplibregl.Map({
+      container: canvas,
+      style: isStudioTheme() ? mapStudioStyle() : isMonoTheme() ? mapMonoStyle() : mapDarkStyle(),
+      center: [0, 20],
+      zoom: 1.4,
+      attributionControl: false,
+      dragRotate: false,
+      pitchWithRotate: false,
+    });
+    liveMap.touchZoomRotate.disableRotation();
+    liveMap.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: "© OpenFreeMap · OpenMapTiles · OpenStreetMap" }), "bottom-right");
+    liveMap.on("load", () => { liveMapStyled = true; refreshLiveMap(); });
+    liveMap.on("error", () => {});
+    return liveMap;
+  }
+  // Build the DOM element for a category pin (coloured teardrop + glyph).
+  function mapPinElement(place, isNext) {
+    const cat = mapCategory(place.markerKind || place.type),
+      meta = MAP_CATEGORY[cat] || MAP_CATEGORY.place,
+      el = document.createElement("button");
+    el.type = "button";
+    el.className = "map-pin map-pin--" + cat + (isNext ? " is-next" : "");
+    el.style.setProperty("--pin-color", meta.color);
+    el.setAttribute("aria-label", place.name || "Place");
+    el.innerHTML = '<span class="map-pin__badge">' + icon(mapMarkerIcon(place.markerKind || place.type), 15) + '</span><span class="map-pin__stem"></span>';
+    el.addEventListener("click", (ev) => { ev.stopPropagation(); openMapPlace(place); });
+    return el;
+  }
+  function openMapPlace(place) {
+    if (!liveMap || !window.maplibregl) return;
+    liveMap.flyTo({ center: [place.lon, place.lat], zoom: Math.max(liveMap.getZoom(), 13), speed: 0.9 });
+    const meta = [place.when ? formatDateTime(place.when) : "", place.address || ""].filter(Boolean).join(" · "),
+      query = tripMapNavQuery(place),
+      href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query),
+      html = '<div class="map-pop"><strong>' + esc(place.name) + "</strong>" + (meta ? "<small>" + esc(meta) + "</small>" : "") + '<a class="map-pop__go" href="' + esc(href) + '">' + icon("navigation", 16) + " Directions</a></div>";
+    new window.maplibregl.Popup({ offset: 22, closeButton: true, className: "map-pop-wrap" }).setLngLat([place.lon, place.lat]).setHTML(html).addTo(liveMap);
+  }
+  function fitLiveMap() {
+    if (!liveMap || !window.maplibregl || !liveMapData) return;
+    const pts = liveMapData.placed.map((p) => [p.lon, p.lat]);
+    if (state.mapLayers && state.mapLayers.location && state.mapLocation && Number.isFinite(state.mapLocation.lat)) pts.push([state.mapLocation.lon, state.mapLocation.lat]);
+    if (!pts.length) return;
+    try {
+      if (pts.length === 1) { liveMap.easeTo({ center: pts[0], zoom: 12, duration: 500 }); return; }
+      const bounds = pts.reduce((acc, c) => acc.extend(c), new window.maplibregl.LngLatBounds(pts[0], pts[0]));
+      // Keep padding modest so it never exceeds a short viewport (which makes
+      // fitBounds silently no-op); leave extra room at the bottom for the sheet.
+      liveMap.fitBounds(bounds, { padding: { top: 70, bottom: 170, left: 40, right: 40 }, maxZoom: 14, duration: 600 });
+    } catch (_) {
+      liveMap.easeTo({ center: pts[0], zoom: 6, duration: 400 });
+    }
+  }
+  // Push the current dataset (pins, route line, my-location dot) into the map,
+  // honouring layer toggles. Refits the camera only when the trip/day/place set
+  // changes, so toggling a layer never yanks a camera the user has panned.
+  function refreshLiveMap() {
+    if (!liveMap || !liveMapStyled || !liveMapData || !window.maplibregl) return;
+    const gl = window.maplibregl,
+      placed = liveMapData.placed,
+      layers = state.mapLayers || { route: true, saved: true, location: true },
+      routeCoords = placed.map((p) => [p.lon, p.lat]),
+      routeGeo = { type: "FeatureCollection", features: layers.route && routeCoords.length >= 2 ? [{ type: "Feature", geometry: { type: "LineString", coordinates: routeCoords } }] : [] };
+    if (liveMap.getSource("trip-route")) liveMap.getSource("trip-route").setData(routeGeo);
+    else {
+      liveMap.addSource("trip-route", { type: "geojson", data: routeGeo });
+      liveMap.addLayer({ id: "trip-route-line", type: "line", source: "trip-route", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": isStudioTheme() ? "#7c3aed" : isMonoTheme() ? "#1a1a1a" : "#f5a623", "line-width": 3.5, "line-opacity": 0.9, "line-dasharray": [1.6, 1.4] } });
+    }
+    liveMapMarkers.forEach((m) => m.remove());
+    liveMapMarkers = [];
+    const nextKey = tripMapNextKey(getMappableTripLocations());
+    if (layers.saved) {
+      // Several stops can geocode to the same city centroid; fan coincident
+      // pins out on a small deterministic spiral so each stays tappable.
+      const seen = new Map();
+      placed.forEach((p) => {
+        const ck = p.lat.toFixed(4) + "," + p.lon.toFixed(4),
+          n = seen.get(ck) || 0;
+        seen.set(ck, n + 1);
+        let lon = p.lon, lat = p.lat;
+        if (n > 0) { const ang = n * 2.399, r = 0.01 * (1 + Math.floor(n / 6)); lon += r * Math.cos(ang); lat += r * Math.sin(ang); }
+        liveMapMarkers.push(new gl.Marker({ element: mapPinElement(p, p.key === nextKey), anchor: "bottom" }).setLngLat([lon, lat]).addTo(liveMap));
+      });
+    }
+    if (liveMapLocMarker) { liveMapLocMarker.remove(); liveMapLocMarker = null; }
+    if (layers.location && state.mapLocation && Number.isFinite(state.mapLocation.lat)) {
+      const dot = document.createElement("div");
+      dot.className = "map-dot";
+      dot.innerHTML = '<span class="map-dot__pulse"></span><span class="map-dot__core"></span>';
+      liveMapLocMarker = new gl.Marker({ element: dot }).setLngLat([state.mapLocation.lon, state.mapLocation.lat]).addTo(liveMap);
+    }
+    if (liveMapData.fitSig !== liveMapFitSig) { liveMapFitSig = liveMapData.fitSig; fitLiveMap(); }
+  }
+  // Called from bindDynamic() after every render. Owns the visibility of the
+  // persistent map root and keeps its data in sync with the current screen.
+  function syncLiveMapScreen() {
+    const root = document.getElementById("live-map-root"),
+      active = state.screen === "trip-map" && !state.sheet && !state.loading && !state.error && !state.googleAuthHandoffStatus && state.trip && !state.offline;
+    if (!active) { if (root) { root.style.display = "none"; root.setAttribute("aria-hidden", "true"); } return; }
+    const places = getMappableTripLocations();
+    if (!places.length) { if (root) root.style.display = "none"; return; }
+    const dayKeys = Array.from(new Set(places.flatMap((p) => p.bookings.map((b) => tripMapDayKey(b.when, b.zone))).filter(Boolean))).sort(),
+      activeDay = dayKeys.includes(state.tripMapDay) ? state.tripMapDay : null,
+      ordered = orderedTripMapPlaces(activeDay),
+      placed = ordered.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+    // Geocode address-only stops no matter how the map was entered (reload,
+    // back/forward, restored route — not just the open-trip-map tap). Runs once
+    // per unresolved set; repaints when coordinates arrive.
+    if (!geocodeInFlight && !state.offline && ordered.some((p) => p.lat == null)) {
+      geocodeInFlight = true;
+      geocodeMissingTripPlaces()
+        .then((changed) => { geocodeInFlight = false; if (changed && state.screen === "trip-map") render(); })
+        .catch(() => { geocodeInFlight = false; });
+    }
+    liveMapData = { placed, activeDay, fitSig: state.trip.id + ":" + (activeDay || "all") + ":" + placed.map((p) => p.key).join(",") };
+    ensureMapLibre().then((maplibregl) => {
+      const r = liveMapRoot();
+      r.style.display = "block";
+      r.setAttribute("aria-hidden", "false");
+      initLiveMap(maplibregl);
+      liveMap.resize();
+      if (state.mapLoadError) state.mapLoadError = false;
+      if (liveMapStyled) refreshLiveMap();
+    }).catch(() => {
+      if (!state.mapLoadError) { state.mapLoadError = true; if (state.screen === "trip-map") render(); }
+    });
+  }
+  function mapLocate() {
+    if (NATIVE) { void mapLocateNative(); return; }
+    if (!navigator.geolocation) { showToast("Location is not available on this device."); return; }
+    state.mapLocateBusy = true;
+    render();
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        state.mapLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy };
+        if (state.mapLayers) state.mapLayers.location = true;
+        state.mapLocateBusy = false;
+        if (liveMap) liveMap.flyTo({ center: [state.mapLocation.lon, state.mapLocation.lat], zoom: Math.max(liveMap.getZoom(), 13), speed: 0.9 });
+        render();
+      },
+      () => { state.mapLocateBusy = false; showToast("Couldn't get your location. Check location permissions."); render(); },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  }
+  async function mapLocateNative() {
+    state.mapLocateBusy = true;
+    render();
+    try {
+      const pos = await getNativePositionOnce();
+      state.mapLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy };
+      if (state.mapLayers) state.mapLayers.location = true;
+      state.mapLocateBusy = false;
+      if (liveMap) liveMap.flyTo({ center: [state.mapLocation.lon, state.mapLocation.lat], zoom: Math.max(liveMap.getZoom(), 13), speed: 0.9 });
+      render();
+    } catch (error) {
+      state.mapLocateBusy = false;
+      render();
+      if (!(await offerNativeLocationSettings(error))) showToast(geolocationErrorMessage(error), "alert");
+    }
+  }
   function tripMapScreen() {
     if (!state.trip)
       return missingDetailScreen("Trip Map", "Select a trip to see its map.");
     const places = getMappableTripLocations();
-    if (places.length < 2)
+    if (!places.length)
       return missingDetailScreen(
         "Trip Map",
-        "This trip does not have enough places to map yet. Add another booking with a location and the map will appear.",
+        "This trip has no places to map yet. Add a booking with a location and the map will appear.",
       );
     const nextKey = tripMapNextKey(places),
-      dayKeys = Array.from(
-        new Set(
-          places
-            .flatMap((p) => p.bookings.map((b) => tripMapDayKey(b.when)))
-            .filter(Boolean),
-        ),
-      ).sort(),
+      dayKeys = Array.from(new Set(places.flatMap((p) => p.bookings.map((b) => tripMapDayKey(b.when, b.zone))).filter(Boolean))).sort(),
       activeDay = dayKeys.includes(state.tripMapDay) ? state.tripMapDay : null,
       ordered = orderedTripMapPlaces(activeDay),
-      tripDates = esc(formatTripDates(state.trip) || "");
+      placedCount = ordered.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon)).length,
+      catsPresent = Array.from(new Set(ordered.map((p) => mapCategory(p.markerKind || p.type))));
     const chips = dayKeys.length
-      ? `<div class="trip-map__days" role="group" aria-label="Filter map by day"><button type="button" class="trip-map__day ${activeDay ? "" : "is-active"}" data-action="trip-map-day" data-day="" aria-pressed="${!activeDay}">All Trip</button>${dayKeys
+      ? `<div class="map-days" role="group" aria-label="Filter map by day"><button type="button" class="map-day ${activeDay ? "" : "is-active"}" data-action="trip-map-day" data-day="" aria-pressed="${!activeDay}"><span>All</span><small>Whole trip</small></button>${dayKeys
           .map(
-            (d) =>
-              `<button type="button" class="trip-map__day ${activeDay === d ? "is-active" : ""}" data-action="trip-map-day" data-day="${esc(d)}" aria-pressed="${activeDay === d}">${esc(tripMapDayLabel(d))}</button>`,
+            (d, i) =>
+              `<button type="button" class="map-day ${activeDay === d ? "is-active" : ""}" data-action="trip-map-day" data-day="${esc(d)}" aria-pressed="${activeDay === d}"><span>Day ${i + 1}</span><small>${esc(tripMapDayLabel(d))}</small></button>`,
           )
           .join("")}</div>`
+      : "";
+    const layerRow = (key, label, sub) =>
+      `<button type="button" class="map-layer ${state.mapLayers && state.mapLayers[key] ? "is-on" : ""}" role="switch" aria-checked="${Boolean(state.mapLayers && state.mapLayers[key])}" data-action="set-map-layer" data-layer="${key}"><span class="map-layer__box">${icon("check", 14)}</span><span class="map-layer__text"><strong>${esc(label)}</strong><small>${esc(sub)}</small></span></button>`;
+    const legend = catsPresent
+      .map((c) => `<span class="map-legend__item"><span class="map-legend__dot" style="--pin-color:${MAP_CATEGORY[c].color}"></span>${esc(MAP_CATEGORY[c].label)}</span>`)
+      .join("");
+    const panel = state.mapLayersOpen
+      ? `<div class="map-panel" role="group" aria-label="Map layers">${layerRow("route", "Trip route", "Line connecting stops in order")}${layerRow("saved", "Saved places", "Every mappable stop")}${layerRow("location", "My location", "Show where you are now")}${legend ? `<div class="map-legend">${legend}</div>` : ""}</div>`
       : "";
     const rows = ordered
       .map((p) => {
         const isNext = p.key === nextKey,
-          markerClass = String(p.markerKind || p.type || "place").toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+          markerClass = mapCategory(p.markerKind || p.type),
           when = p.when ? esc(formatDateTime(p.when)) : "",
           addr = esc(p.address || (p.hasCoords ? "Saved location" : "Address on file")),
           meta = [when, addr].filter(Boolean).join(" · ");
-        return `<div class="trip-map__row ${isNext ? "is-next" : ""}"><button type="button" class="trip-map__row-main" data-action="trip-map-navigate" data-query="${esc(tripMapNavQuery(p))}" aria-label="Get directions to ${esc(p.name)}"><span class="trip-map__row-icon trip-map__row-icon--${esc(markerClass)}">${icon(mapMarkerIcon(p.markerKind || p.type), 20)}</span><span class="trip-map__row-copy"><strong>${esc(p.name)}${isNext ? `<span class="trip-map__next">NEXT</span>` : ""}</strong><small>${meta}</small></span><span class="trip-map__row-nav">${icon("navigation", 18)}<small>Directions</small></span></button></div>`;
+        return `<div class="trip-map__row ${isNext ? "is-next" : ""}"><button type="button" class="trip-map__row-main" data-action="trip-map-navigate" data-query="${esc(tripMapNavQuery(p))}" aria-label="Get directions to ${esc(p.name)}"><span class="trip-map__row-icon map-pin--${markerClass}" style="--pin-color:${MAP_CATEGORY[markerClass].color}">${icon(mapMarkerIcon(p.markerKind || p.type), 18)}</span><span class="trip-map__row-copy"><strong>${esc(p.name)}${isNext ? `<span class="trip-map__next">NEXT</span>` : ""}</strong></span><span class="trip-map__row-nav" aria-hidden="true">${icon("navigation", 18)}</span></button></div>`;
       })
       .join("");
-    const offlineNote = state.offline
-      ? `<div class="trip-map__offline" role="status">${icon("info", 18)}<span>Your places are saved on this phone. Connect for directions.</span></div>`
-      : "";
     const listTitle = activeDay ? tripMapDayLabel(activeDay) : "All trip places";
-    return `<div class="phone-app"><section class="screen trip-map-screen">${appBar("Trip Map", tripDates ? `${state.trip.title || "Trip"} · ${formatTripDates(state.trip)}` : state.trip.title || "Trip", true)}<main class="trip-map"><header class="trip-map__hero"><span class="trip-map__hero-icon">${icon("map", 26)}</span><div><span>YOUR ROUTE</span><h1>Places in trip order</h1><p>Places from your trip, organized by day.</p></div><strong aria-label="${ordered.length} places">${ordered.length}</strong></header>${chips}${offlineNote}<div class="trip-map__list-head"><div><span>TRIP PLACES</span><h2>${esc(listTitle)}</h2></div><small>Tap for directions</small></div><section class="trip-map__list" aria-label="Trip places">${rows}</section><p class="trip-map__note">Directions open one destination at a time. tripto.to never requests your location or shares your complete itinerary with Google.</p></main></section></div>`;
+    const banner = state.offline
+      ? `<div class="map-banner" role="status">${icon("offline", 16)}<span>Offline — showing your saved places. Connect for the live map and directions.</span></div>`
+      : state.mapLoadError
+        ? `<div class="map-banner" role="status">${icon("warning", 16)}<span>The map could not load. Your places are listed below.</span></div>`
+        : "";
+    const locateLabel = state.mapLocateBusy ? "Locating" : "My location";
+    return `<div class="phone-app trip-map-live"><div class="map-overlay"><div class="map-topbar"><button type="button" class="map-chip map-chip--icon" data-action="back" aria-label="Back">${icon("back", 20)}</button><div class="map-title"><strong>${esc(state.trip.title || "Trip")}</strong><small>${esc(formatTripDates(state.trip) || `${places.length} places`)}</small></div>${pageHelpButton("trip-map", "map-chip map-chip--icon")}<button type="button" class="map-chip map-chip--icon ${state.mapLayersOpen ? "is-active" : ""}" data-action="toggle-map-layers" aria-expanded="${state.mapLayersOpen}" aria-label="Map layers">${icon("map", 20)}</button></div>${chips}${panel}${banner}<div class="map-fabs"><button type="button" class="map-fab" data-action="map-fit" aria-label="Fit all places">${icon("route", 20)}</button><button type="button" class="map-fab ${state.mapLocateBusy ? "is-busy" : ""}" data-action="map-locate" aria-label="${esc(locateLabel)}">${icon("location", 20)}</button></div><section class="map-sheet ${state.mapSheetCollapsed ? "is-collapsed" : ""}" aria-label="Trip places"><button type="button" class="map-sheet__grip" data-action="toggle-map-sheet" aria-expanded="${!state.mapSheetCollapsed}" aria-label="${state.mapSheetCollapsed ? "Show trip places" : "Hide trip places"}">${icon(state.mapSheetCollapsed ? "chevron-up" : "chevron-down", 16)}${state.mapSheetCollapsed ? `<span>${ordered.length} places</span>` : ""}</button><div class="map-sheet__head"><h2>${esc(listTitle)}</h2><span>${placedCount}/${ordered.length} mapped</span><small>Tap for directions</small></div><div class="map-sheet__list">${rows}</div><p class="map-sheet__note">Directions open one destination at a time. tripto.to shows your location only on this device and never shares your full itinerary.</p></section></div></div>`;
   }
   // Short localized weekday for a "YYYY-MM-DD" date (noon avoids TZ edge cases).
   function weekdayLabel(date) {
@@ -2112,12 +3231,57 @@
     if (!places.length) return null;
     return places.find((p) => p.key === state.weatherSel) || places[0];
   }
+  // Ordered list of fetch paths to try for a place. Coordinates come first when
+  // valid, but a place can carry missing/invalid coords (a booking geocode that
+  // never resolved), which would 400 at the edge and dead-end on "No forecast
+  // yet". So we always append name-based fallbacks (the keyless geocoder handles
+  // "City, Country") — the first candidate that returns a reading wins.
+  function weatherPaths(place) {
+    const t = (place && place.target) || {};
+    const paths = [];
+    const lat = Number(t.lat);
+    const lon = Number(t.lon);
+    const coordsOk =
+      t.lat != null &&
+      t.lon != null &&
+      Number.isFinite(lat) &&
+      Number.isFinite(lon) &&
+      Math.abs(lat) <= 90 &&
+      Math.abs(lon) <= 180;
+    if (coordsOk)
+      paths.push(`/api/v1/weather?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`);
+    const names = [];
+    if (t.query) names.push(String(t.query));
+    const label = place && place.label ? String(place.label) : "";
+    if (label) {
+      if (place.country) names.push(`${label}, ${place.country}`);
+      names.push(label);
+    }
+    names.forEach((name) => {
+      const query = name.trim().slice(0, 120);
+      if (query) paths.push(`/api/v1/weather?q=${encodeURIComponent(query)}`);
+    });
+    return paths.filter((path, i) => paths.indexOf(path) === i);
+  }
   let weatherInFlight = null;
   // Fetch a place's weather in the background and re-render when it lands.
   // apiGet already caches per-path in localStorage, so it degrades gracefully
   // offline. Skips the network when we already have fresh data for this place.
+  // Preview has no API, so build a plausible destination-local forecast in the
+  // same shape /api/v1/weather returns.
+  function previewWeather(place) {
+    const zone = (state.locations || []).map((location) => val(location, "timezone")).find((tz) => tz && !/jerusalem/i.test(tz)) || "Europe/Rome";
+    const parts = (at, opts) => new Intl.DateTimeFormat("en-CA", { timeZone: zone, hourCycle: "h23", ...opts }).format(at);
+    const now = new Date(), hour = Number(parts(now, { hour: "2-digit" })) % 24, today = parts(now, { year: "numeric", month: "2-digit", day: "2-digit" });
+    const codes = [0, 1, 2, 3, 1, 61, 0];
+    const daily = codes.map((code, i) => ({ date: parts(new Date(now.getTime() + i * 86400000), { year: "numeric", month: "2-digit", day: "2-digit" }), weatherCode: code, tempMaxC: 24 - (i % 3), tempMinC: 15 - (i % 2), precipProb: code === 61 ? 60 : 10, windMs: 3 + (i % 3) }));
+    const hourly = Array.from({ length: 6 }, (_, k) => {
+      const h = hour + k, dayOffset = Math.floor(h / 24), date = dayOffset ? daily[1].date : today;
+      return { time: `${date}T${String(h % 24).padStart(2, "0")}:00`, weatherCode: k < 3 ? 1 : 2, tempC: 21 - Math.abs(k - 2), precipProb: 10, windMs: 3 };
+    });
+    return { place: place.label, temperatureC: 21, weatherCode: 1, isDay: hour >= 7 && hour < 19, observedAt: `${today}T${String(hour).padStart(2, "0")}:00`, timezone: zone, hourly, daily, fetchedAt: Date.now() };
+  }
   async function ensureWeather(force) {
-    if (PREVIEW_MODE) return;
     const place = currentWeatherPlace();
     if (!place) {
       if (state.weatherByPlace && Object.keys(state.weatherByPlace).length) {
@@ -2128,7 +3292,6 @@
     }
     if (!state.weatherByPlace) state.weatherByPlace = {};
     const key = place.key;
-    const target = place.target;
     const existing = state.weatherByPlace[key];
     const fresh =
       !force &&
@@ -2143,13 +3306,35 @@
       state.weatherRefreshing = true;
       if (state.screen === "weather") render();
     }
-    const path = target.query
-      ? `/api/v1/weather?q=${encodeURIComponent(target.query)}`
-      : `/api/v1/weather?lat=${Number(target.lat).toFixed(4)}&lon=${Number(target.lon).toFixed(4)}`;
+    const paths = weatherPaths(place);
     try {
-      const data = await apiGet(path);
-      const wx = data?.weather;
-      if (!wx || wx.temperatureC == null) return;
+      let wx = null;
+      let lastError = null;
+      // Try coordinates first, then name-based fallbacks. A missing/invalid
+      // coordinate (edge 400) or a transient failure falls through to the next
+      // candidate instead of dead-ending the whole screen.
+      for (const path of paths) {
+        try {
+          const data = PREVIEW_MODE ? { weather: previewWeather(place) } : await apiGet(path);
+          const candidate = data?.weather;
+          if (candidate && candidate.temperatureC != null) {
+            wx = candidate;
+            break;
+          }
+        } catch (error) {
+          if (
+            error?.status === 401 ||
+            error?.code === "AUTH_REQUIRED" ||
+            error?.code === "SESSION_EXPIRED"
+          )
+            throw error;
+          lastError = error;
+        }
+      }
+      if (!wx) {
+        if (lastError) throw lastError;
+        return;
+      }
       const view = weatherFromCode(wx.weatherCode, wx.isDay);
       const daily = Array.isArray(wx.daily)
         ? wx.daily
@@ -2269,6 +3454,10 @@
     return true;
   }
   function selectedFlight() {
+    // A specific record was requested: show exactly it (even if cancelled) or
+    // nothing, never a different booking.
+    if (state.selectedId)
+      return state.transport.find((x) => String(val(x, "transport_type")) === "flight" && itemId(x) === String(state.selectedId)) || null;
     const flights = state.transport.filter(
       (x) => String(val(x, "transport_type")) === "flight" && !isCancelled(x),
     );
@@ -2288,6 +3477,7 @@
       (x) => itemId(x) === String(state.selectedId || ""),
     );
     if (selected) return selected;
+    if (state.selectedId) return null;
     const stays = state.stays.filter((x) => !isCancelled(x));
     return stays[0] || state.stays[0] || null;
   }
@@ -2319,6 +3509,7 @@
         month: "short",
         day: "numeric",
         year: "numeric",
+        timeZone: "UTC",
       }).format(new Date(`${date}T12:00:00Z`));
     } catch (_) {
       return String(date);
@@ -2338,6 +3529,7 @@
       return dateFormatter(undefined, {
         month: "short",
         day: "numeric",
+        timeZone: "UTC",
       }).format(new Date(`${date}T12:00:00Z`));
     } catch (_) {
       return String(date);
@@ -2378,12 +3570,17 @@
   function formatTime(ms, timeZone) {
     if (ms == null) return "—";
     try {
-      return dateFormatter(undefined, {
+      const out = dateFormatter(undefined, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
-        timeZone: timeZone || undefined,
+        // Never fall back to the device timezone: a missing event zone would render
+        // a plausible-but-wrong local time with no warning. UTC is deterministic.
+        timeZone: timeZone || "UTC",
       }).format(new Date(Number(ms)));
+      // Mark the fallback so an unmarked ambiguous time is never shown as if it were
+      // the traveller's local time (BUG-03).
+      return timeZone ? out : `${out} UTC`;
     } catch (_) {
       return "—";
     }
@@ -2398,7 +3595,7 @@
         hour: "2-digit",
         minute: "2-digit",
         timeZoneName: "short",
-        timeZone: timeZone || undefined,
+        timeZone: timeZone || "UTC",
       }).format(new Date(Number(ms)));
     } catch (_) {
       return "Unavailable";
@@ -2411,7 +3608,7 @@
         weekday: "short",
         month: "short",
         day: "numeric",
-        timeZone: timeZone || undefined,
+        timeZone: timeZone || "UTC",
       }).format(new Date(Number(ms)));
     } catch (_) {
       return "";
@@ -2664,6 +3861,23 @@
     return "Getting things ready…";
   }
   const REQUEST_TIMEOUT_MS = 15000;
+  const STARTUP_TIMEOUT_MS = 20000;
+  async function withStartupTimeout(task) {
+    let timeoutId;
+    try {
+      return await Promise.race([
+        task,
+        new Promise((_, reject) => {
+          timeoutId = setTimeout(
+            () => reject(new Error("Tripto could not finish opening your trips. Check your connection and try again.")),
+            STARTUP_TIMEOUT_MS,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
   async function fetchWithTimeout(url, options = {}) {
     const finishActivity = beginActivity();
     const controller = new AbortController();
@@ -2722,11 +3936,18 @@
       throw new Error(
         "No saved session is available offline. Open tripto.to online once before relying on offline mode.",
       );
+    // Startup requests run in parallel; they must share one guest session
+    // instead of each creating a device (and scattering the offline cache).
+    if (!guestSessionPromise) guestSessionPromise = createGuestSession().finally(() => { guestSessionPromise = null; });
+    return guestSessionPromise;
+  }
+  let guestSessionPromise = null;
+  async function createGuestSession() {
     const response = await fetchWithTimeout(`${API}/api/v1/session/guest`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        platform: "web",
+        platform: NATIVE_PLATFORM === "android" ? "android" : "web",
         appVersion: "mobile-ui-v1",
         apiVersion: "v1",
       }),
@@ -2791,9 +4012,17 @@
         return data;
       } catch (error) {
         if (error?.status === 401 || error?.code === "AUTH_REQUIRED" || error?.code === "SESSION_EXPIRED") throw error;
+        // Access revoked or record gone: the cached copy is no longer valid.
+        if ([403, 404, 410].includes(Number(error?.status))) {
+          try { localStorage.removeItem(cacheKey(path)); } catch (_) {}
+          throw error;
+        }
         const cached = cacheRead(path);
         if (cached) {
-          state.offline = true;
+          // Only a network failure (no HTTP status: fetch threw or timed out)
+          // means offline. A server reply such as 400/403/404/500 proves we are
+          // online, so it must not raise the "Offline" banner.
+          if (!error?.status) state.offline = true;
           return cached.data;
         }
         throw error;
@@ -2832,7 +4061,19 @@
     anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
+  // One shared connection: opening a fresh one per call leaked handles that
+  // blocked later version upgrades (and the attachments store) indefinitely.
+  let localDocDbPromise = null;
   function openLocalDocDb() {
+    if (!localDocDbPromise) {
+      localDocDbPromise = openLocalDocDbConnection().catch((error) => {
+        localDocDbPromise = null;
+        throw error;
+      });
+    }
+    return localDocDbPromise;
+  }
+  function openLocalDocDbConnection() {
     return new Promise((resolve, reject) => {
       if (!("indexedDB" in window)) {
         reject(
@@ -2840,7 +4081,7 @@
         );
         return;
       }
-      const request = indexedDB.open(LOCAL_DOC_DB, 2);
+      const request = indexedDB.open(LOCAL_DOC_DB, 3);
       request.onupgradeneeded = () => {
         const db = request.result;
         if (!db.objectStoreNames.contains("docs")) {
@@ -2854,12 +4095,35 @@
           drafts.createIndex("tripId", "tripId", { unique: false });
           drafts.createIndex("status", "status", { unique: false });
         }
+        // Saved Spots: coordinates a traveler stores to walk back to later
+        // (parked car, meeting point…). Indexed by owner so one account's spots
+        // never surface under another profile on the same device; tripId is kept
+        // on each row (nullable) and filtered in JS, because an IndexedDB index
+        // skips null keys and would drop trip-less spots from a range query.
+        if (!db.objectStoreNames.contains("spots")) {
+          const spots = db.createObjectStore("spots", { keyPath: "id" });
+          spots.createIndex("owner", "owner", { unique: false });
+        }
       };
-      request.onsuccess = () => resolve(request.result);
+      let settled = false;
+      request.onsuccess = () => {
+        const db = request.result;
+        // A blocked open that later succeeds must not leak its connection.
+        if (settled) { db.close(); return; }
+        settled = true;
+        db.onversionchange = () => { localDocDbPromise = null; db.close(); };
+        resolve(db);
+      };
       request.onerror = () =>
         reject(
           request.error || new Error("Could not open local document storage."),
         );
+      request.onblocked = () => {
+        if (settled) return;
+        settled = true;
+        localDocDbPromise = null;
+        reject(new Error("Could not open local document storage."));
+      };
     });
   }
   async function sha256Blob(blob) {
@@ -2911,7 +4175,7 @@
       return [];
     }
   }
-  async function saveLocalDocument(file, type, travelerIds, relatedBookingId = null) {
+  async function saveLocalDocument(file, type, travelerIds, relatedBookingId = null, silent = false, note = "") {
     if (!state.trip) throw new Error("Open a trip first.");
     if (!file) throw new Error("Choose a file.");
     if (file.size > 10 * 1024 * 1024)
@@ -2923,7 +4187,7 @@
           document.checksum === checksum && document.integrity === "verified",
       );
     if (duplicate) {
-      showToast("This document is already saved on this phone.");
+      if (!silent) showToast("This document is already saved on this phone.");
       return duplicate;
     }
     if (existing.length >= 20)
@@ -2939,6 +4203,7 @@
       type: type || "other",
       travelerIds: Array.isArray(travelerIds) ? travelerIds : [],
       relatedBookingId: relatedBookingId || null,
+      note: String(note || "").trim().slice(0, 1000),
       savedAt: Date.now(),
       checksum,
       integrity: "verified",
@@ -2952,9 +4217,40 @@
       tx.onerror = () => reject(tx.error);
     });
     state.localDocs = await listLocalDocs(state.trip.id);
-    showToast("Document saved offline on this phone.");
-    render();
+    if (!silent) {
+      showToast("Document saved offline on this phone.");
+      render();
+    }
     return row;
+  }
+  // Bulk add: save several picked files at once, with a single render + one
+  // summary toast instead of one per file.
+  async function saveLocalDocumentsBulk(files, relatedBookingId = null) {
+    const list = Array.from(files || []).filter(Boolean);
+    if (!list.length) return;
+    let saved = 0,
+      failed = 0;
+    for (const file of list) {
+      const before = state.localDocs.length;
+      try {
+        await saveLocalDocument(file, "other", [], relatedBookingId, true);
+        if (state.localDocs.length > before) saved++;
+      } catch (_) {
+        failed++;
+      }
+    }
+    render();
+    if (saved && !failed)
+      showToast(
+        saved === 1
+          ? "Document saved offline on this phone."
+          : `${saved} documents saved offline on this phone.`,
+      );
+    else if (saved && failed)
+      showToast(`${saved} saved · ${failed} skipped (10 MB / 20-document limit).`);
+    else if (failed)
+      showToast("Couldn't save those files. Check the 10 MB and 20-document limits.");
+    else showToast("Those documents are already saved on this phone.");
   }
   async function linkLocalDocument(documentId, relatedBookingId) {
     if (!documentId || !relatedBookingId || PREVIEW_MODE) return;
@@ -3003,14 +4299,494 @@
     }
     openDocumentViewer(row.blob, row.name);
   }
-  // Populate trips/account/selected-trip from the local cache so relaunching
+  // ---- Saved Spots -----------------------------------------------------------
+  // Device-local coordinates a traveler stores to walk back to (parked car,
+  // meeting point…). No server, no map SDK, no geocoding: single-shot device
+  // geolocation + IndexedDB + documented coordinate deep links only. Coordinates
+  // and notes never leave the device except when the traveler taps a map action.
+  const SPOT_SCHEMA_VERSION = 1;
+  const SPOT_EXPORT_FORMAT = "tripto.spots";
+  const SPOT_ACCURACY_WARN_M = 100; // a fix worse than this is flagged approximate
+  const SPOT_IMPORT_MAX_BYTES = 2 * 1024 * 1024;
+  const SPOT_MAX = 200;
+  function spotOwner() {
+    // Scope every spot to the signed-in user (or guest/device), mirroring
+    // cacheKey(): one profile never sees another profile's spots on a shared
+    // device, even before a sign-out clears the local stores.
+    return sessionIdentity();
+  }
+  function isFiniteCoord(lat, lng) {
+    const a = Number(lat), b = Number(lng);
+    return Number.isFinite(a) && Number.isFinite(b) && a >= -90 && a <= 90 && b >= -180 && b <= 180;
+  }
+  function roundCoord(value) {
+    return Math.round(Number(value) * 1e6) / 1e6;
+  }
+  function formatCoords(lat, lng) {
+    return `${roundCoord(lat).toFixed(6)}, ${roundCoord(lng).toFixed(6)}`;
+  }
+  function spotMapLinks(lat, lng, mode = "driving") {
+    // Documented, coordinate-only deep links. The destination is the exact saved
+    // point; the map app picks the start position. No name search; notes never
+    // leave the device.
+    //
+    // The "lat,lng" pair must use a LITERAL comma: a percent-encoded comma (%2C)
+    // is not parsed. lat/lng are numeric (digits, "-", "."), all URL-safe.
+    //
+    // These are UNIVERSAL https links carrying the "start navigation" intent:
+    //   Google — dir_action=navigate (the only Google param that skips the route
+    //            editor; the comgooglemaps:// scheme has no navigate flag).
+    //   Waze   — navigate=yes.
+    //   Apple  — daddr routes from the current location.
+    // Opened as a top-level navigation (see openExternalMap), iOS/Android hand the
+    // link to the installed app and begin navigation; browsers fall back to the web
+    // map. A new-tab window.open() would NOT trigger the app hand-off.
+    // mode = driving | transit | walking (Google travelmode; Apple dirflg d/r/w).
+    const a = roundCoord(lat), b = roundCoord(lng);
+    const pair = `${a},${b}`;
+    const travel = ["transit", "walking"].includes(mode) ? mode : "driving";
+    return {
+      coords: pair,
+      google: `https://www.google.com/maps/dir/?api=1&destination=${a},${b}&travelmode=${travel}&dir_action=navigate`,
+      apple: `https://maps.apple.com/?daddr=${a},${b}&dirflg=${{ driving: "d", transit: "r", walking: "w" }[travel]}`,
+      waze: `https://waze.com/ul?ll=${a},${b}&navigate=yes`,
+    };
+  }
+  function normalizeSpotRow(row) {
+    if (!row || typeof row !== "object") return null;
+    if (!isFiniteCoord(row.latitude, row.longitude)) return null;
+    const name = String(row.name || "").trim();
+    if (!name) return null;
+    const created = Number(row.createdAt) || Date.now();
+    return {
+      id: typeof row.id === "string" && row.id ? row.id : `spot_${crypto.randomUUID()}`,
+      schemaVersion: SPOT_SCHEMA_VERSION,
+      owner: spotOwner(),
+      tripId: row.tripId != null && row.tripId !== "" ? String(row.tripId) : null,
+      name: name.slice(0, 80),
+      note: String(row.note || "").trim().slice(0, 500),
+      latitude: roundCoord(row.latitude),
+      longitude: roundCoord(row.longitude),
+      accuracy: row.accuracy != null && Number.isFinite(Number(row.accuracy)) ? Math.round(Number(row.accuracy)) : null,
+      approximate: Boolean(row.approximate),
+      capturedAt: Number(row.capturedAt) || created,
+      createdAt: created,
+      updatedAt: Number(row.updatedAt) || created,
+    };
+  }
+  async function listSpots() {
+    if (PREVIEW_MODE) return [];
+    try {
+      const db = await openLocalDocDb();
+      const owner = spotOwner();
+      const rows = await new Promise((resolve, reject) => {
+        const tx = db.transaction("spots", "readonly");
+        const request = tx.objectStore("spots").index("owner").getAll(owner);
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+      return rows
+        .filter((row) => row && row.owner === owner)
+        .sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+    } catch (_) {
+      return [];
+    }
+  }
+  async function refreshSpots() {
+    state.spots = await listSpots();
+    state.spotsLoadedFor = spotOwner();
+    return state.spots;
+  }
+  async function putSpotRow(row) {
+    const db = await openLocalDocDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("spots", "readwrite");
+      tx.objectStore("spots").put(row);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  async function migrateSpotOwner(from, to) {
+    if (PREVIEW_MODE || !from || !to || from === to || from === "anonymous") return;
+    try {
+      const db = await openLocalDocDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction("spots", "readwrite"), store = tx.objectStore("spots");
+        const request = store.index("owner").getAll(from);
+        request.onsuccess = () => { for (const row of request.result || []) store.put({ ...row, owner: to }); };
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+      state.spotsLoadedFor = null;
+    } catch (_) {}
+  }
+  async function saveSpot(input) {
+    const clean = normalizeSpotRow({
+      ...input,
+      tripId: input.tripId !== undefined ? input.tripId : state.trip?.id || null,
+    });
+    if (!clean) throw new Error("Add a name and a valid location before saving.");
+    const existing = await listSpots();
+    if (existing.length >= SPOT_MAX)
+      throw new Error(`You can keep up to ${SPOT_MAX} spots on this device.`);
+    // A double-tapped Save must not create twins: same name + coordinates
+    // captured within two minutes is treated as the same spot.
+    const twin = existing.find(
+      (row) =>
+        row.name.toLowerCase() === clean.name.toLowerCase() &&
+        Math.abs(row.latitude - clean.latitude) < 1e-5 &&
+        Math.abs(row.longitude - clean.longitude) < 1e-5 &&
+        Math.abs((Number(row.capturedAt) || 0) - clean.capturedAt) < 120000,
+    );
+    if (twin) return twin;
+    await putSpotRow(clean);
+    await refreshSpots();
+    return clean;
+  }
+  async function updateSpot(id, patch) {
+    const current = state.spots.find((row) => String(row.id) === String(id));
+    if (!current) return null;
+    const next = normalizeSpotRow({
+      ...current,
+      ...patch,
+      id: current.id,
+      createdAt: current.createdAt,
+      capturedAt: current.capturedAt,
+      updatedAt: Date.now(),
+    });
+    if (!next) throw new Error("A name is required.");
+    await putSpotRow(next);
+    await refreshSpots();
+    return next;
+  }
+  async function removeSpot(id) {
+    const db = await openLocalDocDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("spots", "readwrite");
+      tx.objectStore("spots").delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    await refreshSpots();
+  }
+  function geolocationErrorMessage(error) {
+    switch (error?.code) {
+      case "insecure":
+        return "Location needs a secure (https) connection. Open tripto.to over https, then try again.";
+      case "unsupported":
+        return "This device or browser can’t share a location.";
+      case "services-off":
+        return "Location is turned off on this phone. Turn it on in Settings, then try again.";
+      case 1: // PERMISSION_DENIED
+        return NATIVE
+          ? "Location permission is off. Allow location for tripto.to in the phone’s Settings, then try again."
+          : "Location permission is off. Allow location for tripto.to in your browser settings, then try again.";
+      case 2: // POSITION_UNAVAILABLE
+        return "Your location signal is unavailable right now. Move to an open area and try again.";
+      case 3: // TIMEOUT
+        return "Locating took too long. Try again with a clearer signal.";
+      default:
+        return "Couldn’t get your location. Try again.";
+    }
+  }
+  // Android app: one fix through the Geolocation plugin, only after the user's
+  // tap. Asks for permission in context; the user may grant approximate only, in
+  // which case no high-accuracy (GPS) fix is requested. No background location.
+  async function getNativePositionOnce() {
+    const Geo = nativePlugin("Geolocation");
+    if (!Geo) throw { code: "unsupported" };
+    const nativeError = (error) => {
+      const code = String(error?.code || "");
+      if (code === "OS-PLUG-GLOC-0003") return { code: 1 };
+      if (["OS-PLUG-GLOC-0007", "OS-PLUG-GLOC-0009", "OS-PLUG-GLOC-0016", "OS-PLUG-GLOC-0017"].includes(code)) return { code: "services-off" };
+      if (code === "OS-PLUG-GLOC-0010") return { code: 3 };
+      return { code: 2 };
+    };
+    let status;
+    try {
+      status = await Geo.checkPermissions();
+      if (status.location !== "granted" && status.coarseLocation !== "granted")
+        status = await Geo.requestPermissions({ permissions: ["location", "coarseLocation"] });
+    } catch (error) {
+      throw nativeError(error);
+    }
+    if (status.location !== "granted" && status.coarseLocation !== "granted") throw { code: 1 };
+    try {
+      return await Geo.getCurrentPosition({
+        enableHighAccuracy: status.location === "granted",
+        timeout: 15000,
+        maximumAge: 0,
+      });
+    } catch (error) {
+      throw nativeError(error);
+    }
+  }
+  // After a refusal the system won't ask again; offer the matching Settings page.
+  async function offerNativeLocationSettings(error) {
+    if (!NATIVE || (error?.code !== 1 && error?.code !== "services-off")) return false;
+    const servicesOff = error.code === "services-off";
+    const open = await requestConfirmation({
+      title: servicesOff ? "Location is off" : "Location permission is off",
+      body: geolocationErrorMessage(error),
+      confirmLabel: "Open Settings",
+      cancelLabel: "Not now",
+      danger: false,
+    });
+    if (open) {
+      const TriptoNative = nativePlugin("TriptoNative");
+      try { await (servicesOff ? TriptoNative.openLocationSettings() : TriptoNative.openAppSettings()); } catch (_) {}
+    }
+    return true;
+  }
+  function getCurrentPositionOnce() {
+    if (NATIVE) return getNativePositionOnce();
+    return new Promise((resolve, reject) => {
+      if (typeof window !== "undefined" && window.isSecureContext === false) {
+        reject({ code: "insecure" });
+        return;
+      }
+      if (!navigator.geolocation) {
+        reject({ code: "unsupported" });
+        return;
+      }
+      // Single fix only — no watchPosition, no background tracking. maximumAge:0
+      // forces a fresh reading so a stale cached fix is never saved as "here".
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      });
+    });
+  }
+  async function beginSpotDetection(carry = {}) {
+    state.spotDetectBusy = true;
+    render();
+    try {
+      const pos = await getCurrentPositionOnce();
+      const accuracy = pos.coords.accuracy != null ? Math.round(pos.coords.accuracy) : null;
+      state.spotDraft = {
+        latitude: roundCoord(pos.coords.latitude),
+        longitude: roundCoord(pos.coords.longitude),
+        accuracy,
+        capturedAt: Number(pos.timestamp) || Date.now(),
+        approximate: accuracy != null && accuracy > SPOT_ACCURACY_WARN_M,
+        name: String(carry.name || ""),
+        note: String(carry.note || ""),
+        tripId: state.trip?.id || null,
+      };
+      state.spotDetectBusy = false;
+      render();
+      openSheet("spot-save");
+    } catch (error) {
+      state.spotDetectBusy = false;
+      render();
+      if (await offerNativeLocationSettings(error)) return;
+      showToast(geolocationErrorMessage(error), "alert");
+    }
+  }
+  function openExternalMap(url) {
+    if (!url) {
+      showToast("That link is unavailable.");
+      return;
+    }
+    // Open as a TOP-LEVEL navigation from the user's tap (synchronous <a> click),
+    // never window.open("_blank"): iOS/Android only hand a universal map link off to
+    // the installed app (Google Maps / Apple Maps / Waze) — and start navigation —
+    // when it is a first-party top navigation. A new tab just shows the web map. If
+    // the app is not installed the same link loads the web map instead.
+    try {
+      const a = document.createElement("a");
+      a.href = url;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (_) {
+      window.location.href = url;
+    }
+  }
+  // Clipboard writes can be refused (permissions, insecure context, no user
+  // gesture). Try the async API, then the legacy selection copy; never throw.
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(String(text));
+      return true;
+    } catch (_) {}
+    try {
+      const area = document.createElement("textarea");
+      area.value = String(text);
+      area.setAttribute("readonly", "");
+      area.style.cssText = "position:fixed;top:-1000px;opacity:0";
+      document.body.appendChild(area);
+      area.select();
+      const ok = document.execCommand("copy");
+      area.remove();
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+  // Shares the spot name + a map pin link. The private note never leaves the device.
+  async function shareSpot(spot) {
+    const url = `https://www.google.com/maps/search/?api=1&query=${roundCoord(spot.latitude)},${roundCoord(spot.longitude)}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: spot.name, text: spot.name, url });
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+      }
+    }
+    showToast((await copyText(`${spot.name} ${url}`)) ? "Link copied." : url);
+  }
+  async function copySpotCoords(spot) {
+    const text = `${roundCoord(spot.latitude)},${roundCoord(spot.longitude)}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("Coordinates copied.");
+    } catch (_) {
+      showToast(`Coordinates: ${text}`);
+    }
+  }
+  async function exportSpots() {
+    const spots = await listSpots();
+    if (!spots.length) {
+      showToast("You have no saved spots to export yet.");
+      return;
+    }
+    const payload = {
+      format: SPOT_EXPORT_FORMAT,
+      version: SPOT_SCHEMA_VERSION,
+      exportedAt: new Date().toISOString(),
+      spots: spots.map((row) => ({
+        id: row.id,
+        name: row.name,
+        note: row.note,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        accuracy: row.accuracy,
+        approximate: row.approximate,
+        capturedAt: row.capturedAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        tripId: row.tripId,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `tripto-saved-spots-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    showToast(`Exported ${spots.length} spot${spots.length === 1 ? "" : "s"}.`);
+  }
+  function validateSpotImport(parsed) {
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+      return { ok: false, error: "This file isn’t a tripto spots export." };
+    if (parsed.format !== SPOT_EXPORT_FORMAT)
+      return { ok: false, error: "This file isn’t a tripto spots export." };
+    if (Number(parsed.version) > SPOT_SCHEMA_VERSION)
+      return { ok: false, error: "This export was made by a newer tripto.to. Update the app, then import again." };
+    if (!Array.isArray(parsed.spots))
+      return { ok: false, error: "This export has no spots to import." };
+    const spots = [];
+    let skipped = 0;
+    for (const row of parsed.spots) {
+      const clean = normalizeSpotRow(row);
+      if (clean) spots.push(clean);
+      else skipped += 1;
+    }
+    return { ok: true, spots, skipped };
+  }
+  async function importSpotsFromFile(file) {
+    if (!file) return;
+    if (file.size > SPOT_IMPORT_MAX_BYTES) {
+      showToast("That file is too large to be a spots export.", "alert");
+      return;
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(await file.text());
+    } catch (_) {
+      showToast("That file isn’t valid JSON.", "alert");
+      return;
+    }
+    const result = validateSpotImport(parsed);
+    if (!result.ok) {
+      showToast(result.error, "alert");
+      return;
+    }
+    const existing = await listSpots();
+    const byId = new Set(existing.map((row) => row.id));
+    const sameSpot = (row) => `${String(row.name || "").trim().toLowerCase()}|${roundCoord(row.latitude)}|${roundCoord(row.longitude)}`;
+    const bySpot = new Set(existing.map(sameSpot));
+    let added = 0,
+      duplicates = 0;
+    for (const row of result.spots) {
+      // Re-importing the same file must add nothing: a spot keeps its id, and an
+      // id already on this device is never overwritten.
+      if (byId.has(row.id) || bySpot.has(sameSpot(row))) {
+        duplicates += 1;
+        continue;
+      }
+      if (existing.length + added >= SPOT_MAX) break;
+      // Imports join the current trip (the exporting trip's id means nothing
+      // here), under a fresh id so another profile's row is never overwritten.
+      await putSpotRow({ ...row, id: `spot_${crypto.randomUUID()}`, owner: spotOwner(), tripId: state.trip?.id || null });
+      byId.add(row.id);
+      bySpot.add(sameSpot(row));
+      added += 1;
+    }
+    await refreshSpots();
+    render();
+    const parts = [`${added} added`];
+    if (duplicates) parts.push(`${duplicates} already on this device`);
+    if (result.skipped) parts.push(`${result.skipped} skipped`);
+    showToast(`Import complete · ${parts.join(" · ")}.`);
+  }
+  function triggerSpotImport() {
+    const input = document.createElement("input");
+    input.type = "file";
+    // Broad accept: iOS Files greys out a .json export when the accept list is
+    // too narrow, leaving nothing selectable. A display:none input is also
+    // ignored by iOS PWAs, so keep it rendered but off-screen.
+    input.accept = ".json,application/json,text/json,text/plain";
+    input.setAttribute("aria-hidden", "true");
+    input.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;";
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      input.remove();
+      if (file)
+        importSpotsFromFile(file).catch((error) =>
+          showToast(error?.message || "That file couldn’t be imported.", "alert"),
+        );
+    });
+    document.body.append(input);
+    input.click();
+  }
+  function spotWhenLabel(ts) {
+    try {
+      return dateFormatter(globalThis.TriptoI18n?.locale || "en", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(Number(ts)));
+    } catch (_) {
+      return new Date(Number(ts)).toISOString().slice(0, 16).replace("T", " ");
+    }
+  }
+
   // paints the last-known screen instantly instead of the loading skeleton.
   function hydrateAppFromCache() {
     const tripsRow = cacheRead("/api/v1/trips");
     if (!tripsRow) return false;
     const accountRow = cacheRead("/api/v1/account");
+    const subscriptionRow = cacheRead("/api/v1/subscription");
     state.trips = tripsRow.data?.trips || [];
     if (accountRow) state.account = accountRow.data?.account || state.account || null;
+    if (subscriptionRow) state.subscription = subscriptionRow.data?.subscription || state.subscription || null;
     const selected = localStorage.getItem("tripto_selected_trip");
     state.trip =
       state.trips.find((trip) => String(trip.id) === selected) ||
@@ -3019,11 +4795,39 @@
     if (state.trip) hydrateTripDetailsFromCache();
     return true;
   }
+  // Local documents for one trip, straight from IndexedDB (no network).
+  async function loadLocalDocsFor(tripId) {
+    const docs = await Promise.race([listLocalDocs(tripId), new Promise((resolve) => setTimeout(() => resolve(null), 4000))]).catch(() => null);
+    if (docs && String(state.trip?.id || "") === String(tripId)) {
+      state.localDocs = docs;
+      render();
+    }
+    return docs;
+  }
+  // Reconnect flow, step 1: upload changes queued on this phone. Runs on app
+  // start, return to foreground, reconnect and manual retry; never on a timer.
+  let syncPromise = null;
+  function syncPendingChanges() {
+    if (syncPromise) return syncPromise;
+    if (PREVIEW_MODE || !navigator.onLine || !state.token || !myPendingMutations().length) return Promise.resolve(false);
+    state.syncing = true;
+    renderConnectionState();
+    syncPromise = Promise.allSettled([flushSmartImportQueue(), flushChecklistQueue(), flushCollectionsQueue()])
+      .then((results) => results.some((row) => row.status === "fulfilled" && row.value === true))
+      .finally(() => {
+        syncPromise = null;
+        state.syncing = false;
+        state.pendingCount = myPendingMutations().length;
+        renderConnectionState();
+      });
+    return syncPromise;
+  }
   async function loadApp() {
     state.tripsLoaded = false;
     state.error = null;
     state.requestId = null;
     state.sessionRejected = false;
+    state.sessionNeedsReconnect = false;
     if (PREVIEW_MODE) {
       state.loading = true;
       render();
@@ -3163,13 +4967,34 @@
     state.loading = !hydrated || !resolveRouteSelection();
     if (hydrated) state.tripsLoaded = true;
     render();
+    // Saved documents live only on this phone: load them from IndexedDB now,
+    // independent of the network, so they are available even if every
+    // request below fails or times out.
+    if (hydrated && state.trip) void loadLocalDocsFor(state.trip.id);
+    // Upload changes made offline before the fresh server copy replaces the
+    // cached one (pending rows are re-applied on top meanwhile).
+    const syncing = syncPendingChanges();
     try {
-      const [tripsResult, accountResult] = await Promise.all([
+      // Only the trips list is required. Account and subscription fall back
+      // to their cached copies so one failing request never hides the trips.
+      const [tripsSettled, accountSettled, subscriptionSettled] = await withStartupTimeout(Promise.allSettled([
         apiGet("/api/v1/trips"),
         apiGet("/api/v1/account"),
-      ]);
+        apiGet("/api/v1/subscription"),
+      ]));
+      const authError = [tripsSettled, accountSettled, subscriptionSettled].find((row) => row.status === "rejected" && (row.reason?.status === 401 || row.reason?.code === "AUTH_REQUIRED" || row.reason?.code === "SESSION_EXPIRED"));
+      if (authError) throw authError.reason;
+      if (tripsSettled.status === "rejected") throw tripsSettled.reason;
+      const tripsResult = tripsSettled.value,
+        accountResult = accountSettled.status === "fulfilled" ? accountSettled.value : { account: state.account },
+        subscriptionResult = subscriptionSettled.status === "fulfilled" ? subscriptionSettled.value : { subscription: state.subscription };
       state.trips = tripsResult?.trips || [];
       state.account = accountResult?.account || null;
+      const accountLocale = state.account?.mode === "account" ? state.account?.user?.locale : null;
+      if (accountLocale && globalThis.TriptoI18n?.normalize(accountLocale) === String(accountLocale).toLowerCase().split(/[-_]/)[0]) {
+        await globalThis.TriptoI18n.setLocale(accountLocale);
+      }
+      state.subscription = subscriptionResult?.subscription || null;
       // Inbox and trip detail requests are independent. Start both before
       // waiting so account startup does not serialize their network latency.
       const inboxReady = state.account?.mode === "account"
@@ -3180,7 +5005,8 @@
         : Promise.resolve().then(() => { state.bookingEmails = []; });
       applyRouteTripSelection();
       const selected = localStorage.getItem("tripto_selected_trip");
-      state.trip = state.trip ||
+      // The cached trip object may be stale or deleted; use the fresh row.
+      state.trip = (state.trip && state.trips.find((trip) => String(trip.id) === String(state.trip.id))) ||
         state.trips.find((trip) => String(trip.id) === selected) ||
         selectRelevantTrip(state.trips) ||
         null;
@@ -3188,6 +5014,10 @@
         localStorage.setItem("tripto_selected_trip", state.trip.id);
       await Promise.all([loadTripDetails(), inboxReady]);
       state.tripsLoaded = true;
+      state.lastSyncedAt = Date.now();
+      // Changes that synced during this load: refresh once more so the screen
+      // shows the server's confirmed copy (and re-run server trip checks).
+      void syncing.then((touched) => { if (touched && state.trip) return loadTripDetails().then(render); }).catch(() => {});
       // Keep the requested screen even when there are no trips. The Trips
       // empty state offers creation without redirecting into a form.
     } catch (error) {
@@ -3195,12 +5025,15 @@
       // If we already painted cached data, keep it on screen for transient
       // network errors — only surface the error screen when we have nothing, or
       // when the session was rejected and must be re-authenticated.
-      if (!hydrated || authFailed) {
+      if (!hydrated) {
         state.tripsLoaded = false;
         state.error = error instanceof Error ? error.message : String(error);
         state.requestId = error?.requestId || null;
         state.sessionRejected = authFailed;
-      } else {
+      } else if (authFailed) {
+        // Saved trips stay readable; only syncing needs a new sign-in.
+        state.sessionNeedsReconnect = true;
+      } else if (!error?.status) {
         state.offline = true;
       }
     } finally {
@@ -3248,16 +5081,22 @@
     ];
   }
   function applyTripDetails(results) {
+    // Last-good fallbacks only apply to the same trip; after a trip switch a
+    // failed section starts empty instead of showing the previous trip's data.
+    const sameTrip = state.detailsTripId != null && String(state.detailsTripId) === String(state.trip?.id || "");
+    state.detailsTripId = state.trip?.id ?? null;
     const take = (index, key, fallback) =>
       results[index] && results[index].status === "fulfilled"
         ? (results[index].value?.[key] ?? fallback)
-        : fallback;
+        : sameTrip ? fallback : (Array.isArray(fallback) ? [] : null);
     // Every section is independently cached. Keep the last good section if a
     // secondary request fails, rather than emptying the whole trip because one
     // optional endpoint (for example collections or live-flight data) is down.
     state.timeline = take(0, "items", state.timeline || []);
-    state.timelineDayKey = null;
-    state.checklist = normalizeChecklist(take(1, "items", state.checklist || []));
+    // Keep the chosen day tab across refreshes of the same trip (a missing day
+    // falls back on render); a different trip starts fresh.
+    if (!sameTrip) Object.assign(state, { timelineDayKey: null, taxFree: null, taxFreeCountry: null, taxFreeRegion: null, taxFreeRate: null, weatherSel: null });
+    state.checklist = normalizeChecklist(take(1, "items", state.checklist || [])).filter((row) => !pendingChecklistDeletes.has(String(row.id)));
     state.brain = take(2, "brain", state.brain || null);
     state.impacts = take(3, "impacts", state.impacts || []);
     state.transport = take(4, "transport", state.transport || []);
@@ -3269,7 +5108,7 @@
             betaOnly: true,
             reason: "disabled",
           }
-        : state.liveFlights || { enabled: false, available: false, betaOnly: true, reason: "unavailable" };
+        : (sameTrip && state.liveFlights) || { enabled: false, available: false, betaOnly: true, reason: "unavailable" };
     state.stays = take(5, "stays", state.stays || []);
     state.locations = take(6, "locations", state.locations || []);
     state.travelers = take(7, "travelers", state.travelers || []);
@@ -3289,6 +5128,48 @@
     state.changes = take(15, "changes", state.changes || []);
     state.collections = take(16, "collections", state.collections || []);
     state.collectionStops = take(16, "stops", state.collectionStops || []);
+    overlayPendingChanges();
+  }
+  // Server responses and cached copies do not include changes still waiting
+  // on this phone. Re-apply them so a refresh or restart never makes an
+  // offline edit look lost before it syncs.
+  function overlayPendingChanges() {
+    const tripId = String(state.trip?.id || "");
+    if (!tripId) return;
+    const rows = myPendingMutations().filter((row) => String(row.tripId) === tripId);
+    if (!rows.length) return;
+    const same = (a, b) => a != null && b != null && (String(a) === String(b) || String(a) === String(resolvePendingId(b)));
+    const checklist = state.checklist || (state.checklist = []);
+    const collections = state.collections || (state.collections = []);
+    const stops = state.collectionStops || (state.collectionStops = []);
+    for (const row of rows) {
+      if (row.kind === "checklist") {
+        if (row.op === "create") {
+          if (!checklist.some((item) => same(item.id, row.tempId)))
+            checklist.push(normalizeChecklist([{ id: row.tempId, ...row.body, version: 1, completed: false, created_at: row.createdAt, __local: true }])[0]);
+          continue;
+        }
+        const item = checklist.find((entry) => same(entry.id, row.itemId));
+        if (!item) continue;
+        if (row.op === "delete") checklist.splice(checklist.indexOf(item), 1);
+        else if (row.op === "toggle") Object.assign(item, { completed: Boolean(row.body?.completed), completion_source: row.body?.completed ? "user" : "none" });
+        else if (row.op === "rename" && row.body?.title) item.title = row.body.title;
+      } else if (row.kind === "collection") {
+        if (row.op === "create" && !collections.some((entry) => same(entry.id, row.tempId)))
+          collections.push({ id: row.tempId, trip_id: tripId, type: "custom", status: "planned", title: row.body?.title || "Neighborhood", city: row.body?.city || null, version: 1, __local: true });
+        else if (row.op === "add-stop" && !stops.some((entry) => same(entry.id, row.tempId)))
+          stops.push({ id: row.tempId, collection_item_id: row.collectionId, position: stops.filter((entry) => same(entry.collection_item_id, row.collectionId)).length, version: 1, __local: true, ...toStopRow(row.body || {}) });
+        else if (row.op === "status") {
+          const stop = stops.find((entry) => same(entry.id, row.stopId));
+          if (stop && row.body?.status) stop.status = row.body.status;
+        } else if (row.op === "reorder") {
+          (row.body?.order || []).forEach((id, position) => {
+            const stop = stops.find((entry) => same(entry.id, id));
+            if (stop) stop.position = position;
+          });
+        }
+      }
+    }
   }
   // Imports that still need the traveler to review/confirm them (the unread set).
   function pendingImportCount() {
@@ -3314,6 +5195,7 @@
     const requestId = ++tripDetailsRequestId;
     if (!state.trip) {
       state.tripDetailsLoading = false;
+      state.detailsTripId = null;
       state.timeline = [];
       state.checklist = [];
       state.brain = null;
@@ -3347,7 +5229,7 @@
         Promise.allSettled(tripDetailPaths().map(apiGet)),
         // Local documents improve offline use but must never block the itinerary
         // if this browser temporarily cannot open IndexedDB.
-        listLocalDocs(tripId).catch(() => []),
+        Promise.race([listLocalDocs(tripId), new Promise((resolve) => setTimeout(() => resolve(null), 4000))]).catch(() => null),
       ]);
       // Drop the response if the user switched trips while it was in flight, so a
       // slow request can never overwrite the newly-opened trip's data.
@@ -3356,7 +5238,12 @@
       // section fails. applyTripDetails keeps the last verified values for any
       // rejected request and still applies the sections that did arrive.
       applyTripDetails(results);
-      state.localDocs = localDocs;
+      // Nothing from the network and nothing cached: say so plainly instead
+      // of presenting an empty trip.
+      state.tripUnavailableOffline = results[0].status === "rejected" && !cacheRead(tripDetailPaths()[0]) ? tripId : null;
+      // A slow IndexedDB read keeps the documents already loaded for this trip.
+      state.localDocs = localDocs || (state.localDocs || []).filter((doc) => String(doc.tripId) === String(tripId));
+      if (!localDocs) void loadLocalDocsFor(tripId);
       if (state.trip?.id !== tripId) return;
       void ensureWeather();
       // Soft, non-fatal: lets the trip menu reveal "Plan together" only when the
@@ -3376,6 +5263,7 @@
   // revalidate in the background; otherwise fall back to the loading skeleton.
   async function enterTripWithDetails(routeAfter) {
     if (PREVIEW_MODE) {
+      switchPreviewTrip();
       routeAfter();
       return;
     }
@@ -3758,18 +5646,269 @@
       blob: null,
     }));
     state.offline = false;
+    state.detailsTripId = data.trip.id;
+  }
+  // Each preview trip keeps its own in-memory itinerary, so switching trips never
+  // shows Rome's bookings under Athens or Paris, and preview edits survive a
+  // round trip between trips.
+  const PREVIEW_TRIP_KEYS = ["timeline", "transport", "stays", "locations", "travelers", "connections", "checklist", "brain", "impacts", "changes", "health", "bookingDetails", "contacts", "collections", "collectionStops", "imports", "documents", "localDocs"];
+  const previewTripStore = new Map();
+  function previewTripSeed(trip) {
+    const title = String(trip?.title || "");
+    const city = /athens/i.test(title)
+      ? { id: "athens", display_name: "Athens", city: "Athens", country: "Greece", country_code: "GR", timezone: "Europe/Athens", latitude: 37.9838, longitude: 23.7275 }
+      : /paris/i.test(title)
+        ? { id: "paris", display_name: "Paris", city: "Paris", country: "France", country_code: "FR", timezone: "Europe/Paris", latitude: 48.8566, longitude: 2.3522 }
+        : null;
+    return {
+      timeline: [], transport: [], stays: [], connections: [], checklist: [], impacts: [], changes: [],
+      bookingDetails: [], contacts: [], collections: [], collectionStops: [], imports: [], documents: [], localDocs: [],
+      locations: city ? [{ type: "city", ...city }] : [],
+      travelers: [{ id: "traveler", display_name: "Arthur", traveler_type: "adult", version: 1 }],
+      brain: { nextItem: null, recommendationConfidence: "unavailable", issues: [], smartEssentials: [], alerts: [] },
+      health: { highestSeverity: "info", issueCount: 0, issues: [], calculatedAt: Date.now() },
+    };
+  }
+  function resetTripScopedState() {
+    Object.assign(state, { timelineDayKey: null, taxFree: null, taxFreeCountry: null, taxFreeRegion: null, taxFreeRate: null, weatherSel: null });
+  }
+  function switchPreviewTrip() {
+    const nextId = String(state.trip?.id || ""), currentId = String(state.detailsTripId ?? "");
+    if (!nextId || nextId === currentId) return;
+    if (currentId) previewTripStore.set(currentId, Object.fromEntries(PREVIEW_TRIP_KEYS.map((key) => [key, state[key]])));
+    Object.assign(state, previewTripStore.get(nextId) || previewTripSeed(state.trip));
+    state.detailsTripId = nextId;
+    resetTripScopedState();
   }
   function topbar() {
-    return `<header class="app-header"><button class="brand" data-screen="home" aria-label="tripto.to Home">tripto<span class="brand-dot">.</span>to</button><div class="connection-state">${state.offline ? `<span class="offline-state" role="status">${icon("info", 16)} Offline</span>` : ""}${HeaderNavigation()}</div></header>`;
+    return `<header class="app-header"><button class="brand" data-screen="home" aria-label="tripto.to Home">tripto<span class="brand-dot">.</span>to</button><div class="connection-state"><span class="connection-chip" data-connection-chip>${connectionChip()}</span>${HeaderNavigation()}</div></header>`;
+  }
+  // About-this-page help: every page header carries a "?" that opens a short,
+  // friendly guide. Keys match state.screen (forms use pageHelpFormKey()).
+  // English only here; i18n.js swaps each string via lang/*.json (pagehelp.*).
+  const PAGE_HELP = {
+    trips: { title: "About Trips", intro: "This is home base: every trip you plan lives here, from the one you are on right now to the ones you are dreaming about.",
+      can: ["See your current trip at the top, with how many days are left, or a countdown to your next trip.", "Browse upcoming, past and cancelled trips, each grouped in its own list.", "Spot trips shared with you by their “Shared” badge."],
+      how: ["Tap + to create a new trip.", "Tap any trip to open its timeline.", "Press and hold a trip to delete it."],
+      know: ["Deleting a trip also removes its bookings and cannot be undone.", "Your account and Tripto Plus are one tap away in the top-right corner."] },
+    timeline: { title: "About your Timeline", intro: "Your trip, day by day. Flights, stays, reservations and plans line up in the order they happen, so you always know what comes next.",
+      can: ["Switch between days with the tabs at the top.", "See what is happening now and what is next.", "Open the forecast from the weather icon and switch trips from the trip name."],
+      how: ["Tap + to add a booking, plan your days or save an idea.", "Tap an item to see its details.", "Press and hold an item to edit it, move it to another day or delete it.", "Tap the gear button for trip tools like weather, maps and documents."],
+      know: ["Ideas without a day stay in Save for Later and do not clutter your timeline.", "Menu has Edit trip, your To-Do List and All trips."] },
+    "trip-options": { title: "About Trip options", intro: "All the handy tools for this trip in one place.",
+      can: ["Check the weather, convert currency and read tax-free refund guides.", "Keep documents, save spots and see your trip on a map.", "Invite people with Plan together or export the trip as a PDF.", "Find flights, stays, transfers, eSIMs and things to do through partner links."],
+      how: ["Tap a tile to open that tool.", "Tap the bell to see trip alerts."],
+      know: ["The map unlocks once your trip has at least two places with a location.", "Partner links open outside the app and may earn Tripto a commission at no extra cost to you."] },
+    "trip-map": { title: "About the trip map", intro: "See every place on your trip on one live map, and get directions with a single tap.",
+      can: ["Show the whole trip or one day at a time with the day chips.", "Turn the route line, saved places and your location on or off in Map layers.", "Get directions to any place from the list below the map."],
+      how: ["Tap a day chip to filter the map.", "Use the round buttons to fit all places or show where you are.", "Tap a place in the list to open directions in your maps app."],
+      know: ["Your location is shown only on this device and is never shared.", "Offline, the map shows your saved places; directions need a connection."] },
+    weather: { title: "About Weather", intro: "The forecast for where you are going, so you know what to pack and when to plan outdoor time.",
+      can: ["See current conditions, highs, lows, rain chance and wind.", "Check the next few hours and the 7-day forecast.", "Switch between the places on your trip."],
+      how: ["Tap a place chip to see its forecast.", "Tap refresh to get the latest update."],
+      know: ["The forecast uses your trip destination, never your own location.", "Offline, you will see the last forecast saved on this phone."] },
+    spots: { title: "About Save Spots", intro: "Parked the car? Found a great café? Save the spot and find your way back later.",
+      can: ["Save your current location with a name and a note.", "Get a route back by car, transit or on foot.", "Rename, share or delete spots, and export or import them as a file."],
+      how: ["Tap + or “Save this spot” and allow location access when asked.", "Give the spot a name and tap “Save spot”.", "Tap a saved spot and choose how you want to get there."],
+      know: ["Spots are saved only on this phone. Export them if you want a backup.", "Location is used only when you tap save, never in the background."] },
+    currency: { title: "About the currency converter", intro: "Quickly see what things cost in your own money.",
+      can: ["Convert any amount between two currencies.", "Swap the direction with one tap.", "Use quick amounts like 10, 50, 100 or 500."],
+      how: ["Choose the From and To currencies.", "Type an amount or tap a quick amount.", "Tap Update to refresh the rate when you are online."],
+      know: ["Rates work offline once they have been saved.", "Rates are for reference only; banks and card providers may add fees."] },
+    "tax-free": { title: "About Tax Free", intro: "A friendly guide to getting sales tax (VAT) back on shopping abroad.",
+      can: ["See whether a country offers tax refunds to visitors.", "Check the tax rate, minimum spend and how much you might get back.", "Learn what to do in the shop, at the airport and by when."],
+      how: ["Pick a country from your trip or search for any country.", "Open the sections to read the details step by step.", "Tap “Update information” to check for newer rules."],
+      know: ["Rules change, so double-check with the official sources linked on the page.", "Offline, you will see the last information saved on this phone."] },
+    documents: { title: "About Documents", intro: "Keep tickets, passes and confirmations with your trip so they open even without internet.",
+      can: ["Add PDFs, photos and Wallet passes up to 10 MB each.", "Open any document offline.", "See at a glance which files are ready offline."],
+      how: ["Tap “Add a document” and choose a file.", "Add a note if you like, then tap “Save to this phone”.", "Tap a document to open it, or the trash icon to remove it."],
+      know: ["Documents stay on this phone only and are not backed up to your account.", "Keep the originals in your email, just in case."] },
+    collaboration: { title: "About Plan together", intro: "Plan the trip with friends and family. Everyone sees the same plan.",
+      can: ["Invite people as editors or viewers.", "See who is on the trip and change their role.", "Cancel invitations you no longer need."],
+      how: ["Tap “Invite people” and choose “Can edit” or “View only”.", "Create the invitation link and share or copy it.", "Tap a member to change their role or remove them."],
+      know: ["Each link works once and can be cancelled at any time.", "Everyone needs their own free account. Planning together is free."] },
+    join: { title: "About joining a trip", intro: "Someone invited you to plan a trip together. Nice!",
+      can: ["See which trip you are joining and what you will be able to do."],
+      how: ["Sign in if asked. Your invitation is kept while you do.", "Tap “Accept invitation” to join, or “Not now” to decide later."],
+      know: ["If the link has expired or was already used, ask the trip owner for a new one."] },
+    checklist: { title: "About your To-Do List", intro: "Everything to do and pack before you go, in one simple list.",
+      can: ["Add your own tasks.", "Load a ready-made set of travel essentials.", "Track your progress as you check things off."],
+      how: ["Type a task and tap Add.", "Tap a task to check it off.", "Use the pencil to rename a task or the trash icon to delete it."],
+      know: ["Completed tasks move to their own section.", "The list is saved with the trip, so everyone on the trip can see it."] },
+    account: { title: "About your Account", intro: "Your profile, settings and data, all in one place.",
+      can: ["Sign in with Google to keep trips on all your devices.", "Choose a theme you like under Appearance.", "Manage Tripto Plus, take the tour or find help."],
+      how: ["Tap a row to open that setting.", "Use Sign out when you are done on a shared device."],
+      know: ["“Remove local data” clears files and saved trips from this phone only.", "“Delete my account” permanently removes your account and trips."] },
+    subscription: { title: "About Tripto Plus", intro: "Your first trip is free. Tripto Plus unlocks unlimited trips and every planning tool.",
+      can: ["See what Plus includes.", "Check your plan and when it renews.", "Manage or cancel your subscription."],
+      how: ["Choose a plan and tap Continue to subscribe.", "Tap “Not now” to go back."],
+      know: ["You can cancel anytime.", "Plus bought on the website also works in the app."] },
+    "add-trip": { title: "About adding to your trip", intro: "Pick what you want to add and we will take you to the right place.",
+      can: ["Add a booking you already have, like a flight or hotel.", "Plan your days with things to see and do.", "Save an idea for later, without a day or time."],
+      how: ["Tap the option that fits.", "Fill in the details and save."],
+      know: ["Ideas stay in Save for Later until you give them a day."] },
+    "add-booking": { title: "About adding a booking", intro: "Add travel you have already reserved: flights, stays, trains, car rentals and more.",
+      can: ["Choose from flights, trains, ferries, buses, cruises, cars, transfers, parking, hotels and insurance.", "Upload a ticket or confirmation and let the app read it for you."],
+      how: ["Tap a booking type and fill in the essentials.", "Or tap “Upload a file” to import a confirmation."],
+      know: ["To plan sights and activities, use Plan your days instead."] },
+    "day-plan": { title: "About Plan your days", intro: "Fill your days with the things you want to see and do.",
+      can: ["Choose from sights, museums, food, shopping, tours, nature, beaches and more.", "Group several places in one area as a Neighborhood."],
+      how: ["Pick a type.", "Add the name, day and time, then save."],
+      know: ["Leave the day empty and it will be kept as an idea for later."] },
+    "day-plan-form": { title: "About this plan", intro: "Add the details of something you want to do.",
+      can: ["Set the day, start and end time, address and notes.", "Attach tickets or documents."],
+      how: ["Enter a name or place.", "Pick a day and time if you know them.", "Tap Save."],
+      know: ["With a day, it appears on your timeline.", "Without a day, it goes to Save for Later.", "An end time before the start time means it ends the next day."] },
+    "save-later": { title: "About Save for Later", intro: "Your wishlist for this trip: places and ideas you have not scheduled yet.",
+      can: ["Collect ideas without picking a day.", "Move an idea onto a day when you are ready.", "Edit or delete ideas."],
+      how: ["Tap “Add an idea” to save something new.", "Tap an idea and choose “Add to a day plan” to schedule it."],
+      know: ["Ideas do not appear on your timeline until they have a day."] },
+    "add-to-plan": { title: "About scheduling an idea", intro: "Give your idea a day so it shows up on your timeline.",
+      can: ["Choose any day of your trip.", "Add a start time if you like."],
+      how: ["Tap a day.", "Optionally set a start time.", "Tap “Add to the day plan”."],
+      know: ["Without a time, the idea is placed at 9:00 on that day."] },
+    flight: { title: "About this flight", intro: "Everything about this flight in one place.",
+      can: ["Get directions to the airport.", "Check the official flight status on the airline website.", "Keep boarding passes and notes with the flight."],
+      how: ["Tap a row to open it.", "Use the pencil to edit the flight or the trash icon to delete it.", "Tap Flight details to see baggage, booking and ticket info."],
+      know: ["Times you entered are shown as scheduled, not live, unless live status is on."] },
+    hotel: { title: "About this stay", intro: "Everything about this stay in one place.",
+      can: ["See check-in, check-out and the number of nights.", "Show the address to a driver in large text.", "Call or email the hotel and copy your confirmation number."],
+      how: ["Tap the address for directions.", "Use the pencil to edit the stay or the trash icon to delete it."],
+      know: ["Details are saved on this phone, so they open offline too."] },
+    train: { title: "About this trip", intro: "Everything about this train or ferry in one place.",
+      can: ["See departure, arrival, platform, coach and seat.", "Get directions to the station or port.", "Open your ticket and copy your booking reference."],
+      how: ["Tap a row to open it.", "Use the pencil to edit or the trash icon to delete."],
+      know: ["Times you entered are shown as scheduled, not live."] },
+    plan: { title: "About this booking", intro: "The details of this booking or plan.",
+      can: ["See the date, time and location.", "Get directions, open tickets and copy your confirmation.", "Add documents and notes."],
+      how: ["Tap a row to open it.", "Use the pencil to edit or the trash icon to delete."],
+      know: ["Press and hold the item on your timeline to move it to another day."] },
+    collection: { title: "About this neighborhood", intro: "A mini plan for one area: several places you want to visit together.",
+      can: ["See all places in order with their time and status.", "Mark places as visited or skipped.", "Change the order of places."],
+      how: ["Tap Add place to add somewhere new.", "Tap a place to see it; press and hold for more options.", "Use Menu to edit the neighborhood."],
+      know: ["With a date, the neighborhood shows on your timeline as one item.", "Changes made offline sync when you are back online."] },
+    "collection-stop": { title: "About this place", intro: "The details of one place in your neighborhood plan.",
+      can: ["See its status, type, time and address.", "Add notes."],
+      how: ["Use the pencil to edit or the trash icon to delete."],
+      know: ["Press and hold the place in the neighborhood to mark it visited or skip it."] },
+    "collection-form": { title: "About neighborhoods", intro: "Create a neighborhood to group places you want to explore in one area.",
+      can: ["Name it and add the city or area.", "Put it on your timeline with a date and time.", "Add notes."],
+      how: ["Enter a name.", "Add a date if you want it on your timeline.", "Tap Create or Save."],
+      know: ["Leave the date empty to keep it off your timeline for now.", "Deleting a neighborhood removes its places but keeps linked bookings."] },
+    "stop-form": { title: "About adding a place", intro: "Add a place to your neighborhood plan.",
+      can: ["Set a name, time, type, address and notes."],
+      how: ["Enter the name and any details you know.", "Tap Save."],
+      know: ["Places added offline sync when you are back online."] },
+    ready: { title: "About Ready Offline", intro: "A quick check of what is saved on this phone, so your trip works without internet.",
+      can: ["See which parts of your trip are ready offline.", "Spot anything that is missing or waiting to sync."],
+      how: ["Tap “Download Missing Items” to save what is missing.", "Tap “Refresh Offline Data” to update everything."],
+      know: ["Open the app online once before you travel to save the latest details."] },
+    health: { title: "About Trip Health", intro: "A friendly check-up that spots gaps and possible problems in your plans.",
+      can: ["See issues found in your trip, with a suggested fix for each."],
+      how: ["Read each issue and follow the suggestion.", "Tap “Recalculate Trip Health” after making changes."],
+      know: ["The check uses only the information you have added to the trip."] },
+    travelers: { title: "About Travelers", intro: "Everyone travelling on this trip.",
+      can: ["See each traveler with their bookings and documents.", "Add new travelers."],
+      how: ["Tap “Add traveler” to add someone.", "Tap a traveler to see their details."],
+      know: ["Only people who can edit the trip can add or change travelers."] },
+    traveler: { title: "About this traveler", intro: "Details for one traveler on this trip.",
+      can: ["See their bookings, seats, baggage, documents and to-dos."],
+      how: ["Tap “Edit traveler” to change details.", "Tap “Remove traveler” to take them off the trip."],
+      know: ["Removing a traveler does not delete any bookings."] },
+    import: { title: "About uploading a booking", intro: "Turn a ticket or confirmation into a booking without typing.",
+      can: ["Upload PDFs, photos, emails, calendar files, Wallet passes and more, up to 10 MB."],
+      how: ["Choose a file.", "Tap Review and check what was found.", "Confirm to add it to your timeline."],
+      know: ["The file is read on your phone. Photos are read by text recognition, so check the result.", "Nothing is added until you confirm."] },
+    "import-review": { title: "About reviewing a booking", intro: "Check what was found in your file before it is added.",
+      can: ["Fix any field before saving.", "Change the booking type.", "Discard bookings you do not need."],
+      how: ["Check fields marked “Check carefully”.", "Tap “Add to Timeline” to save."],
+      know: ["One file can contain several bookings, like both legs of a round trip.", "You will be warned if the file looks like a duplicate."] },
+    "import-history": { title: "About import history", intro: "All the files you have imported and what happened to each one.",
+      can: ["See the status of every import.", "Reopen an import to review it again."],
+      how: ["Tap an import to open it.", "Tap the trash icon to delete it."],
+      know: ["Deleting an import removes it everywhere."] },
+    "booking-email-inbox": { title: "About the email inbox", intro: "Booking confirmations you forwarded to go@tripto.to arrive here.",
+      can: ["Choose a trip for each email.", "Review and add the booking."],
+      how: ["Forward a confirmation email to go@tripto.to.", "Tap Review to check it, then add it to your trip."],
+      know: ["You need to be signed in with Google to use the inbox."] },
+    sync: { title: "About Pending Changes", intro: "Shows whether everything you changed is saved to your account.",
+      can: ["See how many changes are waiting to sync.", "Check any change that needs your review."],
+      how: ["Tap Retry to sync again.", "Tap “View conflict details” if something needs a look."],
+      know: ["Your changes stay safely on this phone until they sync.", "If someone saved a newer version, nothing is overwritten."] },
+    "trip-review": { title: "About reviewing your trip", intro: "Almost there! Check your trip before we create it.",
+      can: ["See your destination and travel dates.", "Find flights, stays and eSIMs through partner links."],
+      how: ["Tap Create trip when everything looks right.", "Tap back to change the details."],
+      know: ["You can change these details later."] },
+    "form-trip": { title: "About creating a trip", intro: "Start a new trip in a few seconds.",
+      can: ["Pick where you are going.", "Choose your travel dates."],
+      how: ["Search for your destination.", "Choose your dates.", "Tap Next to review and create your trip."],
+      know: ["You can change the name, dates and destination later."] },
+    "form-trip-edit": { title: "About editing a trip", intro: "Change the basics of your trip.",
+      can: ["Update the destination and dates.", "Give the trip your own name.", "Delete the trip."],
+      how: ["Change what you need.", "Tap Save."],
+      know: ["Deleting a trip also removes its bookings and cannot be undone."] },
+    "form-traveler": { title: "About travelers", intro: "Add someone who is travelling with you.",
+      can: ["Set their name and whether they are an adult, child or infant."],
+      how: ["Enter the name, choose the type and tap Save."],
+      know: ["You can assign travelers to bookings later."] },
+    "form-checklist": { title: "About to-dos", intro: "Add something to do or pack before you go.",
+      can: ["Choose a group and a priority."],
+      how: ["Enter the item, pick a group and priority, then tap Save."],
+      know: ["Critical items stand out in your list."] },
+    "form-document": { title: "About adding a document", intro: "Attach a ticket, pass or confirmation to your trip.",
+      can: ["Add a PDF, photo or Wallet pass up to 10 MB.", "Link it to a traveler and a booking."],
+      how: ["Choose a file.", "Pick a traveler and booking if you like.", "Tap Add File."],
+      know: ["Files stay on this phone."] },
+    "form-flight": { title: "About adding a flight", intro: "Add a flight you have booked.",
+      can: ["Enter the airline, flight number, airports, date and time.", "Add a return flight with the Round trip switch.", "Attach boarding passes and tickets."],
+      how: ["Fill in the essentials.", "Open More Details for extras like seats and booking codes.", "Tap Save."],
+      know: ["Time zones are set automatically from the airports."] },
+    "form-hotel": { title: "About adding a stay", intro: "Add a hotel, apartment or any place you are staying.",
+      can: ["Enter the name, location and your check-in and check-out dates.", "Attach your booking confirmation."],
+      how: ["Fill in the essentials.", "Open More Details for extras like your confirmation number.", "Tap Save."],
+      know: ["The stay appears on your timeline for every night you are there."] },
+    "form-booking": { title: "About this booking form", intro: "Add the details of your booking.",
+      can: ["Fill in the essentials like place, date and time.", "Add extras under More Details.", "Attach tickets and documents."],
+      how: ["Fill in the essentials.", "Tap Save."],
+      know: ["Time zones are set automatically from the location.", "Your draft is kept if you leave and come back."] },
+  };
+  const PAGE_HELP_HEADINGS = [["can", "What you can do here"], ["how", "How to use it"], ["know", "Good to know"]];
+  function pageHelpFormKey() {
+    const kind = String(state.selectedId || "trip");
+    if (kind === "trip") return state.editingEntity?.kind === "trip" ? "form-trip-edit" : "form-trip";
+    if (kind === "traveler" || kind === "checklist" || kind === "document" || kind === "flight" || kind === "hotel") return `form-${kind}`;
+    return QUICK_ADD_KINDS.has(kind) ? "form-booking" : "";
+  }
+  function pageHelpKey() {
+    if (state.screen === "form") return pageHelpFormKey();
+    return state.screen === "bookings" ? "timeline" : String(state.screen || "");
+  }
+  function pageHelpButton(key = pageHelpKey(), className = "icon-button") {
+    if (!PAGE_HELP[key]) return "";
+    return `<button type="button" class="${className} page-help-button" data-action="open-page-help" data-help="${esc(key)}" aria-label="About this page" title="About this page">${icon("help", 22)}</button>`;
+  }
+  function pageHelpSheet() {
+    const guide = PAGE_HELP[state.pageHelp];
+    if (!guide) return "";
+    const sections = PAGE_HELP_HEADINGS.filter(([field]) => guide[field]?.length).map(([field, heading]) => {
+      const items = guide[field].map((text, i) => `<li><span class="page-help__mark" aria-hidden="true">${field === "how" ? i + 1 : icon(field === "know" ? "info" : "check", 14)}</span><span>${esc(text)}</span></li>`).join("");
+      return `<section class="page-help__section"><h3>${heading}</h3>${field === "how" ? `<ol class="page-help__list">${items}</ol>` : `<ul class="page-help__list">${items}</ul>`}</section>`;
+    }).join("");
+    return bottomSheet("page-help", guide.title, `<div class="page-help"><div class="page-help__intro"><span class="page-help__intro-icon" aria-hidden="true">${icon("help", 22)}</span><p>${esc(guide.intro)}</p></div>${sections}<button type="button" class="first-run-how-done page-help__done" data-action="close-sheet">Got it</button></div>`);
   }
   function appBar(title, subtitle = "", dark = false, right = "") {
-    const navigation = HeaderNavigation();
-    const actions = right ? `<div class="app-bar-actions">${right}</div>` : "";
+    // "?" opens the About-this-page sheet. Workspace bars carry it beside Menu;
+    // every other bar carries it in the trailing actions slot.
+    const help = pageHelpButton();
+    let navigation = HeaderNavigation();
+    if (navigation && help) navigation = navigation.replace('<div class="header-navigation">', `<div class="header-navigation">${help}`);
+    const trailingActions = `${navigation ? "" : help}${right}`;
+    const actions = trailingActions ? `<div class="app-bar-actions">${trailingActions}</div>` : "";
     // Trailing slot (grid column 3). A minimal detail bar has no navigation, so
     // its trailing element must be EITHER the actions or the spacer — never both,
     // or the extra child wraps onto a phantom second row.
     const trailing = navigation ? `${navigation}${actions}` : actions || '<span class="app-bar-spacer" aria-hidden="true"></span>';
-    return `<header class="app-bar app-bar--navigation${navigation ? "" : " app-bar--minimal"} ${dark ? "app-bar--dark" : ""}${right ? " app-bar--with-actions" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 24)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div>${trailing}</header>`;
+    return `<header class="app-bar app-bar--navigation${navigation ? "" : " app-bar--minimal"} ${dark ? "app-bar--dark" : ""}${right ? " app-bar--with-actions" : ""}${help && right && !navigation ? " app-bar--help-actions" : ""}"><button class="icon-button" data-action="back" aria-label="Back">${icon("back", 24)}</button><div class="app-bar-title"><strong>${esc(title)}</strong>${subtitle ? `<span>${esc(subtitle)}</span>` : ""}</div>${trailing}</header>${screenAddFab()}`;
   }
   function HeaderNavigation() {
     const collection = state.screen === "collection" ? collectionForItem(state.selectedId) : null;
@@ -3777,29 +5916,19 @@
     // navigation or creation. Detail, utility, help, and form screens already
     // have a focused task and a Back control, so redundant + / Menu controls
     // would distract or suggest an unrelated action.
+    // On the empty timeline the page body IS the "Add to trip" hub (Book it /
+    // Plan your days / Save an idea), so a header + would be a duplicate add.
+    const timelineIntentEmpty =
+      state.screen === "timeline" && state.trip && !(state.timeline || []).some(isTimelineVisibleItem);
     const modes = {
-      timeline: { add: true, menu: true },
+      timeline: { add: !timelineIntentEmpty, menu: true },
       collection: { add: Boolean(state.trip && collection && canEditCurrentTrip()), menu: true },
       bookings: { add: true, menu: true },
     };
     const mode = modes[state.screen];
     if (!mode) return "";
-    const addPlace = state.screen === "collection" && mode.add;
-    const label = addPlace
-      ? `Add ${collectionConfig(collection.collection_type)?.stop || "place"}`
-      : state.screen === "bookings"
-        ? "Add booking"
-        : !state.trip
-          ? "Create trip"
-          : "Add to trip";
-    const add = addPlace
-      ? `data-action="collection-add-place" data-id="${esc(collection.id)}"`
-      : state.screen === "bookings"
-        ? 'data-action="open-add-booking"'
-        : 'data-action="open-add"';
-    const addButton = mode.add
-      ? `<button type="button" class="icon-button header-navigation__add${addPlace ? " collection-header-add" : ""}" ${add} aria-label="${esc(label)}" title="${esc(label)}">${icon("plus", 24)}</button>`
-      : "";
+    // Both the "+" and Options now live in the bottom-right FAB stack
+    // (screenAddFab), matching the trips list. The header keeps only Menu.
     const menuUnread = state.trip ? totalNotificationCount() : 0;
     const menuBadge = menuUnread
       ? `<span class="unread-badge" aria-hidden="true">${menuUnread > 9 ? "9+" : menuUnread}</span>`
@@ -3808,27 +5937,67 @@
     const menuButton = mode.menu
       ? `<button type="button" class="icon-button header-navigation__menu" data-action="open-navigation" aria-label="${esc(menuLabel)}" title="Menu" aria-haspopup="dialog" aria-expanded="${state.sheet === "navigation"}" aria-controls="navigation-menu">${icon("menu", 24)}${menuBadge}</button>`
       : "";
-    return `<div class="header-navigation">${addButton}${menuButton}</div>`;
+    return `<div class="header-navigation">${menuButton}</div>`;
+  }
+  // Bottom-right FAB stack — the create ("+") and Trip Options (gear) controls
+  // for the trip workspaces (timeline, collection, bookings), mirroring the
+  // trips list. Options sits above the primary "+". Returns "" on every other
+  // screen. Reuses the .trips-fab styling.
+  function screenAddFab() {
+    if (!["timeline", "collection", "bookings"].includes(state.screen)) return "";
+    const collection = state.screen === "collection" ? collectionForItem(state.selectedId) : null;
+    const timelineIntentEmpty =
+      state.screen === "timeline" && state.trip && !(state.timeline || []).some(isTimelineVisibleItem);
+    const showAdd = {
+      timeline: !timelineIntentEmpty,
+      collection: Boolean(state.trip && collection && canEditCurrentTrip()),
+      bookings: true,
+    }[state.screen];
+    // Trip Options (gear) — one-tap shortcut to the trip's tools. Trip-scoped.
+    const optionsFab = state.trip
+      ? `<button type="button" class="trips-fab fab-options" data-screen="trip-options" aria-label="Trip Options" title="Trip Options">${icon("settings", 24)}</button>`
+      : "";
+    let addFab = "";
+    if (showAdd) {
+      const addPlace = state.screen === "collection";
+      const label = addPlace
+        ? `Add ${collectionConfig(collection.collection_type)?.stop || "place"}`
+        : state.screen === "bookings"
+          ? "Add booking"
+          : !state.trip
+            ? "Create trip"
+            : "Add to trip";
+      const attr = addPlace
+        ? `data-action="collection-add-place" data-id="${esc(collection.id)}"`
+        : state.screen === "bookings"
+          ? 'data-action="open-add-booking"'
+          : 'data-action="open-add"';
+      addFab = `<button type="button" class="trips-fab screen-add-fab" ${attr} aria-label="${esc(label)}" title="${esc(label)}">${icon("plus", 28)}</button>`;
+    }
+    if (!optionsFab && !addFab) return "";
+    return `<div class="fab-stack">${optionsFab}${addFab}</div>`;
   }
   function navigationSheet() {
+    // Options moved to the bottom FAB stack, so it is no longer a menu entry.
+    // The menu is a clean vertical list: icon · title · subtitle · chevron.
     const entries = [
-      ["trips", "trips", "All trips"],
-      ["trip-options", "route", "Trip Options"],
-      ["checklist", "checklist", "To-Do List"],
-      ["account", "user", "Account"],
+      ["trips", "trips", "All trips", "Switch or start a journey"],
+      ["checklist", "checklist", "To-Do List", "Packing list & tasks"],
+      ["account", "user", "Account", "Profile, theme & settings"],
     ];
-    const links = entries.map(([screen, glyph, label]) => sheetActionLink(
-      glyph, label, "", routeUrl(screen),
-      ` data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}`,
-    )).join("");
     const notifUnread = state.trip ? totalNotificationCount() : 0;
-    const notifRow = state.trip
-      ? sheetActionList(sheetActionRow(
-          "open-notifications", "bell", "Notifications", "",
-          notifUnread ? `${notifUnread > 9 ? "9+" : notifUnread} unread` : "You're all caught up",
-        ))
+    const notifItem = state.trip
+      ? `<button type="button" class="nav-menu-item nav-menu-item--notifications" data-action="open-notifications"><span class="nav-menu-item__icon">${icon("bell", 22)}${notifUnread ? `<span class="nav-menu-item__badge">${notifUnread > 9 ? "9+" : notifUnread}</span>` : ""}</span><span class="nav-menu-item__text"><strong>Notifications</strong><small>${notifUnread ? `${notifUnread > 9 ? "9+" : notifUnread} unread` : "Updates &amp; pending reviews"}</small></span><span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`
       : "";
-    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${notifRow}${bookingNavigationActions()}${collectionNavigationActions()}<nav aria-label="Primary navigation">${sheetActionList(links)}</nav></div>`);
+    // On the timeline the trip itself is the current page, so the menu offers
+    // a direct Edit trip shortcut (same handler as the Trip options button).
+    const editTripItem = state.screen === "timeline" && state.trip && canManageCurrentTrip()
+      ? `<button type="button" class="nav-menu-item nav-menu-item--edit-trip" data-action="edit-trip"><span class="nav-menu-item__icon">${icon("edit", 22)}</span><span class="nav-menu-item__text"><strong>Edit trip</strong><small>Name, dates &amp; destination</small></span><span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`
+      : "";
+    const items = entries.map(([screen, glyph, label, sub]) =>
+      `<a class="nav-menu-item nav-menu-item--${screen}" href="${esc(routeUrl(screen))}" data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}><span class="nav-menu-item__icon">${icon(glyph, 22)}</span><span class="nav-menu-item__text"><strong>${esc(label)}</strong><small>${esc(sub)}</small></span><span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 18)}</span></a>`,
+    ).join("");
+    return bottomSheet("navigation", "Menu", `<div id="navigation-menu"><nav class="nav-menu" aria-label="Primary navigation">${notifItem}${editTripItem}${items}</nav>${bookingNavigationActions()}${collectionNavigationActions()}</div>`);
   }
   // Header notification bell. Opens the Notifications sheet, which merges the
   // trip's /changes feed (imports, added stops, time markers, documents…) with
@@ -3846,14 +6015,39 @@
     // sheet. No standalone bell is rendered in the header.
     return "";
   }
+  // Connectivity + sync status strip. Lives in a display:contents slot so the
+  // syncing state can update in place without re-rendering the screen.
   function mobileAlert() {
+    return `<div class="connection-slot" data-connection-slot>${mobileAlertBody()}</div>`;
+  }
+  function mobileAlertBody() {
+    const local = myPendingMutations(),
+      localConflicts = local.filter((row) => row.status === "conflict").length,
+      waiting = local.length - localConflicts;
     if (state.offline)
-      return `<div class="mobile-alert mobile-alert--offline">${icon("info", 18)}<span>Offline. Showing the last trip data saved on this phone.</span></div>`;
+      return `<div class="mobile-alert mobile-alert--offline" role="status">${icon("info", 18)}<span>Offline. Showing the last trip data saved on this phone.${waiting ? ` ${waiting} change${waiting === 1 ? "" : "s"} will sync when you reconnect.` : ""}</span></div>`;
+    if (state.syncing)
+      return `<div class="mobile-alert mobile-alert--offline mobile-alert--syncing" role="status">${icon("refresh", 18)}<span>Syncing changes saved on this phone…</span></div>`;
+    if (state.sessionNeedsReconnect)
+      return `<div class="mobile-alert" role="status">${icon("user", 18)}<span>Showing saved trip data. Sign in again to sync changes.</span><button type="button" class="mobile-alert__action" data-action="restart-google-sign-in">Reconnect</button></div>`;
     const conflicts = Number(
       val(state.syncStatus, "openConflicts", "open_conflicts") || 0,
-    );
+    ) + localConflicts;
     if (conflicts)
-      return `<div class="mobile-alert">${icon("warning", 18)}<span>${conflicts} change${conflicts === 1 ? "" : "s"} need review before sync can finish.</span></div>`;
+      return `<div class="mobile-alert">${icon("warning", 18)}<span>${conflicts} change${conflicts === 1 ? "" : "s"} need${conflicts === 1 ? "s" : ""} review before sync can finish.</span><button type="button" class="mobile-alert__action" data-screen="sync">Review</button></div>`;
+    if (waiting)
+      return `<div class="mobile-alert mobile-alert--offline" role="status">${icon("info", 18)}<span>${waiting} change${waiting === 1 ? "" : "s"} waiting to sync.</span><button type="button" class="mobile-alert__action" data-action="sync-retry">Retry</button></div>`;
+    return "";
+  }
+  function renderConnectionState() {
+    const body = mobileAlertBody();
+    document.querySelectorAll("[data-connection-slot]").forEach((slot) => { if (slot.innerHTML !== body) slot.innerHTML = body; });
+    const chip = connectionChip();
+    document.querySelectorAll("[data-connection-chip]").forEach((slot) => { if (slot.innerHTML !== chip) slot.innerHTML = chip; });
+  }
+  function connectionChip() {
+    if (state.offline) return `<span class="offline-state" role="status">${icon("info", 16)} Offline</span>`;
+    if (state.syncing) return `<span class="offline-state offline-state--syncing" role="status">${icon("refresh", 16)} Syncing</span>`;
     return "";
   }
   function tripContext() {
@@ -3879,6 +6073,9 @@
   }
   function SectionHeader(title, action = "", label = "View all") {
     return `<div class="ds-section-header"><h2>${esc(title)}</h2>${action ? `<button type="button" class="ds-text-action" data-action="${esc(action)}">${esc(label)}</button>` : ""}</div>`;
+  }
+  function accountCard(title, body, action = "", actionLabel = "View all", variant = "") {
+    return `<div class="acct-group">${title ? `<div class="acct-group__label"><h2>${esc(title)}</h2>${action ? `<button type="button" class="ds-text-action" data-action="${esc(action)}">${esc(actionLabel)}</button>` : ""}</div>` : ""}<section class="acct-card ds-grouped-card ds-grouped-card--list${variant ? ` ${variant}` : ""}">${body}</section></div>`;
   }
   function SegmentedControl(items, active, action = "") {
     return `<div class="ds-segmented" role="group">${items.map(([key, label]) => `<button type="button" class="${key === active ? "is-active" : ""}" data-action="${esc(action)}" data-filter="${esc(key)}" aria-pressed="${key === active}">${esc(label)}</button>`).join("")}</div>`;
@@ -3956,7 +6153,7 @@
       };
     const first = issues[0];
     return {
-      title: `${issues.length} thing${issues.length === 1 ? "" : "s"} need attention`,
+      title: `${issues.length} thing${issues.length === 1 ? "" : "s"} need${issues.length === 1 ? "s" : ""} attention`,
       subtitle:
         first.title || first.explanation || "Open Trip Health to review.",
       kind: ["critical", "high"].includes(first.severity) ? "warning" : "info",
@@ -4006,23 +6203,29 @@
     const view = noUpcomingTripState();
     return `<section class="next-action-card ${view.setup ? "next-action-card--setup" : ""}"><span class="ticket-chip ${view.setup ? "ticket-chip--setup" : ""}">${icon(view.icon, 18)} ${esc(view.label)}</span><h2>${esc(view.title)}</h2><p>${esc(view.copy)}</p><div class="next-action-actions"><button class="secondary-cta ${view.setup ? "next-action-primary" : ""}" data-action="open-add-booking">${icon("plus", 20)} Add booking</button><button class="secondary-cta" data-screen="trips">${icon("trips", 20)} Timeline</button></div></section>`;
   }
-  function nextItem() {
+  // What's Next is computed on this device from the saved timeline and the
+  // device clock, so it stays correct offline. The server's cached pick is
+  // used only while it is still upcoming and matches the local copy (a stale
+  // cache must never label a finished plan "Next").
+  function nextItem(now = Date.now()) {
+    const startOf = (item) => Number(val(item, "starts_at_utc", "startsAtUtc"));
+    const brainNext = state.brain?.nextItem;
+    if (brainNext) {
+      const local = (state.timeline || []).find((item) => String(item.id) === String(brainNext.id));
+      const candidate = local || ((state.timeline || []).length ? null : brainNext);
+      if (candidate && !isCancelled(candidate) && startOf(candidate) >= now) {
+        const earlier = (state.timeline || []).some((item) => !isCancelled(item) && startOf(item) >= now && startOf(item) < startOf(candidate));
+        if (!earlier) return local ? { ...brainNext, ...local } : brainNext;
+      }
+    }
     return (
-      state.brain?.nextItem ||
-      state.timeline
-        .filter(
-          (item) =>
-            !isCancelled(item) &&
-            Number(val(item, "starts_at_utc", "startsAtUtc")) >= Date.now(),
-        )
-        .sort(
-          (a, b) =>
-            Number(val(a, "starts_at_utc", "startsAtUtc")) -
-            Number(val(b, "starts_at_utc", "startsAtUtc")),
-        )[0] ||
+      (state.timeline || [])
+        .filter((item) => !isCancelled(item) && startOf(item) >= now)
+        .sort((a, b) => startOf(a) - startOf(b))[0] ||
       null
     );
   }
+
   function nextFlight() {
     const next = nextItem();
     if (!next) return null;
@@ -4108,6 +6311,7 @@
     if (fresh) {
       if (cancellationConfirmed) { label = "Cancelled"; tone = "danger"; }
       else if (cancellationReported) { label = "Cancellation reported"; tone = "warning"; }
+      else if (disruption === "cancelled") { label = "Cancellation reported"; tone = "warning"; }
       else if (disruption === "diverted") { label = "Diverted"; tone = "danger"; }
       else if (disruption === "delayed" || delay > 0) { label = delay > 0 ? `Delayed ${delay} min` : "Delayed"; tone = "warning"; }
       else if (phase === "boarding") { label = "Boarding"; tone = "active"; }
@@ -4118,17 +6322,23 @@
     } else if (stale) {
       const lastKnown = cancellationConfirmed ? "Cancelled"
         : cancellationReported ? "Cancellation reported"
-          : disruption === "diverted" ? "Diverted"
-            : disruption === "delayed" || delay > 0 ? (delay > 0 ? `Delayed ${delay} min` : "Delayed")
-              : phase === "landed" ? "Landed"
-                : phase === "departed" ? "Departed"
-                  : phase === "en_route" ? "En route"
-                    : phase === "boarding" ? "Boarding" : "Scheduled";
-      label = state.offline ? `Last status: ${lastKnown}` : "Saved update · may be out of date";
+          : disruption === "cancelled" ? "Cancellation reported"
+            : disruption === "diverted" ? "Diverted"
+              : disruption === "delayed" || delay > 0 ? (delay > 0 ? `Delayed ${delay} min` : "Delayed")
+                : phase === "landed" ? "Landed"
+                  : phase === "departed" ? "Departed"
+                    : phase === "en_route" ? "En route"
+                      : phase === "boarding" ? "Boarding" : "Scheduled";
+      // A last-known disruption must survive going stale online, not collapse into a
+      // neutral "Saved update" that hides a cancellation/diversion from the traveler.
+      if (cancellationConfirmed || disruption === "diverted") tone = "danger";
+      else if (cancellationReported || disruption === "cancelled" || disruption === "delayed" || delay > 0) tone = "warning";
+      const disrupted = tone !== "neutral";
+      label = state.offline ? `Last status: ${lastKnown}` : disrupted ? `${lastKnown} · may be out of date` : "Saved update · may be out of date";
     }
     return {
       enabled, matched, fresh, stale, label, tone, updatedAt,
-      provenance: fresh ? `Live update · ${ageLabel(updatedAt)}` : stale ? `Updated ${ageLabel(updatedAt)}${state.offline ? " · Offline" : ""}` : "Scheduled data",
+      provenance: fresh ? `Live update · ${ageLabel(updatedAt)}` : stale ? `Updated ${ageLabel(updatedAt)}${state.offline ? " · Offline" : ""}` : enabled && state.offline ? "Live flight status unavailable. Scheduled flight details are still available." : "Scheduled data",
       departure: fresh ? Number(val(flight, "actual_departure_utc", "estimated_departure_utc")) || flightDeparture(flight) : flightDeparture(flight),
       arrival: fresh ? Number(val(flight, "actual_arrival_utc", "estimated_arrival_utc")) || flightArrival(flight) : flightArrival(flight),
       departureLabel: fresh && val(flight, "actual_departure_utc") ? "Actual" : fresh && val(flight, "estimated_departure_utc") ? "Estimated" : "Departs",
@@ -4229,22 +6439,6 @@
       })
       .join("");
   }
-  function homeScreen() {
-    const next = nextItem(),
-      flight = nextFlight(),
-      health = healthSummary(),
-      nextCard = state.trip
-        ? flight
-          ? flightTicket(flight)
-          : next
-            ? genericNextCard(next)
-            : noUpcomingCard()
-        : emptyTripCard(),
-      summaries = state.trip
-        ? `<section class="home-summary-module">${sectionHead("Upcoming journey", "open-timeline")}<div>${upcomingRows()}</div></section><section class="home-summary-module home-health-module ${health.kind === "setup" ? "home-health-module--setup" : ""}">${sectionHead("Trip health", "open-health", "Review")}<button class="simple-row" ${health.kind === "setup" ? 'data-action="open-add"' : 'data-screen="health"'}><span class="row-icon ${health.kind === "warning" ? "health-warning" : health.kind === "good" ? "health-good" : "health-info"}">${icon(health.icon, 22)}</span><span class="row-copy"><strong>${esc(health.title)}</strong><span>${esc(health.subtitle)}</span></span>${icon("chevron", 22, "chevron")}</button></section>`
-        : "";
-    return `<div class="phone-app"><section class="screen home-screen">${topbar()}${mobileAlert()}<main class="content">${tripContext()}${nextCard}${summaries}</main></section></div>`;
-  }
   function timeGreeting() {
     const hour = new Date().getHours();
     return hour < 12
@@ -4283,19 +6477,30 @@
     if (theme) theme.setAttribute("content", themeChromeColor());
   }
   function firstRunProductPreview() {
-    return `<ul class="welcome-features" aria-label="What Tripto helps with"><li class="welcome-feature--bookings"><span class="row-icon">${icon("ticket",22)}</span><span><strong>Bookings, together</strong><small>Flights, stays, and confirmations</small></span></li><li class="welcome-feature--plans"><span class="row-icon">${icon("calendar",22)}</span><span><strong>A plan for every day</strong><small>Know what is next, at a glance</small></span></li><li class="welcome-feature--ideas"><span class="row-icon">${icon("favorite",22)}</span><span><strong>Save great ideas</strong><small>Keep them ready for later</small></span></li></ul>`;
+    // A live-looking slice of the trips screen: patterned hero, two date-tile rows
+    // and floating status chips. Decorative only; the real list is behind sign-in.
+    const row = (h, month, day, title, meta, chip) => `<li class="welcome-trip-row" style="--tg-h:${h}"><span class="welcome-trip-row__tile"><small>${month}</small><b>${day}</b></span><span class="welcome-trip-row__text"><b>${title}</b><small>${meta}</small></span><span class="welcome-trip-row__chip">${chip}</span></li>`;
+    return `<section class="welcome-stack" aria-label="A preview of your trips in Tripto"><div class="welcome-stack__hero">${tripsHeroArt("wl")}<span class="welcome-stack__top"><span class="welcome-stack__eyebrow">NEXT UP</span><span class="welcome-stack__stamp"><small>MAY</small><b>14</b></span></span><span class="welcome-stack__title">Lisbon</span><span class="welcome-stack__meta">May 14–17 · 4 days</span><span class="welcome-stack__foot"><span class="welcome-stack__status">${icon("flight", 15)}Starts in 12 days</span><span class="welcome-stack__go">${icon("chevron", 18)}</span></span></div><ul class="welcome-stack__rows">${row(178, "JUN", "3", "Kyoto", "Jun 3–10 · 8 days", "3 stays")}${row(14, "AUG", "21", "Amalfi Coast", "Aug 21–27 · 7 days", "5 spots")}</ul><span class="welcome-stack__float welcome-stack__float--a">${icon("check", 14)}Flight confirmed</span><span class="welcome-stack__float welcome-stack__float--b">${icon("favorite", 14)}Saved spot</span></section><p class="welcome-stack__promise">Less searching. <span class="welcome-serif-line">More enjoying.</span></p>`;
+  }
+
+
+  // Google-branded button (official "Sign in with Google" styling), used where
+  // the Google Identity Services iframe is not available: the visual preview and
+  // the Android app (native Credential Manager sheet).
+  function googleMaterialButton(action) {
+    return `<button class="gsi-material-button" data-action="${action}" aria-label="Sign in with Google"><div class="gsi-material-button-state"></div><div class="gsi-material-button-content-wrapper"><div class="gsi-material-button-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="display:block"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg></div><span class="gsi-material-button-contents">Sign in with Google</span><span style="display:none">Sign in with Google</span></div></button>`;
   }
   function firstRunScreen() {
     const offline = state.offline
       ? `<span class="first-run-offline" role="status">${icon("info", 14)} Offline</span>`
       : "";
     const googleAction = PREVIEW_MODE
-      ? `<button class="first-run-google-preview" data-action="preview-google" aria-label="Continue with Google"><img src="/assets/google-g.svg" alt=""><span>Continue with Google</span></button>`
+      ? googleMaterialButton("preview-google")
       : `<div id="google-signin-button" data-post-auth-screen="trips" aria-label="Continue with Google"></div>`;
     const entryAction = state.account?.mode === "account"
       ? `<button class="first-run-google-preview" data-action="enter-app" aria-label="Continue to your trips"><span>Continue to your trips</span>${icon("chevron", 20)}</button>`
       : googleAction;
-    return `<div class="phone-app"><section class="first-run-screen welcome-thread screen--navless" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div>${offline}${HeaderNavigation()}</header><main class="first-run-main"><section class="first-run-hero"><div class="welcome-route" aria-hidden="true"><span class="welcome-route__stop welcome-route__stop--start">${icon("location",20)}</span><i></i><span class="welcome-route__plane">${icon("flight",22)}</span><i></i><span class="welcome-route__stop welcome-route__stop--end">${icon("favorite",20)}</span></div><p class="first-run-eyebrow">Travel feels lighter here</p><h1 id="first-run-title" aria-label="Your trip. Beautifully together."><span class="first-run-title__line">Your trip.</span><span class="first-run-title__line">Beautifully together.</span></h1><p class="first-run-lede">Keep every reservation, plan, and idea ready for the journey ahead.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>See how it works</span>${icon("chevron",18)}</button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Private by design.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a></nav></footer></section></div>`;
+    return `<div class="phone-app"><section class="first-run-screen welcome-thread welcome-editorial screen--navless" lang="en" translate="no" aria-labelledby="first-run-title"><header class="first-run-brand-row"><div class="first-run-brand" role="img" aria-label="tripto.to"><span class="first-run-brand__name">tripto</span><span class="first-run-brand__dot">.</span><span class="first-run-brand__to">to</span></div>${offline}${HeaderNavigation()}</header><main class="first-run-main"><section class="first-run-hero"><p class="first-run-eyebrow"><span class="welcome-status-dot" aria-hidden="true"></span>TRAVEL, NICELY SORTED</p><h1 id="first-run-title" aria-label="Your whole trip. Ready when you are."><span class="first-run-title__line">Your whole trip.</span><span class="first-run-title__line welcome-serif-line">Ready when you are.</span></h1><p class="first-run-lede">Bookings, plans, and favorite places—together from the first idea to the flight home.</p></section>${firstRunProductPreview()}<div class="first-run-actions"><div class="first-run-google">${entryAction}</div><p class="signin-error" role="alert" hidden></p><button class="first-run-secondary" data-action="open-first-run-how"><span>Take a quick tour</span>${icon("chevron",18)}</button></div></main><footer class="welcome-v2__footer"><span class="welcome-private-note">Private by design.</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><span aria-hidden="true">·</span><a href="/terms">Terms</a><span aria-hidden="true">·</span><a href="/cookies">Cookies</a><span aria-hidden="true">·</span><a href="/contact">Contact</a></nav></footer></section></div>`;
   }
   // --- Trip change notifications (header bell) ---------------------------
   // Sourced from the existing /changes feed (change_events), so booking
@@ -4371,6 +6576,10 @@
         : /creat|add|import/.test(e)
           ? "was added to"
           : "changed on";
+    if (globalThis.TriptoI18n?.locale !== "en") {
+      const kind = verb === "was removed from" ? "removed" : verb === "was updated on" ? "updated" : verb === "was added to" ? "added" : "changed";
+      return globalThis.TriptoI18n.t(`qa.notification_${kind}`);
+    }
     const article = /^[aeiou]/i.test(noun) ? "An" : "A";
     return `${article} ${noun} ${verb} this trip.`;
   }
@@ -4407,11 +6616,12 @@
   function notificationsSheet() {
     const rows = notifications(),
       seen = state.notifSeenSnapshot != null ? state.notifSeenSnapshot : lastSeenNotificationAt(),
-      pending = (state.bookingEmails || []).filter((row) =>
+      pending = FORWARD_EMAIL_ENABLED ? (state.bookingEmails || []).filter((row) =>
         ["needs_trip", "needs_confirmation"].includes(String(row.status || "")),
-      ).length,
+      ).length : 0,
+      pendingLabel = globalThis.TriptoI18n?.t("qa.review_bookings", { bookings: globalThis.TriptoI18n.plural("booking", pending) }, `${pending} booking${pending === 1 ? "" : "s"} to review`) || `${pending} booking${pending === 1 ? "" : "s"} to review`,
       pendingRow = pending
-        ? `<button class="notif-item notif-item--neutral is-unread" data-screen="booking-email-inbox"><span class="notif-item__icon">${icon("download", 20)}</span><span class="notif-item__copy"><span class="notif-item__top"><strong>${pending} booking${pending === 1 ? "" : "s"} to review<span class="notif-item__dot" aria-hidden="true"></span></strong></span><span class="notif-item__desc">Match ${pending === 1 ? "it" : "them"} to a trip before adding.</span></span><span class="notif-item__chevron" aria-hidden="true">${icon("chevron", 17)}</span></button>`
+        ? `<button class="notif-item notif-item--neutral is-unread" data-screen="booking-email-inbox"><span class="notif-item__icon">${icon("download", 20)}</span><span class="notif-item__copy"><span class="notif-item__top"><strong>${esc(pendingLabel)}<span class="notif-item__dot" aria-hidden="true"></span></strong></span><span class="notif-item__desc">Match ${pending === 1 ? "it" : "them"} to a trip before adding.</span></span><span class="notif-item__chevron" aria-hidden="true">${icon("chevron", 17)}</span></button>`
         : "",
       changeRows = rows
         .map((n) => {
@@ -4435,7 +6645,11 @@
     const now = Date.now(),
       highlightedNextId =
         QA_STATE === "timeline-normal" ? "" : itemId(nextItem() || {}),
-      groups = [];
+      // Group into a keyed map (not adjacency) so an interleaved multi-timezone
+      // itinerary — where UTC order need not match local-day order — never splits
+      // one calendar day into two sections. Groups are then ordered by their
+      // earliest event, and items within a day by their own start time.
+      groupMap = new Map();
     for (const item of state.timeline) {
       // Wishlists and unscheduled collections never appear as main-timeline
       // rows — they live in the Planning area. A scheduled collection appears
@@ -4446,12 +6660,22 @@
         zone = val(item, "start_timezone", "startTimezone"),
         day = timelineDay(starts, zone),
         key = day.key;
-      let group = groups[groups.length - 1];
-      if (!group || group.key !== key) {
-        group = { key, day, items: [] };
-        groups.push(group);
+      let group = groupMap.get(key);
+      if (!group) {
+        group = { key, day, items: [], sortAt: starts == null ? Infinity : starts };
+        groupMap.set(key, group);
+      } else if (starts != null && starts < group.sortAt) {
+        group.sortAt = starts;
       }
       group.items.push(item);
+    }
+    const groups = Array.from(groupMap.values()).sort((a, b) => a.sortAt - b.sortAt);
+    for (const group of groups) {
+      group.items.sort((a, b) => {
+        const av = Number(val(a, "starts_at_utc", "startsAtUtc")) || Infinity,
+          bv = Number(val(b, "starts_at_utc", "startsAtUtc")) || Infinity;
+        return av - bv;
+      });
     }
     let activeDayIdx = 0;
     if (groups.length > 1) {
@@ -4471,12 +6695,15 @@
         ? `<nav class="timeline-days" aria-label="Trip days">${groups
             .map(
               (group, index) =>
-                `<button type="button" class="timeline-day-tab${index === activeDayIdx ? " timeline-day-tab--active" : ""}" data-action="select-timeline-day" data-key="${esc(group.key)}"${index === activeDayIdx ? ' aria-current="true"' : ""}><span class="timeline-day-tab__dow">${esc(group.day.weekday)}</span><span class="timeline-day-tab__date">${esc(group.day.month ? `${group.day.month} ${group.day.dayNum || group.day.dayOfMonth}` : group.day.dayOfMonth || group.day.date.split(" ").pop())}</span></button>`,
+                `<button type="button" class="timeline-day-tab${index === activeDayIdx ? " timeline-day-tab--active" : ""}" data-action="select-timeline-day" data-key="${esc(group.key)}"${index === activeDayIdx ? ' aria-current="true"' : ""}><span class="timeline-day-tab__dow">${esc(group.day.weekday)}</span><span class="timeline-day-tab__date" title="${esc(group.day.month ? `${group.day.month} ${group.day.dayNum || group.day.dayOfMonth}` : "")}">${esc(group.day.dayNum || group.day.dayOfMonth || group.day.date.split(" ").pop())}</span></button>`,
             )
             .join("")}</nav>`
         : "";
     const pagedGroups = groups.length > 1 ? [groups[activeDayIdx]] : groups;
-    const content = state.tripDetailsLoading && !groups.length
+    const unavailableOffline = !groups.length && !state.tripDetailsLoading && state.tripUnavailableOffline != null && String(state.tripUnavailableOffline) === String(state.trip.id);
+    const content = unavailableOffline
+      ? `<div class="timeline-empty timeline-empty--offline" role="status"><span class="timeline-empty__icon">${icon("info", 28)}</span><h1>Trip not available offline</h1><p>This trip was not saved on this phone before the connection dropped. It will load when you reconnect. Your other saved trips still open offline.</p>${primaryCta("Try Again", "sync-retry", "refresh")}</div>`
+      : state.tripDetailsLoading && !groups.length
       ? `<div class="thinking-stage thinking-stage--inline timeline-inline-loading">${thinkingPanel("Opening your trip…")}</div>`
       : groups.length
       ? `<div class="timeline-ribbon${groups.length > 1 ? " timeline-ribbon--paged" : ""}">${pagedGroups
@@ -4495,6 +6722,14 @@
                     glyph = timelineGlyph(item, type, transport),
                     markerClass = String(glyph || "calendar").replace(/[^a-z0-9-]/g, ""),
                     subtitle = timelineSecondary(item, type, transport, glyph),
+                    // Full street address for the in-card location row (Aurora
+                    // renders it; other themes hide it via CSS). Suppressed when
+                    // it would just echo the subtitle line.
+                    eventLoc = locationById(val(item, "property_location_id", "location_id", "start_location_id", "venue_location_id")),
+                    eventAddress = (() => {
+                      const a = val(eventLoc, "formatted_address", "local_address") || "";
+                      return a && a.toLowerCase() !== String(subtitle || "").toLowerCase() ? a : "";
+                    })(),
                     exception = timelineException(item),
                     active =
                       !isCancelled(item) &&
@@ -4546,15 +6781,25 @@
                     aria = [eventTime, title, subtitle, meta, exception?.label]
                       .filter(Boolean)
                       .join(". ");
-                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" data-longpress-booking data-kind="${esc(type)}" aria-label="${esc(aria)}. Long press for actions"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-dot"></span></span><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span></button>`;
+                  return `<button type="button" class="journey-event journey-event--${phase}${exception ? ` journey-event--${esc(exception.tone)}` : ""}" data-action="timeline-detail" data-id="${esc(itemId(item))}" data-longpress-booking data-kind="${esc(type)}" aria-label="${esc(aria)}. Long press for actions"${active || next ? ' aria-current="step"' : ""}><span class="journey-time">${esc(eventTime)}</span><span class="journey-track" aria-hidden="true"><span class="journey-dot"></span></span><span class="journey-marker journey-marker--${esc(markerClass)}">${icon(glyph, 24)}</span><span class="journey-content"><span class="journey-copy">${flags ? `<span class="timeline-flags">${flags}</span>` : ""}<strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${meta ? `<small class="journey-meta">${esc(meta)}</small>` : ""}</span><span class="journey-chevron" aria-hidden="true">${icon("chevron", 20)}</span></span>${eventAddress ? `<span class="journey-location"><span class="journey-location__pin" aria-hidden="true">${icon("pin", 16)}</span><span class="journey-location__text">${esc(eventAddress)}</span></span>` : ""}</button>`;
                 })
                 .join("")}</div></section>`,
           )
           .join("")}</div>`
       : `<div class="timeline-empty timeline-empty--intent"><span class="timeline-empty__eyebrow">Start building</span><h1>Add to ${esc(state.trip.title || "your trip")}</h1><p>Book it, plan your days, or save an idea.</p>${addIntentRows()}</div>`;
-    const headerAction = `<div class="trip-v2-actions">${notifyAction()}${HeaderNavigation()}</div>`;
-    const header = `<header class="trip-v2-header"><button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",15)}<small>${esc(formatTripDates(state.trip))}</small></button>${headerAction}</header>`;
-    return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}${dayTabs}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${groups.length ? timelineContextCard() : ""}${content}</main></section></div>`;
+    const headerAction = `<div class="trip-v2-actions">${pageHelpButton("timeline")}${notifyAction()}${HeaderNavigation()}</div>`;
+    // Weather status chip before the destination name; tapping opens the full
+    // weather page. Temperature fills in once ensureWeather() resolves (it
+    // re-renders the timeline), before that it is a plain, tappable glyph.
+    const wxPlace = currentWeatherPlace();
+    const wxNow = wxPlace && state.weatherByPlace ? state.weatherByPlace[wxPlace.key] : null;
+    const wxHasTemp = wxNow && Number.isFinite(Number(wxNow.tempC));
+    const weatherChip = `<button type="button" class="trip-v2-weather" data-action="open-weather" aria-label="${esc(wxHasTemp ? `Weather ${Math.round(Number(wxNow.tempC))} degrees${wxNow.label ? `, ${wxNow.label}` : ""}. Open forecast` : "Open weather forecast")}" title="Weather">${icon(wxHasTemp ? (wxNow.iconName || "weather") : "weather", 26)}${wxHasTemp ? `<span class="trip-v2-weather__temp">${Math.round(Number(wxNow.tempC))}°</span>` : ""}</button>`;
+    // Single-line header: a leading weather chip sits before the trip title,
+    // with the dates stacked directly beneath the title (title + subtitle inside
+    // the tap-to-switch selector). The action cluster stays on the right.
+    const header = `<header class="trip-v2-header trip-v2-header--stacked"><div class="trip-v2-topline"><div class="trip-v2-lead">${weatherChip}<button class="trip-v2-selector" data-action="switch-trip" aria-label="Switch trip"><strong>${esc(state.trip.title || "Trip")}</strong>${icon("chevronDown",16)}<small class="trip-v2-dates">${esc(formatTripDates(state.trip))}</small></button></div>${headerAction}</div></header>`;
+    return `<div class="phone-app"><section class="screen timeline-screen timeline-screen--ribbon">${header}${mobileAlert()}${dayTabs}<main class="timeline-page ${groups.length ? "timeline-page--journey" : "timeline-page--empty"}">${groups.length ? timelineContextCard() : ""}${content}</main>${screenAddFab()}</section></div>`;
   }
 
   // Fast path for Day-tab taps: regenerate the timeline screen markup and swap
@@ -4646,7 +6891,7 @@
           month: "short",
           day: "2-digit",
           year: "numeric",
-          timeZone: timeZone || undefined,
+          timeZone: timeZone || "UTC",
         }).formatToParts(new Date(Number(ms))),
         get = (type) => parts.find((part) => part.type === type)?.value || "";
       return {
@@ -4690,7 +6935,7 @@
       return { label: "Needs confirmation", tone: "warning" };
     if (status === "unavailable")
       return { label: "Unavailable", tone: "neutral" };
-    if (["low", "uncertain", "ambiguous"].includes(confidence))
+    if (["low", "low confidence", "uncertain", "ambiguous"].includes(confidence))
       return { label: "Needs confirmation", tone: "warning" };
     return null;
   }
@@ -4759,6 +7004,28 @@
 
   // Human category label for a resolved timeline glyph (used in the secondary
   // line so a row reads "Restaurant · Rome", never a bare "Tasting menu").
+  // Localize a short English UI label (category, noun) at composition time. The
+  // DOM-swap runtime translates whole text nodes, but timeline subtitles are one
+  // concatenated node — "Neighborhood · 7 places · 10:00" — mixing labels with
+  // live data (routes, counts, times), so no single node matches. Translating the
+  // label tokens here keeps the rest intact. Falls back to English until the
+  // active locale bundle has loaded (t()'s fallback arg), so nothing shows a raw key.
+  function tLabel(en) {
+    const I = globalThis.TriptoI18n;
+    if (!I || I.locale === "en" || !en) return en;
+    const key = I.keyFor(en);
+    return key ? I.t(key, null, en) : en;
+  }
+  // "{count} places"-style count+noun, routed through CLDR plurals when the noun
+  // is a known plural key; otherwise the plain English count phrase.
+  function tCount(count, singular, plural) {
+    const en = `${count} ${count === 1 ? singular : plural}`;
+    const I = globalThis.TriptoI18n;
+    if (!I || I.locale === "en") return en;
+    const localized = I.plural(singular, count);
+    // plural() returns only the number when the noun key is unknown — keep English then.
+    return localized && localized.replace(/[\d\s., ]/g, "").length ? localized : en;
+  }
   const TIMELINE_GLYPH_LABEL = {
     flight: "Flight", train: "Train", ferry: "Ferry", cruise: "Cruise",
     bus: "Bus", car: "Car", taxi: "Taxi", hotel: "Stay", city: "Stay", bar: "Bar",
@@ -4799,7 +7066,7 @@
   // traveler understands the booking immediately.
   function timelineSecondary(item, type, transport, glyph) {
     const collection = collectionForItem(itemId(item));
-    if (collection) { const cfg = collectionConfig(collection.collection_type); return [cfg ? cfg.label : "Plan", collectionSummary(item)].filter(Boolean).join(" · "); }
+    if (collection) { const cfg = collectionConfig(collection.collection_type); return [tLabel(cfg ? cfg.label : "Plan"), collectionSummary(item)].filter(Boolean).join(" · "); }
     if (transport) {
       const from = locationLabel(val(transport, "departure_location_id", "start_location_id")),
         to = locationLabel(val(transport, "arrival_location_id", "end_location_id")),
@@ -4810,8 +7077,8 @@
     const loc = locationById(val(item, "property_location_id", "location_id", "start_location_id", "venue_location_id")),
       place = val(loc, "city") || val(loc, "display_name") || "";
     if (type === "hotel" || type === "stay")
-      return place || item.subtitle || "Stay";
-    const cat = TIMELINE_GLYPH_LABEL[glyph] || "",
+      return place || item.subtitle || tLabel("Stay");
+    const cat = tLabel(TIMELINE_GLYPH_LABEL[glyph] || ""),
       detail =
         item.subtitle &&
         String(item.subtitle).toLowerCase() !== String(item.title || "").toLowerCase()
@@ -4876,9 +7143,9 @@
           return `<div class="fd-row fd-row--doc"><button type="button" class="fd-row__main" data-action="open-document" data-id="${esc(document.id)}"><span class="fd-row__icon">${icon(document.type === "boarding_pass" ? "qr" : "document", 20)}</span><span class="fd-row__text"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${ready ? "Ready offline" : statusText(document.integrity || "checking")}</small></span></button><button type="button" class="fd-row__trail fd-row__trail--remove" data-action="remove-document" data-id="${esc(document.id)}" aria-label="Remove ${esc(document.name || "document")}">${icon("trash", 18)}</button></div>`;
         })
         .join(""),
-      boardingRow = `<div class="fd-row fd-row--static fd-row--with-meta"><span class="fd-row__icon${bpStored ? "" : " fd-row__icon--warn"}">${icon(bpStored ? "qr" : "warning", 20)}</span><span class="fd-row__text"><strong>Boarding pass</strong><small>${bpStored ? "Stored and verified on this phone" : "No verified boarding pass on this phone yet"}</small></span></div>`,
       directionsRow = fdButtonRow("navigation", "Directions", "directions-flight", `data-id="${esc(itemId(flight))}"`, "", "chevron", "fd-row--compact"),
-      addRow = `<button type="button" class="fd-row fd-row--button fd-row--compact" data-action="add-document"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add document</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`,
+      officialStatusRow = fdButtonRow("globe", "Official flight status", "official-flight-status", `data-id="${esc(itemId(flight))}"`, "Check on the airline’s own site", "chevron", "fd-row--compact"),
+      addRow = `<button type="button" class="fd-row fd-row--button fd-row--compact" data-action="add-document" data-id="${esc(itemId(flight))}"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add document</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`,
       liveEnabled = Number(val(flight, "live_data_enabled")) === 1,
       liveControls = state.liveFlights?.available
         ? `<button type="button" class="fd-row fd-row--button fd-row--with-meta" data-action="toggle-live-flight" data-id="${esc(itemId(flight))}" aria-pressed="${liveEnabled}"><span class="fd-row__icon">${icon("plane", 20)}</span><span class="fd-row__text"><strong>Live flight status</strong><small>${liveEnabled ? "On · beta" : "Off"}</small></span><span class="fd-row__chev">${icon(liveEnabled ? "chevronUp" : "chevron", 18)}</span></button>${liveEnabled ? fdButtonRow("refresh", "Refresh now", "refresh-live-flight", `data-id="${esc(itemId(flight))}"`, "", "chevron", "fd-row--compact") : ""}`
@@ -4886,8 +7153,8 @@
       flightDetailsList = fdList(
         [
           directionsRow,
+          officialStatusRow,
           liveControls,
-          boardingRow,
           docRows,
           addRow,
           disclosure,
@@ -4896,6 +7163,50 @@
         "Flight details and actions",
       );
     return `<div class="phone-app"><section class="screen dark-detail flight-detail-screen detail-tone--flight">${appBar("Flight Detail", "", true, `${detailEditButton()}${detailDeleteButton()}`)}<main class="detail-content ${state.flightDetailsOpen ? "detail-content--expanded" : ""}"><div class="flight-detail-stack ${state.flightDetailsOpen ? "is-expanded" : ""}">${flightPass(flight, true)}${flightDetailsList}</div></main></section></div>`;
+  }
+  // Open the airline's OWN flight-status destination. Source of truth is the
+  // airline directory (airline-owned domains only); there is no aggregator/tracker
+  // fallback. When the directory has a status page but cannot deep-link the exact
+  // flight, we copy the flight number so the traveler can paste it there.
+  async function openOfficialFlightStatus(flight) {
+    if (!flight) return;
+    const code = String(val(flight, "marketing_airline_code") || "").trim(),
+      operating = String(val(flight, "operating_airline_code") || "").trim(),
+      number = String(val(flight, "marketing_flight_number", "service_number") || "").trim(),
+      designatorInput = `${code} ${number}`.trim();
+    const resolveNow = () =>
+      globalThis.TriptoAirlineDirectory?.resolveFlightStatus?.({
+        marketingCarrier: code,
+        operatingCarrier: operating,
+        flightNumber: designatorInput,
+      }) || null;
+    const finish = (resolution, win) => {
+      if (!resolution || !globalThis.TriptoAirlineDirectory?.isSafeStatusUrl?.(resolution.url)) {
+        if (win) { try { win.close(); } catch (_) {} }
+        showToast("No official status page is on file for this airline.");
+        return;
+      }
+      if (win) { try { win.location.href = resolution.url; } catch (_) { try { win.close(); } catch (_) {} } }
+      else { try { window.open(resolution.url, "_blank", "noopener"); } catch (_) {} }
+      if (resolution.level !== "deep-link" && resolution.copyDesignator) {
+        void copyText(resolution.copyDesignator).then((copied) => showToast(copied
+          ? `Flight ${resolution.copyDesignator} copied — paste it on ${resolution.airline.name}.`
+          : `Opening ${resolution.airline.name} — search for flight ${resolution.copyDesignator}.`));
+      } else {
+        showToast(`Opening ${resolution.airline.name} flight status.`);
+      }
+    };
+    if (globalThis.TriptoAirlineDirectory) { finish(resolveNow(), null); return; }
+    // Directory not loaded yet: open a placeholder tab now to keep the click
+    // gesture, load the (tiny, offline) bundle, then navigate or close.
+    let win = null;
+    try { win = window.open("about:blank", "_blank"); } catch (_) {}
+    try { await ensureAirlineDirectory(); } catch (_) {
+      if (win) { try { win.close(); } catch (_) {} }
+      showToast("Flight status is unavailable right now.");
+      return;
+    }
+    finish(resolveNow(), win);
   }
   function durationLabel(ms) {
     const minutes = Math.max(0, Math.round(ms / 60000)),
@@ -4950,45 +7261,42 @@
       val(contact, "email") ? fdLinkRow("mail", contact.email, `mailto:${encodeURIComponent(contact.email)}`, `Email hotel at ${esc(contact.email)}`, "Email hotel") : "",
       confirmation ? fdButtonRow("copy", confirmation, "copy", `data-value="${esc(confirmation)}"`, "Confirmation · tap to copy", "copy") : "",
       fdDocRows(stay),
-      fdAddRow(),
+      fdAddRow(itemId(stay)),
       fdNoteRow(stay, "hotel"),
     ], "Hotel details and documents")}</main></section></div>`;
   }
-  function bookingsScreen() {
-    const rows = [];
-    state.transport
-      .filter((item) => !isCancelled(item))
-      .forEach((item) => {
-        const type = String(val(item, "transport_type") || "transport"),
-          routeText = ["flight", "train"].includes(type)
-            ? `${locationLabel(val(item, "departure_location_id"))} → ${locationLabel(val(item, "arrival_location_id"))}`
-            : String(val(item, "title") || "Transport"),
-          starts =
-            Number(val(item, "scheduled_departure_utc", "starts_at_utc")) ||
-            null;
-        rows.push(
-          `<button class="booking-card" data-action="booking-detail" data-kind="${esc(type)}" data-id="${esc(itemId(item))}"><span class="info-icon">${icon(transportIcon(type), 22)}</span><span><strong>${esc(type === "flight" ? `${flightNumber(item)} · ${routeText}` : val(item, "title", "service_number") || routeText)}</strong><span>${esc(formatDateTime(starts, val(item, "departure_timezone", "start_timezone")))}</span></span>${icon("chevron", 22, "chevron")}</button>`,
-        );
-      });
-    state.stays
-      .filter((item) => !isCancelled(item))
-      .forEach((item) =>
-        rows.push(
-          `<button class="booking-card" data-action="booking-detail" data-kind="hotel" data-id="${esc(itemId(item))}"><span class="info-icon purple">${icon("hotel", 22)}</span><span><strong>${esc(val(item, "property_name", "title") || "Stay")}</strong><span>${esc(formatDateOnly(val(item, "check_in_date")))} – ${esc(formatDateOnly(val(item, "check_out_date")))}</span></span>${icon("chevron", 22, "chevron")}</button>`,
-        ),
-      );
-    return `<div class="phone-app"><section class="screen">${appBar("Bookings")}${mobileAlert()}<div class="intro-block"><h1>Your bookings</h1><p>Only the details you need while travelling.</p></div><main class="bookings-list">${rows.length ? rows.join("") : `<div class="empty-mobile"><h2>No bookings yet</h2><p>Add transport, a stay or an activity.</p>${primaryCta("Add Booking", "open-add", "plus")}</div>`}<button class="booking-card" data-screen="documents"><span class="info-icon green">${icon("document", 22)}</span><span><strong>Documents</strong><span>${state.localDocs.filter((doc) => doc.integrity === "verified").length} verified offline files</span></span>${icon("chevron", 22, "chevron")}</button><button class="booking-card" data-screen="ready"><span class="info-icon">${icon("download", 22)}</span><span><strong>Ready Offline</strong><span>Check what is saved on this phone</span></span>${icon("chevron", 22, "chevron")}</button></main></section></div>`;
+  function fileSizeLabel(size) {
+    return size < 1048576 ? `${Math.max(1, Math.round(size / 1024))} KB` : `${(size / 1048576).toFixed(1)} MB`;
+  }
+  function documentAddForm() {
+    const staged = state.pendingDocFile;
+    const attrs = `id="native-form" data-kind="document" data-base-kind="document" data-client-request-id="${esc(manualBookingDraftId("document",""))}" novalidate`;
+    const fileInput = `<input class="sr-only" id="form-documentFile" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" multiple>`;
+    if (!staged) {
+      const picker = `<label class="doc-picker-row" for="form-documentFile"><span class="doc-picker-row__icon">${icon("plus", 22)}</span><span class="doc-picker-row__copy"><strong>Add a document</strong><small>PDF, images, or passes · up to 10 MB each</small></span></label>`;
+      return `<form class="mobile-form document-quick-add document-inline-add" ${attrs}>${picker}${fileInput}</form>`;
+    }
+    // Just a note: the related booking still carries through when the file was
+    // added from a booking's detail page.
+    const details = `${state.docRelatedBooking ? `<input type="hidden" name="relatedBooking" value="${esc(state.docRelatedBooking)}">` : ""}<div class="form-fields">${quickField("notes", "Notes", { type: "textarea", optional: true })}</div>`;
+    const preview = `<div class="doc-staged"><span class="doc-staged__icon">${icon("document", 24)}</span><span class="doc-staged__copy"><strong>${esc(staged.name)}</strong><small>${fileSizeLabel(staged.size)} · Ready to save</small></span><button type="button" class="doc-staged__remove" data-action="clear-doc-file" aria-label="Remove file">${icon("close", 18)}</button></div><p class="doc-staged__note" role="status">Ready offline appears only after checksum verification succeeds.</p>`;
+    return `<form class="mobile-form premium-form quick-add-form manual-booking-form document-quick-add document-inline-add is-staged" ${attrs}>${preview}${fileInput}${details}<button type="submit" class="mobile-primary-action document-add-submit">${icon("check", 20)} Save to this phone</button></form>`;
   }
   function documentsScreen() {
     const rows = state.localDocs
       .map((document) => {
         const integrity = document.integrity || "unverified";
         const travelerNames = (document.travelerIds || []).map((id) => state.travelers.find((traveler) => String(traveler.id) === String(id))?.display_name).filter(Boolean).join(", "), status = integrity === "verified" ? "Ready offline" : statusText(integrity);
-        return `<div class="document-row-wrap"><button class="document-row" data-action="open-document" data-id="${esc(document.id)}"><span class="document-row__icon ${document.type === "hotel_confirmation" ? "purple" : document.type === "boarding_pass" ? "green" : ""}">${icon(document.type === "boarding_pass" ? "qr" : document.type === "hotel_confirmation" ? "hotel" : "document", 24)}</span><span class="document-row__copy"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${esc(travelerNames || document.subtitle || docTypeLabel(document.type))}</small><span class="document-row__status ${integrity === "verified" ? "is-ready" : "is-warning"}">${integrity === "verified" ? icon("check", 14) : icon("warning", 14)} ${esc(status)}</span></span>${icon("chevron", 20, "chevron")}</button><button type="button" class="document-row__remove" data-action="remove-document" data-id="${esc(document.id)}" aria-label="Delete ${esc(document.name || "document")}">${icon("trash", 18)}</button></div>`;
+        return `<div class="document-row-wrap"><button class="document-row" data-action="open-document" data-id="${esc(document.id)}"><span class="document-row__icon ${document.type === "hotel_confirmation" ? "purple" : document.type === "boarding_pass" ? "green" : ""}">${icon(document.type === "boarding_pass" ? "qr" : document.type === "hotel_confirmation" ? "hotel" : "document", 24)}</span><span class="document-row__copy"><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${esc(document.note || travelerNames || document.subtitle || docTypeLabel(document.type))}</small><span class="document-row__status ${integrity === "verified" ? "is-ready" : "is-warning"}">${integrity === "verified" ? icon("check", 14) : icon("warning", 14)} ${esc(status)}</span></span>${icon("chevron", 20, "chevron")}</button><button type="button" class="document-row__remove" data-action="remove-document" data-id="${esc(document.id)}" aria-label="Delete ${esc(document.name || "document")}">${icon("trash", 18)}</button></div>`;
       })
       .join("");
     const verified = state.localDocs.filter((document) => document.integrity === "verified").length;
-    return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Your travel documents</h1><p>${verified} of ${state.localDocs.length} ready offline on this phone</p></div></header><section class="mobile-group"><h2>Saved documents</h2><div class="document-list ds-grouped-card ds-grouped-card--list">${rows || `<div class="mobile-empty mobile-empty--compact"><span class="mobile-empty__icon">${icon("document", 30)}</span><h1>No offline documents</h1><p>Add a ticket, boarding pass, or confirmation.</p></div>`}</div></section><button class="mobile-primary-action" data-action="document-sheet">${icon("plus", 20)} Add Document</button>`, "bookings");
+    const count = state.localDocs.length;
+    const subline = count ? `${verified} of ${count} ready offline on this phone` : "Keep tickets and passes on this phone for offline access";
+    const savedSection = count
+      ? `<section class="mobile-group documents-saved"><h2>On this phone (${count})</h2><p class="documents-local-note">${icon("warning", 14)} These files are saved on this phone only. They are not backed up to your account and are removed if you clear this browser's data or switch devices. Keep the originals in your email.</p><div class="document-list ds-grouped-card ds-grouped-card--list">${rows}</div></section>`
+      : `<div class="documents-empty"><span class="documents-empty__icon">${icon("document", 30)}</span><strong>Nothing saved yet</strong><p>Add a boarding pass, ticket, or confirmation above and it'll stay ready offline on this phone. Files stay on this phone only and aren't backed up to your account.</p></div>`;
+    return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Travel documents</h1><p>${subline}</p></div></header><section class="documents-add">${documentAddForm()}</section>${savedSection}`, "bookings", "", "documents-screen");
   }
 
   function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
@@ -5034,6 +7342,83 @@
     for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
     return pool[h % pool.length];
   }
+  // Flag emoji intentionally disabled app-wide: colour emoji clash with the
+  // app's icon language, so every caller falls back to its regular SVG icon.
+  // Kept as a stub so the call sites stay unchanged.
+  function flagEmoji() {
+    return "";
+  }
+  // Destination → country. Countries and popular travel cities map to a flag;
+  // e.g. "Berlin" or "Summer in Germany" both resolve to 🇩🇪. Matched by
+  // longest keyword first so "New York" wins over "York" and "Hong Kong" over
+  // "Kong". Purely local heuristic — no network, respects the privacy model.
+  const TRIP_COUNTRY_KEYWORDS = {
+    france:"FR",paris:"FR",nice:"FR",lyon:"FR",marseille:"FR",bordeaux:"FR",cannes:"FR",
+    germany:"DE",berlin:"DE",munich:"DE","münchen":"DE",munchen:"DE",hamburg:"DE",cologne:"DE",frankfurt:"DE",dresden:"DE",
+    italy:"IT",rome:"IT",roma:"IT",milan:"IT",venice:"IT",venezia:"IT",florence:"IT",firenze:"IT",naples:"IT",sicily:"IT",tuscany:"IT",amalfi:"IT",
+    spain:"ES",madrid:"ES",barcelona:"ES",seville:"ES",sevilla:"ES",valencia:"ES",ibiza:"ES",mallorca:"ES",malaga:"ES",granada:"ES",bilbao:"ES",
+    portugal:"PT",lisbon:"PT",porto:"PT",madeira:"PT",algarve:"PT",
+    greece:"GR",athens:"GR",santorini:"GR",mykonos:"GR",crete:"GR",corfu:"GR",
+    netherlands:"NL",holland:"NL",amsterdam:"NL",rotterdam:"NL",
+    belgium:"BE",brussels:"BE",bruges:"BE",
+    switzerland:"CH",zurich:"CH",geneva:"CH",zermatt:"CH",lucerne:"CH",interlaken:"CH",
+    austria:"AT",vienna:"AT",salzburg:"AT",innsbruck:"AT",
+    "czech republic":"CZ",czechia:"CZ",prague:"CZ",
+    hungary:"HU",budapest:"HU",
+    poland:"PL",warsaw:"PL",krakow:"PL",
+    ireland:"IE",dublin:"IE",
+    iceland:"IS",reykjavik:"IS",
+    norway:"NO",oslo:"NO",bergen:"NO",
+    sweden:"SE",stockholm:"SE",
+    denmark:"DK",copenhagen:"DK",
+    finland:"FI",helsinki:"FI",
+    croatia:"HR",dubrovnik:"HR",split:"HR",zagreb:"HR",
+    turkey:"TR",istanbul:"TR",cappadocia:"TR",antalya:"TR",izmir:"TR",
+    "united kingdom":"GB",britain:"GB",england:"GB",scotland:"GB",wales:"GB",london:"GB",edinburgh:"GB",manchester:"GB",liverpool:"GB",glasgow:"GB",
+    "united states":"US",america:"US","new york":"US",nyc:"US","los angeles":"US","san francisco":"US",chicago:"US",miami:"US","las vegas":"US",vegas:"US",hawaii:"US",honolulu:"US",maui:"US",orlando:"US",boston:"US",seattle:"US",washington:"US","new orleans":"US",austin:"US",aspen:"US",
+    canada:"CA",toronto:"CA",vancouver:"CA",montreal:"CA",banff:"CA",quebec:"CA",
+    mexico:"MX",cancun:"MX","mexico city":"MX",tulum:"MX",cabo:"MX",
+    brazil:"BR","rio de janeiro":"BR",rio:"BR","sao paulo":"BR",
+    argentina:"AR","buenos aires":"AR",
+    peru:"PE",lima:"PE",cusco:"PE","machu picchu":"PE",
+    chile:"CL",colombia:"CO",cuba:"CU",
+    japan:"JP",tokyo:"JP",kyoto:"JP",osaka:"JP",hokkaido:"JP",okinawa:"JP",
+    china:"CN",beijing:"CN",shanghai:"CN",
+    "hong kong":"HK",
+    thailand:"TH",bangkok:"TH",phuket:"TH","chiang mai":"TH",krabi:"TH",
+    vietnam:"VN",hanoi:"VN",saigon:"VN","ho chi minh":"VN","hoi an":"VN","da nang":"VN",
+    india:"IN",delhi:"IN",mumbai:"IN",goa:"IN",jaipur:"IN",kerala:"IN",agra:"IN",
+    indonesia:"ID",bali:"ID",jakarta:"ID",ubud:"ID",
+    singapore:"SG",
+    malaysia:"MY","kuala lumpur":"MY",
+    philippines:"PH",manila:"PH",cebu:"PH",boracay:"PH",
+    "south korea":"KR",korea:"KR",seoul:"KR",busan:"KR",
+    taiwan:"TW",taipei:"TW",
+    nepal:"NP","sri lanka":"LK",cambodia:"KH",laos:"LA",
+    australia:"AU",sydney:"AU",melbourne:"AU",brisbane:"AU",perth:"AU","gold coast":"AU",cairns:"AU",
+    "new zealand":"NZ",auckland:"NZ",queenstown:"NZ",wellington:"NZ",fiji:"FJ",
+    egypt:"EG",cairo:"EG",luxor:"EG",giza:"EG",
+    morocco:"MA",marrakech:"MA",marrakesh:"MA",casablanca:"MA",fez:"MA",
+    "south africa":"ZA","cape town":"ZA",johannesburg:"ZA",kruger:"ZA",
+    kenya:"KE",nairobi:"KE",
+    tanzania:"TZ",zanzibar:"TZ",serengeti:"TZ",kilimanjaro:"TZ",
+    tunisia:"TN",
+    "united arab emirates":"AE",uae:"AE",dubai:"AE","abu dhabi":"AE",
+    qatar:"QA",doha:"QA",
+    israel:"IL",jerusalem:"IL","tel aviv":"IL",
+    jordan:"JO",petra:"JO",amman:"JO",
+    "saudi arabia":"SA",oman:"OM",lebanon:"LB",
+    maldives:"MV","bora bora":"PF",tahiti:"PF",
+  };
+  const TRIP_COUNTRY_ENTRIES = Object.keys(TRIP_COUNTRY_KEYWORDS)
+    .sort((a, b) => b.length - a.length)
+    .map((key) => [new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`), TRIP_COUNTRY_KEYWORDS[key]]);
+  function tripCountryCode(trip) {
+    const text = String(val(trip, "title") || "").toLowerCase();
+    if (!text) return "";
+    for (const [re, code] of TRIP_COUNTRY_ENTRIES) if (re.test(text)) return code;
+    return "";
+  }
   // Place a trip in exactly one bucket. Dates are the source of truth (a trip
   // that has ended is Past even if it's the one you last opened); lifecycle is
   // only a fallback when dates are missing. This prevents a trip appearing in
@@ -5044,8 +7429,15 @@
   function bucketMarkIcon(label) {
     return ({ Current: "directions", Upcoming: "flight", Past: "location", Cancelled: "close" })[label] || "trips";
   }
+  // Single canonical "today" (UTC calendar date) so trip bucketing, the day-N
+  // counter and the countdown label never disagree near midnight. Trip
+  // starts_on/ends_on are timezone-less calendar dates, and every other date-only
+  // helper here (journalDate, timelineDay) resolves them in UTC — so we do too.
+  function todayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
   function tripBucket(trip) {
-    const now = new Date().toISOString().slice(0, 10);
+    const now = todayISO();
     const lc = String(val(trip, "lifecycle_state", "lifecycleState") || "").toLowerCase();
     if (lc === "cancelled") return "Cancelled";
     const start = String(val(trip, "starts_on", "startsOn") || ""),
@@ -5059,13 +7451,11 @@
   }
   function tripCountdownLabel(trip) {
     const start = String(val(trip, "starts_on", "startsOn") || "");
-    if (!start) return "";
-    const parts = start.split("-").map(Number);
-    if (parts.length !== 3 || parts.some(Number.isNaN)) return "";
-    const now = new Date(),
-      today = new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-      startDate = new Date(parts[0], parts[1] - 1, parts[2]),
-      days = Math.round((startDate.getTime() - today.getTime()) / 86400000);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) return "";
+    const startMs = Date.parse(`${start}T00:00:00Z`),
+      todayMs = Date.parse(`${todayISO()}T00:00:00Z`);
+    if (Number.isNaN(startMs) || Number.isNaN(todayMs)) return "";
+    const days = Math.round((startMs - todayMs) / 86400000);
     if (days < 0) return "";
     if (days === 0) return "Starts today";
     if (days === 1) return "Starts tomorrow";
@@ -5082,7 +7472,7 @@
       end = journalDate(val(trip, "ends_on", "endsOn"));
     if (!start || !end || end < start) return null;
     const total = Math.round((end - start) / 86400000) + 1;
-    const today = journalDate(new Date().toISOString().slice(0, 10));
+    const today = journalDate(todayISO());
     return { total, day: Math.min(total, Math.max(1, Math.round((today - start) / 86400000) + 1)) };
   }
   function journalDayRail(trip) {
@@ -5104,7 +7494,7 @@
   }
   function journalNextTrip(trip) {
     const days = journalDays(trip);
-    return `<section class="journal-next" data-longpress-trip data-id="${esc(trip.id)}"><div class="journal-next__info"><p class="journal-eyebrow">Up next</p><h2>${esc(trip.title || "Untitled trip")}</h2><p class="journal-next__dates">${esc(formatTripDates(trip))}${days ? ` <span>· ${days.total} days</span>` : ""}</p></div><div class="journal-next__aside"><span class="journal-next__countdown">${icon("sun", 18)} ${esc(tripCountdownLabel(trip) || "A new adventure awaits")}</span><button type="button" class="journal-open" data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">Let's go ${icon("plane", 18)}</button></div>${tripSharedBadge(trip)}</section>`;
+    return `<section class="journal-next" data-longpress-trip data-id="${esc(trip.id)}"><div class="journal-next__info"><p class="journal-eyebrow">Up next</p><h2>${esc(trip.title || "Untitled trip")}</h2><p class="journal-next__dates">${esc(formatTripDates(trip))}${days ? ` <span>· ${days.total} day${days.total === 1 ? "" : "s"}</span>` : ""}</p></div><div class="journal-next__aside"><span class="journal-next__countdown">${icon("sun", 18)} ${esc(tripCountdownLabel(trip) || "A new adventure awaits")}</span><button type="button" class="journal-open" data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">Let's go ${icon("plane", 18)}</button></div>${tripSharedBadge(trip)}</section>`;
   }
   function journalTripRow(trip, label) {
     const archived = label === "Past" || label === "Cancelled";
@@ -5118,7 +7508,7 @@
   // rest of the product. Account and Create trip stay accessible in the header
   // without showing trip-specific bottom navigation on the full trip list.
   function tripsPageHeader() {
-    return `<header class="app-bar app-bar--root trips-app-bar"><button type="button" class="icon-button trips-header-account" data-screen="account" aria-label="Account" title="Account">${icon("user", 24)}</button><div class="app-bar-title"><strong>Trips</strong></div><div class="app-bar-actions"><button type="button" class="icon-button trips-header-add" data-action="create-trip" aria-label="Create trip">${icon("plus", 24)}</button></div></header>`;
+    return `<header class="app-bar app-bar--root trips-app-bar"><span class="app-bar-lead" aria-hidden="true"></span><div class="app-bar-title"><strong>Trips</strong></div><div class="app-bar-actions">${pageHelpButton("trips")}<button type="button" class="icon-button trips-header-account" data-screen="account" aria-label="Account" title="Account">${icon("user", 24)}</button><button type="button" class="icon-button trips-header-plus" data-action="open-subscription" aria-label="Tripto Plus" title="Tripto Plus">${icon("crown", 21)}</button></div></header>`;
   }
   function tripHue(trip) {
     const s = String(trip.title || trip.id || "trip");
@@ -5131,7 +7521,7 @@
     const isPast = label === "Past";
     const isCancelled = label === "Cancelled";
     const days = isCurrent ? journalDays(trip) : null;
-    const dateMeta = `${formatTripDates(trip)}${days ? ` · Day ${days.day} of ${days.total}` : ""}`;
+    const dateMeta = `${esc(formatTripDates(trip))}${days ? ` <span class="trip-day-count"><span>Day ${days.day} of ${days.total}</span></span>` : ""}`;
     const status = isCurrent
       ? "Current"
       : isCancelled
@@ -5140,26 +7530,88 @@
           ? "Completed"
           : tripCountdownLabel(trip) || "Upcoming";
     const iconName = isCurrent ? "directions" : isCancelled ? "close" : isPast ? "clock" : tripMarkIcon(trip);
-    return `<li class="trip-list-row-wrap" data-swipe-row><button type="button" class="trip-list-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="trip-list-row ds-flat-row${isCurrent ? " trip-list-row--current" : ""}${isPast ? " trip-list-row--past" : ""}${isCancelled ? " trip-list-row--cancelled" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}"><span class="trip-list-row__mark" style="--tg-h:${tripHue(trip)}" aria-hidden="true">${icon(iconName, 22)}</span><span class="ds-flat-row__copy trip-list-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${esc(dateMeta)}</small>${tripSharedBadge(trip)}<span class="trip-list-row__status">${esc(status)}</span></span>${icon("chevron", 18, "ds-flat-row__chevron")}</button></li>`;
+    const flag = flagEmoji(tripCountryCode(trip));
+    const mark = flag
+      ? `<span class="trip-list-row__mark trip-list-row__mark--flag" aria-hidden="true"><span class="trip-list-row__flag">${flag}</span></span>`
+      : `<span class="trip-list-row__mark" style="--tg-h:${tripHue(trip)}" aria-hidden="true">${icon(iconName, 22)}</span>`;
+    return `<li class="trip-list-row-wrap" data-swipe-row><button type="button" class="trip-list-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="trip-list-row ds-flat-row${isCurrent ? " trip-list-row--current" : ""}${isPast ? " trip-list-row--past" : ""}${isCancelled ? " trip-list-row--cancelled" : ""}" data-swipe-handle data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">${mark}<span class="ds-flat-row__copy trip-list-row__copy"><strong>${esc(trip.title || "Untitled trip")}</strong><small>${dateMeta}</small>${tripSharedBadge(trip)}<span class="trip-list-row__status">${esc(status)}</span></span>${icon("chevron", 18, "ds-flat-row__chevron")}</button></li>`;
+  }
+  // v815 curated hues for trip cards (raw tripHue can land on muddy olives).
+  // Layered pattern: topographic contour rings, a fading dot grid, a dashed flight arc
+  // ending in a plane, and a few sparkles. All currentColor so each theme tints it.
+  // Shared by the trips hero and the welcome preview; uid keeps the SVG ids unique.
+  function tripsHeroArt(uid = "th") {
+    return `<svg class="trips-hero__art" viewBox="0 0 320 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true" focusable="false"><defs><pattern id="${uid}Dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="currentColor"/></pattern><radialGradient id="${uid}Fade" cx="0" cy="1" r="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="${uid}Mask"><rect width="320" height="180" fill="url(#${uid}Fade)"/></mask></defs><rect class="trips-hero__dots" width="320" height="180" fill="url(#${uid}Dots)" mask="url(#${uid}Mask)"/><g class="trips-hero__topo" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"><path d="M0-1C.7-1.05 1.1-.4.95.1C.85.7.35 1.05-.15.98C-.75.9-1.05.35-.98-.1C-.9-.7-.55-.95 0-1Z" transform="translate(262 46) rotate(0) scale(14)"/><path d="M0-1C.7-1.05 1.1-.4.95.1C.85.7.35 1.05-.15.98C-.75.9-1.05.35-.98-.1C-.9-.7-.55-.95 0-1Z" transform="translate(262 46) rotate(8) scale(28)"/><path d="M0-1C.7-1.05 1.1-.4.95.1C.85.7.35 1.05-.15.98C-.75.9-1.05.35-.98-.1C-.9-.7-.55-.95 0-1Z" transform="translate(262 46) rotate(-6) scale(43)"/><path d="M0-1C.7-1.05 1.1-.4.95.1C.85.7.35 1.05-.15.98C-.75.9-1.05.35-.98-.1C-.9-.7-.55-.95 0-1Z" transform="translate(262 46) rotate(14) scale(59)"/><path d="M0-1C.7-1.05 1.1-.4.95.1C.85.7.35 1.05-.15.98C-.75.9-1.05.35-.98-.1C-.9-.7-.55-.95 0-1Z" transform="translate(262 46) rotate(2) scale(76)"/><path d="M0-1C.7-1.05 1.1-.4.95.1C.85.7.35 1.05-.15.98C-.75.9-1.05.35-.98-.1C-.9-.7-.55-.95 0-1Z" transform="translate(262 46) rotate(-10) scale(94)"/><path d="M0-1C.7-1.05 1.1-.4.95.1C.85.7.35 1.05-.15.98C-.75.9-1.05.35-.98-.1C-.9-.7-.55-.95 0-1Z" transform="translate(262 46) rotate(6) scale(113)"/></g><path class="trips-hero__arc" d="M-6 176 C 70 150, 150 146, 238 104" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="1 7" stroke-linecap="round"/><circle cx="-6" cy="176" r="3" fill="currentColor"/><path class="trips-hero__plane" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor" transform="translate(236 92) rotate(62 12 12) scale(.62)"/><g class="trips-hero__spark" fill="currentColor"><path d="M150 26l1.6 4.4L156 32l-4.4 1.6L150 38l-1.6-4.4L144 32l4.4-1.6z"/><path d="M196 138l1 2.8 2.8 1-2.8 1-1 2.8-1-2.8-2.8-1 2.8-1z"/><circle cx="118" cy="58" r="1.4"/><circle cx="212" cy="20" r="1.2"/></g></svg>`;
+  }
+  function tripCardHue(trip) {
+    return [212, 228, 252, 274, 322, 346, 14, 178][tripHue(trip) % 8];
+  }
+  // v815 calendar stamp (localized month + day) used by the hero and list rows.
+  function tripDateStamp(trip) {
+    const start = journalDate(val(trip, "starts_on", "startsOn"));
+    if (!start) return null;
+    const locale = globalThis.TriptoI18n?.locale || "en";
+    let month = "";
+    try { month = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" }).format(start).replace(".", ""); } catch (_) { month = start.toISOString().slice(5, 7); }
+    return { month, day: start.getUTCDate() };
+  }
+  // Editorial hero: the single most relevant trip (in-progress if any, else the
+  // soonest upcoming) presented large, with a countdown or day progress.
+  function tripsHeroCard(trip, mode) {
+    const isCurrent = mode === "current";
+    const days = journalDays(trip);
+    const eyebrow = isCurrent ? "In progress" : "Next up";
+    const statusText_ = isCurrent
+      ? (days ? `Day ${days.day} of ${days.total}` : "Your current journey")
+      : (tripCountdownLabel(trip) || "A new adventure awaits");
+    const meta = `${esc(formatTripDates(trip))}${days ? ` · ${days.total} day${days.total === 1 ? "" : "s"}` : ""}`;
+    const progress = isCurrent && days
+      ? `<span class="trips-hero__progress" aria-hidden="true"><i style="width:${Math.max(6, Math.min(100, Math.round((days.day / days.total) * 100)))}%"></i></span>`
+      : "";
+    const stamp = tripDateStamp(trip);
+    const stampHtml = stamp ? `<span class="trips-hero__stamp" aria-hidden="true"><small>${esc(stamp.month)}</small><b>${stamp.day}</b></span>` : "";
+    const art = tripsHeroArt("th");
+    return `<button type="button" class="trips-hero${isCurrent ? " trips-hero--current" : ""}" style="--tg-h:${tripCardHue(trip)}" data-longpress-trip data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">${art}<span class="trips-hero__top"><span class="trips-hero__eyebrow">${esc(eyebrow)}</span>${stampHtml}</span><span class="trips-hero__title">${esc(trip.title || "Untitled trip")}</span><span class="trips-hero__meta">${meta}</span>${progress}<span class="trips-hero__foot"><span class="trips-hero__status">${icon(isCurrent ? "directions" : "sun", 18)} ${esc(statusText_)}</span><span class="trips-hero__go" aria-hidden="true">${icon("chevron", 22)}</span></span>${tripSharedBadge(trip)}</button>`;
+  }
+  // Clean editorial list row: title on the left, date/countdown on the right,
+  // chevron affordance. Keeps the swipe-to-delete plumbing of .trip-list-row.
+  function tripsEditorialRow(trip, label) {
+    const isCancelled = label === "Cancelled";
+    const isPast = label === "Past";
+    const days = journalDays(trip);
+    const hasDates = !!journalDate(val(trip, "starts_on", "startsOn"));
+    const duration = days ? ` · ${days.total} day${days.total === 1 ? "" : "s"}` : "";
+    const countdown = isPast || isCancelled
+      ? ""
+      : (label === "Current" && days ? `Day ${days.day} of ${days.total}` : (tripCountdownLabel(trip) || ""));
+    // The countdown sits on its own line under the dates so it never wraps mid-phrase.
+    const dates = hasDates ? `${formatTripDates(trip)}${duration}` : "To plan";
+    const sub = isCancelled ? (hasDates ? `${formatTripDates(trip)}${duration} · Cancelled` : "Cancelled") : dates;
+    // One shared leading icon for Upcoming, one shared icon for every other section.
+    const rowIcon = label === "Upcoming" ? "flight" : "location";
+    return `<li class="trip-list-row-wrap trips-ed-wrap" data-swipe-row><button type="button" class="trip-list-row__delete-action" data-action="delete-trip" data-id="${esc(trip.id)}" aria-label="Delete ${esc(trip.title || "trip")}" tabindex="-1">Delete</button><button type="button" class="trip-list-row trips-ed-row${isPast || isCancelled ? " trips-ed-row--muted" : ""}" data-swipe-handle data-longpress-trip data-action="open-trip" data-id="${esc(trip.id)}" aria-label="Open trip: ${esc(trip.title || "Untitled trip")}">${(() => { const st = tripDateStamp(trip); return st ? `<span class="trips-ed-row__mark trips-ed-row__mark--date" style="--tg-h:${tripCardHue(trip)}" aria-hidden="true"><small>${esc(st.month)}</small><b>${st.day}</b></span>` : `<span class="trips-ed-row__mark trips-ed-row__mark--plan" aria-hidden="true">${icon(rowIcon, 20)}</span>`; })()}<span class="trips-ed-row__body"><strong class="trips-ed-row__title">${esc(trip.title || "Untitled trip")}</strong><span class="trips-ed-row__sub${isCancelled ? " trips-ed-row__sub--cancelled" : ""}">${esc(sub)}</span>${countdown && hasDates && !isCancelled ? `<span class="trips-ed-row__countdown">${esc(countdown)}</span>` : ""}${tripSharedBadge(trip)}</span>${icon("chevron", 20, "trips-ed-row__chevron")}</button></li>`;
   }
   function tripListScreen() {
-    const filters = [["all","All"],["current","Current"],["upcoming","Upcoming"],["past","Past"]];
-    const filter = filters.some(([key]) => key === state.tripFilter) ? state.tripFilter : "all";
     const order = ["Current", "Upcoming", "Past", "Cancelled"];
     const groups = Object.fromEntries(order.map((label) => [label, state.trips.filter((trip) => tripBucket(trip) === label).sort((a, b) => {
       const sa = String(val(a, "starts_on", "startsOn") || "9999-12-31"), sb = String(val(b, "starts_on", "startsOn") || "9999-12-31");
       return label === "Past" ? sb.localeCompare(sa) : sa.localeCompare(sb);
     })]));
-    const filterBar = `<div class="ds-segmented trips-filter" role="group" aria-label="Filter trips">${filters.map(([key,label]) => `<button type="button" data-action="filter-trips" data-filter="${key}" aria-pressed="${filter === key}" class="${filter === key ? "is-active" : ""}">${label}<span>${key === "all" ? state.trips.length : groups[label].length}</span></button>`).join("")}</div>`;
-    const content = order.filter((label) => filter === "all" || label.toLowerCase() === filter).map((label) => {
-      const trips = groups[label];
+    // The hero showcases the current trip, or the soonest upcoming one.
+    let heroTrip = null, heroMode = null;
+    if (groups.Current.length) { heroTrip = groups.Current[0]; heroMode = "current"; }
+    else if (groups.Upcoming.length) { heroTrip = groups.Upcoming[0]; heroMode = "next"; }
+    const hero = heroTrip ? tripsHeroCard(heroTrip, heroMode) : "";
+    const content = order.map((label) => {
+      const trips = groups[label].filter((trip) => trip !== heroTrip);
       if (!trips.length) return "";
-      const heading = label === "Past" ? "Past trips" : label;
-      return `<section class="trip-list-group trip-list-group--${label.toLowerCase()}"><header class="trip-list-group__header"><h2>${heading}</h2><span class="trip-list-group__count">${trips.length}</span></header><ul class="trip-list ds-grouped-card ds-grouped-card--list">${trips.map((trip) => tripListRow(trip, label)).join("")}</ul></section>`;
+      const heading = label === "Past" ? "Past trips" : label === "Current" ? "Also happening" : label;
+      return `<section class="trip-list-group trip-list-group--${label.toLowerCase()}"><header class="trip-list-group__header"><h2>${heading}</h2><span class="trip-list-group__count">${trips.length}</span></header><ul class="trip-list ds-grouped-card ds-grouped-card--list trips-ed-list">${trips.map((trip) => tripsEditorialRow(trip, label)).join("")}</ul></section>`;
     }).join("");
-    const emptyCopy = {current:"Trips happening now will appear here.",upcoming:"Your next adventures will appear here.",past:"Completed trips will appear here.",all:"Create your first trip and keep everything in one place."};
-    const body = content || `<section class="ds-empty-state trips-empty"><span class="ds-empty-state__icon">${icon("trips", 26)}</span><h1>${!state.trips.length ? "No trips yet" : `No ${filter === "all" ? "" : filter + " "}trips`}</h1><p>${emptyCopy[filter]}</p><button type="button" class="ds-primary-button" data-action="${state.trips.length ? "filter-trips" : "create-trip"}"${state.trips.length ? ' data-filter="all"' : ""}>${state.trips.length ? "Show all trips" : "Create trip"}</button></section>`;
-    return `<div class="phone-app"><section class="screen trips-screen">${tripsPageHeader()}${mobileAlert()}<main class="trips-page"><section class="trips-intro"><span>YOUR JOURNEYS</span><h1>All your trips</h1><p>Plans, bookings, and ideas stay together here.</p></section>${filterBar}<div class="trip-list-results" aria-live="polite">${body}</div></main></section></div>`;
+    const body = state.trips.length
+      ? `${hero}${content ? `<div class="trips-groups">${content}</div>` : ""}`
+      : `<section class="trips-empty trips-empty--v2"><div class="trips-empty__hero">${tripsHeroArt("te")}<span class="trips-empty__top"><span class="trips-empty__eyebrow">Your first trip</span><span class="trips-empty__stamp" aria-hidden="true">${icon("trips", 20)}</span></span><h1><span>Let’s plan something</span> <em class="trips-empty__accent">unforgettable.</em></h1><button type="button" class="trips-empty__cta" data-action="create-trip">${icon("plus", 18)}<span>Create your first trip</span></button></div><section class="trips-why"><h2>Made for every traveler</h2><p>Solo weekends, family holidays or work trips — Tripto keeps every journey calm, clear and together.</p><ul class="trips-why__who">${["Solo", "Couples", "Families", "Friends", "Business"].map((w) => `<li>${w}</li>`).join("")}</ul><ul class="trips-why__grid">${[["flight", 212, "Bookings", "Flights, trains & stays"], ["calendar", 274, "Day plans", "Hour by hour, day by day"], ["location", 14, "Places", "Spots worth the trip"], ["document", 160, "Documents", "Tickets & passports"]].map(([ic, h, t, sub]) => `<li class="trips-why__tile" style="--tg-h:${h}"><span class="trips-why__icon">${icon(ic, 20)}</span><b>${t}</b><small>${sub}</small></li>`).join("")}</ul><ul class="trips-why__perks">${["Free to start", "Works offline", "Share with your crew"].map((t) => `<li>${icon("check", 14)}<span>${t}</span></li>`).join("")}</ul></section></section>`;
+    return `<div class="phone-app"><section class="screen trips-screen trips-screen--editorial${state.trips.length ? "" : " trips-screen--empty"}">${tripsPageHeader()}${mobileAlert()}<main class="trips-page">${state.trips.length ? `<section class="trips-intro"><span>YOUR JOURNEYS</span><h1>All your trips</h1></section>` : ""}<div class="trip-list-results" aria-live="polite">${body}</div></main><button type="button" class="trips-fab trips-create-fab" data-action="create-trip" aria-label="Create trip" title="Create trip">${icon("plus", 30)}</button></section></div>`;
   }
   function meaningfulBookingStatus(item) {
     const raw = String(val(item, "booking_status", "status") || "").toLowerCase();
@@ -5170,22 +7622,9 @@
   function bookingRows() {
     const rows = [];
     state.transport.forEach((item) => rows.push({ kind: String(val(item, "transport_type") || "transport"), item, at: Number(val(item, "scheduled_departure_utc", "starts_at_utc")) || 0 }));
-    state.stays.forEach((item) => rows.push({ kind: "hotel", item, at: Date.parse(`${val(item, "check_in_date") || ""}T00:00:00Z`) || 0 }));
+    state.stays.forEach((item) => rows.push({ kind: "hotel", item, at: Date.parse(`${val(item, "check_in_date") || ""}T12:00:00Z`) || 0 }));
     state.timeline.filter((item) => ["activity", "reservation", "plan", "tour", "restaurant"].includes(String(val(item, "type")))).forEach((item) => rows.push({ kind: String(val(item, "type")), item, at: Number(val(item, "starts_at_utc")) || 0 }));
     return rows.sort((a, b) => a.at - b.at);
-  }
-  function premiumBookingsScreen() {
-    const filters = [["all", "All"], ["transport", "Transport"], ["stays", "Stays"], ["plans", "Plans"]],
-      rows = bookingRows().filter((row) => state.bookingFilter === "all" || (state.bookingFilter === "transport" && ["flight", "train", "ferry", "car", "transfer"].includes(row.kind)) || (state.bookingFilter === "stays" && row.kind === "hotel") || (state.bookingFilter === "plans" && !["flight", "train", "ferry", "car", "transfer", "hotel"].includes(row.kind)));
-    const list = rows.map(({ kind, item, at }) => {
-      const transport = ["flight", "train", "ferry", "car", "transfer"].includes(kind),
-        zone = val(item, "departure_timezone", "start_timezone"),
-        title = kind === "flight" ? `${flightNumber(item)} · ${flightRoute(item).fromCode} → ${flightRoute(item).toCode}` : ["train", "ferry"].includes(kind) ? val(item, "title", "service_number") || statusText(kind) : kind === "hotel" ? val(item, "property_name", "title") || "Stay" : val(item, "title", "carrier_name") || statusText(kind),
-        subtitle = kind === "hotel" ? `${formatDateOnly(val(item, "check_in_date"))} – ${formatDateOnly(val(item, "check_out_date"))}` : transport ? formatDateTime(at, zone) : `${formatDateTime(at, zone)}${val(item, "subtitle") ? ` · ${val(item, "subtitle")}` : ""}`,
-        status = meaningfulBookingStatus(item);
-      return `<button class="ds-flat-row travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="ds-flat-row__icon travel-row__icon">${PastelIcon(transportIcon(kind), ["hotel"].includes(kind) ? "stay" : ["flight", "train", "ferry"].includes(kind) ? "flight" : "transfer", 22)}</span><span class="ds-flat-row__copy travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? StatusLabel(status, "attention") : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
-    }).join("");
-    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings");
   }
   function selectedTrain() {
     const supported = new Set(["train", "ferry"]),
@@ -5194,11 +7633,11 @@
           itemId(row) === String(state.selectedId) &&
           supported.has(String(val(row, "transport_type"))),
       );
+    if (selected || state.selectedId) return selected || null;
     return (
-      selected ||
       state.transport.find((row) =>
         supported.has(String(val(row, "transport_type"))),
-      )
+      ) || null
     );
   }
   function trainScreen() {
@@ -5253,7 +7692,7 @@
       doc ? fdButtonRow("ticket", "Open ticket", "open-document", `data-id="${esc(doc.id)}"`) : "",
       bookingRef ? fdButtonRow("copy", bookingRef, "copy", `data-value="${esc(bookingRef)}"`, "Booking reference · tap to copy", "copy") : "",
       fdDocRows(train),
-      fdAddRow(),
+      fdAddRow(itemId(train)),
       fdNoteRow(train, kind),
     ], "Journey details and documents")}</main></section></div>`;
   }
@@ -5321,7 +7760,7 @@
       confirmation ? fdButtonRow("copy", confirmation, "copy", `data-value="${esc(confirmation)}"`, "Confirmation · tap to copy", "copy") : "",
       val(contact, "phone") ? fdButtonRow("phone", val(contact, "display_name") || contact.phone, "call", `data-value="${esc(contact.phone)}"`, "Call contact") : "",
       fdDocRows(item),
-      fdAddRow(),
+      fdAddRow(itemId(item)),
       fdNoteRow(item, kind),
     ], "Plan details and documents")}</main></section></div>`;
   }
@@ -5445,10 +7884,6 @@
     const extra = placements.length > 1 ? ` +${placements.length - 1}` : "";
     return `In ${bits.join(" · ")}${extra}`;
   }
-  // The neighborhoods a plan panel offers: every live neighborhood collection.
-  function neighborhoodCollections() {
-    return (state.collections || []).filter((c) => String(c.collection_type) === "neighborhood" && !val(c, "deleted_at", "deletedAt"));
-  }
   // Guard against double-submits (rapid taps / slow network): an idea id is held
   // here for the duration of an in-flight plan mutation.
   const planInFlight = new Set();
@@ -5457,10 +7892,9 @@
   function collectionSummary(item) {
     const c = collectionForItem(itemId(item)), cfg = collectionConfig(c && c.collection_type);
     const stops = collectionStopsFor(itemId(item)), count = stops.length;
-    const noun = count === 1 ? (cfg ? cfg.stop : "place") : (cfg ? cfg.stops : "places");
     const times = stops.map((s) => String(s.scheduled_time || "").trim()).filter(Boolean).sort();
     const range = times.length ? (times.length > 1 && times[0] !== times[times.length - 1] ? `${times[0]}–${times[times.length - 1]}` : times[0]) : "";
-    return [`${count} ${noun}`, range].filter(Boolean).join(" · ");
+    return [tCount(count, cfg ? cfg.stop : "place", cfg ? cfg.stops : "places"), range].filter(Boolean).join(" · ");
   }
   // Dot state is derived from status + order and communicated by SHAPE/tone, not
   // color: solid = next, outlined = future, muted = past, muted+strike = skipped.
@@ -5551,14 +7985,14 @@
     const statusLabel = status === "visited" ? "Visited" : status === "skipped" ? "Skipped" : "Planned";
     const typeLabel = stop.place_type ? PLACE_TYPE_OPTIONS.find(([value]) => value === String(stop.place_type))?.[1] || "Place" : "Place";
     const time = String(stop.scheduled_time || "").trim();
-    const meta = [typeLabel, collection.city].filter(Boolean).join(" · ");
+    const meta = `<span>${esc(typeLabel)}</span>${collection.city ? ` · <span>${esc(collection.city)}</span>` : ""}`;
     // A place reuses the booking detail chrome so every detail page in a
     // neighborhood reads the same way: the dark detail shell, a toned hero
     // card, and the fd-list rows with rounded icon tiles.
     const deleteButton = canEditCurrentTrip()
       ? `<button type="button" class="icon-button" data-action="edit-stop" data-collection="${esc(collectionId)}" data-id="${esc(stop.id)}" aria-label="Edit place">${icon("edit", 22)}</button><button type="button" class="icon-button app-bar-action--danger" data-action="delete-stop" data-collection="${esc(collectionId)}" data-id="${esc(stop.id)}" aria-label="Delete place">${icon("trash", 22)}</button>`
       : "";
-    const hero = `<section class="fd-card fd-card--tone-activity" aria-label="Place details"><div class="fd-card__head"><span class="fd-flight">${icon("location", 17)} ${esc(cfg.stop || "Place")}</span><span class="fd-status-wrap" role="status" aria-label="${esc(statusLabel)}"><span class="fd-status${status === "visited" ? " is-confirmed" : ""}">${status === "visited" ? checkDot() : ""}${esc(statusLabel)}</span></span></div><h1 class="fd-title">${esc(stop.title || "Place")}</h1>${meta ? `<p class="fd-sub">${esc(meta)}</p>` : ""}</section>`;
+    const hero = `<section class="fd-card fd-card--tone-activity" aria-label="Place details"><div class="fd-card__head"><span class="fd-flight">${icon("location", 17)} ${esc(cfg.stop || "Place")}</span><span class="fd-status-wrap" role="status" aria-label="${esc(statusLabel)}"><span class="fd-status${status === "visited" ? " is-confirmed" : ""}">${status === "visited" ? checkDot() : ""}${esc(statusLabel)}</span></span></div><h1 class="fd-title">${esc(stop.title || "Place")}</h1><p class="fd-sub">${meta}</p></section>`;
     // Notes appear on every place, mirroring the booking detail. Editors edit
     // the note inline right here (tap to open the field); a place cannot hold
     // documents, so no Add document row is shown.
@@ -5741,7 +8175,7 @@
       showToast(`${cfg ? cfg.label : "Plan"} ${editId ? "updated" : "added"}.`);
       route(targetId ? "collection" : "timeline", targetId || null, true);
     } catch (error) {
-      if (!editId && !navigator.onLine) {
+      if (!editId && isNetworkFailure(error)) {
         // Offline: the new neighborhood is queued as a temp collection, but the
         // idea→neighborhood link can't be made until the collection has a real
         // server id. Clear the pending idea so it never leaks into the NEXT
@@ -5776,7 +8210,11 @@
       timezone: String(fd.get("timezone") || "").trim() || null,
       addressSnapshot: String(fd.get("streetAddress") || "").trim() || null,
       placeType: String(fd.get("placeType") || "").trim() || null,
-      linkedTripItemId: String(fd.get("linkedTripItemId") || "").trim() || null,
+      // The edit form does not render a link picker, so the field is absent on
+      // save. Preserve the existing idea↔stop link instead of severing it.
+      linkedTripItemId: fd.has("linkedTripItemId")
+        ? (String(fd.get("linkedTripItemId") || "").trim() || null)
+        : (editId ? ((state.collectionStops || []).find((s) => String(s.id) === String(editId))?.linked_trip_item_id || null) : null),
       notes: String(fd.get("notes") || "").trim() || null,
       status: String(fd.get("status") || "planned").trim() || "planned",
     };
@@ -5795,7 +8233,7 @@
       showToast(`Place ${editId ? "updated" : "added"}.`);
       route("collection", collectionId, true);
     } catch (error) {
-      if (!editId && !navigator.onLine) {
+      if (!editId && isNetworkFailure(error)) {
         const tempId = `local-${crypto.randomUUID()}`;
         const position = collectionStopsFor(collectionId).length;
         state.collectionStops = [...(state.collectionStops || []), { id: tempId, collection_item_id: collectionId, position, version: 1, __local: true, ...toStopRow(body) }];
@@ -5860,8 +8298,10 @@
     render();
     try {
       await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/collections/${encodeURIComponent(collectionId)}/stops/order`, { method: "PUT", body: JSON.stringify({ order }) });
+      // Reordering bumps stop versions server-side; refresh so later edits don't 409.
+      await loadTripDetails().catch(() => {}); render();
     } catch (error) {
-      if (!navigator.onLine) { queuePendingMutation({ kind: "collection", op: "reorder", tripId: state.trip.id, collectionId, body: { order } }); showToast("Order saved on this phone. It will sync when you reconnect."); return; }
+      if (isNetworkFailure(error)) { queuePendingMutation({ kind: "collection", op: "reorder", tripId: state.trip.id, collectionId, body: { order } }); showToast("Order saved on this phone. It will sync when you reconnect."); return; }
       showToast(error?.message || "Could not reorder. Refreshing.", "alert");
       await loadTripDetails().catch(() => {}); render();
     }
@@ -5873,31 +8313,39 @@
     stop.status = status; // optimistic
     if (state.sheet === "collection-stop") { state.sheet = null; state.stopMenu = null; }
     render();
+    const body = { version: Number(val(stop, "version")) || 1, title: stop.title, scheduledTime: stop.scheduled_time || null, addressSnapshot: stop.address_snapshot || null, placeType: stop.place_type || null, linkedTripItemId: stop.linked_trip_item_id || null, notes: stop.notes || null, status };
     try {
-      await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/collections/${encodeURIComponent(collectionId)}/stops/${encodeURIComponent(stopId)}`, { method: "PATCH", body: JSON.stringify({ version: Number(val(stop, "version")) || 1, title: stop.title, scheduledTime: stop.scheduled_time || null, addressSnapshot: stop.address_snapshot || null, placeType: stop.place_type || null, linkedTripItemId: stop.linked_trip_item_id || null, notes: stop.notes || null, status }) });
+      await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/collections/${encodeURIComponent(collectionId)}/stops/${encodeURIComponent(stopId)}`, { method: "PATCH", body: JSON.stringify(body) });
       await loadTripDetails();
     } catch (error) {
-      if (!navigator.onLine) { queuePendingMutation({ kind: "collection", op: "status", tripId: state.trip.id, collectionId, stopId, body: { status } }); showToast("Saved on this phone. It will sync when you reconnect."); return; }
+      if (isNetworkFailure(error)) { queuePendingMutation({ kind: "collection", op: "status", tripId: state.trip.id, collectionId, stopId, body }); showToast("Saved on this phone. It will sync when you reconnect."); return; }
       stop.status = prev; showToast(error?.message || "Could not update. Try again.", "alert"); render();
     }
   }
-  async function flushCollectionsQueue() {
-    if (PREVIEW_MODE || !navigator.onLine || !state.token) return;
-    const rows = pendingMutations(), keep = [];
-    let touched = false;
-    for (const row of rows) {
-      if (row.kind !== "collection" || row.status === "done") { keep.push(row); continue; }
-      try {
-        const t = encodeURIComponent(row.tripId), c = encodeURIComponent(row.collectionId || "");
-        if (row.op === "create") await api(`/api/v1/trips/${t}/collections`, { method: "POST", body: JSON.stringify(row.body) });
-        else if (row.op === "add-stop") await api(`/api/v1/trips/${t}/collections/${c}/stops`, { method: "POST", body: JSON.stringify(row.body) });
-        else if (row.op === "reorder") await api(`/api/v1/trips/${t}/collections/${c}/stops/order`, { method: "PUT", body: JSON.stringify(row.body) });
-        else if (row.op === "status") await api(`/api/v1/trips/${t}/collections/${c}/stops/${encodeURIComponent(row.stopId)}`, { method: "PATCH", body: JSON.stringify(row.body) });
-        touched = true;
-      } catch (_) { keep.push({ ...row, status: "retry" }); }
-    }
-    localStorage.setItem(PENDING_KEY, JSON.stringify(keep));
-    return touched;
+  function flushCollectionsQueue() {
+    return flushPendingKind("collection", async (row) => {
+      const t = encodeURIComponent(row.tripId);
+      if (row.op === "create") {
+        const res = await api(`/api/v1/trips/${t}/collections`, { method: "POST", headers: { "Idempotency-Key": row.id }, body: JSON.stringify(row.body) });
+        rememberServerId(row.tempId, res?.collection?.id);
+        return res;
+      }
+      const collectionId = resolvePendingId(row.collectionId);
+      const stopId = row.stopId ? resolvePendingId(row.stopId) : "";
+      if (!collectionId || (row.stopId && !stopId)) throw Object.assign(new Error("The neighborhood was not created on the server."), { status: 424, code: "DEPENDENCY_FAILED" });
+      const c = encodeURIComponent(collectionId);
+      if (row.op === "add-stop") {
+        const res = await api(`/api/v1/trips/${t}/collections/${c}/stops`, { method: "POST", headers: { "Idempotency-Key": row.id }, body: JSON.stringify(row.body) });
+        rememberServerId(row.tempId, res?.stop?.id);
+        return res;
+      }
+      if (row.op === "reorder") {
+        const order = (row.body?.order || []).map((id) => resolvePendingId(id)).filter(Boolean);
+        return api(`/api/v1/trips/${t}/collections/${c}/stops/order`, { method: "PUT", body: JSON.stringify({ ...row.body, order }) });
+      }
+      if (row.op === "status") return api(`/api/v1/trips/${t}/collections/${c}/stops/${encodeURIComponent(stopId)}`, { method: "PATCH", body: JSON.stringify(row.body) });
+      return null;
+    });
   }
 
   function documentRequirements() {
@@ -5976,39 +8424,104 @@
       };
     });
   }
+  // Ready Offline checks what is really stored on this phone: the parsed
+  // cached copy of each critical section (not just a key), addresses for
+  // every stay, the app shell, and checksum-verified documents.
+  function cachedSection(path, key) {
+    const row = PREVIEW_MODE ? { at: Date.now(), data: { [key]: [] } } : cacheRead(path);
+    const list = row?.data?.[key];
+    return Array.isArray(list) ? { at: Number(row.at) || null, list } : null;
+  }
+  async function checkShellOffline() {
+    if (PREVIEW_MODE || NATIVE) { state.shellOffline = true; return true; }
+    let ok = false;
+    try {
+      ok = Boolean(navigator.serviceWorker?.controller) && typeof caches !== "undefined" &&
+        Boolean(await caches.match("/mobile-app.min.js", { ignoreSearch: true })) &&
+        Boolean(await caches.match("/index.html", { ignoreSearch: true }));
+    } catch (_) { ok = false; }
+    state.shellOffline = ok;
+    return ok;
+  }
+  async function checkStorageEstimate() {
+    try {
+      const estimate = await navigator.storage?.estimate?.();
+      const persisted = await navigator.storage?.persisted?.();
+      state.storageEstimate = estimate ? { usage: Number(estimate.usage) || 0, quota: Number(estimate.quota) || 0, persisted: Boolean(persisted) } : null;
+    } catch (_) { state.storageEstimate = null; }
+    return state.storageEstimate;
+  }
+  // Asks the browser not to evict offline data under storage pressure. Only
+  // from a user action (saving a document, preparing a trip).
+  function requestPersistentStorage() {
+    try { void navigator.storage?.persist?.().catch(() => {}); } catch (_) {}
+  }
+  function formatBytes(bytes) {
+    const value = Number(bytes) || 0;
+    if (value < 1024 * 1024) return `${Math.max(1, Math.round(value / 1024))} KB`;
+    return `${(value / (1024 * 1024)).toFixed(value < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+  }
   function readyOfflineRows() {
     if (!state.trip) return [];
     const id = encodeURIComponent(state.trip.id);
-    const base = [
-      ["trips", "Trip timeline", `/api/v1/trips/${id}/timeline`],
-      ["ticket", "Transport bookings", `/api/v1/trips/${id}/transport`],
-      ["hotel", "Stays and addresses", `/api/v1/trips/${id}/stays`],
-      ["pin", "Locations", `/api/v1/trips/${id}/locations`],
-    ].map(([iconName, title, path]) => {
-      const status = PREVIEW_MODE
-        ? { ok: true, at: Date.now() }
-        : cacheStatus(path);
+    const section = (iconName, title, path, key) => {
+      const cached = cachedSection(`/api/v1/trips/${id}/${path}`, key);
       return {
         icon: iconName,
         title,
-        subtitle: status.ok ? ageLabel(status.at) : "Open online once to save",
-        status: status.ok ? "Ready" : "Missing",
-        ready: status.ok,
+        subtitle: cached ? ageLabel(cached.at) : "Open online once to save",
+        status: cached ? "Ready" : "Missing",
+        ready: Boolean(cached),
       };
+    };
+    const base = [
+      {
+        icon: "download",
+        title: "tripto.to app",
+        subtitle: NATIVE ? "Installed on this phone" : state.shellOffline ? "Saved for offline start" : state.shellOffline === false ? "Open online once to save the app" : "Checking…",
+        status: state.shellOffline ? "Ready" : "Missing",
+        ready: PREVIEW_MODE || NATIVE || state.shellOffline === true,
+      },
+      section("trips", "Trip timeline", "timeline", "items"),
+      section("ticket", "Transport bookings", "transport", "transport"),
+      section("user", "Travelers", "travelers", "travelers"),
+      section("checklist", "Checklist", "checklist", "items"),
+      section("documents", "Booking details", "booking-details", "bookingDetails"),
+    ];
+    // Stays are only useful offline with their saved address.
+    const stays = cachedSection(`/api/v1/trips/${id}/stays`, "stays"),
+      locations = cachedSection(`/api/v1/trips/${id}/locations`, "locations"),
+      locationIds = new Set((locations?.list || []).map((row) => String(row.id))),
+      missingAddress = (stays?.list || []).filter((stay) => !isCancelled(stay)).filter((stay) => {
+        const locationId = val(stay, "property_location_id", "start_location_id");
+        return locationId != null && !locationIds.has(String(locationId));
+      }).length,
+      staysReady = Boolean(stays && locations) && missingAddress === 0;
+    base.push({
+      icon: "hotel",
+      title: "Stays and addresses",
+      subtitle: staysReady ? ageLabel(Math.min(stays.at || Date.now(), locations.at || Date.now())) : stays && locations ? `${missingAddress} address${missingAddress === 1 ? "" : "es"} not saved` : "Open online once to save",
+      status: staysReady ? "Ready" : "Missing",
+      ready: staysReady,
     });
-    const pending =
-      pendingMutations().filter((row) => row.status !== "done").length +
-      Number(
-        val(state.syncStatus, "pendingOperations", "pending_operations") || 0,
-      );
+    const local = myPendingMutations(),
+      conflicts = local.filter((row) => row.status === "conflict").length,
+      pending =
+        local.length +
+        Number(
+          val(state.syncStatus, "pendingOperations", "pending_operations") || 0,
+        );
     base.push({
       icon: "refresh",
       title: "Pending changes",
-      subtitle: pending
-        ? "Reconnect or review conflicts"
-        : "No unsynced local changes",
-      status: pending ? "Needs update" : "Ready",
-      ready: pending === 0,
+      subtitle: conflicts
+        ? `${conflicts} change${conflicts === 1 ? "" : "s"} need review`
+        : pending
+          ? `${pending} change${pending === 1 ? "" : "s"} saved on this phone, waiting to sync`
+          : "No unsynced local changes",
+      status: conflicts ? "Needs review" : pending ? "Waiting" : "Ready",
+      // Queued changes are safe on the phone; they do not block offline use.
+      ready: conflicts === 0,
     });
     return [...base, ...documentRequirementRows()];
   }
@@ -6016,14 +8529,29 @@
     const rows = readyOfflineRows(),
       ready = rows.filter((row) => row.ready).length,
       allReady = rows.length > 0 && ready === rows.length;
-    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 24)}</button>`)}<main class="ready-content"><section class="offline-summary ${allReady ? "offline-summary--ready" : "offline-summary--attention"}"><span class="offline-summary-icon">${icon(allReady ? "check" : "warning", 27)}</span><span class="offline-summary-copy"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Your essentials are saved on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></span></section><div class="list-stack ready-list ds-grouped-card ds-grouped-card--list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 16)}`}</span></div>`).join("")}</div><div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}</div></main></section></div>`;
+    return `<div class="phone-app"><section class="screen ready-screen">${appBar("Ready Offline", "", false, `<button class="icon-button" data-action="offline-info" aria-label="Offline information">${icon("info", 24)}</button>`)}<main class="ready-content"><section class="offline-summary ${allReady ? "offline-summary--ready" : "offline-summary--attention"}"><span class="offline-summary-icon">${icon(allReady ? "check" : "warning", 27)}</span><span class="offline-summary-copy"><strong>${ready} of ${rows.length} ready</strong><span>${allReady ? "Your essentials are saved on this phone." : `${rows.length - ready} item${rows.length - ready === 1 ? "" : "s"} need attention before offline use.`}</span></span></section><div class="list-stack ready-list ds-grouped-card ds-grouped-card--list">${rows.map((row) => `<div class="info-card ${row.ready ? "" : "needs-attention"}"><span class="info-icon">${icon(row.icon, 22)}</span><span class="info-copy"><strong>${esc(row.title)}</strong><span>${esc(row.subtitle)}</span></span><span class="info-status ${row.ready ? "" : "warning"}" aria-label="${row.ready ? "Ready" : esc(row.status)}">${row.ready ? checkDot() : `${esc(row.status)} ${icon("warning", 16)}`}</span></div>`).join("")}</div>${readyStorageNote()}<div class="download-action">${allReady ? `<button class="secondary-cta offline-refresh ${state.refreshingOffline ? "is-loading" : ""}" data-action="refresh-data" ${state.refreshingOffline ? "disabled aria-busy=\"true\"" : ""}>${icon("refresh", 20)} ${state.refreshingOffline ? "Refreshing…" : "Refresh Offline Data"}</button>` : primaryCta("Download Missing Items", "fix-offline", "download")}${readyCachedSections().length ? `<button type="button" class="text-action ready-remove-offline" data-action="remove-offline-copy">Remove offline copy of this trip</button>` : ""}</div></main></section></div>`;
+  }
+  function readyStorageNote() {
+    const estimate = state.storageEstimate;
+    if (!estimate || !estimate.usage) return "";
+    return `<p class="ready-storage-note">${icon("info", 16)} <span>tripto.to uses ${esc(formatBytes(estimate.usage))} on this phone${estimate.persisted ? " · protected from automatic cleanup" : ""}.</span></p>`;
+  }
+  function readyCachedSections() {
+    if (!state.trip || PREVIEW_MODE) return [];
+    return tripDetailPaths().filter((path) => cacheRead(path));
   }
   function issueKind(issue) {
-    return ["critical", "high"].includes(issue.severity)
-      ? "warn"
-      : issue.severity === "info"
-        ? "info"
-        : "good";
+    // Every health issue is a problem to act on — none is a green "all good"
+    // card. Critical/high read as a warning; everything else as info (matching
+    // the summary card and the per-card icon).
+    return ["critical", "high"].includes(issue.severity) ? "warn" : "info";
+  }
+  // Trip Health is computed on the server; offline it is the last saved
+  // result, so say when it was checked instead of presenting it as current.
+  function healthProvenance() {
+    const at = Number(val(state.health, "calculatedAt", "calculated_at")) || cacheStatus(`/api/v1/trips/${encodeURIComponent(state.trip?.id || "")}/health/expanded`).at;
+    if (!at && !state.offline) return "";
+    return `<small class="health-provenance">${esc(at ? ageLabel(at).replace("Updated", "Checked") : "Not checked yet")}${state.offline ? " · Saved result. It updates when you reconnect." : ""}</small>`;
   }
   function healthScreen() {
     const issues = activeHealthIssues(),
@@ -6044,7 +8572,7 @@
         : setup
           ? `<div class="health-card info"><span>${icon("plus", 26)}</span><span><strong>Trip setup</strong><p>Add your first booking to build the itinerary.</p><button class="text-action" data-action="open-add-booking">Add booking</button></span></div>`
           : `<div class="health-card ${top.kind === "good" ? "good" : "info"}"><span>${icon(top.kind === "good" ? "check" : "info", 26)}</span><span><strong>${top.kind === "good" ? "No known issues" : "Not enough information"}</strong><p>${esc(top.subtitle)}</p></span></div>`;
-    return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 24)}</button>`)}<main class="health-content"><div class="health-summary"><div class="health-shield ${shieldClass} ${setup ? "setup" : ""}">${icon(issues.length ? "warning" : setup ? "plus" : top.kind === "good" ? "check" : "info", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p></div><div class="list-stack">${rows}${setup ? "" : `<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button>`}</div></main></section></div>`;
+    return `<div class="phone-app"><section class="screen">${appBar("Trip Health", "", false, `<button class="icon-button" data-action="health-info" aria-label="Trip Health information">${icon("info", 24)}</button>`)}<main class="health-content"><div class="health-summary"><div class="health-shield ${shieldClass} ${setup ? "setup" : ""}">${icon(issues.length ? "warning" : setup ? "plus" : top.kind === "good" ? "check" : "info", 34)}</div><h1>${esc(top.title)}</h1><p>${esc(top.subtitle)}</p>${healthProvenance()}</div><div class="list-stack">${rows}${setup ? "" : `<button class="secondary-cta" data-action="recalculate-health">${icon("refresh", 20)} Recalculate Trip Health</button>`}</div></main></section></div>`;
   }
   function checklistScreen() {
     if (!state.trip)
@@ -6054,16 +8582,37 @@
     const pending = rows.filter((r) => !r.completed);
     const completed = rows.filter((r) => r.completed);
     const expanded = state.expandedChecklistTripId === state.trip.id;
-    const summary = `<header class="cl-heading"><h1>${esc(state.trip.title || "Your trip")}</h1>${total ? `<p class="${pending.length ? "" : "cl-all-done"}">${pending.length ? `${pending.length} task${pending.length === 1 ? "" : "s"} left` : `${icon("check",16)} All done`}</p>` : ""}</header>`;
+    const pct = total ? Math.round((completed.length / total) * 100) : 0;
+    const busy = state.loadingEssentials ? " disabled aria-busy=\"true\"" : "";
+    const summary = `<header class="cl-heading"><span class="cl-heading__eyebrow">Before you go</span><h1>${esc(state.trip.title || "Your trip")}</h1>${total ? `<p class="${pending.length ? "" : "cl-all-done"}">${pending.length ? `${pending.length} task${pending.length === 1 ? "" : "s"} left` : `${icon("check",16)} All done`}</p>` : ""}</header>${total ? `<div class="cl-progress"><div class="cl-progress__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="Checklist progress"><span class="cl-progress__fill" style="width:${pct}%"></span></div><span class="cl-progress__label">${completed.length}/${total}</span></div>` : ""}`;
     const addForm = `<form class="cl-add" id="checklist-add-form" novalidate><label class="sr-only" for="checklist-new-title">Add a task</label><input id="checklist-new-title" type="text" name="title" class="cl-add__input" placeholder="Add a task…" maxlength="160" autocomplete="off" enterkeyhint="done" aria-label="Add a checklist item"><button type="submit" class="cl-add__btn" aria-label="Add task" disabled>Add</button></form>`;
+    const unsynced = new Set(myPendingMutations().filter((row) => row.kind === "checklist").map((row) => String(row.itemId || row.tempId)));
+    const syncMark = (item) => unsynced.has(String(item.id))
+      ? `<span class="cl-row__sync" title="Saved on this phone. Waiting to sync."><span class="sr-only">Waiting to sync</span></span>`
+      : "";
     const rowHtml = (item) => state.editingChecklistId === item.id
       ? `<li class="cl-row cl-row--editing"><form class="cl-edit" data-checklist-edit data-id="${esc(item.id)}" novalidate><input type="text" name="title" class="cl-edit__input" value="${esc(item.title)}" maxlength="160" autocomplete="off" enterkeyhint="done" aria-label="Rename item"><div class="cl-edit__actions"><button type="button" class="cl-row__act cl-row__del" data-action="delete-checklist" data-id="${esc(item.id)}" aria-label="Delete ${esc(item.title)}">${icon("trash", 18)}</button><button type="button" class="cl-edit__act cl-edit__cancel" data-action="cancel-edit-checklist">Cancel</button><button type="submit" class="cl-edit__act cl-edit__save" aria-label="Save name">Save</button></div></form></li>`
-      : `<li class="cl-row ${item.completed ? "is-complete" : ""}"><button type="button" class="cl-row__toggle" data-action="toggle-checklist" data-id="${esc(item.id)}" aria-pressed="${item.completed}"><span class="cl-check" aria-hidden="true">${item.completed ? icon("check", 16) : ""}</span><span class="cl-row__title">${esc(item.title)}</span></button><button type="button" class="cl-row__act" data-action="edit-checklist" data-id="${esc(item.id)}" aria-label="Edit ${esc(item.title)}">${icon("edit", 18)}</button></li>`;
+      : `<li class="cl-row ${item.completed ? "is-complete" : ""}"><button type="button" class="cl-row__toggle" data-action="toggle-checklist" data-id="${esc(item.id)}" aria-pressed="${item.completed}"><span class="cl-check" aria-hidden="true">${item.completed ? icon("check", 16) : ""}</span><span class="cl-row__title">${esc(item.title)}</span>${syncMark(item)}</button><button type="button" class="cl-row__act" data-action="edit-checklist" data-id="${esc(item.id)}" aria-label="Edit ${esc(item.title)}">${icon("edit", 18)}</button><button type="button" class="cl-row__act cl-row__del" data-action="delete-checklist" data-id="${esc(item.id)}" aria-label="Delete ${esc(item.title)}">${icon("trash", 18)}</button></li>`;
+    // Grouped by category so a loaded essentials set reads as tidy sections.
+    // Unknown/blank categories fall into "custom" (a plain user task list).
+    const CAT = [["documents", "Documents", "documents"], ["before_you_leave", "Before you leave", "checklist"], ["packing", "Packing", "luggage"], ["custom", "Your tasks", "check"]];
+    const essentialsBtn = (label) => `<button type="button" class="cl-essentials${state.loadingEssentials ? " is-loading" : ""}" data-action="load-essentials"${busy}>${icon("essentials", 18)} <span>${label}</span></button>`;
+    const hasEssentials = rows.some((r) => r.__essential);
+    const removeEssentialsBtn = `<button type="button" class="cl-essentials cl-essentials--remove${state.loadingEssentials ? " is-loading" : ""}" data-action="remove-essentials"${busy}>${icon("trash", 18)} <span>Remove travel essentials</span></button>`;
     let body = `<div class="cl-screen">${summary}${addForm}`;
     if (total === 0) {
-      body += `<p class="cl-empty">Nothing here yet. Add your first task above.</p>`;
+      body += `<section class="cl-empty-hero"><span class="cl-empty-hero__icon">${icon("essentials", 30)}</span><h2>Start your pre-trip list</h2><p class="cl-empty">Add your first task above, or load the travel essentials every traveler should pack and prepare.</p>${essentialsBtn("Add travel essentials")}</section>`;
     } else {
-      if (pending.length) body += `<ul class="cl-list ds-grouped-card ds-grouped-card--list" aria-label="Tasks to do">${pending.map(rowHtml).join("")}</ul>`;
+      if (pending.length) {
+        const bucket = {};
+        pending.forEach((item) => { const key = CAT.some((c) => c[0] === item.category) ? item.category : "custom"; (bucket[key] = bucket[key] || []).push(item); });
+        for (const [key, label, ic] of CAT) {
+          const items = bucket[key];
+          if (!items || !items.length) continue;
+          body += `<section class="cl-group"><h2 class="cl-group__head">${icon(ic, 16)} <span>${label}</span></h2><ul class="cl-list ds-grouped-card ds-grouped-card--list" aria-label="${label}">${items.map(rowHtml).join("")}</ul></section>`;
+        }
+      }
+      body += `<div class="cl-essentials-actions">${essentialsBtn("Add travel essentials")}${hasEssentials ? removeEssentialsBtn : ""}</div>`;
       if (completed.length) body += `<section class="cl-completed"><button type="button" id="checklist-completed-toggle" class="cl-completed__toggle" data-action="toggle-completed-checklist" aria-expanded="${expanded}" aria-controls="checklist-completed"><span>Completed (${completed.length})</span>${icon("chevron",18)}</button><ul id="checklist-completed" class="cl-list ds-grouped-card ds-grouped-card--list" aria-label="Completed tasks"${expanded ? "" : " hidden"}>${completed.map(rowHtml).join("")}</ul></section>`;
     }
     body += `</div>`;
@@ -6090,7 +8639,7 @@
       { id: "timeline", q: "What is the Timeline?", a: "The Timeline is the main view of your trip. Flights, stays, restaurants, activities and other bookings are shown in travel order so you can see what is coming next.", keywords: "timeline schedule order plans main view" },
       { id: "checklist", q: "How does the checklist work?", a: "Open Menu and choose To-Do List. Type a task and tap Add, then tick it when it is done. Open Completed to find finished tasks and untick one to return it to your list. Use the pencil to rename or delete a task.", keywords: "checklist packing list passport wallet charger pack completed tasks", action: { label: "Open checklist", screen: "checklist" } },
       { id: "documents", q: "Where are my tickets and documents?", a: "Documents attached to a booking open from that booking. You can also open Menu, choose Trip Options, then Documents to see your trip files. Some files are stored only on this device.", keywords: "tickets documents files pdf storage device" },
-      { id: "trip-map", q: "When can I use Trip Map?", a: "Open Menu, choose Trip Options, then Trip Map. It becomes available once your trip has at least two places to map, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
+      { id: "trip-map", q: "When can I use Trip Map?", a: "Open Menu, choose Trip Options, then Trip Map. It becomes available as soon as your trip has a place with a location, and it uses the places already in your itinerary.", keywords: "map trip map places locations itinerary" },
       { id: "offline", q: "What works offline?", a: "Your cached Timeline, checklist and saved documents stay available without internet. Live details such as weather, new booking imports and opening directions need a connection.", keywords: "offline internet connection cached without wifi directions" },
     ] },
     { title: "Plan together", flag: "sharing", questions: [
@@ -6121,12 +8670,25 @@
     const quickStart = `<section class="help-quickstart" aria-labelledby="help-quick-title"><div class="help-quickstart__head"><span>${icon("navigation", 20)}</span><div><h2 id="help-quick-title">Your trip in three steps</h2><p>Start simple. Add details whenever you have them.</p></div></div><ol class="help-steps"><li><span>1</span><strong>Create a trip</strong></li><li><span>2</span><strong>Add bookings</strong></li><li><span>3</span><strong>Follow the Timeline</strong></li></ol></section>`;
     const intro = `<section class="help-intro"><div class="help-intro__icon">${icon("info", 28)}</div><span>TRAVEL HELP</span><h1>How can we help?</h1><p>Find a clear answer without leaving your trip.</p><label class="help-search"><span class="sr-only">Search help</span>${icon("search", 20)}<input type="search" data-faq-search placeholder="Search bookings, maps, offline…" autocomplete="off" enterkeyhint="search" aria-controls="faq-results"><small data-faq-count aria-live="polite">${totalAnswers} answer${totalAnswers === 1 ? "" : "s"}</small></label></section>`;
     const empty = `<section class="faq-empty" data-faq-empty hidden>${icon("search", 24)}<h2>No answer found</h2><p>Try a shorter word such as “booking”, “map”, or “offline”.</p></section>`;
-    const links = `<section class="help-support"><div class="help-support__copy"><span class="help-support__icon">${icon("shield", 21)}</span><div><h2>Helpful links</h2><p>Learn the basics or review how your data is handled.</p></div></div><div class="help-support__actions"><button type="button" class="help-link" data-action="open-first-run-how">${icon("navigation", 19)}<span>Take the tour</span>${icon("chevron", 17)}</button><a class="help-link" href="/privacy">${icon("shield", 19)}<span>Privacy</span>${icon("chevron", 17)}</a><a class="help-link" href="/terms">${icon("document", 19)}<span>Terms</span>${icon("chevron", 17)}</a></div></section>`;
+    const links = `<section class="help-support"><div class="help-support__copy"><span class="help-support__icon">${icon("shield", 21)}</span><div><h2>Helpful links</h2><p>Learn the basics, contact us, or review how your data is handled.</p></div></div><div class="help-support__actions"><button type="button" class="help-link" data-action="open-first-run-how">${icon("navigation", 19)}<span>Take the tour</span>${icon("chevron", 17)}</button><a class="help-link" href="/contact">${icon("mail", 19)}<span>Contact support</span>${icon("chevron", 17)}</a><a class="help-link" href="/privacy">${icon("shield", 19)}<span>Privacy</span>${icon("chevron", 17)}</a><a class="help-link" href="/terms">${icon("document", 19)}<span>Terms</span>${icon("chevron", 17)}</a><a class="help-link" href="/cookies">${icon("info", 19)}<span>Cookies</span>${icon("chevron", 17)}</a></div></section>`;
     return mobilePage("Help & FAQ", `<div class="help-screen">${intro}${quickStart}<div class="faq-results" id="faq-results">${sections}</div>${empty}${links}</div>`, "trip-options", "", "help-page");
   }
   function travelerDocumentSummary(traveler) {
     const docs = state.localDocs.filter((d)=>d.integrity==="verified" && d.travelerIds?.includes(String(traveler.id))).length;
     return docs ? `${docs} verified document${docs===1?"":"s"}` : "No verified documents";
+  }
+  function premiumBookingsScreen() {
+    const filters = [["all", "All"], ["transport", "Transport"], ["stays", "Stays"], ["plans", "Plans"]],
+      rows = bookingRows().filter((row) => state.bookingFilter === "all" || (state.bookingFilter === "transport" && ["flight", "train", "ferry", "car", "transfer"].includes(row.kind)) || (state.bookingFilter === "stays" && row.kind === "hotel") || (state.bookingFilter === "plans" && !["flight", "train", "ferry", "car", "transfer", "hotel"].includes(row.kind)));
+    const list = rows.map(({ kind, item, at }) => {
+      const transport = ["flight", "train", "ferry", "car", "transfer"].includes(kind),
+        zone = val(item, "departure_timezone", "start_timezone"),
+        title = kind === "flight" ? `${flightNumber(item)} · ${flightRoute(item).fromCode} → ${flightRoute(item).toCode}` : ["train", "ferry"].includes(kind) ? val(item, "title", "service_number") || statusText(kind) : kind === "hotel" ? val(item, "property_name", "title") || "Stay" : val(item, "title", "carrier_name") || statusText(kind),
+        subtitle = kind === "hotel" ? `${formatDateOnly(val(item, "check_in_date"))} – ${formatDateOnly(val(item, "check_out_date"))}` : transport ? formatDateTime(at, zone) : `${formatDateTime(at, zone)}${val(item, "subtitle") ? ` · ${val(item, "subtitle")}` : ""}`,
+        status = meaningfulBookingStatus(item);
+      return `<button class="ds-flat-row travel-row" data-action="booking-detail" data-kind="${esc(kind)}" data-id="${esc(itemId(item))}"><span class="ds-flat-row__icon travel-row__icon">${PastelIcon(transportIcon(kind), ["hotel"].includes(kind) ? "stay" : ["flight", "train", "ferry"].includes(kind) ? "flight" : "transfer", 22)}</span><span class="ds-flat-row__copy travel-row__body"><strong>${esc(title)}</strong><small>${esc(subtitle)}</small>${status ? StatusLabel(status, "attention") : ""}</span>${icon("chevron", 20, "chevron")}</button>`;
+    }).join("");
+    return mobilePage("Bookings", `<div class="segmented-control" role="group" aria-label="Filter bookings">${filters.map(([key,label]) => `<button data-action="filter-bookings" data-filter="${key}" class="${state.bookingFilter === key ? "is-active" : ""}" aria-pressed="${state.bookingFilter === key}">${label}</button>`).join("")}</div><section class="mobile-group booking-trip-group"><h2>${esc(state.trip?.title || "Current trip")}</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${list || `<section class="mobile-empty mobile-empty--compact"><h1>No bookings here</h1><p>Add transport, a stay, or a plan.</p></section>`}</div></section><button class="mobile-secondary-action" data-action="open-add-booking">${icon("plus", 20)} Add booking</button>`, "bookings");
   }
   function travelersScreen() {
     const rows = state.travelers.map((traveler)=>{ const assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))).length; return `<button class="travel-row traveler-row" data-screen="traveler" data-id="${esc(traveler.id)}"><span class="traveler-avatar">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><span class="travel-row__body"><strong>${esc(val(traveler,"display_name") || "Traveler")}</strong><small>${esc(statusText(val(traveler,"traveler_type") || "Traveler"))} · ${assigned} booking${assigned===1?"":"s"}</small><em>${esc(travelerDocumentSummary(traveler))}</em></span>${icon("chevron",20)}</button>`; }).join("");
@@ -6144,7 +8706,7 @@
     const control = forward
       ? `<section class="forward-booking-address"><span>${icon("mail",24)}</span><div><strong>go@tripto.to</strong><small>Forward any booking confirmation from your verified Google email. Choose the trip if needed, review every extracted detail, then add it to your Timeline.</small></div></section><label><span>Paste confirmation for immediate review</span><textarea name="body" rows="7" placeholder="Paste the forwarded confirmation email"></textarea></label>`
       : `<label class="smart-import-file"><span>Booking document</span><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.txt,.eml,.docx,.ics,.pkpass,application/pdf,image/*,text/plain,message/rfc822,text/calendar"><small>Best accuracy: the original PDF, .eml, .ics, or .pkpass. Photos and screenshots are read with OCR and may need corrections. · 10 MB max</small></label>`;
-    return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Forward to go@tripto.to from your verified Google email. Choose the trip and confirm the extracted details before anything is added." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p></form><button class="mobile-secondary-action import-history-action" data-screen="${forward ? "booking-email-inbox" : "import-history"}">${icon(forward ? "mail" : "clock",20)} ${forward ? "Open Email Inbox" : "Import History"}</button>`, "import-task", formHeaderSave("import-form", "Review"));
+    return focusedTaskPage(forward ? "Forward Confirmation" : "Upload Booking", `<section class="form-intro smart-import-intro"><span>${icon(forward ? "mail" : "document",28)}</span><h1>${forward ? "Forward a confirmation" : "Upload a booking"}</h1><p>${forward ? "Forward to go@tripto.to from your verified Google email. Choose the trip and confirm the extracted details before anything is added." : "Recognition stays on this phone. Review every field before saving."}</p></section><form class="mobile-form import-form" id="import-form" novalidate>${control}<p class="form-error" hidden></p></form>${forward ? `<button class="mobile-secondary-action import-history-action" data-screen="booking-email-inbox">${icon("mail",20)} Open Email Inbox</button>` : ""}`, "import-task", formHeaderSave("import-form", "Review"));
   }
   function importReviewScreen() {
     const candidates = state.importReview?.candidates || [];
@@ -6234,10 +8796,17 @@
     state.importReview=await api(`/api/v1/trips/${encodeURIComponent(trip.id)}/imports/${encodeURIComponent(email.import_id)}`);
     route("import-review",email.import_id);
   }
+  function localSyncIssues() {
+    const labels = { checklist: "Checklist change", collections: "Saved places change", "smart-import": "Import" };
+    const rows = myPendingMutations().filter((row) => row.status === "conflict" || (row.status === "failed" && Number(row.attempts || 0) >= 3));
+    if (!rows.length) return "";
+    const items = rows.map((row) => `<article class="sync-conflict-detail"><strong>${esc(labels[row.kind] || "Saved change")}</strong><span>${esc(row.status === "conflict" ? "The server has a different version" : "Couldn't sync yet")}</span><small>Your change is kept on this phone. Retry, or discard it to keep the server version.</small><button type="button" class="mobile-secondary-action" data-action="discard-pending" data-id="${esc(row.id)}">Discard this change</button></article>`).join("");
+    return `<section class="recovery-card"><h2>Changes on this phone</h2><div class="sync-conflict-list">${items}</div></section>`;
+  }
   function syncScreen() {
-    const pending = Number(val(state.syncStatus,"pendingOperations","pending_operations")||0) + pendingMutations().filter((x)=>x.status!=="done").length, conflicts = Number(val(state.syncStatus,"openConflicts","open_conflicts")||0), last = val(state.syncStatus,"lastSuccessfulSyncAt","last_successful_sync_at");
+    const pending = Number(val(state.syncStatus,"pendingOperations","pending_operations")||0) + myPendingMutations().length, conflicts = Number(val(state.syncStatus,"openConflicts","open_conflicts")||0), last = val(state.syncStatus,"lastSuccessfulSyncAt","last_successful_sync_at");
     const details=(state.syncConflicts||[]).map((conflict)=>`<article class="sync-conflict-detail"><strong>${esc(statusText(val(conflict,"entity_type","entityType")||"Saved change"))}</strong><span>${esc(val(conflict,"conflict_type","conflictType")||"A newer server version is available")}</span><small>Nothing was overwritten. This conflict remains preserved for safe review.</small></article>`).join("");
-    return focusedTaskPage("Pending Changes", `<section class="sync-summary ${conflicts?"has-conflict":""}"><span>${icon(conflicts?"warning":"refresh",27)}</span><div><strong>${conflicts ? `${conflicts} change${conflicts===1?"":"s"} need review` : pending ? `${pending} change${pending===1?"":"s"} waiting` : "Everything is synced"}</strong><small>${last ? `Last synced ${ageLabel(Number(last))}` : "Last sync time unavailable"}</small></div></section>${conflicts ? `<section class="recovery-card"><h2>Changes requiring review</h2><p>A newer saved version exists. Nothing was overwritten.</p><button class="mobile-primary-action" data-action="sync-review">${details?"Refresh conflict details":"View conflict details"}</button>${details?`<div class="sync-conflict-list">${details}</div>`:""}</section>` : ""}${pending ? `<section class="recovery-card"><h2>Pending local changes</h2><p>Your changes remain safely on this phone until sync succeeds.</p><button class="mobile-secondary-action" data-action="sync-retry">${icon("refresh",20)} Retry</button></section>` : ""}`, "sync-task");
+    return focusedTaskPage("Pending Changes", `<section class="sync-summary ${conflicts?"has-conflict":""}"><span>${icon(conflicts?"warning":"refresh",27)}</span><div><strong>${conflicts ? `${conflicts} change${conflicts===1?"":"s"} need${conflicts===1?"s":""} review` : pending ? `${pending} change${pending===1?"":"s"} waiting` : "Everything is synced"}</strong><small>${last ? `Last synced ${ageLabel(Number(last))}` : "Last sync time unavailable"}</small></div></section>${conflicts ? `<section class="recovery-card"><h2>Changes requiring review</h2><p>A newer saved version exists. Nothing was overwritten.</p><button class="mobile-primary-action" data-action="sync-review">${details?"Refresh conflict details":"View conflict details"}</button>${details?`<div class="sync-conflict-list">${details}</div>`:""}</section>` : ""}${localSyncIssues()}${pending ? `<section class="recovery-card"><h2>Pending local changes</h2><p>Your changes remain safely on this phone until sync succeeds.</p><button class="mobile-secondary-action" data-action="sync-retry">${icon("refresh",20)} Retry</button></section>` : ""}`, "sync-task");
   }
   function accountScreen() {
     const partnerRow = (ic, title, sub, href, tone) => `<a class="ds-flat-row account-partner-row" href="${esc(href)}" target="_blank" rel="sponsored noopener noreferrer"><span class="ds-flat-row__icon">${PastelIcon(ic, tone)}</span><span class="ds-flat-row__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("external",18,"ds-flat-row__chevron")}</a>`;
@@ -6253,22 +8822,68 @@
           .join("")
           .slice(0, 2)
           .toUpperCase() || "GT";
-    const pending = pendingMutations().filter((x)=>x.status!=="done").length + Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+    const pending = myPendingMutations().length + Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
     const row = (iconName,title,meta,screen,action="",tone="activity") => FlatRow({ iconName, title, meta, screen, action, tone, className: ["remove-local-data","delete-account"].includes(action) ? "account-danger-row" : "" });
     const google=state.account?.providers?.find((provider)=>provider.provider==="google"&&provider.enabled),identity=state.account?.identities?.find((item)=>item.provider==="google");
     const authBlock=mode==="guest"&&google?`<section class="account-signin ds-grouped-card"><h2>Keep your trips with you</h2><p>Sign in with Google to access your trips on other devices.</p><div id="google-signin-button" data-client-id="${esc(google.clientId)}"></div><p class="signin-error" role="alert" hidden></p></section>`:"";
     const identityEmail = state.account?.user?.primary_email || identity?.email || "Google identity";
     const pendingEmails=(state.bookingEmails||[]).filter((item)=>["needs_trip","needs_confirmation"].includes(String(item.status))).length;
-    const tripCounts = ["Current", "Upcoming", "Past"].map(label => ({ label, count: state.trips.filter(trip => tripBucket(trip) === label).length }));
+    // All four buckets reconcile with the "N available" total below; hide the
+    // Cancelled tile only when there are none, to avoid an always-zero column.
+    const tripCounts = ["Current", "Upcoming", "Past", "Cancelled"]
+      .map(label => ({ label, count: state.trips.filter(trip => tripBucket(trip) === label).length }))
+      .filter(entry => entry.label !== "Cancelled" || entry.count > 0);
+    const themeChoice = (id, name) => {
+      const selected = state.theme === id;
+      const glyph = id === "day" ? "wx-sun" : id === "mono" ? "accessibility" : id === "ember" ? "mountain" : id === "studio" ? "photos" : "wx-moon";
+      return `<button type="button" class="${selected ? "is-active" : ""}" data-action="set-theme" data-theme="${id}" role="radio" aria-checked="${selected}"><span class="seg-ico" aria-hidden="true">${icon(glyph, 18)}</span>${esc(name)}</button>`;
+    };
+    const languageChoice = (id) => { const selected=(globalThis.TriptoI18n?.locale || "en")===id; const label=globalThis.TriptoI18n?.names?.[id] || id; return `<button type="button" class="language-pill${selected ? " is-selected" : ""}" data-action="set-locale" data-locale="${id}" role="radio" aria-checked="${selected}" aria-label="${esc(label)}" title="${esc(label)}">${id.toUpperCase()}${selected ? `<span class="language-pill__check" aria-hidden="true">${icon("check",13)}</span>` : ""}</button>`; };
+    // Only English is offered for now — other locales are hidden until they are ready.
+    const offeredLocales = (globalThis.TriptoI18n?.supported || ["en","de","fr","es","ru"]).filter((id) => id === "en");
+    const languagePicker = accountCard("Language", `<div class="language-pills" role="radiogroup" aria-label="Language">${offeredLocales.map(languageChoice).join("")}</div>`);
+    const appearance = `${accountCard("Appearance", `<div class="ds-segmented appearance-toggle" role="radiogroup" aria-label="Theme">${themeChoice("studio", "Studio")}${themeChoice("night", "Night")}${themeChoice("day", "Day")}${themeChoice("ember", "Ember")}${themeChoice("mono", "Mono")}</div>`)}${languagePicker}`;
+    const lifetimePlus = state.subscription?.status === "lifetime";
+    const paidPlus = !!state.subscription?.active && !lifetimePlus;
+    const plusRow = state.subscription?.active
+      ? row("crown", lifetimePlus ? "Tripto Plus — Lifetime" : "Tripto Plus", lifetimePlus ? "Unlimited trips · Thank you for being with us" : "Your subscription is active", "", "open-subscription", "activity", "account-plus-row")
+      : row("crown", "Unlock Tripto Plus", NATIVE ? "Unlimited trips" : "Unlimited trips · Cancel anytime", "", "open-subscription", "activity", "account-plus-row");
+    const plusRows = [plusRow, ...(!NATIVE && paidPlus && state.subscription?.customerPortalUrl ? [row("external", "Manage or cancel subscription", "Open your secure billing portal", "", "manage-subscription", "activity")] : [])];
     return `<div class="phone-app"><section class="screen mobile-v1-screen account-page">${appBar("Account")}<main class="account-section mobile-page">
       <section class="account-profile-card ds-grouped-card" aria-label="Your profile"><div class="account-profile"><span class="account-avatar" aria-hidden="true">${esc(initials)}</span><div class="account-profile__id"><h1 title="${esc(name)}">${esc(name)}</h1><p class="account-meta" title="${mode === "account" ? esc(identityEmail) : "Guest profile"}">${mode === "account" ? esc(identityEmail) : "Guest profile"}</p></div>${mode === "account" ? `<button type="button" class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div><div class="account-trip-summary">${tripCounts.map(({label,count}) => `<div><strong>${count}</strong><span>${label}</span></div>`).join("")}</div></section>
       ${authBlock}
-      <div class="account-shortcuts"><button type="button" class="ds-secondary-button" data-screen="trips">${icon("trips",20)} All trips</button><button type="button" class="ds-primary-button" data-action="create-trip">${icon("plus",20)} New trip</button></div>
-      <section class="account-settings-group">${SectionHeader("Your trips")}${FlatList([row("trips","Switch trip",`${state.trips.length} available`,"","switch-trip","stay"),row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox","","flight"),...(pending?[row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync")]:[])])}</section>
-      <section class="account-settings-group">${SectionHeader("Travel essentials")}${FlatList([partnerRow("flight","Find a flight","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,"flight"),partnerRow("bed","Find a place to stay","Browse stays on Booking.com","https://www.booking.com/","stay"),row("sim","Travel eSIM","Get connected before you land","","open-esim","activity")])}<p class="account-partner-disclosure">Partner links may earn Tripto a commission at no extra cost.</p></section>
-      <section class="account-settings-group">${SectionHeader("Help & support")}${FlatList([row("info","Take the tour","Get to know Tripto","","open-first-run-how"),row("info","Help, privacy & terms","Support and legal information","","open-help")])}</section>
-      <section class="account-settings-group">${SectionHeader("Privacy & data")}${FlatList([row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data","food"),...(mode==="account"?[row("warning","Delete my account","Permanently removes your server account and trips","","delete-account","food")]:[])])}</section>
-      <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button><p class="app-version">Product V2</p></div></main></section></div>`;
+      ${accountCard("Tripto Plus", plusRows.join(""), "", "View all", "acct-card--plus")}
+      ${accountCard("Your trips", [row("trips","All trips",`${state.trips.length} planned`,"trips","","stay"),row("plus","New trip","Start planning a new trip","","create-trip","activity"),...(FORWARD_EMAIL_ENABLED ? [row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox","","flight")] : []),...(pending?[row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync")]:[])].join(""))}
+      ${accountCard("Travel essentials", `${[partnerRow("flight","Find a flight","Search flights and hotels",AVIASALES_AFFILIATE_URL,"flight"),partnerRow("bed","Find a place to stay","Browse stays on Booking.com","https://www.booking.com/","stay"),partnerRow("sim","Travel eSIM","Get connected before you land",ESIM_AFFILIATE_URL,"activity")].join("")}<p class="account-partner-disclosure">Partner links may earn Tripto a commission at no extra cost.</p>`)}
+      ${appearance}
+      ${accountCard("Help & support", [row("info","Take the tour","Get to know Tripto","","open-first-run-how"),row("info","Help, privacy & terms","Support and legal information","","open-help"),...(NATIVE?[]:[row("refresh","Check for updates","Reload the newest version of the app","","force-update")])].join(""))}
+      ${accountCard("Privacy & data", [row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data","food"),...(mode==="account"?[row("warning","Delete my account","Permanently removes your server account and trips","","delete-account","food")]:[])].join(""))}
+      <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button></div></main></section></div>`;
+  }
+
+  function subscriptionScreen() {
+    const plan = state.subscriptionPlan === "month" ? "month" : "year";
+    const option = (id, label, price, detail, badge = "") => `<button type="button" class="subscription-plan${plan === id ? " is-selected" : ""}" data-action="choose-subscription-plan" data-plan="${id}" role="radio" aria-checked="${plan === id}"><span class="subscription-plan__radio" aria-hidden="true"></span><span class="subscription-plan__copy"><strong>${label}</strong><small>${detail}</small></span><span class="subscription-plan__price"><b>${price}</b><small>${id === "month" ? "per month" : "per year"}</small></span>${badge ? `<em>${badge}</em>` : ""}</button>`;
+    const subscription = state.subscription;
+    // Android app: Plus is sold on the website only and Google Play does not
+    // allow linking to it, so the app shows no plans, prices, checkout or billing
+    // portal. Existing Plus entitlements still apply (they come from the server).
+    const checkout = NATIVE ? null : subscriptionCheckoutUrl(plan);
+    const active = !!subscription?.active;
+    const lifetime = subscription?.status === "lifetime";
+    const activeCopy = subscription?.endsAt ? ` until ${new Date(subscription.endsAt).toLocaleDateString()}` : "";
+    const action = NATIVE
+      ? active
+        ? lifetime ? "" : `<p class="subscription-terms">Tripto Plus is active${activeCopy}.</p>`
+        : `<p class="subscription-terms">Tripto Plus isn’t available in the Android app yet.</p>`
+      : active
+      ? lifetime
+        ? ""
+        : `<p class="subscription-terms">Tripto Plus is active${activeCopy}.</p>${subscription?.customerPortalUrl ? `<a class="mobile-primary-action subscription-manage" href="${esc(subscription.customerPortalUrl)}" target="_blank" rel="noopener">Manage or cancel subscription ${icon("external", 18)}</a><p class="subscription-terms">Cancellation is handled securely in your billing portal.</p>` : `<p class="subscription-terms">Your billing portal will appear here once your subscription is synced.</p>`}`
+      : checkout
+        ? `<a class="mobile-primary-action subscription-checkout" href="${esc(checkout)}">Continue with ${plan === "year" ? "yearly" : "monthly"} <span aria-hidden="true">${icon("chevron", 18)}</span></a><p class="subscription-terms">Secure payment by Lemon Squeezy. Your subscription renews automatically until you cancel. You can cancel anytime in the customer portal—no explanation needed.</p>`
+        : `<p class="subscription-terms">Preparing secure checkout… Please try again in a moment.</p>`;
+    return focusedTaskPage("Upgrade", `<section class="subscription-page" aria-labelledby="subscription-title"><div class="subscription-hero"><span class="subscription-hero__icon" aria-hidden="true">${icon("crown", 28)}</span><p class="subscription-eyebrow">${active ? lifetime ? "LIFETIME PLUS" : "TRIPTO PLUS" : "YOUR FIRST TRIP IS FREE"}</p><h1 id="subscription-title">${active ? "You’re ready for every adventure." : "Ready for another adventure?"}</h1><p>${active ? lifetime ? "Your lifetime access covers every trip, always." : "Your Plus access is active across your trips." : "Create and organize as many trips as you like with Tripto Plus."}</p></div>${active ? `<section class="subscription-benefits subscription-benefits--active" aria-label="Tripto Plus includes"><span>${icon("check", 18)} Unlimited trips</span><span>${icon("check", 18)} All planning tools</span></section><button type="button" class="mobile-primary-action subscription-trips" data-screen="trips">All trips <span aria-hidden="true">${icon("chevron", 18)}</span></button>` : `<section class="subscription-benefits" aria-label="Tripto Plus includes"><span>${icon("check", 18)} Unlimited trips</span><span>${icon("check", 18)} All planning tools</span>${NATIVE ? "" : `<span>${icon("check", 18)} Cancel anytime</span>`}</section>${NATIVE ? "" : `<section class="subscription-plans" role="radiogroup" aria-label="Choose a plan">${option("year", "Yearly", "$39", "Save 35% compared with monthly", "BEST VALUE")}${option("month", "Monthly", "$4.99", "Flexible month-to-month access")}</section>`}`}${action}${active ? "" : `<button type="button" class="subscription-back" data-action="subscription-back">Not now</button>`}</section>`, "subscription-screen");
   }
 
   function rememberPostAuthDestination(screen, tripId = null) {
@@ -6329,7 +8944,35 @@
   }
   let googleScriptPromise=null,googleRedirectExchangePromise=null,googleSignInChallenge=null,googleInitializedChallengeId="";
   function loadGoogleIdentityScript(){if(globalThis.google?.accounts?.id)return Promise.resolve();if(googleScriptPromise)return googleScriptPromise;googleScriptPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client?hl=en";script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error("Google sign-in could not load."));document.head.appendChild(script);});return googleScriptPromise;}
-  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";try{if(!googleAuth)throw new Error("Google sign-in could not load.");const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(!googleSignInChallenge||Number(googleSignInChallenge.expiresAt||0)<Date.now()+60000)googleSignInChallenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});const challenge=googleSignInChallenge;await loadGoogleIdentityScript();if(googleInitializedChallengeId!==challenge.challengeId){const initializeOptions=googleAuth.buildInitializeOptions(challenge,navigator,location.origin);if(initializeOptions.ux_mode==="popup")initializeOptions.callback=async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});googleSignInChallenge=null;googleInitializedChallengeId="";state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();if(!await resumePostAuthDestination()&&state.screen==="home")route("trips",null,true);showToast("Signed in with Google.");}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}};globalThis.google.accounts.id.initialize(initializeOptions);googleInitializedChallengeId=challenge.challengeId;}const buttonOptions=googleAuth.buildButtonOptions(challenge,navigator,location.origin),availableWidth=Math.floor(container.getBoundingClientRect().width||Number(buttonOptions.width)||320);buttonOptions.width=String(Math.max(200,Math.min(Number(buttonOptions.width)||320,availableWidth)));buttonOptions.click_listener=()=>rememberGoogleSignInDestination(container);globalThis.google.accounts.id.renderButton(container,buttonOptions);container.dataset.rendered="1";}catch(error){container.dataset.ready="";const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
+  async function finishGoogleSignIn(result){googleSignInChallenge=null;googleInitializedChallengeId="";const guestToken=state.token,guestPayload=sessionPayload(guestToken);state.token=result.session.token;localStorage.setItem("tripto_token",state.token);if(guestPayload&&!guestPayload.userId){await migrateSpotOwner(sessionIdentity(guestToken),sessionIdentity(state.token));migratePendingOwner(sessionIdentity(guestToken),sessionIdentity(state.token));}await loadApp();if(!await resumePostAuthDestination()&&state.screen==="home")route("trips",null,true);showToast("Signed in with Google.");}
+  function showSignInError(message){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=message;}}
+  // Android app: Google's native account sheet (Credential Manager), never an
+  // embedded web sign-in page. The ID token is bound to the server's one-time
+  // nonce and verified by the backend exactly like the web flow.
+  let nativeGoogleSignInBusy=false;
+  async function nativeGoogleSignIn(trigger){
+    if(nativeGoogleSignInBusy)return;
+    if(!navigator.onLine){showSignInError("Connect to the internet to sign in.");return;}
+    nativeGoogleSignInBusy=true;
+    if(trigger)trigger.disabled=true;
+    const errorNode=document.querySelector(".signin-error");if(errorNode)errorNode.hidden=true;
+    try{
+      const container=trigger?.closest?.("#google-signin-button")||document.getElementById("google-signin-button");
+      if(container)rememberGoogleSignInDestination(container);
+      const challenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});
+      let credential;
+      try{credential=(await nativePlugin("TriptoNative").googleSignIn({serverClientId:challenge.clientId,nonce:challenge.nonce})).idToken;}
+      catch(error){
+        if(error?.code==="CANCELED")return;
+        throw new Error(error?.code==="NO_ACCOUNT"?"Add a Google account to this phone in Settings, then try again.":"Google sign-in could not be completed. Please try again.");
+      }
+      const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";
+      const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});
+      await finishGoogleSignIn(result);
+    }catch(error){showSignInError(error?.status>=500?"Google sign-in is not configured for this environment yet.":error?.message||"Google sign-in could not be completed. Please try again.");}
+    finally{nativeGoogleSignInBusy=false;if(trigger?.isConnected)trigger.disabled=false;}
+  }
+  async function setupGoogleSignIn(){const container=document.getElementById("google-signin-button");if(!container||container.dataset.ready)return;container.dataset.ready="1";if(NATIVE){container.innerHTML=googleMaterialButton("native-google-signin");container.dataset.rendered="1";return;}try{if(!googleAuth)throw new Error("Google sign-in could not load.");const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(!googleSignInChallenge||Number(googleSignInChallenge.expiresAt||0)<Date.now()+60000)googleSignInChallenge=await api("/api/v1/auth/google/challenge",{method:"POST",body:"{}"});const challenge=googleSignInChallenge;await loadGoogleIdentityScript();if(googleInitializedChallengeId!==challenge.challengeId){const initializeOptions=googleAuth.buildInitializeOptions(challenge,navigator,location.origin);if(initializeOptions.ux_mode==="popup")initializeOptions.callback=async response=>{try{const result=await api("/api/v1/auth/google",{method:"POST",body:JSON.stringify({credential:response.credential,challengeId:challenge.challengeId,nonce:challenge.nonce,timezone:timezone||null})});await finishGoogleSignIn(result);}catch(error){const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error.message;}}};globalThis.google.accounts.id.initialize(initializeOptions);googleInitializedChallengeId=challenge.challengeId;}const buttonOptions=googleAuth.buildButtonOptions(challenge,navigator,location.origin);buttonOptions.locale=globalThis.TriptoI18n?.locale||"en";const availableWidth=Math.floor(container.getBoundingClientRect().width||Number(buttonOptions.width)||320);buttonOptions.width=String(Math.max(200,Math.min(Number(buttonOptions.width)||320,availableWidth)));buttonOptions.click_listener=()=>rememberGoogleSignInDestination(container);globalThis.google.accounts.id.renderButton(container,buttonOptions);container.dataset.rendered="1";}catch(error){container.dataset.ready="";const node=document.querySelector(".signin-error");if(node){node.hidden=false;node.textContent=error?.status>=500?"Google sign-in is not configured for this environment yet.":error.message;}}}
   function clearGoogleRedirectMarker(){googleAuth?.clearRedirectMarker(location,history);googleRedirectMarker=null;}
   async function acknowledgeGoogleRedirectSession(token){
     try{
@@ -6367,6 +9010,10 @@
         return{ok:false,pending:true,error:"Google sign-in could not be saved on this phone. Check browser storage and try again."};
       }
       clearGoogleRedirectMarker();
+      // The server moves guest trips to the account on sign-in; bring this
+      // device's guest spots along too so they don't vanish.
+      const previousPayload=sessionPayload(previousToken);
+      if(previousPayload&&!previousPayload.userId)await migrateSpotOwner(sessionIdentity(previousToken),sessionIdentity(token));
       const acknowledged=await acknowledgeGoogleRedirectSession(token);
       return{ok:true,acknowledged};
     }catch(_){
@@ -6843,6 +9490,9 @@
     });
   }
   function dateRangeField(startName, endName, label, startLabel, endLabel, startValue = "", endValue = "", options = {}) {
+    // Like quickField: an edit form fills the range from the record being edited.
+    if (!startValue && formPrefill && formPrefill[startName] != null) startValue = String(formPrefill[startName]);
+    if (!endValue && formPrefill && formPrefill[endName] != null) endValue = String(formPrefill[endName]);
     const fieldId = `range-${startName}-${endName}`;
     const bounds = `${options.min ? ` data-min="${esc(options.min)}"` : ""}${options.max ? ` data-max="${esc(options.max)}"` : ""}`;
     return `<fieldset class="date-range-field form-field--wide" id="${fieldId}"${options.allowSingle ? ' data-allow-single="true"' : ""}><legend>${esc(label)}</legend><input class="date-range-input" type="hidden" name="${esc(startName)}" id="form-${esc(startName)}"${startValue ? ` value="${esc(startValue)}"` : ""}><input class="date-range-input" type="hidden" name="${esc(endName)}" id="form-${esc(endName)}"${endValue ? ` value="${esc(endValue)}"` : ""}><button class="date-range-trigger" type="button" data-action="open-date-range" data-start-name="${esc(startName)}" data-end-name="${esc(endName)}" data-range-title="${esc(label)}" data-start-label="${esc(startLabel)}" data-end-label="${esc(endLabel)}"${bounds} aria-label="${esc(label)}. Choose ${esc(startLabel.toLowerCase())}${options.allowSingle ? "" : ` and ${esc(endLabel.toLowerCase())}`}" aria-describedby="${fieldId}-status"><span class="date-range-trigger__icon">${icon("calendar", 20)}</span><span class="date-range-trigger__copy"><small>Select dates</small><strong>Choose dates</strong></span>${icon("chevron", 18)}</button><span class="sr-only" id="${fieldId}-status" aria-live="polite">No date selected.</span></fieldset>`;
@@ -6956,15 +9606,15 @@
     });
     const editAttrs=editingTraveler?` data-edit-id="${esc(editingTraveler.id)}" data-edit-version="${esc(editingTraveler.version||1)}"`:editingTrip?` data-edit-id="${esc(editingTrip.id)}" data-edit-version="${esc(val(editingTrip,"version")||1)}"`:"";
     const deleteBar=editingTrip?`<button type="button" class="trip-delete-text" data-action="delete-trip">Delete this trip</button>`:"";
-    const submitLabel=kind==="trip"?(editingTrip?"Save changes":`Next ${icon("chevron",18)}`):editingTraveler?"Save changes":`Save ${esc(statusText(kind))}`;
+    const submitLabel=kind==="trip"?(editingTrip?"Save":`Next ${icon("chevron",18)}`):editingTraveler?"Save":`Save ${esc(statusText(kind))}`;
     const heading=kind==="trip"?(editingTrip?"Edit trip details":"Where are you going?"):esc(cfg.title);
-    const subhead=kind==="trip"?(editingTrip?"":"Choose a destination, then select your travel dates."):"";
+    const subhead=kind==="trip"?(editingTrip?"":"Choose your destination and travel dates to start planning your next adventure."):"";
     const headerActions=`<button type="submit" form="native-form" class="app-bar-save">${submitLabel}</button>`;
     if (kind === "trip") {
       const tripNameField = editingTrip
         ? `<span class="trip-create-details__divider" aria-hidden="true"></span>${mappedFields[3]}`
         : "";
-      const tripBody=`<header class="trip-create-head trip-create-intro"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip ? "Trip details" : "New trip"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Destination</strong><small>City, country, or region</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><div class="trip-create-search-guide"><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section>${deleteBar}</div>`;
+      const tripBody=`<header class="trip-create-head trip-create-intro"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">${editingTrip ? "Trip details" : "New trip"}</span><h1>${heading}</h1><div class="trip-create-head__sub">${subhead}</div></div></header><div class="trip-create-fields"><section class="trip-create-destination" aria-label="Destination search"><div class="trip-create-destination__head"><span>${icon("location",22)}</span><div><strong>Destination</strong><small>City, country, or region</small></div><button type="button" class="trip-create-destination__close icon-button" data-place-search-close aria-label="Back to trip details" aria-hidden="true" tabindex="-1">${icon("back",22)}</button></div>${mappedFields[0]}<input type="hidden" name="destinationPlace" value=""><div class="trip-create-search-guide"><div class="trip-create-search-guide__body"><span class="trip-create-search-guide__visual" aria-hidden="true">${icon("location",40)}</span><small class="trip-create-search-guide__eyebrow">Explore worldwide</small><strong>Where will you go next?</strong><p>Search cities, countries, regions, or airport codes.</p></div><small class="trip-create-search-guide__privacy">${icon("lock",15)} Private on this phone · ready offline</small></div></section><section class="trip-create-details" aria-label="Trip dates">${dateRangeField("startsOn", "endsOn", "Travel dates", "Start date", "End date", tripStart, tripEnd)}<input type="hidden" name="datesSkipped" value="${editingTrip && !tripStart && !tripEnd ? "1" : ""}">${tripNameField}</section>${deleteBar}</div>`;
       return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form trip-create-form" id="native-form" data-kind="trip"${editAttrs} novalidate>${tripBody}</form>`, "form-screen trip-create-screen", headerActions);
     }
     return focusedTaskPage(cfg.title, `<form class="mobile-form premium-form" id="native-form" data-kind="${esc(kind)}"${editAttrs} novalidate><section class="form-section ds-grouped-card"><header><span>${esc(cfg.lead)}</span><h1>${esc(cfg.title)}</h1></header><div class="form-fields">${mappedFields.join("")}</div></section></form>`, "form-screen", headerActions);
@@ -7126,7 +9776,8 @@
         endDate: arr.date,
         endTime: arr.time,
         timezone: depZone,
-        endTimezone: arrZone !== depZone ? arrZone : "",
+        // Never blank: a blank seed falls back to the trip default zone, not the departure zone.
+        endTimezone: arrZone || depZone,
         confirmationNumber: String(val(entity, "booking_reference") || ""),
         vehicle: String(val(entity, "service_number") || details.vehicle || ""),
         driver: String(details.driver || ""),
@@ -7264,7 +9915,7 @@
     if (kind === "flight") {
       list = quickLocationList("flight");
       dataLists = dataListMarkup("suggest-airlines",SUGGEST_LISTS.airlines)+dataListMarkup("suggest-cabin",SUGGEST_LISTS.cabin)+dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${isReturnFlight ? `<div class="round-trip-banner form-field--wide">${icon("navigation",16)}<span>Return flight — route reversed. Set the departure date and time.</span></div>` : ""}${!editing && !isReturnFlight ? `<label class="round-trip-toggle form-field--wide"><span class="round-trip-toggle__copy"><strong>Round trip</strong><small>Choose both dates in one calendar</small></span><input type="checkbox" name="roundTrip" value="1" role="switch"><span class="round-trip-toggle__track" aria-hidden="true"><span class="round-trip-toggle__thumb"></span></span></label>` : ""}${quickField("carrierName","Airline",{required:true,placeholder:"Airline name",attrs:'list="suggest-airlines"'})}${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383"})}${manualRouteCard(kind,{label:"From",placeholder:"Airport or code"},{label:"To",placeholder:"Airport or code"})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="departure" hidden><span>Origin timezone <b aria-hidden="true">*</b></span><input type="text" name="departureTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="departureTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="arrival" hidden><span>Arrival timezone</span><input type="text" name="arrivalTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="arrivalTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><div class="form-fields form-fields--date-time form-fields--flight-when">${dateRangeField("departureDate", "returnDepartureDate", "Travel dates", "Departure", "Return", dateDefault, "", {allowSingle:true})}${quickField("departureLocalTime","Departure time",{type:"time",required:true,wide:false})}${!editing && !isReturnFlight ? `<div class="round-trip-return" data-round-trip-return hidden>${quickField("returnDepartureLocalTime","Return time",{type:"time",wide:false})}</div>` : ""}</div>${quickDateSuggestions(kind)}`;
+      primary = `${isReturnFlight ? `<div class="round-trip-banner form-field--wide">${icon("navigation",16)}<span>Return flight — route reversed. Set the departure date and time.</span></div>` : ""}${!editing && !isReturnFlight ? `<label class="round-trip-toggle form-field--wide"><span class="round-trip-toggle__copy"><strong>Round trip</strong><small>Add the return date and time</small></span><input type="checkbox" name="roundTrip" value="1" role="switch"><span class="round-trip-toggle__track" aria-hidden="true"><span class="round-trip-toggle__thumb"></span></span></label>` : ""}${quickField("carrierName","Airline",{required:true,placeholder:"Airline name",attrs:'list="suggest-airlines"'})}${quickField("flightNumber","Flight number",{required:true,placeholder:"LY 383"})}${manualRouteCard(kind,{label:"From",placeholder:"Airport or code"},{label:"To",placeholder:"Airport or code"})}<input type="hidden" name="departureTimezone" id="form-departureTimezone" data-timezone-role="departure" value="${esc(formPrefill?.departureTimezone||"")}"><input type="hidden" name="arrivalTimezone" id="form-arrivalTimezone" data-timezone-role="arrival" value="${esc(formPrefill?.arrivalTimezone||"")}"><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="departure" hidden><span>Origin timezone <b aria-hidden="true">*</b></span><input type="text" name="departureTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="departureTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><label class="form-field form-field--wide place-timezone-fallback" data-timezone-fallback-for="arrival" hidden><span>Arrival timezone</span><input type="text" name="arrivalTimezoneManual" autocomplete="off" list="suggest-timezones" placeholder="Europe/Rome" data-timezone-manual-for="arrivalTimezone"><small class="field-helper">Only needed when an airport cannot be recognized.</small></label><div class="form-fields form-fields--date-time form-fields--flight-when">${dateRangeField("departureDate", "departureDateEnd", "Departure date", "Departure", "Departure", dateDefault, "", {allowSingle:true})}${quickField("departureLocalTime","Departure time",{type:"time",required:true,wide:false})}${!editing && !isReturnFlight ? `<div class="round-trip-return" data-round-trip-return hidden>${dateRangeField("returnDepartureDate", "returnDepartureDateEnd", "Return date", "Return", "Return", "", "", {allowSingle:true})}${quickField("returnDepartureLocalTime","Return time",{type:"time",wide:false})}</div>` : ""}</div>${quickDateSuggestions(kind)}`;
       moreContent = `<div class="form-fields"><div class="form-fields--date-time">${quickField("arrivalDate","Arrival date",{type:"date",wide:false})}${quickField("arrivalLocalTime","Arrival local time",{type:"time",wide:false})}</div>${quickField("operatingAirlineCode","Operating airline",{attrs:'list="suggest-airlines"'})}${quickField("departureTerminal","Terminal",{wide:false})}${quickField("departureGate","Gate",{wide:false})}${quickField("seat","Seat",{wide:false})}${quickField("cabin","Cabin",{wide:false,attrs:'list="suggest-cabin"'})}${quickField("checkedBags","Checked bags",{type:"number",wide:false,attrs:'min="0" max="20" inputmode="numeric"'})}${quickField("bookingReference","PNR",{wide:false})}${quickField("ticketNumber","Ticket number",{})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = "Airport timezones are set from the selected airports. Scheduled information is never presented as live.";
     } else if (kind === "hotel") {
@@ -7294,7 +9945,7 @@
         timeLabel = isBus ? "Departure time" : "Pickup time";
       list = quickLocationList("reservation");
       dataLists = dataListMarkup("suggest-timezones",timezoneOptions());
-      primary = `${quickField("title",providerLabel,{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:fromLabel,placeholder:isBus?"Station or stop":"Pickup location",list:"quick-reservation-locations"},{name:"endLocation",label:toLabel,placeholder:isBus?"Station or stop":"Destination",list:"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",dateLabel,{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",timeLabel,{type:"time",required:true,wide:false})}</div><input type="hidden" name="transportType" value="${esc(manualBookingConfig(kind)?.subtype || "transfer")}">`;
+      primary = `${quickField("title",providerLabel,{optional:true,placeholder:"Optional"})}${manualRouteCard(kind,{name:"location",label:fromLabel,placeholder:isBus?"Station or stop":"Pickup location",list:isBus?"":"quick-reservation-locations"},{name:"endLocation",label:toLabel,placeholder:isBus?"Station or stop":"Destination",list:isBus?"":"quick-reservation-locations"})}<div class="form-fields form-fields--date-time">${quickField("reservationDate",dateLabel,{type:"date",required:true,wide:false,value:dateDefault})}${quickField("reservationTime",timeLabel,{type:"time",required:true,wide:false})}</div><input type="hidden" name="transportType" value="${esc(manualBookingConfig(kind)?.subtype || "transfer")}">`;
       moreContent = `<div class="form-fields">${hiddenTz("timezone","departure")}${hiddenTz("endTimezone","arrival")}${quickField("confirmationNumber","Confirmation number",{})}${quickField("phone",isBus?"Operator phone":"Driver / provider phone",{type:"tel"})}${quickField("vehicle",isBus?"Service number / coach":"Vehicle",{optional:true})}${quickField("driver","Driver name",{optional:true})}${quickTravelerField()}${quickField("notes","Notes",{type:"textarea"})}</div>`;
       note = isBus ? "Add the confirmed departure details shown on your ticket." : "Only confirmed pickup details are shown in the Timeline.";
     } else if (kind === "cruise") {
@@ -7332,18 +9983,26 @@
     } else {
       const bookingOptions = bookingRows().map(({item}) => `<option value="${esc(itemId(item))}">${esc(val(item,"title","property_name")||"Booking")}</option>`).join(""),
         travelerSpecific = state.travelers.length ? quickTravelerField() : "";
-      primary = `<div class="form-field form-field--wide quick-document-file"><label class="document-file-picker" for="form-documentFile">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="form-documentFile" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div></div><div class="document-traveler-assignment">${travelerSpecific}</div>`;
+      primary = `<div class="form-field form-field--wide quick-document-file"><label class="document-file-picker" for="form-documentFile">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="form-documentFile" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div><button type="submit" class="document-add-now" hidden>Add now</button></div><div class="document-traveler-assignment">${travelerSpecific}</div>`;
       moreContent = `<div class="form-fields">${quickField("relatedBooking","Related booking",{type:"select",choices:`<option value="">No related booking</option>${bookingOptions}`})}</div>`;
       note = "Files stay on this phone.";
       extraClass = " document-quick-add";
     }
     const editAttrs = editingRecord ? ` data-edit-id="${esc(editId)}" data-edit-version="${esc(editVersion)}"` : "";
-    const submitLabel = editingRecord ? "Save changes" : (kind === "document" ? "Save on This Phone" : config?.cta || `Add ${esc(statusText(kind))}`);
+    const submitLabel = editingRecord ? "Save changes" : (kind === "document" ? "Add File" : config?.cta || `Add ${esc(statusText(kind))}`);
     const heading = editingRecord ? `Edit ${esc(config?.shortLabel || config?.label || statusText(kind))}` : esc(config?.shortLabel || config?.label || title);
     const attachments = kind === "document" ? "" : manualAttachmentsSection(kind, attachmentScope);
-    const form = `<form class="mobile-form premium-form quick-add-form manual-booking-form${extraClass}" id="native-form" data-kind="${esc(kind)}" data-base-kind="${esc(baseKind)}" data-client-request-id="${esc(manualBookingDraftId(kind, editId))}" data-attachment-scope="${esc(attachmentScope.draftId)}"${editAttrs} novalidate>${quickTripContext()}<header class="manual-form-heading"><span>Manual booking</span><h1>${heading}</h1></header><section class="form-section manual-essentials" aria-labelledby="manual-essentials-title"><h2 id="manual-essentials-title">Essentials</h2><div class="quick-primary-fields">${primary}</div>${list}${dataLists}</section>${attachments}${quickMore(kind,"More Details",moreContent)}</form>`;
-    return focusedTaskPage(title, form, `form-screen quick-add-screen quick-add-screen--${kind}`, formHeaderSave("native-form", editingRecord ? "Save" : "Save"));
+    // Editing a flight hides the round-trip toggle, so offer the reversed
+    // second leg here instead: it opens a fresh Add-flight form prefilled as
+    // the return (route + timezones swapped). Edit-only, flight-only.
+    const returnFlightAction = kind === "flight" && editingRecord
+      ? `<button type="button" class="mobile-secondary-action form-return-flight" data-action="add-return-flight" data-id="${esc(editId)}">${icon("navigation", 18)} Add return flight</button>`
+      : "";
+    const form = `<form class="mobile-form premium-form quick-add-form manual-booking-form${extraClass}" id="native-form" data-kind="${esc(kind)}" data-base-kind="${esc(baseKind)}" data-client-request-id="${esc(manualBookingDraftId(kind, editId))}" data-attachment-scope="${esc(attachmentScope.draftId)}"${editAttrs} novalidate>${quickTripContext()}<header class="manual-form-heading"><span>Manual booking</span><h1>${heading}</h1></header><section class="form-section manual-essentials" aria-labelledby="manual-essentials-title"><h2 id="manual-essentials-title">Essentials</h2><div class="quick-primary-fields">${primary}</div>${list}${dataLists}</section>${attachments}${quickMore(kind,"More Details",moreContent)}${returnFlightAction}</form>`;
+    return focusedTaskPage(title, form, `form-screen quick-add-screen quick-add-screen--${kind}`, formHeaderSave("native-form", editingRecord ? "Save" : (kind === "document" ? "Add File" : "Save")));
   }
+  // Works fully offline from the saved stay + location: name, local-language
+  // address, full address, phone and coordinates, in large type.
   function driverScreen() {
     const stay = selectedStay(),
       location = stay
@@ -7352,16 +10011,26 @@
       name = val(stay, "property_name", "title") || "Destination",
       localName = val(location, "local_name") || "",
       showLocalName = localName && localName.trim().toLocaleLowerCase() !== String(name).trim().toLocaleLowerCase(),
-      address =
-        val(location, "local_address", "formatted_address") ||
-        "Address unavailable";
-    return `<div class="phone-app"><section class="driver-screen"><header class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close">${icon("close", 26)}</button><strong>Show to Driver</strong>${HeaderNavigation()}</header><main class="driver-main"><div class="driver-label">${icon("car", 24)} <span>Please drive to</span></div><section class="driver-pass" aria-labelledby="driver-destination-name"><span class="driver-pass__eyebrow">Destination</span><h1 class="driver-name" id="driver-destination-name">${esc(name)}</h1>${showLocalName ? `<p class="driver-local">${esc(localName)}</p>` : ""}<div class="driver-address">${icon("pin", 26)}<span><small>Address</small><strong>${esc(address)}</strong></span></div></section><p class="driver-hint">Show this screen to your driver. The destination is saved with your trip.</p></main><footer class="driver-cta">${primaryCta("Open directions", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</footer></section></div>`;
+      localAddress = String(val(location, "local_address") || "").trim(),
+      fullAddress = String(val(location, "formatted_address") || "").trim(),
+      address = localAddress || fullAddress || "Address unavailable",
+      showFullAddress = fullAddress && localAddress && fullAddress.toLocaleLowerCase() !== localAddress.toLocaleLowerCase(),
+      phone = String(val(contactFor(stay || {}, "hotel"), "phone") || "").trim(),
+      lat = Number(val(location, "latitude")),
+      lng = Number(val(location, "longitude")),
+      hasCoordinates = val(location, "latitude") != null && val(location, "longitude") != null && Number.isFinite(lat) && Number.isFinite(lng),
+      extra = `${showFullAddress ? `<div class="driver-address driver-address--full">${icon("pin", 22)}<span><small>Full address</small><strong>${esc(fullAddress)}</strong></span></div>` : ""}${phone ? `<div class="driver-address driver-address--phone">${icon("phone", 22)}<span><small>Phone</small><a href="tel:${esc(phone.replace(/\s/g, ""))}"><strong>${esc(phone)}</strong></a></span></div>` : ""}${hasCoordinates ? `<div class="driver-address driver-address--coords">${icon("location", 22)}<span><small>Coordinates</small><strong>${esc(`${lat.toFixed(6)}, ${lng.toFixed(6)}`)}</strong></span></div>` : ""}`;
+    return `<div class="phone-app"><section class="driver-screen"><header class="driver-top"><button class="icon-button" data-action="close-driver" aria-label="Close">${icon("close", 26)}</button><strong>Show to Driver</strong>${HeaderNavigation()}</header><main class="driver-main"><div class="driver-label">${icon("car", 24)} <span>Please drive to</span></div><section class="driver-pass" aria-labelledby="driver-destination-name"><span class="driver-pass__eyebrow">Destination</span><h1 class="driver-name" id="driver-destination-name">${esc(name)}</h1>${showLocalName ? `<p class="driver-local">${esc(localName)}</p>` : ""}<div class="driver-address">${icon("pin", 26)}<span><small>Address</small><strong>${esc(address)}</strong></span></div>${extra}</section><p class="driver-hint">Show this screen to your driver. The destination is saved with your trip and works offline.</p></main><footer class="driver-cta">${primaryCta("Open directions", "directions-hotel", "navigation", `data-id="${esc(itemId(stay || {}))}"`)}</footer></section></div>`;
   }
+
   // One action-row primitive for every compact popup that performs a choice.
   // One-line rows stay at least 48px; rows with explanatory copy stay 56px.
   // This keeps touch targets, icon geometry and trailing affordances consistent.
-  function sheetActionRow(action, iconName, label, attrs = "", sub = "", danger = false) {
-    return `<button type="button" class="sheet-option sheet-action-row${danger ? " sheet-option--danger" : ""}" data-action="${esc(action)}"${attrs}><span class="info-icon">${icon(iconName, 20)}</span><span class="sheet-action-row__copy"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="sheet-action-row__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`;
+  function sheetActionRow(action, iconName, label, attrs = "", sub = "", danger = false, iconOverride = "") {
+    const glyph = iconOverride
+      ? `<span class="info-icon info-icon--flag">${iconOverride}</span>`
+      : `<span class="info-icon">${icon(iconName, 20)}</span>`;
+    return `<button type="button" class="sheet-option sheet-action-row${danger ? " sheet-option--danger" : ""}" data-action="${esc(action)}"${attrs}>${glyph}<span class="sheet-action-row__copy"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="sheet-action-row__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`;
   }
   function sheetActionLink(iconName, label, sub, href, attrs = "") {
     return `<a class="sheet-option sheet-action-row" href="${esc(href)}"${attrs}><span class="info-icon">${icon(iconName, 20)}</span><span class="sheet-action-row__copy"><strong>${esc(label)}</strong>${sub ? `<small>${esc(sub)}</small>` : ""}</span><span class="sheet-action-row__chev" aria-hidden="true">${icon("chevron", 18)}</span></a>`;
@@ -7370,7 +10039,9 @@
     return `<div class="sheet-options-group sheet-action-list${danger ? " sheet-action-list--danger" : ""}">${rows}</div>`;
   }
   function bottomSheet(id, title, content) {
-    return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet compact-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close ${esc(title)}">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
+    // The dialog heading already names the context via aria-labelledby. Keep
+    // the control label short and independently translatable in every locale.
+    return `<div class="sheet-backdrop" data-action="close-sheet" aria-hidden="true"></div><section class="bottom-sheet compact-sheet bottom-sheet--${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1"><div class="sheet-handle" data-sheet-drag aria-hidden="true"></div><div class="sheet-title-row" data-sheet-drag><h2 id="${id}-title">${esc(title)}</h2><button class="icon-button" data-action="close-sheet" aria-label="Close">${icon("close", 22)}</button></div><div class="sheet-scroll">${content}</div></section>`;
   }
   function tripCreatedSheet() {
     const confetti = Array.from({length:18}, (_, i) => `<i style="--piece:${i};--drift:${(i % 5 - 2) * 16}px" aria-hidden="true"></i>`).join("");
@@ -7435,39 +10106,641 @@
       hasDates = Boolean(preview.startsOn && preview.endsOn);
     const bookingUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(destination)}${preview.startsOn ? `&checkin=${encodeURIComponent(preview.startsOn)}` : ""}${preview.endsOn ? `&checkout=${encodeURIComponent(preview.endsOn)}` : ""}`;
     const tool = (className, iconName, title, copy, href, sponsored = false, id = "") => `<a${id ? ` id="${id}"` : ""} class="trip-setup-tool ${className}" href="${esc(href)}" target="_blank" rel="${sponsored ? "sponsored " : ""}noopener noreferrer"><span class="trip-setup-tool__icon">${icon(iconName,22)}</span><span class="trip-setup-tool__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span><span class="trip-setup-tool__external" aria-hidden="true">${icon("external",17)}</span></a>`;
-    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Review your trip</strong></div><button type="button" class="trip-setup-ready__create" data-action="complete-trip-setup">Create trip</button></header><main class="trip-setup-ready__main"><section class="trip-create-head trip-setup-ready__hero"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">Your journey</span><h1 id="trip-setup-ready-title">Check your trip details</h1><div class="trip-create-head__sub"><p>You can change these details later.</p></div></div><div class="trip-plan-fields"><div class="trip-plan-field"><span><small>Destination</small><strong>${esc(destination === "Your destination" ? "Not selected" : destination)}</strong></span></div><div class="trip-plan-field"><span><small>Travel dates</small><strong>${esc(dates)}</strong></span></div></div></section><section class="trip-setup-ready__tools" aria-labelledby="trip-setup-extras-title"><h2 id="trip-setup-extras-title" class="trip-setup-ready__extras-title">Plan the rest of your trip</h2>${tool("trip-setup-tool--flight","flight","Find a flight","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true)}${tool("trip-setup-tool--stay","bed","Find a place to stay","Browse stays on Booking.com",bookingUrl,true,"trip-setup-stay-link")}${tool("trip-setup-tool--esim","sim","Get an eSIM","Connect before you land",routeUrl("esim"))}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost.</p></main></section>`;
+    return `<section class="full-screen-picker trip-setup-ready" role="dialog" aria-modal="true" aria-labelledby="trip-setup-ready-title"><header class="full-screen-picker__bar trip-setup-ready__bar"><button type="button" class="icon-button full-screen-picker__back" data-action="return-trip-setup" aria-label="Back to trip details">${icon("back",22)}</button><div><strong>Review your trip</strong></div><div class="trip-setup-ready__actions">${pageHelpButton("trip-review")}<button type="button" class="trip-setup-ready__create" data-action="complete-trip-setup">Create trip</button></div></header><main class="trip-setup-ready__main"><section class="trip-create-head trip-setup-ready__hero"><div class="trip-create-head__copy"><span class="trip-create-head__eyebrow">Your journey</span><h1 id="trip-setup-ready-title">Check your trip details</h1><div class="trip-create-head__sub"><p>You can change these details later.</p></div></div><div class="trip-plan-fields"><div class="trip-plan-field"><span><small>Destination</small><strong>${esc(destination === "Your destination" ? "Not selected" : destination)}</strong></span></div><div class="trip-plan-field"><span><small>Travel dates</small><strong>${esc(dates)}</strong></span></div></div></section><section class="trip-setup-ready__tools" aria-labelledby="trip-setup-extras-title"><h2 id="trip-setup-extras-title" class="trip-setup-ready__extras-title">Need a hand with your trip?</h2>${tool("trip-setup-tool--flight","flight","Find a flight","Compare routes on Aviasales",AVIASALES_AFFILIATE_URL,true,"trip-setup-flight-link")}${tool("trip-setup-tool--stay","bed","Find a place to stay","Browse stays on Booking.com",bookingUrl,true,"trip-setup-stay-link")}${tool("trip-setup-tool--esim","sim","Get an eSIM","Connect before you land",ESIM_AFFILIATE_URL,true,"trip-setup-esim-link")}</section><p class="trip-setup-ready__disclosure">Partner links may earn Tripto a commission at no extra cost.</p></main></section>`;
   }
-  function addSheet() {
-    const tripTitle = state.trip?.title || "your trip";
-    return bottomSheet(
-      "add",
-      "What would you like to do?",
-      sheetActionList(`${sheetActionRow("open-add-booking", "plus", "Add Booking", "", `Add something to ${tripTitle}`)}${sheetActionRow("create-trip", "plane", "Create New Trip", "", "Start planning another trip")}`),
-    );
+  // ===== Export trip to PDF (client-side, offline-capable) =====
+  // A fully local, read-only projection of the trip into a printable PDF. No
+  // network, no third party, no generative AI. The model below is an explicit
+  // allowlist: only these fields ever reach the document, and the sensitive
+  // ones stay off unless the traveller opts in. Generation never mutates the
+  // trip, documents, or Ready-Offline status.
+  const PDF_EXPORT_ASSET = "/pdf-export.js?v=pdf-export-v2";
+  const PDF_FONT_FILES = {
+    regular: "/vendor/pdf/standard_fonts/LiberationSans-Regular.ttf",
+    bold: "/vendor/pdf/standard_fonts/LiberationSans-Bold.ttf",
+    italic: "/vendor/pdf/standard_fonts/LiberationSans-Italic.ttf",
+  };
+  let pdfFontCache = null;
+  const ensurePdfExport = () => loadModule(PDF_EXPORT_ASSET, "TriptoPdfExport");
+  async function ensurePdfFonts() {
+    if (pdfFontCache) return pdfFontCache;
+    const load = async (url) => {
+      const res = await fetch(url, { credentials: "omit" });
+      if (!res.ok) throw new Error(`Font unavailable: ${url}`);
+      return new Uint8Array(await res.arrayBuffer());
+    };
+    const [regular, bold, italic] = await Promise.all([
+      load(PDF_FONT_FILES.regular),
+      load(PDF_FONT_FILES.bold),
+      load(PDF_FONT_FILES.italic),
+    ]);
+    pdfFontCache = { regular, bold, italic };
+    return pdfFontCache;
+  }
+  const PDF_ACCENTS = {
+    flight: [0.16, 0.42, 0.85],
+    train: [0.0, 0.55, 0.5],
+    ferry: [0.0, 0.55, 0.5],
+    cruise: [0.0, 0.5, 0.62],
+    hotel: [0.45, 0.35, 0.75],
+    transfer: [0.85, 0.55, 0.1],
+    car: [0.85, 0.55, 0.1],
+    activity: [0.2, 0.6, 0.35],
+    reservation: [0.2, 0.6, 0.35],
+    restaurant: [0.82, 0.4, 0.2],
+    plan: [0.4, 0.42, 0.46],
+  };
+  const PDF_BADGES = {
+    flight: "FLIGHT", train: "TRAIN", ferry: "FERRY", cruise: "CRUISE",
+    hotel: "HOTEL", transfer: "TRANSFER", car: "CAR RENTAL",
+    activity: "PLAN", reservation: "RESERVATION", restaurant: "DINING", plan: "PLAN",
+  };
+  function pdfExportKind(item) {
+    const t = String(timelineType(item) || item.type || "plan").toLowerCase();
+    if (t === "stay") return "hotel";
+    if (t === "car-rental" || t === "car") return "car";
+    if (PDF_ACCENTS[t]) return t;
+    return "plan";
+  }
+  function pdfTravelerNames(idsValue) {
+    const ids = String(idsValue || "")
+      .split(/[,\s]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    const names = ids
+      .map((id) => {
+        const t = (state.travelers || []).find((row) => String(row.id) === id);
+        return t ? String(val(t, "display_name") || "").trim() : "";
+      })
+      .filter(Boolean);
+    return names;
+  }
+  // Build the allowlisted, privacy-filtered document model from in-memory state.
+  function buildTripExportModel(settings) {
+    const opts = settings || {};
+    const now = Date.now();
+    const trip = state.trip || {};
+    const tz = tripDefaultTimezone() ||
+      (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (_) { return "UTC"; } })();
+    const tripTitle = String(trip.title || "Your trip");
+    const blocks = [];
+
+    // --- (A) Overview -----------------------------------------------------
+    const cities = [];
+    for (const loc of state.locations || []) {
+      const city = String(val(loc, "city") || "").trim();
+      if (city && !cities.includes(city)) cities.push(city);
+    }
+    const tripDates = formatTripDates(trip);
+    const generatedAt = (() => {
+      try {
+        return dateFormatter(undefined, {
+          year: "numeric", month: "short", day: "numeric",
+          hour: "2-digit", minute: "2-digit", timeZoneName: "short", timeZone: tz,
+        }).format(new Date(now));
+      } catch (_) { return new Date(now).toISOString(); }
+    })();
+    const coverMeta = [`Prepared ${generatedAt}`, cities.length ? cities.join(" · ") : ""].filter(Boolean).join("  ·  ");
+    blocks.push({
+      type: "cover",
+      eyebrow: "Tripto · Travel itinerary",
+      title: tripTitle,
+      subtitle: tripDates,
+      meta: coverMeta,
+    });
+    if (opts.travelers) {
+      const names = (state.travelers || []).map((t) => String(val(t, "display_name") || "").trim()).filter(Boolean);
+      if (names.length) blocks.push({ type: "meta", text: `Travellers: ${names.join(", ")}` });
+    }
+    if (state.syncStatus && Number(state.syncStatus.pendingOperations) > 0)
+      blocks.push({ type: "note", text: "Some changes are still syncing and may not appear in this snapshot yet." });
+    blocks.push({ type: "space", h: 6 });
+
+    // --- (B) Day-by-day itinerary ----------------------------------------
+    const items = (state.timeline || [])
+      .filter((item) => !val(item, "deleted_at", "deletedAt"))
+      .filter((item) => isTimelineVisibleItem(item));
+    let lastDayKey = null;
+    let rendered = 0;
+    for (const item of items) {
+      const startMs = Number(val(item, "starts_at_utc", "startsAtUtc")) || null;
+      const startTz = val(item, "start_timezone", "startTimezone") || tz;
+      const day = timelineDay(startMs, startTz);
+      if (day.key !== lastDayKey) {
+        lastDayKey = day.key;
+        const label = startMs != null
+          ? (() => { try { return dateFormatter(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: startTz }).format(new Date(startMs)); } catch (_) { return day.date; } })()
+          : "Unscheduled";
+        blocks.push({ type: "daysep", text: label });
+      }
+      blocks.push(pdfExportCard(item, startMs, startTz, opts));
+      rendered++;
+    }
+    if (!rendered) blocks.push({ type: "note", text: "No scheduled bookings or plans yet." });
+
+    // --- (C) Checklist (opt-in) ------------------------------------------
+    if (opts.checklist) {
+      const list = (state.checklist || []).filter((row) => !val(row, "deleted_at", "deletedAt"));
+      if (list.length) {
+        blocks.push({ type: "sectionhead", text: "Trip checklist" });
+        const byCat = {};
+        for (const row of list) {
+          const cat = String(val(row, "category") || "Other");
+          (byCat[cat] = byCat[cat] || []).push(row);
+        }
+        for (const cat of Object.keys(byCat)) {
+          const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+          const done = byCat[cat].filter((r) => r.completed).length;
+          blocks.push({ type: "sectionhead", text: `${label} (${done}/${byCat[cat].length})` });
+          for (const row of byCat[cat]) {
+            const who = opts.travelers && val(row, "traveler_id")
+              ? (state.travelers || []).find((t) => String(t.id) === String(val(row, "traveler_id")))
+              : null;
+            blocks.push({
+              type: "checkitem",
+              text: String(val(row, "title") || "Item"),
+              done: Boolean(row.completed),
+              who: who ? String(val(who, "display_name") || "") : "",
+            });
+          }
+        }
+      }
+    }
+
+    // --- (D) Documents index (safe labels only — never files/URLs/tokens) -
+    const docs = (state.documents || []).filter((d) => !val(d, "deleted_at", "deletedAt"));
+    if (docs.length) {
+      blocks.push({ type: "sectionhead", text: "Documents in this trip" });
+      const DOC_TYPES = { boarding_pass: "Boarding pass", hotel_confirmation: "Hotel confirmation", ticket: "Ticket", passport: "Identity document", other: "Document" };
+      for (const d of docs) {
+        const typeLabel = DOC_TYPES[String(val(d, "type") || "other")] || "Document";
+        blocks.push({ type: "checkitem", text: `${String(val(d, "title") || "Document")} — ${typeLabel}`, done: false });
+      }
+      blocks.push({ type: "note", text: "The files themselves are not included. Open tripto.to to view tickets and passes." });
+    }
+
+    // --- Filename (no traveller names, no booking references) -------------
+    const slug = tripTitle
+      .toLowerCase()
+      .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) || "trip";
+    const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || "").trim());
+    const startOn = isDate(val(trip, "starts_on")) ? String(val(trip, "starts_on")).trim() : "";
+    const endOn = isDate(val(trip, "ends_on")) ? String(val(trip, "ends_on")).trim() : "";
+    const startStamp = startOn || new Date(now).toISOString().slice(0, 10);
+    const dateStamp = (endOn && endOn !== startStamp) ? `${startStamp}_${endOn}` : startStamp;
+    const filename = `tripto-${slug}-${dateStamp}.pdf`;
+
+    return {
+      blocks,
+      filename,
+      headerLeft: tripTitle,
+      headerRight: "tripto.to",
+      footer: "Itinerary snapshot · not a live status",
+    };
+  }
+  function pdfExportCard(item, startMs, startTz, opts) {
+    const kind = pdfExportKind(item);
+    const accent = PDF_ACCENTS[kind] || PDF_ACCENTS.plan;
+    const rows = [];
+    const notes = [];
+    const id = itemId(item);
+    const addRow = (label, value) => { if (value != null && String(value).trim() !== "") rows.push({ label, value: String(value) }); };
+    const flag = timelineException(item);
+    let badge = PDF_BADGES[kind] || "PLAN";
+    let titleRight = "";
+    let subtitle = item.subtitle ? String(item.subtitle) : "";
+
+    if (kind === "flight" || kind === "train" || kind === "ferry" || kind === "cruise") {
+      const t = transportForItem(id) || {};
+      const dep = Number(val(t, "scheduled_departure_utc", "starts_at_utc", "startsAtUtc")) || startMs;
+      const arr = Number(val(t, "scheduled_arrival_utc", "ends_at_utc", "endsAtUtc")) || Number(val(item, "ends_at_utc", "endsAtUtc")) || null;
+      const depTz = val(t, "departure_timezone") || startTz;
+      const arrTz = val(t, "arrival_timezone") || val(item, "end_timezone", "endTimezone") || depTz;
+      titleRight = arr ? `${formatTime(dep, depTz)} → ${formatTime(arr, arrTz)}` : formatTime(dep, depTz);
+      const from = locationName(val(t, "departure_location_id"));
+      const to = locationName(val(t, "arrival_location_id"));
+      const routeStr = [from, to].filter((x) => x && x !== "Location unavailable").join(" → ");
+      if (routeStr) subtitle = routeStr;
+      addRow("Departure", dep != null ? `${formatDateTime(dep, depTz)}${from && from !== "Location unavailable" ? ` · ${from}` : ""}` : "Time not set");
+      addRow("Arrival", arr != null ? `${formatDateTime(arr, arrTz)}${to && to !== "Location unavailable" ? ` · ${to}` : ""}` : "Not provided");
+      const term = val(t, "departure_terminal");
+      const platform = val(t, "departure_platform");
+      if (term) addRow("Terminal", term);
+      if (platform) addRow("Platform", platform);
+      const carrier = val(t, "carrier_name");
+      const svc = val(t, "service_number") || val(t, "marketing_flight_number");
+      if (carrier || svc) addRow("Operated by", [carrier, svc].filter(Boolean).join(" "));
+      // Per-traveller seat details (name only when travellers enabled).
+      const details = (state.bookingDetails || []).filter((d) => String(d.trip_item_id) === id);
+      for (const d of details) {
+        const seat = [val(d, "seat"), val(d, "cabin_class")].filter(Boolean).join(" · ");
+        if (seat) addRow(opts.travelers && val(d, "display_name") ? String(val(d, "display_name")) : "Seat", seat);
+      }
+      notes.push("Scheduled time — never presented as a live status.");
+    } else if (kind === "hotel") {
+      const s = stayForItem(id) || {};
+      const n = nights(s);
+      titleRight = n !== "—" ? `${n} night${n === "1" ? "" : "s"}` : "";
+      const ci = val(s, "check_in_date");
+      const co = val(s, "check_out_date");
+      addRow("Check-in", ci ? `${formatDateOnly(ci)}${val(s, "check_in_from") ? `, from ${val(s, "check_in_from")}` : ""}` : "Not provided");
+      addRow("Check-out", co ? `${formatDateOnly(co)}${val(s, "check_out_by") ? `, by ${val(s, "check_out_by")}` : ""}` : "Not provided");
+      const addr = locationName(val(s, "property_location_id"));
+      addRow("Address", val(s, "street_address") || (addr && addr !== "Location unavailable" ? addr : ""));
+      if (val(s, "room_name")) addRow("Room", val(s, "room_name"));
+    } else if (kind === "transfer" || kind === "car") {
+      const t = transportForItem(id) || {};
+      titleRight = startMs != null ? formatTime(startMs, startTz) : "Time not set";
+      const from = locationName(val(t, "departure_location_id"));
+      const to = locationName(val(t, "arrival_location_id"));
+      const routeStr = [from, to].filter((x) => x && x !== "Location unavailable").join(" → ");
+      if (routeStr) addRow("Route", routeStr);
+    } else {
+      // Activities, reservations, dining, generic plans and scheduled collections.
+      const endMs = Number(val(item, "ends_at_utc", "endsAtUtc")) || null;
+      const endTz = val(item, "end_timezone", "endTimezone") || startTz;
+      titleRight = startMs != null
+        ? (endMs != null ? `${formatTime(startMs, startTz)} – ${formatTime(endMs, endTz)}` : formatTime(startMs, startTz))
+        : "Time not set";
+      const where = locationName(val(item, "start_location_id"));
+      if (where && where !== "Location unavailable") addRow("Where", where);
+    }
+
+    // Booking references (opt-in). Applies to every type.
+    if (opts.refs) {
+      const src = transportForItem(id) || stayForItem(id) || item;
+      addRow("Confirmation", val(src, "booking_reference") || val(src, "confirmation_number") || val(item, "confirmation_number"));
+      const ticket = (state.bookingDetails || []).map((d) => d.trip_item_id === id ? val(d, "ticket_number") : null).find(Boolean);
+      if (ticket) addRow("Ticket", ticket);
+    }
+    // Traveller assignment (opt-in) for bookings that carry it.
+    if (opts.travelers) {
+      const src = transportForItem(id) || stayForItem(id) || {};
+      const names = pdfTravelerNames(val(src, "traveler_ids"));
+      if (names.length) addRow("Travellers", names.join(", "));
+    }
+    // Personal notes (opt-in).
+    if (opts.notes) {
+      const note = val(item, "notes") || val(transportForItem(id) || {}, "notes") || val(stayForItem(id) || {}, "notes");
+      if (note) notes.push(`Notes: ${note}`);
+    }
+    if (flag && flag.label) {
+      badge = flag.label.toUpperCase();
+      if (isCancelled(item)) notes.unshift("This booking is cancelled.");
+    }
+
+    return {
+      type: "card",
+      accent,
+      title: String(item.title || PDF_BADGES[kind] || "Plan"),
+      titleRight,
+      badge,
+      subtitle,
+      rows,
+      notes: notes.length ? notes : undefined,
+    };
+  }
+  function exportPdfSheet() {
+    const ex = state.exportPdf || {};
+    const trip = state.trip || {};
+    const toggle = (name, title, sub, on) =>
+      `<label class="round-trip-toggle form-field--wide"><span class="round-trip-toggle__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span><input type="checkbox" name="${esc(name)}" value="1" role="switch"${on ? " checked" : ""}${ex.busy ? " disabled" : ""}><span class="round-trip-toggle__track" aria-hidden="true"><span class="round-trip-toggle__thumb"></span></span></label>`;
+    const status = ex.busy
+      ? `<div class="ds-loading-state" role="status">${icon("clock", 18)}<span>Preparing your PDF…</span></div>`
+      : ex.error
+        ? `<div class="ds-error-state" role="alert">${esc(ex.error)}</div>`
+        : "";
+    const shareRow = ex.canShare
+      ? `<button type="button" class="ds-secondary-button export-pdf__share" data-action="export-pdf-share"${ex.busy ? " disabled" : ""}>${icon("share", 18)} Share PDF</button>`
+      : "";
+    const body = `<div class="export-pdf-sheet">
+      <p class="export-pdf__lead">Download your itinerary to print, share, or use offline.</p>
+      <div class="export-pdf__trip"><strong>${esc(trip.title || "Your trip")}</strong><span>${esc(formatTripDates(trip))}</span></div>
+      <div class="export-pdf__options">
+        ${toggle("travelers", "Traveller names", "Include who each booking is for", ex.travelers)}
+        ${toggle("refs", "Booking references", "Confirmation and ticket numbers", ex.refs)}
+        ${toggle("notes", "Personal notes", "Notes you added to bookings", ex.notes)}
+        ${toggle("checklist", "Trip checklist", "Packing and to-do items", ex.checklist)}
+      </div>
+      ${status}
+      <p class="export-pdf__privacy">${icon("lock", 14)} This PDF includes your travel plans. Share it only with people you trust.</p>
+      <div class="export-pdf__actions">
+        <button type="button" class="ds-primary-button export-pdf__download" data-action="export-pdf-download"${ex.busy ? " disabled" : ""}>${ex.busy ? "Preparing…" : "Download PDF"}</button>
+        ${shareRow}
+      </div>
+    </div>`;
+    return bottomSheet("export-pdf", "Export PDF", body);
+  }
+  // Read the current toggle states from the live sheet DOM into state so a
+  // re-render (busy / error) preserves the traveller's choices.
+  function captureExportPdfToggles() {
+    const sheet = document.querySelector(".bottom-sheet--export-pdf");
+    const read = (name) => Boolean(sheet?.querySelector(`input[name="${name}"]`)?.checked);
+    state.exportPdf = {
+      ...(state.exportPdf || {}),
+      travelers: read("travelers"),
+      refs: read("refs"),
+      notes: read("notes"),
+      checklist: read("checklist"),
+    };
+  }
+  function downloadPdfBlob(bytes, filename) {
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    // Revoke the temporary object URL so nothing lingers in memory.
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+  async function generateTripPdfBytes() {
+    if (state.tripDetailsLoading) throw new Error("Your trip is still loading. Try again in a moment.");
+    const [api, fonts] = await Promise.all([ensurePdfExport(), ensurePdfFonts()]);
+    const model = buildTripExportModel(state.exportPdf || {});
+    const result = api.render({
+      fonts,
+      headerLeft: model.headerLeft,
+      headerRight: model.headerRight,
+      footer: model.footer,
+      blocks: model.blocks,
+    });
+    return { result, filename: model.filename };
+  }
+  async function runExportPdf(mode) {
+    if (state.exportPdf?.busy) return; // prevent duplicate generation
+    captureExportPdfToggles();
+    state.exportPdf = { ...state.exportPdf, busy: true, error: "" };
+    render();
+    try {
+      const { result, filename } = await generateTripPdfBytes();
+      if (result.hasUnsupported)
+        showToast("Some characters could not be shown with the built-in fonts.", "status");
+      const shared = mode === "share" ? await shareTripPdf(result.bytes, filename) : false;
+      if (!shared) downloadPdfBlob(result.bytes, filename);
+      state.exportPdf = { ...state.exportPdf, busy: false, error: "" };
+      closeSheet();
+      showToast(shared ? "Itinerary shared." : "Itinerary downloaded.", "status");
+    } catch (err) {
+      state.exportPdf = {
+        ...state.exportPdf,
+        busy: false,
+        error: (err && err.message) || "Could not create the PDF. Please try again.",
+      };
+      render();
+    }
+  }
+  async function shareTripPdf(bytes, filename) {
+    try {
+      const file = new File([bytes], filename, { type: "application/pdf" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: state.trip?.title || "Trip itinerary" });
+        return true;
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") return true; // user cancelled; do not also download
+    }
+    return false;
   }
   function tripOptionsScreen() {
     if (!state.trip) return missingDetailScreen("Trip options", "Select a trip to see its tools and settings.");
     const mapHint = canShowTripMap()
       ? "See this trip's places on a map"
       : "Add 2+ places to map this trip";
-    const pending = pendingImportCount();
-    const importsHint = pending
-      ? `${pending} booking${pending === 1 ? "" : "s"} to review`
-      : "Forwarded and uploaded bookings";
     const optionCard = (tone, iconName, title, sub, attr, badge = 0) =>
-      `<button type="button" class="ds-flat-row trip-option-card trip-option-card--${esc(tone)}" ${attr}><span class="ds-flat-row__icon trip-option-card__icon">${PastelIcon(iconName, tone === "currency" ? "stay" : tone === "map" || tone === "together" ? "activity" : tone === "connect" ? "transfer" : tone === "documents" ? "stay" : "flight", 22)}</span>${badge ? `<span class="trip-option-card__badge" aria-label="${badge} waiting">${badge > 9 ? "9+" : badge}</span>` : ""}<span class="ds-flat-row__copy trip-option-card__copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span><span class="trip-option-card__chevron">${icon("chevron", 18)}</span></button>`;
+      `<button type="button" class="trip-option-tile trip-option-tile--${esc(tone)}" ${attr}><span class="trip-option-tile__icon">${icon(iconName, 34)}</span>${badge ? `<span class="trip-option-tile__badge" aria-label="${badge} waiting">${badge > 9 ? "9+" : badge}</span>` : ""}<span class="trip-option-tile__label">${esc(title)}</span></button>`;
+    // Partner search tiles (flight / stay) reuse the affiliate destinations
+    // already used on the Account and trip-setup screens. They open externally.
+    const flightUrl = AVIASALES_AFFILIATE_URL;
+    const stayDestLoc = (state.locations || []).find((location) => String(val(location, "type") || "") === "city");
+    const stayDest = val(stayDestLoc, "city", "display_name") || state.trip.title || "";
+    const stayStart = String(val(state.trip, "starts_on", "startsOn") || "");
+    const stayEnd = String(val(state.trip, "ends_on", "endsOn") || "");
+    const stayUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(stayDest)}${stayStart ? `&checkin=${encodeURIComponent(stayStart)}` : ""}${stayEnd ? `&checkout=${encodeURIComponent(stayEnd)}` : ""}`;
+    const partnerTile = (tone, iconName, title, href) =>
+      `<a class="trip-option-tile trip-option-tile--${esc(tone)} trip-option-tile--partner" href="${esc(href)}" target="_blank" rel="sponsored noopener noreferrer"><span class="trip-option-tile__icon">${icon(iconName, 34)}</span><span class="trip-option-tile__label">${esc(title)}</span></a>`;
     // Show unless the server kill-switch explicitly disables sharing. When the
     // status hasn't loaded yet (guest trip / pending fetch) the card still
     // appears; the collaboration screen handles sign-in and disabled states.
     const collabCard = state.sharing?.enabled === false
       ? ""
       : optionCard("together", "users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`);
-    const editTripCard = canManageCurrentTrip()
-      ? optionCard("edit", "edit", "Edit trip", "Name, dates and trip details", `data-action="edit-trip"`)
-      : "";
     const alerts = totalNotificationCount();
-    const body = `<section class="trip-options-intro"><span>Your travel companion</span><h1>${esc(state.trip.title || "Your trip")}</h1><p>${esc(formatTripDates(state.trip))}</p></section><section class="trip-options-group" aria-labelledby="trip-options-plan"><h2 id="trip-options-plan">Plan & explore</h2><div class="trip-options-grid ds-grouped-card ds-grouped-card--list">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${collabCard}${optionCard("connect", "sim", "Travel eSIM", "Data abroad, no roaming", `data-action="open-esim"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-options-grid ds-grouped-card ds-grouped-card--list">${optionCard("map", "map", "Trip Map", mapHint, `data-action="open-trip-map"`)}${optionCard("alerts", "bell", "Alerts", alerts ? `${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Important trip updates", `data-action="open-notifications"`, alerts)}${optionCard("imports", "mail", "Booking imports", importsHint, `data-screen="import-history"`, pending)}${optionCard("documents", "document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-manage"><h2 id="trip-options-manage">Manage trip</h2><div class="trip-options-grid ds-grouped-card ds-grouped-card--list">${editTripCard}${optionCard("help", "info", "Help & FAQ", "Guides, privacy, and answers", `data-screen="help"`)}</div></section>`;
-    return mobilePage("Trip options", body, "trip-options", "", "trip-options-page");
+    const alertBadge = alerts ? `<span class="unread-badge" aria-hidden="true">${alerts > 9 ? "9+" : alerts}</span>` : "";
+    // Edit trip lives in the timeline Menu; this page keeps only Alerts.
+    const headerActions = `<button type="button" class="icon-button icon-button--badged" data-action="open-notifications" aria-label="${alerts ? `Alerts, ${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Alerts"}" title="Alerts">${icon("bell", 24)}${alertBadge}</button>`;
+    const body = `<div class="acct-group trip-options-hero"><div class="acct-group__label"><h2>Your travel companion</h2></div><section class="trip-options-intro ds-grouped-card" aria-label="${esc(state.trip.title || "Your trip")}"><div class="trip-options-intro__id"><h1 title="${esc(state.trip.title || "Your trip")}">${esc(state.trip.title || "Your trip")}</h1><p>${esc(formatTripDates(state.trip))}</p></div></section></div><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-tools-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("spots", "pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("tax-free", "customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${optionCard("documents", "document", "Docs", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${optionCard("map", "map", "Map", mapHint, `data-action="open-trip-map"`)}${collabCard}${optionCard("documents", "download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-help"><h2 id="trip-options-help">Need help?</h2><div class="trip-tools-grid">${optionCard("help", "help", "Help & FAQ", "Answers and support", `data-screen="help" aria-label="Help & FAQ"`)}${partnerTile("connect", "sim", "Travel eSIM", ESIM_AFFILIATE_URL)}${partnerTile("transfer", "car", "Book a transfer", TRANSFER_AFFILIATE_URL)}${partnerTile("flight", "flight", "Find a flight", AVIASALES_AFFILIATE_URL)}${partnerTile("stay", "bed", "Find a stay", stayUrl)}${partnerTile("plan", "map", "Things to do", ACTIVITIES_AFFILIATE_URL)}</div></section>`;
+    return mobilePage("Trip options", body, "trip-options", headerActions, "trip-options-page");
+  }
+  // Tax Free-style tool head (Currency, Save Spots, Plan together): gradient
+  // icon tile + purple eyebrow + title + hint, reusing the tax-free-picker parts.
+  function toolHead(iconName, eyebrow, title, hint, tag = "strong") {
+    return `<div class="tax-free-picker__head"><span class="tax-free-picker__icon">${icon(iconName, 20)}</span><div class="tax-free-picker__intro"><small class="tax-free-picker__eyebrow">${eyebrow}</small><${tag} class="tool-head__title">${title}</${tag}><small>${hint}</small></div></div>`;
+  }
+  function spotsScreen() {
+    const all = state.spots || [];
+    const inTrip = Boolean(state.trip);
+    // Saved spots belong to the active trip. The screen is reached from Trip
+    // Options, which always has a trip in context; outside a trip we fall back
+    // to every spot on the device so nothing is ever stranded.
+    const visible = inTrip
+      ? all.filter((spot) => String(spot.tripId || "") === String(state.trip.id))
+      : all;
+    const busy = state.spotDetectBusy;
+    // Saving is a filled + button in the header's top-right action slot.
+    const saveLabel = busy ? "Detecting your location" : "Save a spot at your location";
+    const saveAction = `<button type="button" class="icon-button spots-add-btn spots-add${busy ? " is-busy" : ""}" data-action="spot-detect"${busy ? ` disabled aria-busy="true"` : ""} aria-label="${saveLabel}" title="Save spot">${icon(busy ? "refresh" : "plus", 22)}</button>`;
+    const heroTitle = inTrip ? state.trip.title || "Your trip" : "Your places";
+    const intro = `<section class="spots-intro tax-free-picker tool-head">${toolHead("pin", inTrip ? "SAVED FOR THIS TRIP" : "SAVED ON THIS DEVICE", esc(heroTitle), "Save a place and route back to it anytime.", "h1")}</section>`;
+    let list;
+    if (!visible.length) {
+      list = `<section class="spot-empty"><button type="button" class="spot-empty__add${busy ? " is-busy" : ""}" data-action="spot-detect"${busy ? ` disabled aria-busy="true"` : ""} aria-label="${saveLabel}"><span class="spot-empty__add-icon">${icon(busy ? "refresh" : "pin", 22)}</span><span class="spot-empty__add-text"><strong>${busy ? "Detecting your location…" : "Save this spot"}</strong><small>Uses your current location</small></span></button><p>${inTrip ? "No spots for this trip yet." : "No saved spots yet."} Save your parking, a meeting point, or any place so you can find your way back.</p></section>`;
+    } else {
+      list = `<ul class="spot-list">${visible.map(spotCard).join("")}</ul>`;
+    }
+    const footer = `<section class="spot-footer"><p class="spot-footer__note">${icon("info", 15)} Spots are saved only on this device. Clearing site data or removing the app deletes them.</p><div class="spot-footer__actions"><button type="button" class="spot-footer__link" data-action="spot-export">${icon("download", 17)} Export</button><button type="button" class="spot-footer__link" data-action="spot-import">${icon("upload", 17)} Import</button></div></section>`;
+    const body = `<main class="spots-page">${intro}${list}${footer}</main>`;
+    // The empty state has its own large save button, so the header + would be a
+    // redundant second add control — only show it once there are spots to add to.
+    return `<div class="phone-app"><section class="screen spots-screen">${appBar("Save Spots", "", true, visible.length ? saveAction : "")}${body}</section></div>`;
+  }
+  function spotCard(spot) {
+    const approxTag = spot.approximate
+      ? `<span class="spot-card__approx">${icon("info", 12)} ±${spot.accuracy != null ? `${spot.accuracy} m` : "approx"}</span>`
+      : "";
+    const meta = `<small>${esc(spotWhenLabel(spot.createdAt))}</small>`;
+    const note = spot.note ? `<em class="spot-card__note">${esc(spot.note)}</em>` : "";
+    return `<li class="spot-card"><button type="button" class="spot-card__main" data-action="spot-route" data-id="${esc(spot.id)}" aria-label="Build route to ${esc(spot.name)}"><span class="spot-card__mark">${icon("pin", 20)}</span><span class="spot-card__id"><strong>${esc(spot.name)}</strong><span class="spot-card__meta">${meta}${approxTag}</span>${note}</span><span class="spot-card__go">${icon("navigation", 18)}</span></button><button type="button" class="icon-button spot-card__menu" data-action="spot-menu" data-id="${esc(spot.id)}" aria-label="Options for ${esc(spot.name)}">${icon("more", 20)}</button></li>`;
+  }
+  function spotSaveSheet() {
+    const draft = state.spotDraft;
+    if (!draft) return "";
+    const acc = draft.accuracy != null ? `±${draft.accuracy} m` : "accuracy unknown";
+    const warn = draft.approximate
+      ? `<p class="spot-accuracy-warn">${icon("info", 16)} This location is approximate (${esc(acc)}). Re-detect for a sharper fix, or save it as an approximate spot.</p>`
+      : "";
+    const body = `<form class="spot-save-form" novalidate><div class="spot-detected"><span class="spot-detected__mark">${icon("pin", 20)}</span><div class="spot-detected__read"><strong>Location detected</strong><small>${esc(formatCoords(draft.latitude, draft.longitude))} · ${esc(acc)}</small></div></div>${warn}${quickField("spotName", "Name", { required: true, placeholder: "e.g. My car", autocap: "sentences", value: draft.name || "" })}${quickField("spotNote", "Note", { type: "textarea", optional: true, placeholder: "Level 2, near the lift", value: draft.note || "" })}<div class="spot-save-actions"><button type="button" class="mobile-primary-action" data-action="spot-save-confirm">${draft.approximate ? "Save approximate spot" : "Save spot"}</button><button type="button" class="mobile-secondary-action" data-action="spot-redetect">${icon("refresh", 18)} Re-detect</button><button type="button" class="mobile-secondary-action" data-action="close-sheet">Cancel</button></div></form>`;
+    return bottomSheet("spot-save", "Save this spot", body);
+  }
+  function spotRouteSheet() {
+    const spot = (state.spots || []).find((row) => String(row.id) === String(state.spotActiveId));
+    if (!spot) return "";
+    const mode = state.spotTravelMode || "driving";
+    const modes = [["driving", "car", "Car"], ["transit", "bus", "Transit"], ["walking", "walking", "Walk"]];
+    const picker = `<div class="spot-mode" role="radiogroup" aria-label="Travel mode">${modes.map(([id, ic, label]) => `<button type="button" class="spot-mode__option${id === mode ? " is-active" : ""}" role="radio" aria-checked="${id === mode}" data-action="spot-mode" data-mode="${id}">${icon(ic, 20)}<span>${label}</span></button>`).join("")}</div>`;
+    const rows = [
+      fdButtonRow("map", "Google Maps", "spot-nav", `data-id="${esc(spot.id)}" data-app="google"`, "Opens directions to this point"),
+      // Apple Maps is offered on the web only (no Apple Maps app on Android).
+      NATIVE_PLATFORM === "android" ? "" : fdButtonRow("map", "Apple Maps", "spot-nav", `data-id="${esc(spot.id)}" data-app="apple"`, "Opens directions to this point"),
+      mode === "driving" ? fdButtonRow("navigation", "Waze", "spot-nav", `data-id="${esc(spot.id)}" data-app="waze"`, "Drives you there by car") : "",
+      fdButtonRow("copy", "Copy coordinates", "spot-copy-coords", `data-id="${esc(spot.id)}"`, formatCoords(spot.latitude, spot.longitude), ""),
+    ].filter(Boolean);
+    return bottomSheet("spot-route", "Build route", `${picker}<p class="spot-route-note">${icon("info", 16)} Your map app picks the start point. tripto.to only sends these coordinates.</p>${fdList(rows, "Navigation options")}`);
+  }
+  function spotMenuSheet() {
+    const spot = (state.spots || []).find((row) => String(row.id) === String(state.spotActiveId));
+    if (!spot) return "";
+    const rows = [
+      fdButtonRow("navigation", "Build route", "spot-route", `data-id="${esc(spot.id)}"`),
+      fdButtonRow("edit", "Rename", "spot-edit", `data-id="${esc(spot.id)}" data-mode="name"`),
+      fdButtonRow("document", "Edit note", "spot-edit", `data-id="${esc(spot.id)}" data-mode="note"`),
+      fdButtonRow("share", "Share spot", "spot-share", `data-id="${esc(spot.id)}"`),
+      fdButtonRow("trash", "Delete spot", "spot-delete", `data-id="${esc(spot.id)}"`, "", "chevron", "fd-row--danger"),
+    ];
+    return bottomSheet("spot-menu", spot.name, fdList(rows, "Spot actions"));
+  }
+  function spotEditSheet() {
+    const spot = (state.spots || []).find((row) => String(row.id) === String(state.spotActiveId));
+    if (!spot) return "";
+    const mode = state.spotEditMode === "note" ? "note" : "name";
+    const field =
+      mode === "note"
+        ? quickField("spotEditValue", "Note", { type: "textarea", optional: true, value: spot.note, placeholder: "Add a note" })
+        : quickField("spotEditValue", "Name", { required: true, value: spot.name, autocap: "sentences" });
+    const body = `<form class="spot-edit-form" novalidate>${field}<div class="spot-save-actions"><button type="button" class="mobile-primary-action" data-action="spot-edit-save" data-mode="${mode}">Save</button><button type="button" class="mobile-secondary-action" data-action="close-sheet">Cancel</button></div></form>`;
+    return bottomSheet("spot-edit", mode === "note" ? "Edit note" : "Rename spot", body);
+  }
+  function taxFreeStatus(status){const key={verified_available:"available",verified_unavailable:"unavailable",partial:"partial",unverified:"unverified",recheck:"recheck"}[status]||"unverified";return{key,label:tfCopy(key)};}
+  function taxFreeDate(ms){if(!ms)return "—";try{return dateFormatter(globalThis.TriptoI18n?.locale||"en",{dateStyle:"medium"}).format(new Date(Number(ms)));}catch(_){return new Date(Number(ms)).toISOString().slice(0,10);}}
+  function taxFreeCountryOptions(){const trip=tripTaxFreeCountries(),ordered=[...trip,...TAX_FREE_COUNTRIES.filter(code=>!trip.includes(code)).sort((a,b)=>taxFreeCountryName(a).localeCompare(taxFreeCountryName(b),globalThis.TriptoI18n?.locale||"en"))];return ordered.map(code=>`<option value="${code}"${code===state.taxFreeCountry?" selected":""}>${esc(`${trip.includes(code)?"★ ":""}${taxFreeCountryName(code)}`)}</option>`).join("");}
+  // Search-style country rows for the Tax Free picker, mirroring the destination
+  // place-search UI: an icon tile, the country name, an optional "in your trip"
+  // subtitle, and a badge (the ISO code, or a check on the selected country).
+  // Filtered by state.taxFreeSearch so an initial render can honour a live query;
+  // the input handler also filters the DOM directly so typing never re-renders.
+  function taxFreeCountryRows(){
+    const trip=tripTaxFreeCountries(),hasTrip=trip.length>0,locale=globalThis.TriptoI18n?.locale||"en",selected=state.taxFreeCountry;
+    const ordered=[...trip,...TAX_FREE_COUNTRIES.filter(code=>!trip.includes(code)).sort((a,b)=>taxFreeCountryName(a).localeCompare(taxFreeCountryName(b),locale))];
+    const q=String(state.taxFreeSearch||"").trim().toLocaleLowerCase(locale);
+    const collapsed=!!state.taxFreeCollapsed;
+    let visible=0;
+    const rows=ordered.map(code=>{
+      const name=taxFreeCountryName(code),inTrip=trip.includes(code),isSel=code===selected;
+      // No query: default view shows only the trip's countries (plus the current
+      // selection). Any query filters across every country/territory. When the
+      // trip has no countries, fall back to the full list so a pick is possible.
+      // After a pick (collapsed) with no query, show only the selected country.
+      const match=q?(name.toLocaleLowerCase(locale).includes(q)||code.toLocaleLowerCase().includes(q)):(collapsed?isSel:(!hasTrip||inTrip||isSel));
+      if(match)visible+=1;
+      return `<button type="button" class="place-option${isSel?" is-selected":""}" role="option" aria-selected="${isSel?"true":"false"}" data-action="tax-free-country" data-country="${code}" data-tax-free-trip="${inTrip?"1":"0"}" data-tax-free-name="${esc(name.toLocaleLowerCase(locale))}"${match?"":" hidden"}><span class="place-option__kind place-option__kind--city" aria-hidden="true">${icon("pin",19)}</span><span class="place-option__copy"><strong>${esc(name)}</strong>${inTrip?`<small>${esc(tfCopy("tripCountries"))}</small>`:""}</span>${isSel?`<b class="place-option__code place-option__code--on" aria-hidden="true">${icon("check",16)}</b>`:`<em class="place-option__type">${esc(code)}</em>`}</button>`;
+    }).join("");
+    return `${rows}<div class="place-empty" role="status" data-tax-free-empty${visible?" hidden":""}><strong>No results found</strong></div>`;
+  }
+  function taxFreeList(title,items){if(!Array.isArray(items)||!items.length)return "";return `<details class="tax-free-section"><summary><span>${esc(title)}</span>${icon("chevronDown",18)}</summary><ul>${items.map(item=>`<li>${esc(String(item))}</li>`).join("")}</ul></details>`;}
+  function taxFreeDeadlineRows(deadlines){if(!deadlines||typeof deadlines!=="object")return "";const rows=Object.values(deadlines).filter(Boolean);return taxFreeList(tfCopy("deadline"),rows);}
+  function taxFreeThresholds(rule){const rows=rule?.thresholds||[];if(!rows.length)return "";const comparison={gt:">",gte:"≥",lte:"≤",range:""};return `<details class="tax-free-section"><summary><span>${esc(tfCopy("thresholds"))}</span>${icon("chevronDown",18)}</summary><div class="tax-free-thresholds">${rows.map(row=>`<div><strong>${esc(row.label)}</strong><span>${row.comparison==="range"?`${esc(row.currency)} ${row.amount}–${row.maximumAmount}`:`${comparison[row.comparison]||""} ${esc(row.currency)} ${row.amount}`}</span><small>${esc(row.notes||`${tfCopy("basis")}: ${row.basis}`)}</small></div>`).join("")}</div></details>`;}
+  function taxFreeTripAirportCodes(){return [...new Set((state.locations||[]).map(location=>String(val(location,"iata_code")||"").toUpperCase()).filter(code=>/^[A-Z]{3}$/.test(code)))];}
+  function taxFreeHours(point){const hours=point?.hours||{};if(point?.hoursStatus==="flight_relative"&&Number(hours.fromHoursBeforeFlight)>0)return tfCopy("hoursBeforeFlight").replace("{hours}",String(hours.fromHoursBeforeFlight));if(point?.hoursStatus==="not_required")return tfCopy("hoursNotRequired");if(point?.hoursStatus==="varies")return tfCopy("hoursVaries");if(point?.hoursStatus==="published"&&hours.summary)return String(hours.summary);return tfCopy("hoursNotPublished");}
+  function taxFreeServiceLabel(type){return tfCopy({customs:"serviceCustoms",electronic_validation:"serviceElectronic",refund:"serviceRefund",combined:"serviceCombined",departure_check:"serviceDeparture"}[type]||"serviceCustoms");}
+  function taxFreeCoverage(data){
+    const coverage=data?.coverage;if(!coverage||!Number(coverage.totalCountries))return "";
+    const fill=(key,count)=>tfCopy(key).replace("{count}",String(Number(count)||0));
+    return `<section class="tax-free-world-coverage" aria-label="${esc(tfCopy("worldCoverage"))}"><span>${icon("globe",20)}</span><div><strong>${esc(tfCopy("worldCoverage"))}</strong><p>${esc(fill("worldCountries",coverage.totalCountries))}</p></div><div class="tax-free-world-coverage__stats"><span>${esc(fill("worldPublished",coverage.publishedEvidence))}</span><span>${esc(fill("worldScreened",coverage.resolvedProfiles||coverage.researchChecked))}</span><span>${esc(fill("worldReview",coverage.noConfirmedProgram||coverage.unverified))}</span></div></section>`;
+  }
+  function taxFreeResearch(data){
+    const checks=Array.isArray(data?.research)?data.research:[],profile=data?.systemProfile;if(!checks.length&&!profile)return "";
+    const resultKey={confirmed_available:"resultAvailable",confirmed_unavailable:"resultUnavailable",published_partial:"resultPartial",no_confirmed_program_found:"resultNoProgram"}[profile?.programStatus]||"resultNoProgram";
+    const evidenceKey={official_authority:"evidenceOfficial",published_rule:"evidenceRule",published_partial:"evidencePartial",cross_source_screening:"evidenceScreening"}[profile?.evidenceLevel]||"evidenceScreening";
+    const facts=profile?`<div class="tax-free-research-facts"><div><small>${esc(tfCopy("taxSystem"))}</small><strong>${esc(String(profile.taxSystemStatus||"").replaceAll("_"," "))}</strong></div>${profile.rateSummary?`<div><small>${esc(tfCopy("standardRate"))}</small><strong>${esc(profile.rateSummary)}</strong></div>`:""}<div><small>${esc(tfCopy("evidenceLevel"))}</small><strong>${esc(tfCopy(evidenceKey))}</strong></div>${profile.sourceReviewedOn?`<div><small>${esc(tfCopy("sourceReviewed"))}</small><strong>${esc(profile.sourceReviewedOn)}</strong></div>`:""}</div><p class="tax-free-research-result">${esc(tfCopy(resultKey))}</p><p>${esc(profile.findingSummary||"")}</p><a href="${esc(profile.sourceUrl)}" target="_blank" rel="noopener noreferrer"><span><b>${esc(profile.sourcePublisher)}</b></span>${icon("external-link",15)}</a>`:"";
+    return `<section class="tax-free-research"><div class="tax-free-card-head"><span>${icon("search",22)}</span><div><h2>${esc(tfCopy("researchStatus"))}</h2><p>${esc(tfCopy("researchBody"))}</p></div></div>${facts}${checks.length?`<strong>${esc(tfCopy("sourcesChecked"))}</strong>${checks.map(check=>`<a href="${esc(check.sourceUrl)}" target="_blank" rel="noopener noreferrer"><span><b>${esc(check.publisher)}</b><small>${esc(check.findingSummary)}</small></span>${icon("external-link",15)}</a>`).join("")}`:""}</section>`;
+  }
+  function taxFreeAirportGuide(rule){
+    const points=Array.isArray(rule?.departurePoints)?rule.departurePoints:[];
+    if(!points.length){
+      const source=(rule?.sources||[]).find(item=>item?.url);
+      if(!source)return "";
+      return `<section class="tax-free-airports tax-free-airports--pending" aria-labelledby="tax-free-airports-title"><div class="tax-free-card-head"><span>${icon("plane",24)}</span><div><h2 id="tax-free-airports-title">${esc(tfCopy("airportPending"))}</h2><p>${esc(tfCopy("airportPendingBody"))}</p></div></div><a class="tax-free-airport-source" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(tfCopy("openCountryGuide"))}${icon("external-link",15)}</a></section>`;
+    }
+    const tripCodes=taxFreeTripAirportCodes(),codes=[...new Set(points.map(point=>point.locationCode).filter(Boolean))];
+    const preferred=tripCodes.find(code=>codes.includes(code));if(!state.taxFreeAirportCode||!codes.includes(state.taxFreeAirportCode))state.taxFreeAirportCode=preferred||codes[0];
+    const active=state.taxFreeAirportCode,airportPoints=points.filter(point=>point.locationCode===active),airport=airportPoints[0];if(!airport)return "";
+    const airportTabs=codes.length>1?`<div class="tax-free-airport-tabs" role="tablist" aria-label="${esc(tfCopy("airportGuide"))}">${codes.map(code=>{const point=points.find(row=>row.locationCode===code),inTrip=tripCodes.includes(code);return `<button type="button" role="tab" aria-selected="${code===active}" class="${code===active?"is-active":""}" data-action="tax-free-airport" data-airport="${esc(code)}"><b>${esc(code)}</b><span>${esc(point?.city||point?.locationName||code)}</span>${inTrip?`<small>${esc(tfCopy("tripAirport"))}</small>`:""}</button>`;}).join("")}</div>`:"";
+    const cards=airportPoints.map(point=>{
+      const security=point.beforeSecurity===true?tfCopy("beforeSecurity"):point.beforeSecurity===false?tfCopy("afterSecurity"):"";
+      const contact=point.contact&&(point.contact.phone||point.contact.email)?`<div class="tax-free-airport-row"><span>${icon("phone",18)}</span><div><small>${esc(tfCopy("contact"))}</small>${point.contact.phone?`<a href="tel:${esc(point.contact.phone.replace(/\s/g,""))}">${esc(point.contact.phone)}</a>`:""}${point.contact.email?`<a href="mailto:${esc(point.contact.email)}">${esc(point.contact.email)}</a>`:""}</div></div>`:"";
+      const instructions=(point.instructionCodes||[]).map(code=>`<li>${esc(tfCopy(`inst_${code}`))}</li>`).join("");
+      const baggage=point.baggageCode?tfCopy(`bag_${point.baggageCode}`):"";
+      return `<article class="tax-free-airport-card"><header><span class="tax-free-airport-card__icon">${icon(point.serviceType==="refund"?"currency":"customs",22)}</span><div><span>${esc(taxFreeServiceLabel(point.serviceType))}</span><h3>${esc(point.operatorName||point.locationName)}</h3></div></header><div class="tax-free-airport-facts">${point.terminal?`<div><small>${esc(tfCopy("terminal"))}</small><strong>${esc(point.terminal)}</strong></div>`:""}<div><small>${esc(tfCopy("hours"))}</small><strong>${esc(taxFreeHours(point))}</strong></div></div><div class="tax-free-airport-row"><span>${icon("pin",18)}</span><div><small>${esc(tfCopy("area"))}${security?` · ${esc(security)}`:""}</small><strong>${esc(point.zone||point.locationDetails)}</strong>${point.zone&&point.locationDetails?`<p>${esc(point.locationDetails)}</p>`:""}</div></div>${contact}${instructions?`<ol class="tax-free-airport-steps">${instructions}</ol>`:""}${baggage?`<p class="tax-free-airport-baggage">${icon("luggage",17)} ${esc(baggage)}</p>`:""}${point.sourceUrl?`<a class="tax-free-airport-source" href="${esc(point.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(point.sourcePublisher||tfCopy("airportSource"))}${icon("external-link",15)}</a>`:""}</article>`;
+    }).join("");
+    return `<section class="tax-free-airports" aria-labelledby="tax-free-airports-title"><div class="tax-free-card-head"><span>${icon("plane",24)}</span><div><h2 id="tax-free-airports-title">${esc(tfCopy("airportGuide"))}</h2><p>${esc(tfCopy("airportGuideBody"))}</p></div></div>${airportTabs}<div class="tax-free-airport-title"><div><b>${esc(active)}</b><h3>${esc(airport.locationName)}</h3></div>${airport.city?`<span>${esc(airport.city)}</span>`:""}</div><div class="tax-free-airport-list">${cards}</div></section>`;
+  }
+  function taxFreeCalculator(rule){const rates=rule?.rates||[];if(!rates.length)return "";const selected=rates.find(row=>Number(row.rate)===Number(state.taxFreeRate))||rates[0];if(state.taxFreeRate==null)state.taxFreeRate=selected.rate;const gross=parseAmountInput(state.taxFreeGrossText),fee=parseAmountInput(state.taxFreeFeeText),tax=Number.isFinite(gross)&&gross>=0?(selected.priceIncludesTax===false?gross*Number(selected.rate)/100:gross*Number(selected.rate)/(100+Number(selected.rate))):null,after=tax==null?null:Math.max(0,tax-(Number.isFinite(fee)&&fee>0?fee:0));const currency=rule.thresholds?.[0]?.currency||COUNTRY_CURRENCY[state.taxFreeCountry]||"EUR",money=value=>{if(value==null)return "—";try{return new Intl.NumberFormat(globalThis.TriptoI18n?.locale||"en",{style:"currency",currency,maximumFractionDigits:2}).format(value);}catch(_){return `${value.toFixed(2)} ${currency}`;}};return `<section class="tax-free-calculator" aria-labelledby="tax-free-calc-title"><div class="tax-free-card-head"><span>${icon("currency",24)}</span><div><h2 id="tax-free-calc-title">${esc(tfCopy("calculator"))}</h2><p>${esc(tfCopy("privacy"))}</p></div></div><div class="tax-free-calc-grid"><label><span>${esc(tfCopy("gross"))}</span><input inputmode="decimal" autocomplete="off" data-tax-free-gross value="${esc(state.taxFreeGrossText)}" placeholder="0.00"></label><label><span>${esc(tfCopy("rate"))}</span><select data-tax-free-rate>${rates.map(row=>`<option value="${row.rate}"${Number(row.rate)===Number(selected.rate)?" selected":""}>${esc(row.category)} · ${row.rate}%</option>`).join("")}</select></label><label><span>${esc(tfCopy("fee"))}</span><input inputmode="decimal" autocomplete="off" data-tax-free-fee value="${esc(state.taxFreeFeeText)}" placeholder="0.00"></label></div><div class="tax-free-result"><div><span>${esc(tfCopy("taxAmount"))}</span><strong data-tax-free-tax>${esc(money(tax))}</strong></div>${String(state.taxFreeFeeText||"").trim()?`<div><span>${esc(tfCopy("afterFee"))}</span><strong data-tax-free-after>${esc(money(after))}</strong></div>`:""}</div><p class="tax-free-calc-note">${icon("info",16)} ${esc(tfCopy("calcNote"))}</p>${rates.length>1?`<p class="tax-free-mixed">${esc(tfCopy("mixed"))}</p>`:""}</section>`;}
+  function taxFreeGuideStatus(guide,data){
+    const mapped={AVAILABLE:"verified_available",AVAILABLE_LIMITED:"partial",PILOT:"partial",ROLLOUT:"partial",LEGAL_FRAMEWORK_VERIFY_OPERATIONAL:"partial",NO_SCHEME_CONFIRMED:"verified_unavailable",NO_GENERAL_VAT_GST:"verified_unavailable",NOT_APPLICABLE:"verified_unavailable",VERIFY_LOCAL_RULES:"unverified"};
+    return taxFreeStatus(mapped[guide?.refundStatus]||data?.status);
+  }
+  function taxFreeGuideRefund(guide,rule,profile){
+    const unavailable=["NO_SCHEME_CONFIRMED","NO_GENERAL_VAT_GST","NOT_APPLICABLE"].includes(guide?.refundStatus);
+    if(unavailable)return {amount:"0%",note:tfCopy("refundZero")};
+    const source=String(guide?.standardTaxRate||""),match=source.match(/\d+(?:[.,]\d+)?/),fallback=(rule?.rates||[]).map(row=>Number(row.rate)).filter(rate=>rate>0).sort((a,b)=>b-a)[0];
+    const rate=match?Number(match[0].replace(",",".")):fallback;
+    const eligible=["AVAILABLE","AVAILABLE_LIMITED","PILOT","ROLLOUT","LEGAL_FRAMEWORK_VERIFY_OPERATIONAL"].includes(guide?.refundStatus)||profile?.programStatus==="confirmed_available";
+    if(!eligible||!Number.isFinite(rate))return {amount:"—",note:tfCopy("refundUnknown")};
+    const share=rate/(100+rate)*100,locale=globalThis.TriptoI18n?.locale||"en";
+    return {amount:`${new Intl.NumberFormat(locale,{maximumFractionDigits:1}).format(share)}%`,note:`${tfCopy("beforeFees")} · ${source||`${rate}%`}`};
+  }
+  function taxFreeGuideSection(title,iconName,items,tone=""){
+    const rows=items.filter(item=>item?.value);
+    if(!rows.length)return "";
+    return `<section class="tax-free-guide-section${tone?` tax-free-guide-section--${tone}`:""}"><div class="tax-free-guide-section__head"><span>${icon(iconName,21)}</span><h2>${esc(title)}</h2></div><div class="tax-free-guide-section__body">${rows.map(item=>`<div class="tax-free-guide-row"><strong>${esc(item.label)}</strong><p>${esc(item.value)}</p></div>`).join("")}</div></section>`;
+  }
+  function taxFreeScreen(){
+    const data=state.taxFree,tripCountries=tripTaxFreeCountries();
+    const selectors=`<section class="tax-free-picker" aria-label="${esc(tfCopy("pickerTitle"))}"><div class="tax-free-picker__head"><span class="tax-free-picker__icon">${icon("globe",20)}</span><div class="tax-free-picker__intro"><small class="tax-free-picker__eyebrow">${esc(tfCopy("guideTitle"))}</small><strong>${esc(tfCopy("pickerTitle"))}</strong><small>${esc(tfCopy("pickerHint"))}</small></div></div><div class="tax-free-picker__search"><span class="tax-free-picker__field-icon" aria-hidden="true">${icon("search",19)}</span><input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" data-tax-free-search role="combobox" aria-expanded="true" aria-controls="tax-free-country-results" aria-label="${esc(tfCopy("select"))}" placeholder="${esc(tfCopy("pickerHint"))}" value="${esc(state.taxFreeSearch||"")}"><button type="button" class="tax-free-picker__clear" data-action="tax-free-search-clear" data-tax-free-search-clear aria-label="${esc(tfCopy("clearSearch"))}"${state.taxFreeSearch?"":" hidden"}>${icon("close",18)}</button></div><div class="tax-free-picker__results" id="tax-free-country-results" role="listbox" aria-label="${esc(tfCopy("select"))}">${taxFreeCountryRows()}</div></section>`;
+    if(state.taxFreeLoading&&!data)return mobilePage(tfCopy("title"),`${selectors}<div class="tax-free-loading" role="status"><span class="brand-loader" aria-hidden="true"></span><p>${esc(tfCopy("updating"))}</p></div>`,"trip-options","","tax-free-page tax-free-page--guide");
+    const guide=data?.guide,rule=data?.rule,profile=data?.systemProfile,country=taxFreeCountryName(data?.countryCode||state.taxFreeCountry),status=taxFreeGuideStatus(guide,data),refund=taxFreeGuideRefund(guide,rule,profile);
+    const summary=guide?.travelerSummary||rule?.summary||profile?.findingSummary||tfCopy("noSummary");
+    const quickFacts=[
+      {label:tfCopy("taxRate"),value:guide?.standardTaxRate||tfCopy("notConfirmed")},
+      {label:tfCopy("minimumSpend"),value:guide?.minimumPurchase||tfCopy("notConfirmed")},
+    ];
+    const sources=[
+      guide?.sourceUrlPrimary&&{url:guide.sourceUrlPrimary,label:tfCopy("sourcePrimary")},
+      guide?.sourceUrlSecondary&&{url:guide.sourceUrlSecondary,label:tfCopy("sourceSecondary")},
+    ].filter(Boolean);
+    const how=taxFreeGuideSection(tfCopy("howItWorks"),"checklist",[
+      {label:tfCopy("whoCanClaim"),value:guide?.eligibility},
+      {label:tfCopy("whatQualifies"),value:guide?.eligiblePurchases},
+      {label:tfCopy("whatExcluded"),value:guide?.excludedPurchases},
+    ]);
+    const journey=taxFreeGuideSection(tfCopy("atPurchase"),"documents",[
+      {label:tfCopy("atPurchase"),value:guide?.atPurchase},
+      {label:tfCopy("atDeparture"),value:guide?.departureProcess},
+      {label:tfCopy("deadline"),value:guide?.exportDeadline},
+      {label:tfCopy("refundAndFees"),value:guide?.refundMethodFees},
+    ]);
+    const future=guide?.futureChange?taxFreeGuideSection(tfCopy("importantChange"),"bell",[{label:tfCopy("importantChange"),value:guide.futureChange}],"warning"):"";
+    const sourceCards=sources.map(source=>{let host="";try{host=new URL(source.url).hostname.replace(/^www\./,"");}catch(_){host=source.url;}return `<a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer"><span><strong>${esc(source.label)}</strong><small>${esc(host)}</small></span>${icon("external-link",18)}</a>`;}).join("");
+    const sourceSection=`<section class="tax-free-guide-sources"><div class="tax-free-guide-section__head"><span>${icon("document",21)}</span><h2>${esc(tfCopy("sourceDetails"))}</h2></div><div class="tax-free-guide-meta"><span><b>${esc(tfCopy("verifiedOn"))}</b>${esc(guide?.lastVerifiedAt||"—")}</span><span><b>${esc(tfCopy("confidence"))}</b>${esc(guide?.confidence||"—")}</span><span><b>${esc(tfCopy("refreshAdvice"))}</b>${esc(guide?.refreshBeforeTrip==="YES"?tfCopy("yes"):guide?.refreshBeforeTrip==="RECOMMENDED"?tfCopy("recommended"):guide?.refreshBeforeTrip||"—")}</span></div>${sourceCards?`<div class="tax-free-guide-source-list">${sourceCards}</div>`:""}</section>`;
+    const refresh=`<button type="button" class="tax-free-refresh" data-action="refresh-tax-free"${state.taxFreeRefreshing?" disabled":""}>${icon("refresh",18)} ${esc(state.taxFreeRefreshing?tfCopy("updating"):tfCopy("update"))}</button>`;
+    const error=state.taxFreeError?`<p class="tax-free-error" role="status">${esc(state.taxFreeError)}</p>`:"";
+    const content=`${selectors}<article class="tax-free-guide-hero"><div class="tax-free-guide-hero__top"><span class="tax-free-status tax-free-status--${status.key}">${esc(status.label)}</span><span class="tax-free-guide-hero__date">${esc(guide?.lastVerifiedAt||"")}</span></div><p class="tax-free-guide-eyebrow">${esc(tfCopy("guideTitle"))}</p><h1>${esc(country)}</h1><p class="tax-free-guide-summary">${esc(summary)}</p><div class="tax-free-guide-refund"><div><span>${esc(tfCopy("refundPotential"))}</span><strong>${esc(refund.amount)}</strong><small>${esc(refund.note)}</small></div><span class="tax-free-guide-refund__icon">${icon("currency",28)}</span></div><div class="tax-free-guide-facts">${quickFacts.map(fact=>`<div><span>${esc(fact.label)}</span><strong>${esc(fact.value)}</strong></div>`).join("")}</div></article>${future}${how}${journey}${sourceSection}<p class="tax-free-guide-caution">${icon("info",16)} <span>${esc(guide?.refundStatus==="VERIFY_LOCAL_RULES"?tfCopy("checkLocal"):tfCopy("dataCaution"))}</span></p>${state.offline?`<p class="tax-free-offline">${icon("offline",16)} ${esc(tfCopy("offline"))}</p>`:""}${refresh}${error}<section class="tax-free-about">${icon("info",18)}<div><h2>${esc(tfCopy("aboutTitle"))}</h2><p>${esc(tfCopy("aboutBody"))}</p></div></section>`;
+    return mobilePage(tfCopy("title"),content,"trip-options","","tax-free-page tax-free-page--guide");
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
   // Collaboration is free for every signed-in account — there is no paid gate.
@@ -7556,11 +10829,11 @@
     return "neutral";
   }
   function collabHero(tripTitle, intro) {
-    return `<section class="ds-hero-summary ds-hero-summary--activity collab-hero"><span class="ds-hero-summary__eyebrow">Shared trip</span><h1>${esc(tripTitle || "Your trip")}</h1><p>${intro}</p><span class="collab-hero__promise">One trip.<br>Everyone in sync.</span></section>`;
+    return `<section class="ds-hero-summary ds-hero-summary--activity collab-hero tax-free-picker tool-head">${toolHead("users", "Shared trip", esc(tripTitle || "Your trip"), intro, "h1")}<span class="collab-hero__promise">One trip.<br>Everyone in sync.</span></section>`;
   }
   function collabBenefits() {
     const benefit = (iconName, tone, title, body) => `<div class="collab-benefit"><span class="ds-pastel-icon ds-pastel-icon--${esc(tone)}">${icon(iconName, 21)}</span><span class="ds-flat-row__copy"><strong>${esc(title)}</strong><small>${esc(body)}</small></span></div>`;
-    return `<section class="collab-benefits" aria-labelledby="collab-benefits-title"><div class="ds-section-header"><h2 id="collab-benefits-title">Why plan together?</h2></div><div class="ds-flat-list ds-grouped-card ds-grouped-card--list">${benefit("edit", "flight", "Build one plan", "Editors can add and update bookings.")}${benefit("bell", "stay", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "food", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</div></section>`;
+    return `<section class="collab-benefits tool-card" aria-labelledby="collab-benefits-title"><div class="ds-section-header tool-card__head"><span class="tool-card__icon">${icon("info", 20)}</span><h2 id="collab-benefits-title">Why plan together?</h2></div><div class="ds-flat-list ds-grouped-card ds-grouped-card--list">${benefit("edit", "flight", "Build one plan", "Editors can add and update bookings.")}${benefit("bell", "stay", "Keep everyone aligned", "Trip changes stay visible to everyone in one place.")}${benefit("owner", "food", "You stay in control", "Choose who can edit or view, and remove access anytime.")}</div></section>`;
   }
   function collaborationScreen() {
     if (!state.trip)
@@ -7569,7 +10842,7 @@
     if (!isSignedIn())
       return collabScaffold(
         sub,
-        `${collabHero(sub, "Invite the people travelling with you so the whole group can follow one clear plan.")}${collabBenefits()}<section class="collab-signin"><h2>Ready to plan together?</h2><p>Sign in with your free account. Everyone uses their own login — no shared passwords.</p><button type="button" class="ds-primary-button" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button><small>Free for every trip.</small></section>`,
+        `${collabHero(sub, "Invite the people travelling with you so the whole group can follow one clear plan.")}${collabBenefits()}<section class="collab-signin tool-card"><h2>Ready to plan together?</h2><p>Sign in with your free account. Everyone uses their own login — no shared passwords.</p><button type="button" class="ds-primary-button" data-action="collab-sign-in">${icon("user", 18)} Sign in to continue</button><small>Free for every trip.</small></section>`,
       );
     if (state.collabLoading || String(state.collabTripId || "") !== String(state.trip.id))
       return collabScaffold(sub, LoadingState("Loading your travel companions…"));
@@ -7792,7 +11065,18 @@
   }
   function maybeLoadScreenData() {
     if (state.screen === "currency") void ensureCurrencyRates();
+    if (state.screen === "tax-free") void ensureTaxFree();
+    if (state.screen === "weather" || (PREVIEW_MODE && state.screen === "timeline")) void ensureWeather();
     if (PREVIEW_MODE) return;
+    // A refresh / deep link on /saved-spots skips the open-spots action, so
+    // read the device store here (once per session identity) and re-render.
+    if (state.screen === "spots" && state.spotsLoadedFor !== spotOwner()) {
+      const owner = spotOwner();
+      state.spotsLoadedFor = owner;
+      void refreshSpots().then(() => {
+        if (state.screen === "spots" && spotOwner() === owner) render();
+      });
+    }
     if (state.screen === "join") {
       const token = state.selectedId || "";
       if (token && (state.joinToken !== token || state.joinCheckedToken !== token)) {
@@ -7806,6 +11090,17 @@
       return;
     }
     if (state.screen === "collaboration" && state.trip && isSignedIn()) void loadCollaboration();
+    if (state.screen === "ready") {
+      // Independent checks: a slow storage estimate must not hold the shell row on "Checking…".
+      const refreshWhenChanged = (read, check) => {
+        const before = JSON.stringify(read() ?? null);
+        void check().catch(() => {}).then(() => {
+          if (state.screen === "ready" && JSON.stringify(read() ?? null) !== before) render();
+        });
+      };
+      refreshWhenChanged(() => state.shellOffline, checkShellOffline);
+      refreshWhenChanged(() => state.storageEstimate, checkStorageEstimate);
+    }
   }
   function collabErrorText(error) {
     const map = {
@@ -7982,8 +11277,8 @@
     const places = weatherPlaces();
     const place = currentWeatherPlace();
     const wx = place && state.weatherByPlace ? state.weatherByPlace[place.key] : null;
-    // A multi-stop trip needs a selector; a single-stop trip still names the
-    // forecast location so the reading never loses its city context.
+    // A multi-stop trip needs a selector to switch places; a single-stop trip
+    // shows its city inside the hero card, so no separate context row.
     const selector =
       places.length > 1
         ? `<div class="wx-places" role="tablist" aria-label="Places">${places
@@ -7992,26 +11287,59 @@
                 `<button type="button" role="tab" class="wx-place-chip${p.key === place.key ? " is-active" : ""}" data-action="weather-place" data-key="${esc(p.key)}" aria-selected="${p.key === place.key}">${icon("pin", 14)}<span>${esc(p.label)}</span></button>`,
             )
             .join("")}</div>`
-        : place
-          ? `<div class="wx-place-context" aria-label="Forecast location"><span aria-hidden="true">${icon("pin", 18)}</span><strong>${esc(place.label)}</strong>${place.country ? `<small>${esc(place.country)}</small>` : ""}</div>`
-          : "";
+        : "";
     let body;
     if (wx && wx.tempC != null) {
-      const hourly = Array.isArray(wx.hourly) ? wx.hourly.slice(0, 6) : [];
-      const daily = Array.isArray(wx.daily) ? wx.daily.slice(0, 7) : [];
+      // A cached (offline) forecast can start in the past: drop elapsed days and
+      // hours, and only call a day "Today" / an hour "Now" when it really is.
+      let localNow = "";
+      try {
+        const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: wx.timezone || undefined, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).map((part) => [part.type, part.value]));
+        localNow = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}`;
+      } catch (_) {}
+      const todayKey = localNow.slice(0, 10);
+      const allHourly = Array.isArray(wx.hourly) ? wx.hourly : [], allDaily = Array.isArray(wx.daily) ? wx.daily : [];
+      const upcomingHours = localNow ? allHourly.filter((h) => typeof h.time !== "string" || h.time.slice(0, 13) >= localNow) : allHourly;
+      const upcomingDays = todayKey ? allDaily.filter((day) => !day.date || String(day.date) >= todayKey) : allDaily;
+      const hourly = (upcomingHours.length ? upcomingHours : allHourly).slice(0, 6);
+      const daily = (upcomingDays.length ? upcomingDays : allDaily).slice(0, 7);
+      const isNowHour = (h) => !localNow || typeof h?.time !== "string" || h.time.slice(0, 13) === localNow;
+      const isToday = (day) => !todayKey || !day?.date || String(day.date) === todayKey;
+      const now = hourly[0] || null;
+      const nowPrecip = now && now.precip != null ? esc(now.precip) : 0;
+      const nowWind = now && now.wind != null ? esc(now.wind) : 0;
+      const hero = `<section class="wx-hero" aria-label="Current conditions">
+        <div class="wx-hero__top">
+          <div class="wx-hero__place">${icon("pin", 15)}<span>${esc(place ? place.label : wx.place || "Destination")}</span>${place && place.country ? `<small>${esc(place.country)}</small>` : ""}</div>
+          <button type="button" class="wx-hero__refresh" data-action="refresh-weather" aria-label="Refresh forecast">${icon("refresh", 16)}</button>
+        </div>
+        <div class="wx-hero__body">
+          <span class="wx-hero__icon" aria-hidden="true">${icon(wx.iconName || "weather", 78)}</span>
+          <div class="wx-hero__read">
+            <strong class="wx-hero__temp">${Math.round(wx.tempC)}<span class="wx-hero__deg">°</span></strong>
+            <span class="wx-hero__cond">${esc(wx.label || "")}</span>
+          </div>
+        </div>
+        <div class="wx-hero__stats">
+          <div class="wx-stat"><span class="wx-stat__k">High</span><span class="wx-stat__v">${wx.hi != null ? esc(wx.hi) + "°" : "—"}</span></div>
+          <div class="wx-stat"><span class="wx-stat__k">Low</span><span class="wx-stat__v">${wx.lo != null ? esc(wx.lo) + "°" : "—"}</span></div>
+          <div class="wx-stat"><span class="wx-stat__k">${icon("wx-drop", 13)} Rain</span><span class="wx-stat__v">${nowPrecip}%</span></div>
+          <div class="wx-stat"><span class="wx-stat__k">${icon("wx-wind", 13)} Wind</span><span class="wx-stat__v">${nowWind} m/s</span></div>
+        </div>
+      </section>`;
       const hourItems = hourly
         .map(
           (h, i) =>
-            `<li class="wx-hour${i === 0 ? " is-now" : ""}"><span class="wx-hour__t">${i === 0 ? "Now" : esc(hourLabel(h.time))}</span>${icon(h.iconName, 28)}<span class="wx-hour__temp">${esc(h.temp)}°</span><span class="wx-hour__meta">${icon("wx-drop", 14)}${h.precip != null ? esc(h.precip) : 0}%</span><span class="wx-hour__meta">${icon("wx-wind", 14)}${h.wind != null ? esc(h.wind) : 0}</span></li>`,
+            `<li class="wx-hour${i === 0 && isNowHour(h) ? " is-now" : ""}"><span class="wx-hour__t">${i === 0 && isNowHour(h) ? "Now" : esc(hourLabel(h.time))}</span>${icon(h.iconName, 28)}<span class="wx-hour__temp">${esc(h.temp)}°</span><span class="wx-hour__meta">${icon("wx-drop", 14)}${h.precip != null ? esc(h.precip) : 0}%</span><span class="wx-hour__meta">${icon("wx-wind", 14)}${h.wind != null ? esc(h.wind) : 0}</span></li>`,
         )
         .join("");
       const dayItems = daily
         .map(
           (day, i) =>
-            `<li class="wx-day${i === 0 ? " is-today" : ""}"><span class="wx-day__label">${esc(i === 0 ? "Today" : day.weekday || "")}</span><span class="wx-day__ico">${icon(day.iconName, 28)}</span><span class="wx-day__temps"><span class="wx-day__hi">${esc(day.hi)}°</span><span class="wx-day__lo">${day.lo != null ? esc(day.lo) + "°" : "—"}</span></span><span class="wx-day__meta">${icon("wx-drop", 14)}${day.precip != null ? esc(day.precip) : 0}%</span><span class="wx-day__meta">${icon("wx-wind", 14)}${day.wind != null ? esc(day.wind) : 0}</span></li>`,
+            `<li class="wx-day${i === 0 && isToday(day) ? " is-today" : ""}"><span class="wx-day__label">${esc(i === 0 && isToday(day) ? "Today" : day.weekday || "")}</span><span class="wx-day__ico">${icon(day.iconName, 28)}</span><span class="wx-day__temps"><span class="wx-day__hi">${esc(day.hi)}°</span><span class="wx-day__lo">${day.lo != null ? esc(day.lo) + "°" : "—"}</span></span><span class="wx-day__meta">${icon("wx-drop", 14)}${day.precip != null ? esc(day.precip) : 0}%</span><span class="wx-day__meta">${icon("wx-wind", 14)}${day.wind != null ? esc(day.wind) : 0}</span></li>`,
         )
         .join("");
-      body = `${state.offline ? '<small class="wx-offline-note">Saved forecast · offline</small>' : ""}${hourItems ? `<section class="wx-block" aria-label="Hourly forecast"><h2 class="wx-block__title">Hourly</h2><ul class="wx-hours">${hourItems}</ul></section>` : ""}${dayItems ? `<section class="wx-block wx-block--days" aria-label="Daily forecast"><h2 class="wx-block__title">7-day forecast</h2><ul class="wx-days">${dayItems}</ul></section>` : ""}<p class="weather-note">Forecast for your destination. tripto.to never uses your location.</p>`;
+      body = `${state.offline ? '<small class="wx-offline-note">Saved forecast · offline</small>' : ""}${hero}${hourItems ? `<section class="wx-block" aria-label="Hourly forecast"><h2 class="wx-block__title">Hourly</h2><ul class="wx-hours">${hourItems}</ul></section>` : ""}${dayItems ? `<section class="wx-block wx-block--days" aria-label="Daily forecast"><h2 class="wx-block__title">7-day forecast</h2><ul class="wx-days">${dayItems}</ul></section>` : ""}<p class="weather-note">Forecast for your destination. tripto.to never uses your location.</p>`;
     } else if (state.weatherRefreshing) {
       body = thinkingPanel("Checking the forecast…");
     } else if (state.offline) {
@@ -8021,49 +11349,57 @@
     }
     return `<div class="phone-app"><section class="screen weather-screen weather-refresh">${appBar("Weather", sub, true)}<main class="weather-page">${selector}${body}</main></section></div>`;
   }
+  const CURRENCY_UI_COPY = Object.freeze({
+    en:{direction:"Exchange direction",from:"From",to:"To",amount:"Amount",converted:"Converted amount",quick:"Quick amounts",live:"Live rate",saved:"Saved offline",missing:"Rate not loaded",updating:"Updating…",update:"Update",rate:"Reference rate",onDevice:"Calculated on this phone",fromCurrency:"From currency",toCurrency:"To currency",swap:"Swap currencies"},
+    de:{direction:"Wechselrichtung",from:"Von",to:"Nach",amount:"Betrag",converted:"Umgerechneter Betrag",quick:"Schnellbeträge",live:"Aktueller Kurs",saved:"Offline gespeichert",missing:"Kurs nicht geladen",updating:"Wird aktualisiert…",update:"Aktualisieren",rate:"Referenzkurs",onDevice:"Auf diesem Gerät berechnet",fromCurrency:"Ausgangswährung",toCurrency:"Zielwährung",swap:"Währungen tauschen"},
+    fr:{direction:"Sens de conversion",from:"De",to:"Vers",amount:"Montant",converted:"Montant converti",quick:"Montants rapides",live:"Taux actuel",saved:"Enregistré hors ligne",missing:"Taux non chargé",updating:"Actualisation…",update:"Actualiser",rate:"Taux de référence",onDevice:"Calculé sur cet appareil",fromCurrency:"Devise de départ",toCurrency:"Devise d’arrivée",swap:"Inverser les devises"},
+    es:{direction:"Dirección del cambio",from:"De",to:"A",amount:"Importe",converted:"Importe convertido",quick:"Importes rápidos",live:"Tipo actual",saved:"Guardado sin conexión",missing:"Tipo no cargado",updating:"Actualizando…",update:"Actualizar",rate:"Tipo de referencia",onDevice:"Calculado en este dispositivo",fromCurrency:"Moneda de origen",toCurrency:"Moneda de destino",swap:"Intercambiar monedas"},
+    ru:{direction:"Направление обмена",from:"Из",to:"В",amount:"Сумма",converted:"Результат",quick:"Быстрые суммы",live:"Актуальный курс",saved:"Сохранено офлайн",missing:"Курс не загружен",updating:"Обновление…",update:"Обновить",rate:"Справочный курс",onDevice:"Рассчитано на этом телефоне",fromCurrency:"Исходная валюта",toCurrency:"Валюта результата",swap:"Поменять валюты местами"},
+  });
+  function currencyCopy(key) {
+    const locale = globalThis.TriptoI18n?.locale || "en";
+    return CURRENCY_UI_COPY[locale]?.[key] || CURRENCY_UI_COPY.en[key] || key;
+  }
   function currencyScreen() {
     if (!state.trip) return missingDetailScreen("Currency", "Select a trip to use the converter.");
     const currency = initCurrency(), rate = currency.rate == null ? NaN : Number(currency.rate), amount = Number(currency.amount) || 0;
+    const amountText = typeof currency.amountText === "string" ? currency.amountText : String(currency.amount);
     const result = Number.isFinite(rate) ? amount * rate : null;
     const money = (value, code) => {
       if (!Number.isFinite(value)) return "—";
-      try { return new Intl.NumberFormat("en-US", { style:"currency", currency:code, maximumFractionDigits:2 }).format(value); }
-      catch (_) { return `${value.toFixed(2)} ${code}`; }
+      const loc = globalThis.TriptoI18n?.locale || "en";
+      try {
+        // Prefer a narrow symbol; if Intl falls back to the ISO code (DKK, SEK,
+        // PLN…) drop it — the currency is already named in the selector below.
+        const shown = new Intl.NumberFormat(loc, { style:"currency", currency:code, currencyDisplay:"narrowSymbol", maximumFractionDigits:2 }).format(value);
+        return shown.includes(code) ? new Intl.NumberFormat(loc, { minimumFractionDigits:2, maximumFractionDigits:2 }).format(value) : shown;
+      } catch (_) { return value.toFixed(2); }
     };
     const currencyChoice = (field) => {
       const code = currency[field];
       const name = TRAVEL_CURRENCIES.find(([itemCode]) => itemCode === code)?.[1] || "Currency";
-      const label = field === "from" ? "From currency" : "To currency";
-      return `<button type="button" class="currency-select-trigger" data-action="open-currency-picker" data-field="${field}" aria-haspopup="dialog" aria-label="${label}: ${esc(code)}, ${esc(name)}"><strong>${esc(code)}</strong><span>${esc(name)}</span>${icon("chevron-down",16)}</button>`;
+      const label = field === "from" ? currencyCopy("fromCurrency") : currencyCopy("toCurrency");
+      return `<button type="button" class="currency-route__currency currency-route__currency--${field} currency-select-trigger" data-action="open-currency-picker" data-field="${field}" aria-haspopup="dialog" aria-label="${esc(label)}: ${esc(code)}, ${esc(name)}"><small>${esc(currencyCopy(field))}</small><strong>${esc(code)}</strong><span>${esc(name)}</span>${icon("chevron-down",16)}</button>`;
     };
     const destinationLocation = (state.locations || []).find((location) => String(val(location,"type") || "") === "city");
     const destination = val(destinationLocation,"city","display_name") || state.trip.title || "Your destination";
-    const status = state.currencyLoading
-      ? `<span class="currency-status is-loading">${icon("refresh",14)} Updating…</span>`
-      : currency.rate
-        ? `<span class="currency-status">${currency.cached ? "Saved offline" : "Rate updated"}${currency.date ? ` · ${esc(currency.date)}` : ""}</span>`
-        : `<span class="currency-status">Rate not loaded</span>`;
     const error = state.currencyError ? `<section class="currency-error" role="status">${icon("info",18)}<span>${esc(state.currencyError)}</span></section>` : "";
-    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page"><header class="currency-hero"><span class="currency-hero__icon">${icon("currency",23)}</span><div><span>EXCHANGE RATE</span><h1 id="currency-converter-title">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 2))} ${esc(currency.to)}` : "Tap Update to load the rate"}</h1><p>${esc(destination)} · reference rate for your trip</p></div></header><section class="currency-card" aria-labelledby="currency-converter-title"><div class="currency-line currency-line--from"><span class="currency-line__label">You pay</span><div class="currency-line__field">${currencyChoice("from")}<label class="currency-amount"><span class="sr-only">Amount in ${esc(currency.from)}</span><input data-currency-amount class="${String(currency.amount).length > 9 ? "is-long" : ""}" type="number" inputmode="decimal" min="0" step="any" value="${esc(currency.amount)}" aria-label="Amount in ${esc(currency.from)}"></label></div></div><div class="currency-divider"><span class="currency-rate-note">${Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : "Update to load this rate"}</span><button type="button" class="currency-swap" data-action="currency-swap" aria-label="Swap currencies">${icon("swap",20)}</button></div><div class="currency-line currency-line--to"><span class="currency-line__label">You get</span><div class="currency-line__field">${currencyChoice("to")}<output class="currency-result" aria-live="polite"><strong class="currency-result__amount${result != null && money(result, currency.to).length > 12 ? " is-long" : ""}">${esc(result == null ? "—" : money(result, currency.to))}</strong></output></div></div></section><footer class="currency-update-row"><div>${status}<small>${esc(currency.source || "Daily reference rates")}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="Update exchange rate"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${state.currencyLoading ? "Updating" : "Update"}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
-  }
-  function esimScreen() {
-    const dest =
-      (weatherPlaces()[0] && weatherPlaces()[0].label) ||
-      (state.trip && state.trip.title) ||
-      "your destination";
-    const features = [
-      ["bolt", "Ready in minutes"],
-      ["globe", "200+ destinations"],
-      ["phone", "Keep your number"],
-      ["shield", "No roaming bills"],
-    ];
-    const featureRows = features
-      .map(
-        ([ic, t]) =>
-          `<div class="esim-feature"><span class="esim-feature__icon">${icon(ic, 18)}</span><strong>${esc(t)}</strong></div>`,
-      )
+    const resultText = result == null ? "—" : money(result, currency.to);
+    const rateNote = Number.isFinite(rate) ? `1 ${esc(currency.from)} = ${esc(rate.toFixed(rate < 1 ? 4 : 3))} ${esc(currency.to)}` : currencyCopy("missing");
+    const freshness = state.currencyLoading
+      ? currencyCopy("updating")
+      : currency.rate
+        ? (currency.cached ? currencyCopy("saved") : currencyCopy("live"))
+        : currencyCopy("missing");
+    let rateDate = "";
+    if (currency.date) {
+      try { rateDate = dateFormatter(globalThis.TriptoI18n?.locale || "en", { day:"numeric", month:"short" }).format(new Date(`${currency.date}T12:00:00Z`)); }
+      catch (_) { rateDate = currency.date; }
+    }
+    const presets = [10, 50, 100, 500]
+      .map((value) => `<button type="button" class="currency-preset${amount === value ? " is-active" : ""}" data-action="currency-preset" data-amount="${value}">${value}</button>`)
       .join("");
-    return `<div class="phone-app"><section class="screen esim-screen esim-refresh">${appBar("Travel eSIM", "Partner offer", true)}<main class="esim-page"><section class="esim-hero"><div class="esim-hero__top"><span>Stay connected</span><span class="esim-hero__icon">${icon("sim", 28)}</span></div><h1>Data for ${esc(dest)}</h1><p>Find a travel data plan before you go.</p><div class="esim-offer"><strong>15% off</strong><span>your first plan · copy code</span><button type="button" class="esim-code" data-action="copy-esim-code" aria-label="Copy code FKWQX6ES">FKWQX6ES ${icon("copy", 16)}</button></div></section><section class="esim-features">${featureRows}</section><section class="esim-steps"><h2>How it works</h2><ol><li><span>1</span><p>Tap <strong>Get my eSIM</strong> below to open 7g.</p></li><li><span>2</span><p>Pick your destination and plan — enter code <strong>FKWQX6ES</strong> for 15% off.</p></li><li><span>3</span><p>Scan the QR to install it, then land connected.</p></li></ol></section><button type="button" class="mobile-primary-action esim-cta" data-action="esim-signup">${icon("external", 18)} Get my eSIM — 15% off</button><p class="esim-note">tripto.to partners with 7g. This opens 7g in a new tab and we may earn a commission — it never changes your price. tripto.to never uses your location.</p></main></section></div>`;
+    return `<div class="phone-app"><section class="screen currency-screen">${appBar("Currency", state.trip.title || "Trip", true)}<main class="currency-page currency-journey"><h1 id="currency-converter-title" class="sr-only">Currency converter for ${esc(destination)}</h1><section class="tax-free-picker tool-head" aria-hidden="true">${toolHead("currency", "Currency converter", esc(destination), esc(currencyCopy("rate")))}</section><section class="currency-route" aria-label="${esc(currencyCopy("direction"))}">${currencyChoice("from")}<button type="button" class="currency-swap currency-route__swap" data-action="currency-swap" aria-label="${esc(currencyCopy("swap"))}">${icon("swap",20)}</button>${currencyChoice("to")}</section><section class="currency-card currency-entry" aria-labelledby="currency-amount-title"><header class="currency-entry__head"><div><span id="currency-amount-title">${esc(currencyCopy("amount"))}</span><small>${esc(currency.from)}</small></div><span>${esc(currencyCopy("onDevice"))}</span></header><label class="currency-amount currency-entry__input"><span class="sr-only">${esc(currencyCopy("amount"))} ${esc(currency.from)}</span><input data-currency-amount class="${amountText.length > 9 ? "is-long" : ""}" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" value="${esc(amountText)}" aria-label="${esc(currencyCopy("amount"))} ${esc(currency.from)}"></label><div class="currency-presets" role="group" aria-label="${esc(currencyCopy("quick"))} ${esc(currency.from)}">${presets}</div></section><section class="currency-ticket" aria-labelledby="currency-result-title"><header class="currency-ticket__head"><div><span id="currency-result-title">${esc(currencyCopy("converted"))}</span><strong>${esc(currency.to)}</strong></div><span class="currency-ticket__status${currency.cached ? " is-offline" : ""}">${currency.cached ? icon("offline",15) : icon("currency",15)} ${esc(freshness)}</span></header><output class="currency-result" aria-live="polite"><strong class="currency-result__amount${resultText.length > 12 ? " is-long" : ""}">${esc(resultText)}</strong></output><footer class="currency-ticket__footer"><div><strong class="currency-rate-note">${rateNote}</strong><small>${esc(currency.source || currencyCopy("rate"))}${rateDate ? ` · ${esc(rateDate)}` : ""}</small></div><button type="button" class="currency-refresh" data-action="refresh-currency" aria-label="${esc(currencyCopy("update"))}"${state.currencyLoading ? " disabled" : ""}>${icon("refresh",18)}<span>${esc(state.currencyLoading ? currencyCopy("updating") : currencyCopy("update"))}</span></button></footer></section>${error}<p class="currency-disclaimer">Reference rate only; providers may add fees. Amounts are calculated on this phone.</p></main></section></div>`;
   }
   // The Add screen (spec §2): exactly three tappable intention rows for the
   // current trip. Create-trip and other global actions deliberately live
@@ -8081,8 +11417,8 @@
   // The three "Add to trip" intention rows, shared by the Add-to-trip screen and
   // the empty Timeline (an empty trip lands straight on these choices).
   function addIntentRows() {
-    const row = (action, ic, title, copy, tone) => `<button type="button" class="ds-flat-row add-intent-row add-intent-row--${tone}" data-action="${esc(action)}"><span class="ds-flat-row__icon add-intent-row__icon">${PastelIcon(ic, tone === "booking" ? "flight" : tone === "plan" ? "activity" : "food", 22)}</span><span class="ds-flat-row__copy add-intent-row__copy"><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron", 20)}</button>`;
-    return `<div class="add-intent-fields ds-grouped-card ds-grouped-card--list">${row("open-add-booking", "ticket", "Add a booking", "Flights, stays, trains, restaurants and more", "booking")}${row("open-day-plan", "map", "Day Plan", "Plan what you want to see and do", "plan")}${row("open-save-later", "favorite", "Save for Later", "Keep ideas you haven't scheduled yet", "later")}</div>`;
+    const tile = (action, ic, title, sub, tone) => `<button type="button" class="add-intent-tile add-intent-tile--${tone}" data-action="${esc(action)}"><span class="add-intent-tile__icon">${icon(ic, 28)}</span><span class="add-intent-tile__text"><strong class="add-intent-tile__label">${esc(title)}</strong><small class="add-intent-tile__sub">${esc(sub)}</small></span><span class="add-intent-tile__go" aria-hidden="true">${icon("chevron", 20)}</span></button>`;
+    return `<div class="add-intent-fields add-intent-grid">${tile("open-add-booking", "ticket", "Add a booking", "Flights, hotels, trains you've booked", "booking")}${tile("open-day-plan", "calendar", "Plan your days", "Things to see and do", "plan")}${tile("open-save-later", "favorite", "Save an idea", "Keep ideas for later", "later")}</div>`;
   }
 
   // Day Plan (spec §8/§9): pick one of ten activity types. Neighborhood is the
@@ -8206,7 +11542,11 @@
       if (endTime) {
         try { endsAtUtc = resolveEventLocalDateTime(`${date}T${endTime}`, tz); }
         catch (_) { endsAtUtc = null; }
-        if (endsAtUtc != null && endsAtUtc < startsAtUtc) { showFormSubmissionError(form, "End time cannot be before the start time."); return; }
+        // An end time before the start (22:00–02:00) ends the next day.
+        if (endsAtUtc != null && endsAtUtc < startsAtUtc) {
+          const next = new Date(`${date}T00:00:00Z`); next.setUTCDate(next.getUTCDate() + 1);
+          try { endsAtUtc = resolveEventLocalDateTime(`${next.toISOString().slice(0, 10)}T${endTime}`, tz); } catch (_) { endsAtUtc = null; }
+        }
       }
     }
     const tripId = state.trip.id;
@@ -8257,25 +11597,14 @@
     if (!state.trip) return missingDetailScreen("Save for Later", "Create or select a trip first.");
     const canEdit = canEditCurrentTrip();
     const items = saveForLaterItems();
-    // Two states of the SAME idea: an idea is "planned" once it has been placed
-    // into a neighborhood (a live linking stop). The default view shows only
-    // un-planned ideas; the Planned filter shows where placed ideas landed.
-    const planned = items.filter(ideaIsPlanned);
-    const ideas = items.filter((it) => !ideaIsPlanned(it));
-    const filter = state.saveLaterFilter === "planned" ? "planned" : "ideas";
-    const tab = (key, label, count) => `<button type="button" class="save-later-tab${filter === key ? " is-active" : ""}" data-action="save-later-filter" data-filter="${key}"${filter === key ? ' aria-current="true"' : ""}>${esc(label)}${count ? ` <span class="save-later-tab__count">${count}</span>` : ""}</button>`;
-    // Always show both tabs so the Planned list is discoverable even before any
-    // idea has been placed — tapping Planned then shows an empty-planned state.
-    const filterBar = `<div class="save-later-filter" role="tablist" aria-label="Show">${tab("ideas", "Ideas", ideas.length)}${tab("planned", "Planned", planned.length)}</div>`;
-    // One clean list, no category buckets: every idea is a row you can open.
+    // One clean list of ideas — no Ideas/Planned split. Planning an idea onto a
+    // day moves it to the main Timeline (see planIdeaToDay), so Save for Later
+    // only ever holds ideas that are still waiting to be placed.
     const ideaRow = (item) => {
       const address = String(val(locationById(val(item, "start_location_id", "venue_location_id")) || {}, "local_address", "formatted_address") || "");
-      const sub = ["Not scheduled", address].filter(Boolean).join(" · ");
-      return `<button type="button" class="save-later-row" data-action="open-idea" data-id="${esc(itemId(item))}"><span class="save-later-row__mark" aria-hidden="true">${icon("star", 18)}</span><span class="save-later-row__copy"><strong>${esc(val(item, "title") || "Idea")}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18)}</button>`;
-    };
-    const plannedRow = (item) => {
-      const sub = ideaPlacementSummary(item) || "In your plan";
-      return `<button type="button" class="save-later-row save-later-row--planned" data-action="open-idea" data-id="${esc(itemId(item))}"><span class="save-later-row__mark" aria-hidden="true">${icon("check", 18)}</span><span class="save-later-row__copy"><strong>${esc(val(item, "title") || "Idea")}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18)}</button>`;
+      const planned = ideaIsPlanned(item);
+      const sub = planned ? (ideaPlacementSummary(item) || "In your plan") : ["Not scheduled", address].filter(Boolean).join(" · ");
+      return `<button type="button" class="save-later-row${planned ? " save-later-row--planned" : ""}" data-action="open-idea" data-id="${esc(itemId(item))}"><span class="save-later-row__mark" aria-hidden="true">${icon(planned ? "check" : "star", 18)}</span><span class="save-later-row__copy"><strong>${esc(val(item, "title") || "Idea")}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18)}</button>`;
     };
     const addCta = canEdit ? `<button type="button" class="save-later-add-cta" data-action="add-save-later" data-type="idea">${icon("plus", 20)}<span>Add an idea</span></button>` : "";
     const tripName = String(val(state.trip, "title") || "").trim();
@@ -8284,18 +11613,10 @@
     const scheduleHint = hasTripDates
       ? "Open one to add it to a day plan."
       : "Add your trip's dates first, then you can plan these onto its days.";
-    let body;
-    if (filter === "planned") {
-      const plannedList = planned.length
-        ? `<div class="save-later-list ds-grouped-card ds-grouped-card--list" role="list">${planned.map(plannedRow).join("")}</div>`
-        : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("check", 24)}</span><strong>Nothing planned yet</strong><p>Ideas you add to a day plan show up here. Open an idea in the Ideas tab to place it.</p></div>`;
-      body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>${heading}</h1><p>Ideas you've added to a day plan. Open one to see it, or return it to your ideas.</p></section>${filterBar}${plannedList}`;
-    } else {
-      const list = ideas.length
-        ? `<div class="save-later-list ds-grouped-card ds-grouped-card--list" role="list">${ideas.map(ideaRow).join("")}</div>`
-        : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("star", 24)}</span><strong>No ideas yet</strong><p>Save places, food and things you might want to do. ${hasTripDates ? "Plan them onto a day whenever you're ready." : "Add your trip's dates to plan them onto days."}</p></div>`;
-      body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>${heading}</h1><p>A running list of things you might do. ${scheduleHint}</p></section>${filterBar}${list}${addCta}`;
-    }
+    const list = items.length
+      ? `<div class="save-later-list ds-grouped-card ds-grouped-card--list" role="list">${items.map(ideaRow).join("")}</div>`
+      : `<div class="save-later-empty-state"><span class="save-later-empty-state__badge" aria-hidden="true">${icon("star", 24)}</span><strong>No ideas yet</strong><p>Save places, food and things you might want to do. ${hasTripDates ? "Plan them onto a day whenever you're ready." : "Add your trip's dates to plan them onto days."}</p></div>`;
+    const body = `<section class="save-later-intro"><span>SAVE FOR LATER</span><h1>${heading}</h1><p>A running list of things you might do. ${scheduleHint}</p></section>${list}${addCta}`;
     return focusedTaskPage("Save for Later", body, "save-later-page");
   }
   // Idea action sheet (spec §5/§6/§10): the hub for a single Save-for-Later idea.
@@ -8401,7 +11722,7 @@
       showToast(`${body.title} added to ${collection.title || "the neighborhood"}.`);
       route("collection", collectionId, true);
     } catch (error) {
-      if (!navigator.onLine) {
+      if (isNetworkFailure(error)) {
         const tempId = `local-${crypto.randomUUID()}`;
         const position = collectionStopsFor(collectionId).length;
         state.collectionStops = [...(state.collectionStops || []), { id: tempId, collection_item_id: collectionId, position, version: 1, __local: true, ...toStopRow(body) }];
@@ -8435,7 +11756,6 @@
         await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/activities/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
       }
       await loadTripDetails();
-      state.saveLaterFilter = "ideas";
       showToast(`${val(item, "title") || "Idea"} returned to your ideas.`);
       route("save-later", null, true);
     } catch (error) {
@@ -8471,7 +11791,7 @@
     // rows keep their definition order.
     const groupedCategories = `<div class="day-plan-list ds-grouped-card ds-grouped-card--list">${bookable.map(typeRow).join("")}</div>`;
     const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
-    return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>For travel you've already reserved. To plan what to see and do, use Day Plan.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking")}</section>`, "v2-add-booking manual-add-page day-plan-page");
+    return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>For travel you've already reserved. To plan what to see and do, use Day Plan.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${FORWARD_EMAIL_ENABLED ? secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking") : ""}</section>`, "v2-add-booking manual-add-page day-plan-page");
   }
   function manualBookingSheet() {
     const options = Object.entries(MANUAL_BOOKING_TYPES).filter(([type]) => !BOOKING_PICKER_HIDDEN.has(type));
@@ -8485,8 +11805,8 @@
             `<label class="traveler-pill"><input type="checkbox" name="documentTraveler" value="${esc(traveler.id)}"><span>${esc(traveler.display_name || "Traveler")}</span></label>`,
         )
         .join(""),
-      form = `<form class="sheet-form document-form" id="document-form">${travelers ? `<div class="sheet-field"><label>Assign to traveler</label><div class="traveler-pills">${travelers}</div></div>` : ""}<div class="sheet-field"><label for="document-file">File</label><label class="document-file-picker" for="document-file">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="document-file" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div><div class="document-verify-state">Verification starts after you choose a file.</div></div><div class="sheet-submit">${primaryCta("Save on This Phone", "save-document", "download")}</div></form>`;
-    return bottomSheet("document", "Save offline document", form);
+      form = `<form class="sheet-form document-form" id="document-form">${travelers ? `<div class="sheet-field"><label>Assign to traveler</label><div class="traveler-pills">${travelers}</div></div>` : ""}<div class="sheet-field"><label for="document-file">File</label><label class="document-file-picker" for="document-file">${icon("document",24)}<span><strong>Choose a file</strong><small>PDF, image, or Wallet pass · up to 10 MB</small></span></label><input class="sr-only" id="document-file" name="documentFile" type="file" accept="application/pdf,image/*,.pkpass" required><div class="document-file-meta" role="status">No file selected</div><div class="document-verify-state">Verification starts after you choose a file.</div></div><div class="sheet-submit">${primaryCta("Add File", "save-document", "download")}</div></form>`;
+    return bottomSheet("document", "Add document", form);
   }
   function tripSwitchSheet() {
     // Only current + upcoming trips are switchable here; always keep the
@@ -8499,12 +11819,18 @@
         String(trip.id) === String(state.trip?.id)
       );
     });
-    const rows = shown.map((trip) => sheetActionRow("select-trip", "trips", trip.title, ` data-id="${esc(trip.id)}"${String(trip.id) === String(state.trip?.id) ? ' aria-current="true"' : ""}`, formatTripDates(trip))).join("");
+    const rows = shown.map((trip) => {
+      const flag = flagEmoji(tripCountryCode(trip));
+      return sheetActionRow("select-trip", "trips", trip.title, ` data-id="${esc(trip.id)}"${String(trip.id) === String(state.trip?.id) ? ' aria-current="true"' : ""}`, formatTripDates(trip), false, flag ? `<span class="sheet-flag">${flag}</span>` : "");
+    }).join("");
     return bottomSheet("trip", "Choose trip", sheetActionList(rows));
   }
   function bookingEmailTripSheet() {
     const email = state.bookingEmails.find((row) => String(row.id) === String(state.bookingEmailSelectionId));
-    const rows = state.trips.map((trip) => sheetActionRow("assign-booking-email", "trips", trip.title || "Untitled trip", ` data-email-id="${esc(email?.id || "")}" data-trip-id="${esc(trip.id)}"`, formatTripDates(trip))).join("");
+    const rows = state.trips.map((trip) => {
+      const flag = flagEmoji(tripCountryCode(trip));
+      return sheetActionRow("assign-booking-email", "trips", trip.title || "Untitled trip", ` data-email-id="${esc(email?.id || "")}" data-trip-id="${esc(trip.id)}"`, formatTripDates(trip), false, flag ? `<span class="sheet-flag">${flag}</span>` : "");
+    }).join("");
     const empty = `<p class="sheet-note">Create a trip before assigning this confirmation.</p><button type="button" class="mobile-primary-action" data-action="create-trip">Create trip</button>`;
     return bottomSheet("booking-email-trip", "Choose trip", `<p class="sheet-note booking-email-trip-note">${esc(email?.subject || "Booking confirmation")}</p>${rows ? sheetActionList(rows) : empty}`);
   }
@@ -8533,7 +11859,7 @@
     return bottomSheet(
       "help",
       "Help, privacy & terms",
-      `${sheetActionList(`${rowAct("info", "How tripto.to works", "A quick tour of the basics", "open-first-run-how")}${rowAct("mail", "Booking email", "Forward confirmations to go@tripto.to", "booking-email-info")}${rowLink("shield", "Privacy Policy", "How your trip data is handled", "/privacy")}${rowLink("document", "Terms of Service", "The agreement for using tripto.to", "/terms")}${hasTrip ? rowAct("download", "Download support bundle", "Diagnostics for this trip — no private details", "export-support") : ""}`)}<p class="sheet-note">tripto.to Product V2</p>`,
+      `${sheetActionList(`${rowAct("info", "How tripto.to works", "A quick tour of the basics", "open-first-run-how")}${FORWARD_EMAIL_ENABLED ? rowAct("mail", "Booking email", "Forward confirmations to go@tripto.to", "booking-email-info") : ""}${rowLink("mail", "Contact support", "Get help with your account or a trip", "/contact")}${rowLink("shield", "Privacy Policy", "How your trip data is handled", "/privacy")}${rowLink("document", "Terms of Service", "The agreement for using tripto.to", "/terms")}${rowLink("info", "Cookies & local storage", "How Tripto works on this device", "/cookies")}${hasTrip ? rowAct("download", "Download support bundle", "Diagnostics for this trip — no private details", "export-support") : ""}`)}<p class="sheet-note">tripto.to Product V2</p>`,
     );
   }
 
@@ -8592,6 +11918,7 @@
       documents: "Travel documents",
       health: "Trip health",
       "trip-options": "Trip options",
+      spots: "Save Spots",
       "add-trip": "Add to trip",
       "add-booking": "Add a booking",
       "day-plan": "Day plan",
@@ -8636,10 +11963,9 @@
   function sheetContent() {
     let html = "";
     if (state.sheet === "navigation") html += navigationSheet();
-    if (state.sheet === "add") html += addSheet();
-    if (state.sheet === "document") html += documentSheet();
     if (state.sheet === "trips") html += tripSwitchSheet();
     if (state.sheet === "first-run-how") html += firstRunHowSheet();
+    if (state.sheet === "page-help") html += pageHelpSheet();
     if (state.sheet === "help") html += helpSheet();
     if (state.sheet === "notifications") html += notificationsSheet();
     if (state.sheet === "manual-booking") html += manualBookingSheet();
@@ -8652,8 +11978,13 @@
     if (state.sheet === "share") html += shareSheet();
     if (state.sheet === "member-actions") html += collabMemberSheet();
     if (state.sheet === "currency-picker") html += currencyPickerSheet();
+    if (state.sheet === "spot-save") html += spotSaveSheet();
+    if (state.sheet === "spot-route") html += spotRouteSheet();
+    if (state.sheet === "spot-menu") html += spotMenuSheet();
+    if (state.sheet === "spot-edit") html += spotEditSheet();
     if (state.sheet === "collection-stop") html += collectionStopSheet();
     if (state.sheet === "idea") html += ideaSheet();
+    if (state.sheet === "export-pdf") html += exportPdfSheet();
     return html;
   }
   function renderToast() {
@@ -8679,20 +12010,29 @@
     // the frame to the small viewport so the page holds perfectly still.
     document.documentElement.classList.toggle(
       "fixed-screen",
-      !state.sheet && (state.screen === "weather" || state.screen === "esim"),
+      !state.sheet &&
+        (state.screen === "weather" ||
+          state.screen === "esim" ||
+          state.screen === "trip-map"),
     );
     if (state.loading) {
       app.innerHTML = decorateScreen(loadingScreen());
+      globalThis.TriptoI18n?.translate(app);
+      globalThis.TriptoI18n?.observe(app);
       return;
     }
     if (state.googleAuthHandoffStatus) {
       app.innerHTML = decorateScreen(googleAuthRecoveryScreen()) + toast();
       bindDynamic();
+      globalThis.TriptoI18n?.translate(app);
+      globalThis.TriptoI18n?.observe(app);
       return;
     }
     if (state.error) {
       app.innerHTML = decorateScreen(errorScreen()) + toast();
       bindDynamic();
+      globalThis.TriptoI18n?.translate(app);
+      globalThis.TriptoI18n?.observe(app);
       return;
     }
     let html;
@@ -8746,6 +12086,9 @@
         case "account":
           html = accountScreen();
           break;
+        case "subscription":
+          html = subscriptionScreen();
+          break;
         case "checklist": html = checklistScreen(); break;
         case "help": html = helpScreen(); break;
         case "travelers": html = travelersScreen(); break;
@@ -8758,9 +12101,10 @@
         case "form": html = mobileFormScreen(); break;
         case "trip-map": html = tripMapScreen(); break;
         case "weather": html = weatherScreen(); break;
+      case "spots": html = spotsScreen(); break;
         case "currency": html = currencyScreen(); break;
+        case "tax-free": html = taxFreeScreen(); break;
         case "trip-options": html = tripOptionsScreen(); break;
-        case "esim": html = esimScreen(); break;
         case "collaboration": html = collaborationScreen(); break;
         case "join": html = joinScreen(); break;
         default:
@@ -8772,13 +12116,15 @@
     // Prepare the approved Stay22 affiliate rewriting while this recommendation
     // page is visible. The normal Booking.com URL remains a working fallback.
     if (state.sheet === "trip-setup-ready") ensureStay22().catch(() => {});
-    if (document.querySelector(".account-partners")) ensureStay22().catch(() => {});
+    if (document.querySelector(".account-partner-row")) ensureStay22().catch(() => {});
     if (state.sheet && state.sheet !== "driver") {
       const background = app.querySelector(".phone-app");
       background?.setAttribute("inert", "");
       background?.setAttribute("aria-hidden", "true");
     }
     bindDynamic();
+    globalThis.TriptoI18n?.translate(app);
+    globalThis.TriptoI18n?.observe(app);
   }
   function focusKeyFor(element) {
     if (!element) return null;
@@ -8811,9 +12157,11 @@
       sheetReturnFocus = focusKeyFor(opener || document.activeElement);
     state.sheet = name;
     state.routeMotion = "";
-    if (!canKeepPage) { render(); return; }
     const content = sheetContent();
-    if (!content) { render(); return; }
+    // A builder that yields nothing (e.g. share with no trip) must not leave the
+    // page inert behind an invisible sheet — drop the sheet and render normally.
+    if (!content) { state.sheet = null; render(); return; }
+    if (!canKeepPage) { render(); return; }
     // Opening an overlay does not change the underlying page. Preserve its
     // DOM, scroll position, draft inputs and listeners instead of rebuilding it.
     document.documentElement.classList.remove("place-search-open");
@@ -9016,7 +12364,6 @@
         "flightNumber",
         "fromLocation",
         "toLocation",
-        "departureDate",
         "departureLocalTime",
       ];
       const invalidEssential = requiredEssentials
@@ -9030,6 +12377,18 @@
             ? "This field is required."
             : "Check this value and try again.",
         );
+        return false;
+      }
+      // departureDate is a hidden input (filled by the calendar), so constraint
+      // validation never fires for it — check its value directly.
+      if (!String(form.elements.departureDate?.value || "").trim()) {
+        showFieldError(form, form.elements.departureDate || form.elements.departureLocalTime, "Choose a departure date.");
+        return false;
+      }
+      // Round trip on but no return date chosen would silently drop the return
+      // leg — require it (or the user can turn the toggle off).
+      if (form.elements.roundTrip?.checked && !String(form.elements.returnDepartureDate?.value || "").trim()) {
+        showFieldError(form, form.elements.returnDepartureDate || form.elements.returnDepartureLocalTime, "Pick a return date, or turn off round trip.");
         return false;
       }
     }
@@ -9456,40 +12815,17 @@
     applyKeyboardState();
   }
   function bindDynamic() {
-    const form = document.getElementById("document-form");
-    if (form && !form.dataset.bound) {
-      form.dataset.bound = "1";
-      const fileInput = form.elements.documentFile,
-        fileMeta = form.querySelector(".document-file-meta"),
-        verifyState = form.querySelector(".document-verify-state");
-      fileInput?.addEventListener("change", () => {
-        const file = fileInput.files?.[0];
-        if (!file) {
-          fileMeta.textContent = "No file selected";
-          verifyState.textContent = "Verification starts after you choose a file.";
-          return;
-        }
-        fileMeta.textContent = `${file.name} · ${file.size < 1048576 ? `${Math.max(1, Math.round(file.size / 1024))} KB` : `${(file.size / 1048576).toFixed(1)} MB`}`;
-        verifyState.textContent = "Ready to verify when saved on this phone.";
-      });
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        saveDocumentForm(form);
-      });
-    }
+    syncLiveMapScreen();
     const nativeForm = document.getElementById("native-form");
     if (nativeForm && !nativeForm.dataset.bound) {
       nativeForm.dataset.bound = "1";
       restoreQuickDraft(nativeForm);
       if (nativeForm.dataset.editId) revealPrefilledQuickMore(nativeForm);
-      if (nativeForm.dataset.kind === "flight" && state.pendingReturnFlight) {
-        const ret = state.pendingReturnFlight,
-          fromPlace = nativeForm.elements.fromLocationPlace,
-          toPlace = nativeForm.elements.toLocationPlace;
-        if (fromPlace && ret.fromLocationPlace) fromPlace.value = ret.fromLocationPlace;
-        if (toPlace && ret.toLocationPlace) toPlace.value = ret.toLocationPlace;
-        state.pendingReturnFlight = null;
-      }
+      // state.pendingReturnFlight (the reversed-leg intent) is intentionally NOT
+      // cleared here: the flight form re-renders when its date picker closes
+      // (apply-date-range -> closeSheet -> render), so the return banner and the
+      // reversed prefill must survive across renders. It is cleared on save
+      // success and when a fresh manual add-flight begins (add-type).
       const roundTripToggle = nativeForm.elements.roundTrip, returnFields = nativeForm.querySelector("[data-round-trip-return]");
       if (roundTripToggle && returnFields) {
         const returnDate = nativeForm.elements.returnDepartureDate, returnTime = nativeForm.elements.returnDepartureLocalTime;
@@ -9498,11 +12834,12 @@
           returnFields.hidden = !on;
           if (returnDate) returnDate.required = on;
           if (returnTime) returnTime.required = on;
-          const rangeField = returnDate?.closest(".date-range-field"), rangeTrigger = rangeField?.querySelector(".date-range-trigger");
-          if (rangeField) rangeField.dataset.allowSingle = on ? "false" : "true";
-          if (!on && returnDate) returnDate.value = "";
-          if (rangeTrigger) rangeTrigger.dataset.rangeTitle = on ? "Travel dates" : "Departure date";
-          if (returnDate) syncDateRangeField(nativeForm, "departureDate", "returnDepartureDate");
+          if (!on) {
+            if (returnDate) returnDate.value = "";
+            const returnEnd = nativeForm.elements.returnDepartureDateEnd;
+            if (returnEnd) returnEnd.value = "";
+          }
+          if (returnDate) syncDateRangeField(nativeForm, "returnDepartureDate", "returnDepartureDateEnd");
         };
         roundTripToggle.addEventListener("change", syncReturn);
         syncReturn();
@@ -9524,7 +12861,9 @@
           };
           input.addEventListener("input", sync);
           input.addEventListener("change", sync);
-          sync();
+          // Opening the form only derives the timezone; saving a draft here would
+          // snapshot an edit prefill that could later override newer record data.
+          syncQuickTimezone(nativeForm, input);
         });
       nativeForm.querySelectorAll("[data-timezone-manual-for]").forEach((input) => {
         input.addEventListener("input", () => {
@@ -9545,23 +12884,21 @@
           }),
         );
       const nativeFile = nativeForm.elements.documentFile;
-      if (nativeFile) {
-        const fileMeta = nativeForm.querySelector(".document-file-meta"),
-          verifyState = nativeForm.querySelector(".document-verify-state");
+      if (nativeFile && nativeForm.dataset.kind === "document") {
         nativeFile.addEventListener("change", () => {
-          const file = nativeFile.files?.[0];
-          if (!file) {
-            fileMeta.textContent = "No file selected";
-            if (verifyState) verifyState.textContent =
-              "Ready offline appears only after checksum verification succeeds.";
+          const files = Array.from(nativeFile.files || []);
+          if (files.length > 1) {
+            // Bulk upload: save every picked file directly, skipping the
+            // single-file staging preview.
+            saveLocalDocumentsBulk(files, state.docRelatedBooking || null);
+            nativeFile.value = "";
             return;
           }
-          fileMeta.textContent = `${file.name} · ${
-            file.size < 1048576
-              ? `${Math.max(1, Math.round(file.size / 1024))} KB`
-              : `${(file.size / 1048576).toFixed(1)} MB`
-          }`;
-          if (verifyState) verifyState.textContent = "Ready to verify when saved on this phone.";
+          const file = files[0];
+          if (file) {
+            state.pendingDocFile = file;
+            render();
+          }
         });
       }
       const manualFiles = nativeForm.querySelector("[data-manual-attachments]");
@@ -9623,9 +12960,14 @@
       nativeForm.addEventListener("submit", (event) => {
         event.preventDefault();
         if (nativeForm.dataset.kind === "trip" && !nativeForm.dataset.editId) {
+          const destination = String(nativeForm.elements.destination?.value || "").trim();
+          if (!destination) {
+            showFieldError(nativeForm, nativeForm.elements.destination, "Where are you going?");
+            return;
+          }
           saveQuickDraft(nativeForm);
           state.tripSetupPreview = {
-            destination:String(nativeForm.elements.destination?.value || "").trim(),
+            destination,
             startsOn:nativeForm.elements.startsOn?.value || "",
             endsOn:nativeForm.elements.endsOn?.value || "",
           };
@@ -9935,7 +13277,7 @@
       manualCreateHeaders={"Idempotency-Key":clientRequestId},
       manualTransportCreateOptions=(body,key=clientRequestId)=>({method:"POST",headers:{"Idempotency-Key":key},body:JSON.stringify(body)}),
       secondaryRecoveryCopy="Booking saved, but some optional details could not be saved. Edit the booking to retry those details; the booking will not be submitted again.";
-    let savedBookingId=editId||"",attachmentWarning="",secondaryWarning="";
+    let savedBookingId=editId||"",attachmentWarning="",secondaryWarning="",returnWarning="";
     if (form.dataset.manualAttachmentsBusy === "true") {
       showFormSubmissionError(form, "Wait for the selected files to finish preparing before saving.");
       return;
@@ -10013,9 +13355,16 @@
         const result=await api(`/api/v1/trips/${tripId}/transport`,manualTransportCreateOptions({transportType,title,carrierName:fd.get("carrierName")||null,serviceNumber:baseKind==="flight"?flight.number:(fd.get("serviceNumber")||null),marketingAirlineCode:flight?.code||null,marketingFlightNumber:flight?.number||null,operatingAirlineCode:fd.get("operatingAirlineCode")||null,departureTerminal:fd.get("departureTerminal")||null,departureGate:fd.get("departureGate")||null,boardingTimeUtc:boarding,gateCloseTimeUtc:gateClose,departureLocationId:from.id,arrivalLocationId:to.id,scheduledDepartureUtc:dep,scheduledArrivalUtc:arr,departureTimezone:depTz,arrivalTimezone:arrTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers}));
         savedBookingId=result.item?.id||"";
         if (baseKind==="flight" && String(fd.get("roundTrip")||"")==="1" && String(fd.get("returnDepartureDate")||"")) {
-          const retDep=resolveEventLocalDateTime(`${fd.get("returnDepartureDate")}T${fd.get("returnDepartureLocalTime")||"00:00"}`,arrTz),
-            retTitle=fd.get("carrierName")?String(fd.get("carrierName")):"Return flight";
-          await api(`/api/v1/trips/${tripId}/transport`,manualTransportCreateOptions({transportType:"flight",title:retTitle,carrierName:fd.get("carrierName")||null,serviceNumber:null,departureLocationId:to.id,arrivalLocationId:from.id,scheduledDepartureUtc:retDep,scheduledArrivalUtc:null,departureTimezone:arrTz||null,arrivalTimezone:depTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers},`${clientRequestId}:return`));
+          // The outbound leg is already saved. If the return leg fails, do NOT
+          // throw — that would show "not saved" and prompt the user to re-enter,
+          // duplicating the outbound. Warn about the return leg only.
+          try {
+            const retDep=resolveEventLocalDateTime(`${fd.get("returnDepartureDate")}T${fd.get("returnDepartureLocalTime")||"00:00"}`,arrTz),
+              retTitle=fd.get("carrierName")?String(fd.get("carrierName")):"Return flight";
+            await api(`/api/v1/trips/${tripId}/transport`,manualTransportCreateOptions({transportType:"flight",title:retTitle,carrierName:fd.get("carrierName")||null,serviceNumber:null,departureLocationId:to.id,arrivalLocationId:from.id,scheduledDepartureUtc:retDep,scheduledArrivalUtc:null,departureTimezone:arrTz||null,arrivalTimezone:depTz||null,bookingReference:fd.get("bookingReference")||null,travelerIds:travelers},`${clientRequestId}:return`));
+          } catch (_) {
+            returnWarning="Outbound flight saved, but the return flight could not be added. Add the return leg manually.";
+          }
         }
         }
       } else if (["activity","reservation"].includes(baseKind)) {
@@ -10033,7 +13382,13 @@
             ? existingLocation
             : await createMobileLocation("port",locationName,{timezone:timezone||null});
         } else if (locationName) location=await quickLocation(locationName,baseKind,timezone,fd.get("locationPlace"));
-        const endDate=String(fd.get("endDate")||explicitDate||""), end=fd.get("endTime")?resolveEventLocalDateTime(`${endDate}T${fd.get("endTime")}`,timezone):null;
+        const endDate=String(fd.get("endDate")||explicitDate||"");
+        let end=fd.get("endTime")?resolveEventLocalDateTime(`${endDate}T${fd.get("endTime")}`,timezone):null;
+        // No end date and an end time before the start (22:00–02:00) means it ends the next day.
+        if(ms!=null&&end!=null&&end<ms&&!fd.get("endDate")&&/^\d{4}-\d{2}-\d{2}$/.test(endDate)){
+          const next=new Date(`${endDate}T00:00:00Z`); next.setUTCDate(next.getUTCDate()+1);
+          end=resolveEventLocalDateTime(`${next.toISOString().slice(0,10)}T${fd.get("endTime")}`,timezone);
+        }
         if(ms!=null&&end!=null&&end<ms) throw new Error("End time cannot be before the start time.");
         const notes=buildManualDetailNotes([
           ["Date",ms==null?explicitDate:""], ["To",fd.get("endLocation")],
@@ -10046,7 +13401,7 @@
         ],fd.get("notes")), travelers=selectedTravelerIds(fd), subtype=manualBookingConfig(kind)?.subtype,
           itemTitle=String(fd.get("title")||fd.get("provider")||manualBookingConfig(kind)?.label||"Booking");
         if (editId) {
-          const body={kind:baseKind,status:"confirmed",title:itemTitle,startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",version:editVersion};
+          const body={kind:baseKind,status:String(val(existingBookingEntity,"status")||"confirmed"),title:itemTitle,startsAtUtc:ms,endsAtUtc:end,timezone:timezone||null,locationId:location?.id||null,reference:fd.get("confirmationNumber")||null,notes,confidence:"confirmed",version:editVersion};
           if(baseKind==="activity") body.activityType=fd.get("activityType")||subtype||formPrefill?.activityType||null; else body.reservationType=fd.get("reservationType")||subtype||formPrefill?.reservationType||"reservation";
           const result=await api(`/api/v1/trips/${tripId}/activities/${encodeURIComponent(editId)}`,{method:"PATCH",body:JSON.stringify(body)});
           savedBookingId=result.item?.id||editId;
@@ -10055,7 +13410,7 @@
         savedBookingId=result.item?.id||"";
         }
       } else if (kind === "document") {
-        await saveLocalDocument(form.elements.documentFile.files?.[0],fd.get("documentType")||"other",selectedTravelerIds(fd),fd.get("relatedBooking")||null);
+        await saveLocalDocument(state.pendingDocFile || form.elements.documentFile?.files?.[0],fd.get("documentType")||"other",selectedTravelerIds(fd),fd.get("relatedBooking")||null,false,fd.get("notes")||"");
       } else if (kind === "traveler") {
         const editId=String(form.dataset.editId||"");
         await api(`/api/v1/trips/${tripId}/travelers${editId?`/${encodeURIComponent(editId)}`:""}`,{method:editId?"PATCH":"POST",body:JSON.stringify({displayName:fd.get("displayName"),travelerType:fd.get("travelerType"),...(editId?{version:Number(form.dataset.editVersion)}:{})})});
@@ -10083,19 +13438,29 @@
           }
         }
       }
-      let saveWarning=[secondaryWarning,attachmentWarning].filter(Boolean).join(" ");
+      let saveWarning=[returnWarning,secondaryWarning,attachmentWarning].filter(Boolean).join(" ");
       try {
         await loadTripDetails();
       } catch (error) {
         if (!savedBookingId) throw error;
         saveWarning=[saveWarning,"Booking saved, but the Timeline could not refresh. Reload when your connection is stable; the booking will not be submitted again."].filter(Boolean).join(" ");
       }
-      clearQuickDraft(kind); formHasMeaningfulChanges=false; state.manualLabel=null; state.editingEntity=null; formPrefill=null;
-      const roundTripSaved = kind==="flight" && !editId && String(fd.get("roundTrip")||"")==="1" && String(fd.get("returnDepartureDate")||"") && savedBookingId;
+      clearQuickDraft(kind); formHasMeaningfulChanges=false; state.manualLabel=null; state.editingEntity=null; formPrefill=null; state.docRelatedBooking=null; state.pendingDocFile=null; state.pendingReturnFlight=null;
+      const roundTripSaved = kind==="flight" && !editId && String(fd.get("roundTrip")||"")==="1" && String(fd.get("returnDepartureDate")||"") && savedBookingId && !returnWarning;
       showToast(saveWarning||(roundTripSaved?"Round trip saved — outbound and return flights added.":(editId?`${manualBookingConfig(kind)?.label || statusText(kind)} updated.`:`${manualBookingConfig(kind)?.label || state.manualLabel || statusText(kind)} saved.`)),saveWarning?"alert":"status");
-      route(kind==="document"?"documents":kind==="trip"?"timeline":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
-      if (kind === "trip" && !editId && !saveWarning) openSheet("trip-created");
+      // If the user already left the form while this was saving, don't pull them back.
+      if (state.screen === "form") {
+        const editedDestination = editId && manualBookingConfig(kind) ? detailRouteForItem(savedBookingId||editId) : null;
+        if (editedDestination) route(editedDestination.screen,editedDestination.id,true);
+        else route(kind==="document"?"documents":kind==="trip"?"timeline":kind==="traveler"?"travelers":kind==="checklist"?"checklist":"timeline",null,true);
+        if (kind === "trip" && !editId && !saveWarning) openSheet("trip-created");
+      }
     } catch (error) {
+      if (kind === "trip" && !editId && error?.code === "TRIPTO_PLUS_REQUIRED") {
+        state.subscriptionOrigin = "trips";
+        route("subscription");
+        return;
+      }
       const message = error?.status === 409
         ? "A newer saved version exists. Review it before trying again. Your entered data is still here."
         : error.message || "The change was not saved.";
@@ -10163,10 +13528,12 @@
     // Non-flight bookings (trains, cars, activities, restaurants…) recognize bare dates
     // as startDate/endDate — names the server materializers don't read. Map them to the
     // UTC timestamps each type expects so the imported booking keeps its date instead of
-    // landing undated. No time-of-day is known, so anchor to local midnight in the
-    // device's timezone; a bad conversion falls back to null (undated), never blocks.
+    // landing undated. No time-of-day is known, so anchor to noon (not midnight) in the
+    // device's timezone; noon keeps the calendar day stable even when the timeline is
+    // later re-bucketed from a very different viewing timezone (mirrors dateOnlyToUtcMs on
+    // the server for stays). A bad conversion falls back to null (undated), never blocks.
     const localTz=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";}catch{return "UTC";}})();
-    const dateToUtc=(value,tz)=>{const v=String(value||"").trim();if(!v)return null;const dt=/T\d/.test(v)?v.slice(0,16):`${v.slice(0,10)}T00:00`;try{return resolveEventLocalDateTime(dt,tz||localTz);}catch{return null;}};
+    const dateToUtc=(value,tz)=>{const v=String(value||"").trim();if(!v)return null;const dt=/T\d/.test(v)?v.slice(0,16):`${v.slice(0,10)}T12:00`;try{return resolveEventLocalDateTime(dt,tz||localTz);}catch{return null;}};
     if(["train","car","transfer","ferry","cruise"].includes(payload.candidateType)){
       if(payload.scheduledDepartureUtc==null&&payload.startDate)payload.scheduledDepartureUtc=dateToUtc(payload.startDate,payload.departureTimezone);
       if(payload.scheduledArrivalUtc==null&&payload.endDate)payload.scheduledArrivalUtc=dateToUtc(payload.endDate,payload.arrivalTimezone||payload.departureTimezone);
@@ -10200,6 +13567,7 @@
         version: Number(item.version) || 1,
         completion_source: val(item, "completion_source", "completionSource") || (completed ? "user" : "none"),
         completed,
+        __essential: isEssentialTitle(val(item, "title")),
       };
     });
   }
@@ -10217,20 +13585,27 @@
   }
   function applyChecklistServerRow(local, row) {
     if (!row) return;
+    if (String(local.id).startsWith("local-")) rememberServerId(local.id, row.id);
     Object.assign(local, normalizeChecklist([row])[0], { __local: false });
+  }
+  // An item created offline whose create is still queued: fold later edits
+  // into that create instead of sending edits for a record the server lacks.
+  function queuedChecklistCreate(tempId) {
+    return pendingMutations().find((row) => row.kind === "checklist" && row.op === "create" && row.tempId === tempId && row.status !== "sending");
   }
   // A newer version exists on the server (409). Recover the current version so
   // the caller can retry once, instead of reverting or leaving stale state.
-  async function currentChecklistVersion(item, conflictDetails) {
+  async function currentChecklistVersion(item, conflictDetails, tripId = state.trip?.id) {
     const fromError = Number(
       conflictDetails && typeof conflictDetails === "object" ? conflictDetails.currentVersion : NaN,
     );
     if (Number.isSafeInteger(fromError)) return fromError;
     try {
-      const res = await api(checklistPath());
+      const res = await api(`/api/v1/trips/${encodeURIComponent(tripId)}/checklist`);
       const fresh = normalizeChecklist(res?.items || []).find((row) => String(row.id) === String(item.id));
       return fresh ? Number(fresh.version) : null;
-    } catch (_) {
+    } catch (error) {
+      if (isNetworkFailure(error)) throw error;
       return null;
     }
   }
@@ -10243,7 +13618,11 @@
     item.completion_source = next ? "user" : "none";
     renderChecklist();
     if (PREVIEW_MODE) return;
-    if (item.__local) { persistChecklistCache(); return; }
+    if (item.__local) {
+      queuePendingMutation({ kind: "checklist", op: "toggle", tripId: state.trip.id, itemId: item.id, body: { completed: next } });
+      persistChecklistCache();
+      return;
+    }
     item.__saving = true;
     try {
       let res;
@@ -10263,7 +13642,7 @@
       applyChecklistServerRow(item, res?.item);
       persistChecklistCache();
     } catch (error) {
-      if (!navigator.onLine) {
+      if (isNetworkFailure(error)) {
         queuePendingMutation({ kind: "checklist", op: "toggle", tripId: state.trip.id, itemId: item.id, body: { version: Number(item.version), completed: next } });
         persistChecklistCache();
       } else {
@@ -10276,9 +13655,77 @@
       item.__saving = false;
     }
   }
+  // General pre-trip essentials — the items every traveler should pack and
+  // prepare. Loaded on demand from the checklist screen; deduped by title so
+  // repeat taps never create duplicates. Categories/priorities match the
+  // server-validated enums (documents/before_you_leave/packing, critical..low).
+  const TRIP_ESSENTIALS = Object.freeze([
+    { title: "Passport (valid 6+ months)", category: "documents", priority: "critical" },
+    { title: "Photo ID or driver's license", category: "documents", priority: "high" },
+    { title: "Visa or entry permit (if required)", category: "documents", priority: "high" },
+    { title: "Travel insurance details", category: "documents", priority: "high" },
+    { title: "Boarding passes saved offline", category: "documents", priority: "medium" },
+    { title: "Copies of key documents", category: "documents", priority: "medium" },
+    { title: "Check in online", category: "before_you_leave", priority: "medium" },
+    { title: "Confirm transport to the airport", category: "before_you_leave", priority: "medium" },
+    { title: "Notify your bank of travel", category: "before_you_leave", priority: "medium" },
+    { title: "Download offline maps", category: "before_you_leave", priority: "medium" },
+    { title: "Charge all devices", category: "before_you_leave", priority: "medium" },
+    { title: "Phone and charger", category: "packing", priority: "high" },
+    { title: "Power bank", category: "packing", priority: "medium" },
+    { title: "Travel power adapter", category: "packing", priority: "medium" },
+    { title: "Medications and prescriptions", category: "packing", priority: "high" },
+    { title: "Cash and payment cards", category: "packing", priority: "high" },
+    { title: "Toiletries and personal care", category: "packing", priority: "medium" },
+    { title: "Reusable water bottle", category: "packing", priority: "low" },
+  ]);
+  // Titles of the curated defaults, so an item can be recognised as an
+  // "essential" across reloads (the server stores no marker of its own).
+  const ESSENTIAL_TITLES = new Set(TRIP_ESSENTIALS.map((e) => e.title.trim().toLowerCase()));
+  function isEssentialTitle(title) { return ESSENTIAL_TITLES.has(String(title || "").trim().toLowerCase()); }
+  async function loadEssentials() {
+    if (!state.trip || state.loadingEssentials) return;
+    const existing = new Set(
+      (state.checklist || [])
+        .filter((r) => !val(r, "deleted_at", "deletedAt"))
+        .map((r) => String(val(r, "title") || "").trim().toLowerCase()),
+    );
+    const toAdd = TRIP_ESSENTIALS.filter((e) => !existing.has(e.title.toLowerCase()));
+    if (!toAdd.length) { showToast("Your travel essentials are already on the list."); return; }
+    state.loadingEssentials = true;
+    renderChecklist();
+    if (PREVIEW_MODE) {
+      toAdd.forEach((e, i) => state.checklist.push({ id: `preview-ess-${state.checklist.length + i + 1}`, title: e.title, category: e.category, priority: e.priority, version: 1, completed: false, completion_source: "none", created_at: 0, __local: true, __essential: true }));
+      state.loadingEssentials = false;
+      render();
+      return;
+    }
+    const temps = toAdd.map((e) => ({ item: { id: `local-${crypto.randomUUID()}`, title: e.title, category: e.category, priority: e.priority, version: 1, completed: false, completion_source: "none", created_at: Date.now(), __local: true, __essential: true }, seed: e }));
+    temps.forEach(({ item }) => state.checklist.push(item));
+    render();
+    let added = 0;
+    for (const { item, seed } of temps) {
+      const payload = { title: seed.title, category: seed.category, priority: seed.priority };
+      try {
+        const res = await api(checklistPath(), { method: "POST", body: JSON.stringify(payload) });
+        applyChecklistServerRow(item, res?.item);
+        added++;
+      } catch (error) {
+        if (isNetworkFailure(error)) {
+          queuePendingMutation({ kind: "checklist", op: "create", tripId: state.trip.id, tempId: item.id, body: payload });
+          added++;
+        } else {
+          state.checklist = state.checklist.filter((row) => row.id !== item.id);
+        }
+      }
+    }
+    persistChecklistCache();
+    state.loadingEssentials = false;
+    render();
+    showToast(added ? `Added ${added} travel essential${added === 1 ? "" : "s"}.` : "Could not add essentials. Try again.", added ? undefined : "alert");
+  }
   async function addChecklistItem(rawTitle) {
     const title = String(rawTitle || "").trim();
-    if (!title || !state.trip) return;
     if (PREVIEW_MODE) {
       state.checklist.push({ id: `preview-${state.checklist.length + 1}`, title, category: "custom", priority: "medium", version: 1, completed: false, completion_source: "none", created_at: 0, __local: true });
       render();
@@ -10293,7 +13740,7 @@
       applyChecklistServerRow(temp, res?.item);
       persistChecklistCache();
     } catch (error) {
-      if (!navigator.onLine) {
+      if (isNetworkFailure(error)) {
         queuePendingMutation({ kind: "checklist", op: "create", tripId: state.trip.id, tempId, body: { title, category: "custom", priority: "medium" } });
         persistChecklistCache();
       } else {
@@ -10337,7 +13784,14 @@
     const previous = item.title;
     item.title = title;
     renderChecklist();
-    if (PREVIEW_MODE || item.__local) { persistChecklistCache(); return; }
+    if (PREVIEW_MODE) { persistChecklistCache(); return; }
+    if (item.__local) {
+      const create = queuedChecklistCreate(item.id);
+      if (create) updatePendingRow(create.id, { body: { ...create.body, title } });
+      else queuePendingMutation({ kind: "checklist", op: "rename", tripId: state.trip.id, itemId: item.id, body: { title } });
+      persistChecklistCache();
+      return;
+    }
     try {
       let res;
       try {
@@ -10354,7 +13808,7 @@
       applyChecklistServerRow(item, res?.item);
       persistChecklistCache();
     } catch (error) {
-      if (!navigator.onLine) {
+      if (isNetworkFailure(error)) {
         queuePendingMutation({ kind: "checklist", op: "rename", tripId: state.trip.id, itemId: item.id, body: { version: Number(item.version), title } });
         persistChecklistCache();
       } else {
@@ -10365,10 +13819,17 @@
     }
   }
   const checklistDeleteTimers = new Map();
+  // IDs of checklist rows removed locally but not yet committed to the server
+  // (during the undo window). A background trip refresh reconciles the checklist
+  // from the server, which still lists these rows — so applyTripDetails filters
+  // them out to stop deleted items (single or the whole essentials set) from
+  // flashing away and then reappearing before the deferred delete lands.
+  const pendingChecklistDeletes = new Set();
   function deleteChecklistItem(id) {
     const idx = state.checklist.findIndex((row) => String(row.id) === String(id));
     if (idx < 0) return;
     const [removed] = state.checklist.splice(idx, 1);
+    pendingChecklistDeletes.add(String(id));
     renderChecklist();
     persistChecklistCache();
     // Defer the server delete for the undo window so undo is a pure local
@@ -10381,6 +13842,7 @@
     showUndoToast(`Removed "${removed.title}"`, () => {
       clearTimeout(timer);
       checklistDeleteTimers.delete(id);
+      pendingChecklistDeletes.delete(String(id));
       const at = Math.min(idx, state.checklist.length);
       state.checklist.splice(at, 0, removed);
       renderChecklist();
@@ -10388,8 +13850,15 @@
     });
   }
   async function commitChecklistDelete(removed) {
-    if (!removed || PREVIEW_MODE || removed.__local) return;
+    if (!removed) return;
     try {
+      if (PREVIEW_MODE) return;
+      if (removed.__local) {
+        const create = queuedChecklistCreate(removed.id);
+        if (create) pendingMutations().filter((row) => row.kind === "checklist" && row.status !== "sending" && (row.id === create.id || row.itemId === removed.id)).forEach((row) => discardPendingRow(row.id));
+        else queuePendingMutation({ kind: "checklist", op: "delete", tripId: state.trip.id, itemId: removed.id, body: {} });
+        return;
+      }
       try {
         await api(checklistItemPath(removed.id), { method: "DELETE", body: JSON.stringify({ version: Number(removed.version) }) });
       } catch (error) {
@@ -10404,52 +13873,72 @@
       }
       persistChecklistCache();
     } catch (error) {
-      if (!navigator.onLine) {
+      if (isNetworkFailure(error)) {
         queuePendingMutation({ kind: "checklist", op: "delete", tripId: state.trip.id, itemId: removed.id, body: { version: Number(removed.version) } });
       }
       // A failed online delete leaves the item gone locally; the next full
       // trip load reconciles from the server (item reappears if not deleted).
+    } finally {
+      // The delete has landed (or been queued/skipped): stop shielding this id so
+      // future syncs reflect the real server state.
+      pendingChecklistDeletes.delete(String(removed.id));
     }
   }
-  async function flushChecklistQueue() {
-    if (PREVIEW_MODE || !navigator.onLine || !state.token) return;
-    const rows = pendingMutations();
-    const keep = [];
-    let touched = false;
-    for (const row of rows) {
-      if (row.kind !== "checklist" || row.status === "done") { keep.push(row); continue; }
-      try {
-        if (row.op === "create") await api(`/api/v1/trips/${encodeURIComponent(row.tripId)}/checklist`, { method: "POST", body: JSON.stringify(row.body) });
-        else if (row.op === "delete") await api(`/api/v1/trips/${encodeURIComponent(row.tripId)}/checklist/${encodeURIComponent(row.itemId)}`, { method: "DELETE", body: JSON.stringify(row.body) });
-        else await api(`/api/v1/trips/${encodeURIComponent(row.tripId)}/checklist/${encodeURIComponent(row.itemId)}`, { method: "PATCH", body: JSON.stringify(row.body) });
-        touched = true;
-      } catch (_) {
-        keep.push({ ...row, status: "retry" });
+  // Remove every curated "travel essential" in one action, with a single undo.
+  function removeEssentials() {
+    if (!state.trip || state.loadingEssentials) return;
+    const snapshot = (state.checklist || []).map((row, i) => ({ row, i })).filter((e) => e.row.__essential);
+    if (!snapshot.length) { showToast("No travel essentials to remove."); return; }
+    const ids = new Set(snapshot.map((e) => String(e.row.id)));
+    const removedRows = snapshot.map((e) => e.row);
+    ids.forEach((id) => pendingChecklistDeletes.add(id));
+    state.checklist = (state.checklist || []).filter((row) => !ids.has(String(row.id)));
+    renderChecklist();
+    persistChecklistCache();
+    const n = removedRows.length;
+    const timer = setTimeout(() => {
+      checklistDeleteTimers.delete("__essentials__");
+      removedRows.forEach((row) => commitChecklistDelete(row));
+    }, 5000);
+    checklistDeleteTimers.set("__essentials__", timer);
+    showUndoToast(`Removed ${n} travel essential${n === 1 ? "" : "s"}`, () => {
+      clearTimeout(timer);
+      checklistDeleteTimers.delete("__essentials__");
+      ids.forEach((id) => pendingChecklistDeletes.delete(id));
+      snapshot.forEach(({ row, i }) => { const at = Math.min(i, state.checklist.length); state.checklist.splice(at, 0, row); });
+      renderChecklist();
+      persistChecklistCache();
+    });
+  }
+  // Checklist conflict rule: a checklist edit is low impact, so the latest
+  // local intent wins over a newer server version (re-read version, retry
+  // once). A record deleted on the server keeps the change for review.
+  function flushChecklistQueue() {
+    return flushPendingKind("checklist", async (row) => {
+      const base = `/api/v1/trips/${encodeURIComponent(row.tripId)}/checklist`;
+      if (row.op === "create") {
+        const res = await api(base, { method: "POST", headers: { "Idempotency-Key": row.id }, body: JSON.stringify(row.body) });
+        rememberServerId(row.tempId, res?.item?.id);
+        return res;
       }
-    }
-    localStorage.setItem(PENDING_KEY, JSON.stringify(keep));
-    return touched;
-  }
-  async function saveDocumentForm(form) {
-    try {
-      const file = form.elements.documentFile.files[0],
-        type = form.elements.documentType?.value || "other",
-        travelerIds = [
-          ...form.querySelectorAll('input[name="documentTraveler"]:checked'),
-        ].map((input) => input.value),
-        status = form.querySelector(".document-verify-state"),
-        submit = form.querySelector('button[data-action="save-document"]');
-      if (status) status.textContent = "Verifying file integrity…";
-      if (submit) { submit.disabled = true; submit.setAttribute("aria-busy", "true"); }
-      await saveLocalDocument(file, type, travelerIds);
-      state.sheet = null;
-      route("documents", null, true);
-    } catch (error) {
-      const status = form.querySelector(".document-verify-state"), submit = form.querySelector('button[data-action="save-document"]');
-      if (status) status.textContent = "Verification failed. Choose the file again or try another file.";
-      if (submit) { submit.disabled = false; submit.removeAttribute("aria-busy"); }
-      showToast(error instanceof Error ? error.message : String(error), "alert");
-    }
+      const itemId = resolvePendingId(row.itemId);
+      if (!itemId) throw Object.assign(new Error("The item was not created on the server."), { status: 424, code: "DEPENDENCY_FAILED" });
+      const path = `${base}/${encodeURIComponent(itemId)}`, method = row.op === "delete" ? "DELETE" : "PATCH";
+      const send = (version) => api(path, { method, body: JSON.stringify({ ...row.body, version }) });
+      let version = Number(row.body?.version);
+      if (String(row.itemId).startsWith("local-") || !Number.isSafeInteger(version) || version < 1) {
+        version = await currentChecklistVersion({ id: itemId }, null, row.tripId);
+        if (version == null) throw Object.assign(new Error("The item is no longer on the server."), { status: 410, code: "NOT_FOUND" });
+      }
+      try {
+        return await send(version);
+      } catch (error) {
+        if (error?.status !== 409) throw error;
+        const fresh = await currentChecklistVersion({ id: itemId }, error.details, row.tripId);
+        if (fresh == null) throw error;
+        return send(fresh);
+      }
+    });
   }
   function mapQueryForLocation(location) {
     if (!location) return "";
@@ -10471,6 +13960,12 @@
       showToast("Address or coordinates are unavailable.");
       return;
     }
+    // In the browser this navigates away from tripto.to; offline that lands
+    // on an error page. The saved address stays readable here instead.
+    if (!NATIVE && !navigator.onLine) {
+      showToast("Connect to open directions. The saved address and Show to Driver work offline.");
+      return;
+    }
     // Same-tab navigation so the browser Back button returns to the app
     // (a _blank tab bounces to the Maps app and leaves no history to go back to).
     window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
@@ -10481,8 +13976,9 @@
   // intentionally NOT here — viewers can still manage their own account.
   const VIEWER_BLOCKED_ACTIONS = new Set([
     "open-add", "open-add-booking", "add-booking", "add-checklist-suggested",
-    "add-document", "add-type", "add-duplicate-import", "confirm-import",
+    "add-document", "add-type", "add-duplicate-import", "confirm-import", "add-return-flight",
     "delete-booking", "delete-checklist", "delete-trip", "delete-traveler", "edit-booking",
+    "remove-essentials",
     "edit-checklist", "edit-note", "edit-trip", "save-note", "toggle-checklist",
     "move-booking", "apply-move", "manage-booking", "remove-document",
     "remove-import", "reject-import", "review-import", "import",
@@ -10524,6 +14020,9 @@
         showToast("You have view-only access to this trip.", "status");
         break;
       case "back":
+        // First tap after dismissing the keyboard is a no-op; the keyboard was
+        // already closed at pointerdown. The next tap performs the real Back.
+        if (suppressBackNav) { suppressBackNav = false; break; }
         goBackFromCurrentScreen();
         break;
       case "retry":
@@ -10553,7 +14052,11 @@
             break;
           }
           state.editingEntity = null;
-          route("form", "trip");
+          if (state.trips.length >= 1) {
+            state.subscriptionOrigin = "trips";
+            route("subscription");
+          }
+          else route("form", "trip");
         } else {
           // The ubiquitous "+" opens the Add-to-trip hub (Add a booking, Day
           // Plan, Save for Later). Create-trip lives only on /trips and Account.
@@ -10597,10 +14100,6 @@
         state.editingEntity = null;
         state.dayPlanContext = null;
         route("day-plan-form", target.dataset.id);
-        break;
-      case "save-later-filter":
-        state.saveLaterFilter = target.dataset.filter === "planned" ? "planned" : "ideas";
-        render();
         break;
       case "open-idea":
         state.ideaMenu = target.dataset.id;
@@ -10675,6 +14174,12 @@
         break;
       case "add-checklist-suggested":
         await addChecklistItem(target.dataset.title);
+        break;
+      case "load-essentials":
+        await loadEssentials();
+        break;
+      case "remove-essentials":
+        removeEssentials();
         break;
       case "toast-action":
         {
@@ -10789,6 +14294,179 @@
         route("currency");
         void ensureCurrencyRates();
         break;
+      case "open-tax-free":
+        closeSheet();
+        route("tax-free");
+        break;
+      case "open-spots":
+        closeSheet();
+        state.spotScope = state.trip ? "trip" : "all";
+        await refreshSpots();
+        route("spots");
+        break;
+      case "spot-detect":
+        await beginSpotDetection();
+        break;
+      case "spot-redetect": {
+        const form = target.closest("form");
+        await beginSpotDetection({
+          name: String(form?.elements?.spotName?.value || "").trim(),
+          note: String(form?.elements?.spotNote?.value || "").trim(),
+        });
+        break;
+      }
+      case "spot-save-confirm": {
+        const draft = state.spotDraft;
+        if (!draft) { closeSheet(); break; }
+        const form = target.closest("form");
+        const name = String(form?.elements?.spotName?.value || "").trim();
+        const note = String(form?.elements?.spotNote?.value || "").trim();
+        if (!name) {
+          showToast("Give this spot a name so you can find it later.", "alert");
+          form?.elements?.spotName?.focus();
+          break;
+        }
+        if (target.disabled) break;
+        target.disabled = true;
+        try {
+          await saveSpot({ ...draft, name, note });
+          state.spotDraft = null;
+          closeSheet();
+          route("spots");
+          showToast("Spot saved on this device.");
+        } catch (error) {
+          target.disabled = false;
+          showToast(error?.message || "That spot couldn’t be saved.", "alert");
+        }
+        break;
+      }
+      case "spot-route":
+        state.spotActiveId = target.dataset.id || null;
+        openSheet("spot-route", target);
+        break;
+      case "spot-mode": {
+        const mode = target.dataset.mode;
+        if (!["driving", "transit", "walking"].includes(mode)) break;
+        state.spotTravelMode = mode;
+        try { localStorage.setItem("tripto.spotTravelMode", mode); } catch {}
+        render();
+        break;
+      }
+      case "spot-nav": {
+        const spot = (state.spots || []).find((row) => String(row.id) === String(target.dataset.id));
+        if (!spot) break;
+        const links = spotMapLinks(spot.latitude, spot.longitude, state.spotTravelMode);
+        const app = target.dataset.app;
+        if (app === "apple") openExternalMap(links.apple);
+        else if (app === "waze") openExternalMap(links.waze);
+        else openExternalMap(links.google);
+        break;
+      }
+      case "spot-share": {
+        const spot = (state.spots || []).find((row) => String(row.id) === String(target.dataset.id));
+        if (spot) await shareSpot(spot);
+        break;
+      }
+      case "spot-copy-coords": {
+        const spot = (state.spots || []).find((row) => String(row.id) === String(target.dataset.id));
+        if (spot) await copySpotCoords(spot);
+        break;
+      }
+      case "spot-menu":
+        state.spotActiveId = target.dataset.id || null;
+        openSheet("spot-menu", target);
+        break;
+      case "spot-edit":
+        state.spotActiveId = target.dataset.id || null;
+        state.spotEditMode = target.dataset.mode === "note" ? "note" : "name";
+        openSheet("spot-edit", target);
+        break;
+      case "spot-edit-save": {
+        const form = target.closest("form");
+        const value = String(form?.elements?.spotEditValue?.value || "").trim();
+        const mode = target.dataset.mode === "note" ? "note" : "name";
+        if (mode === "name" && !value) { showToast("A name is required.", "alert"); break; }
+        try {
+          await updateSpot(state.spotActiveId, mode === "note" ? { note: value } : { name: value });
+          closeSheet();
+          render();
+          showToast(mode === "note" ? "Note updated." : "Spot renamed.");
+        } catch (error) {
+          showToast(error?.message || "That change couldn’t be saved.", "alert");
+        }
+        break;
+      }
+      case "spot-delete": {
+        const spot = (state.spots || []).find((row) => String(row.id) === String(target.dataset.id));
+        if (!spot) break;
+        const snapshot = { ...spot };
+        try {
+          await removeSpot(spot.id);
+          closeSheet();
+          render();
+          showUndoToast("Spot deleted.", async () => {
+            await putSpotRow(snapshot);
+            await refreshSpots();
+            render();
+          });
+        } catch (error) {
+          showToast(error?.message || "That spot couldn’t be deleted.", "alert");
+        }
+        break;
+      }
+      case "spot-export":
+        await exportSpots();
+        break;
+      case "spot-import":
+        triggerSpotImport();
+        break;
+      case "tax-free-country":
+        state.taxFreeCountry=target.dataset.country||"FR";
+        state.taxFreeSearch="";
+        state.taxFreeCollapsed=true;
+        state.taxFreeRegion=null;
+        state.taxFreeAirportCode=null;
+        state.taxFree=null;
+        state.taxFreeRate=null;
+        void ensureTaxFree();
+        break;
+      case "tax-free-search-clear":
+        state.taxFreeSearch="";
+        state.taxFreeCollapsed=false;
+        render();
+        setTimeout(()=>{try{document.querySelector("[data-tax-free-search]")?.focus();}catch(_){}},0);
+        break;
+      case "tax-free-region":
+        state.taxFreeRegion=target.dataset.region||null;
+        state.taxFreeAirportCode=null;
+        state.taxFree=null;
+        state.taxFreeRate=null;
+        void ensureTaxFree();
+        break;
+      case "tax-free-airport":
+        state.taxFreeAirportCode=target.dataset.airport||null;
+        render();
+        break;
+      case "refresh-tax-free":
+        void ensureTaxFree(true);
+        break;
+      case "export-pdf": {
+        let canShare = false;
+        try { canShare = typeof navigator !== "undefined" && typeof navigator.canShare === "function"; } catch (_) { canShare = false; }
+        state.exportPdf = { travelers: false, refs: false, notes: false, checklist: false, busy: false, error: "", canShare };
+        // Warm the renderer + fonts in the background so the first download is
+        // fast; failures are ignored here and surfaced only on an actual export.
+        void ensurePdfExport().catch(() => {});
+        void ensurePdfFonts().catch(() => {});
+        openSheet("export-pdf", target);
+        break;
+      }
+      case "export-pdf-download":
+        await runExportPdf("download");
+        break;
+      case "export-pdf-share":
+        await runExportPdf("share");
+        break;
       case "open-currency-picker":
         state.currencyPickerField = target.dataset.field === "from" ? "from" : "to";
         openSheet("currency-picker", target);
@@ -10814,6 +14492,14 @@
       case "refresh-currency":
         await ensureCurrencyRates(true);
         break;
+      case "currency-preset": {
+        const currency = initCurrency(), preset = Math.max(0, Number(target.dataset.amount) || 0);
+        currency.amount = preset;
+        currency.amountText = String(preset);
+        saveCurrencyPreferences();
+        render();
+        break;
+      }
       case "currency-swap": {
         const currency = initCurrency(), from = currency.from;
         currency.from = currency.to;
@@ -10825,23 +14511,6 @@
         void ensureCurrencyRates(true);
         break;
       }
-      case "open-esim":
-        closeSheet();
-        route("esim");
-        break;
-      case "esim-signup":
-        // Referral partner (7g eSIM, code FKWQX6ES → 15% off). Opens externally
-        // in a new tab so the trip stays open; noopener isolates the app context.
-        window.open("https://esim-7g.app.link/free-credit", "_blank", "noopener,noreferrer");
-        break;
-      case "copy-esim-code":
-        try {
-          await navigator.clipboard.writeText("FKWQX6ES");
-          showToast("Code FKWQX6ES copied.");
-        } catch (_) {
-          showToast("Code: FKWQX6ES");
-        }
-        break;
       case "weather-place":
         state.weatherSel = target.dataset.key || null;
         render();
@@ -10860,10 +14529,6 @@
         break;
       case "open-trip-map":
         closeSheet();
-        if (!canShowTripMap()) {
-          showToast("This trip needs at least two places to map.");
-          break;
-        }
         state.tripMapDay = null;
         route("trip-map");
         // Resolve any address-only places to precise coordinates for the
@@ -10879,6 +14544,39 @@
       case "trip-map-navigate":
         if (state.offline) showToast("Connect to open directions. Your trip places remain available offline.");
         else openMaps(target.dataset.query || "");
+        break;
+      case "toggle-map-layers":
+        state.mapLayersOpen = !state.mapLayersOpen;
+        render();
+        break;
+      case "set-map-layer": {
+        const layer = target.dataset.layer;
+        if (state.mapLayers && layer && layer in state.mapLayers) {
+          state.mapLayers[layer] = !state.mapLayers[layer];
+          if (layer === "location" && state.mapLayers.location && !state.mapLocation) { mapLocate(); break; }
+          render();
+          // Apply the layer change to the map immediately (don't wait on the
+          // async ensureMapLibre chain). Do NOT refit — toggling a layer must
+          // not move the camera the user has positioned.
+          if (liveMap && liveMapStyled) refreshLiveMap();
+        }
+        break;
+      }
+      case "map-locate":
+        mapLocate();
+        break;
+      case "map-fit":
+        liveMapFitSig = "";
+        if (liveMap) fitLiveMap();
+        else render();
+        break;
+      case "toggle-map-sheet":
+        state.mapSheetCollapsed = !state.mapSheetCollapsed;
+        render();
+        break;
+      case "open-page-help":
+        state.pageHelp = target.dataset.help || "";
+        openSheet("page-help", target);
         break;
       case "open-first-run-how":
         openSheet("first-run-how", target);
@@ -10988,6 +14686,9 @@
           if (form && validateFocusedForm(form)) saveNativeForm(form);
         });
         break;
+      case "native-google-signin":
+        if (NATIVE) await nativeGoogleSignIn(target);
+        break;
       case "preview-google":
         showToast("Google sign-in is disabled in the isolated visual preview.");
         break;
@@ -11001,6 +14702,28 @@
         closeSheet();
         state.editingEntity = null;
         route("form", "trip");
+        break;
+      case "open-subscription":
+        state.subscriptionOrigin = state.screen === "trips" ? "trips" : "account";
+        route("subscription");
+        break;
+      case "manage-subscription": {
+        if (NATIVE) break;
+        const portal = state.subscription?.customerPortalUrl;
+        if (!portal) { showToast("Your billing portal is not available yet. Please try again shortly.", "alert"); break; }
+        const link = document.createElement("a");
+        link.href = portal;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.click();
+        break;
+      }
+      case "choose-subscription-plan":
+        state.subscriptionPlan = target.dataset.plan === "month" ? "month" : "year";
+        render();
+        break;
+      case "subscription-back":
+        route(state.subscriptionOrigin === "account" ? "account" : "trips", null, true);
         break;
       case "edit-trip":
         if (!state.trip) break;
@@ -11035,6 +14758,34 @@
       case "apply-move": {
         const menu = state.moveBooking;
         if (menu) moveBookingToDay(menu.kind, menu.id, String(target.dataset.key || ""));
+        break;
+      }
+      case "add-return-flight": {
+        const record = findBookingRecord("flight", target.dataset.id);
+        if (!record) break;
+        // Opened from the edit form: unsaved edits must not vanish silently.
+        if (formHasMeaningfulChanges && DIRTY_TASK_SCREENS.has(state.screen)) {
+          requestDiscardChanges(() => handleActionTask("add-return-flight", target, inputMethod));
+          break;
+        }
+        const p = buildBookingPrefill("flight", record.entity);
+        // Route the user through the normal Add-flight form, prefilled as the
+        // reversed leg. Dates/times and the return flight number are left blank
+        // for the user to fill; timezones and route swap with the outbound.
+        state.pendingReturnFlight = {
+          carrierName: p.carrierName,
+          fromLocation: p.toLocation,
+          toLocation: p.fromLocation,
+          departureTimezone: p.arrivalTimezone,
+          arrivalTimezone: p.departureTimezone,
+          bookingReference: p.bookingReference,
+          travelerIds: p.travelerIds,
+        };
+        state.sheet = null;
+        state.manageBooking = null;
+        state.manualLabel = null;
+        state.editingEntity = null;
+        route("form", "flight");
         break;
       }
       case "edit-booking": {
@@ -11129,6 +14880,7 @@
         const type = target.dataset.type;
         state.manualLabel = manualBookingConfig(type)?.label || null;
         state.editingEntity = null;
+        state.pendingReturnFlight = null;
         closeSheet();
         route("form", type);
         break;
@@ -11265,7 +15017,12 @@
       case "filter-bookings": state.bookingFilter=target.dataset.filter||"all"; render(); break;
       case "document-sheet":
       case "add-document":
-        route("form", "document");
+        state.docRelatedBooking = target.dataset.id || null;
+        route("documents");
+        break;
+      case "clear-doc-file":
+        state.pendingDocFile = null;
+        render();
         break;
       case "open-document":
       case "boarding-pass":
@@ -11339,11 +15096,25 @@
         break;
       case "remove-import": if(target.dataset.id) confirmRemoveImport(target.dataset.id); break;
       case "confirm-import": try{await resolveImport(target.dataset.id,"confirm");}catch(error){showToast(error.message,"alert");} break;
-      case "reject-import": try{await resolveImport(target.dataset.id,"reject");}catch(error){showToast(error.message,"alert");} break;
+      case "reject-import": {
+        const rejectId = target.dataset.id;
+        openConfirmDialog({
+          title: "Discard this booking?",
+          body: "This imported booking will be removed from the review list. This cannot be undone.",
+          confirmLabel: "Discard",
+          onConfirm: async () => { await resolveImport(rejectId, "reject"); },
+        });
+        break;
+      }
       case "add-duplicate-import": {
         try{if(PREVIEW_MODE){state.importReview.duplicate=false;render();break;}const response=await api(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/imports/upload/preview`,{method:"POST",body:JSON.stringify({...state.importUploadRequest,duplicateDisposition:"add_anyway"})});state.importReview=response;render();showToast("A separate review was created.");}catch(error){showToast(error.message,"alert");}break;
       }
-      case "sync-retry": if(PREVIEW_MODE){state.syncStatus={pendingOperations:0,openConflicts:0};render();showToast("Pending changes synced in preview.");}else await loadApp(); break;
+      case "discard-pending": {
+        const id = target?.dataset?.id;
+        openConfirmDialog({ title: "Discard this change?", body: "The server version stays. This can't be undone.", confirmLabel: "Discard", danger: true, onConfirm: () => { discardPendingRow(id); state.pendingCount = myPendingMutations().length; render(); } });
+        break;
+      }
+      case "sync-retry": if(PREVIEW_MODE){state.syncStatus={pendingOperations:0,openConflicts:0};render();showToast("Pending changes synced in preview.");}else{if(!navigator.onLine){showToast("Connect to the internet to sync. Your changes stay on this phone.");break;}writePendingMutations(pendingMutations().map((row)=>row.status==="failed"&&pendingRowIsMine(row)?{...row,lastAttemptAt:0}:row));await syncPendingChanges();await loadApp();} break;
       case "sync-review": {
         try { const result=await apiGet(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/sync/conflicts`); state.syncConflicts=Array.isArray(result)?result:(result.conflicts||[]); render(); }
         catch (error) { showToast(error.message,"alert"); }
@@ -11359,6 +15130,38 @@
         if(PREVIEW_MODE){showToast("Support bundle is available outside preview mode.");break;}
         if(!state.trip){showToast("Select a trip first to build a support bundle.");break;}
         try{showToast("Preparing support bundle…");await apiDownload(`/api/v1/trips/${encodeURIComponent(state.trip.id)}/support`,`tripto-support-${String(state.trip.id).slice(0,8)}.json`);}catch(error){showToast(error.message,"alert");}
+        break;
+      case "set-locale": {
+        const locale = globalThis.TriptoI18n?.normalize(target.dataset.locale);
+        if (!locale) break;
+        try {
+          await globalThis.TriptoI18n.setLocale(locale);
+          if (!PREVIEW_MODE && state.account?.mode === "account") {
+            await api("/api/v1/account/locale", { method:"PATCH", body:JSON.stringify({locale}) });
+            if (state.account?.user) state.account.user.locale = locale;
+          }
+          render();
+        } catch (error) { showToast(error?.message || "Language could not be changed.", "alert"); }
+        break;
+      }
+      case "force-update":
+        try {
+          showToast("Updating to the latest version…");
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister().catch(() => {})));
+          }
+          if (globalThis.caches) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k).catch(() => {})));
+          }
+        } catch (_) {}
+        location.reload();
+        break;
+      case "set-theme":
+        applyTheme(target.dataset.theme);
+        render();
+        showToast(`${state.theme === "day" ? "Day" : state.theme === "mono" ? "Mono" : state.theme === "ember" ? "Ember" : state.theme === "studio" ? "Studio" : "Night"} theme selected.`);
         break;
       case "open-help":
         openSheet("help", target);
@@ -11386,7 +15189,7 @@
         route("booking-email-inbox");
         break;
       case "remove-local-data": {
-        const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+        const pending=myPendingMutations().length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
         if(pending){showToast("Review pending changes before removing local data.","alert");break;}
         if(await requestConfirmation({ title: "Remove local data?", body: "Remove locally stored documents and cached trip data from this phone? Your server trip will not be deleted.", confirmLabel: "Remove" })) {
           try { await clearLocalDeviceData(); showToast("Local files and cached trip data were removed from this phone."); render(); }
@@ -11401,15 +15204,16 @@
           if(!await requestConfirmation({ title: "Delete your account?", body: `Permanently delete your account and ${trips} server trip${trips===1?"":"s"}? This cannot be undone.`, confirmLabel: "Delete account", confirmationText: "DELETE" })) break;
           await api("/api/v1/account",{method:"DELETE",body:JSON.stringify({confirm:"DELETE"})});
           await clearLocalDeviceData();
+          nativePlugin("TriptoNative")?.googleSignOut?.().catch(()=>{});
           localStorage.removeItem("tripto_token"); state.token=""; state.trip=null; state.trips=[];
           await loadApp(); showToast("Your account and server data were deleted.");
         } catch (error) { showToast(error.message,"alert"); }
         break;
       }
       case "sign-out": {
-        const pending=pendingMutations().filter((x)=>x.status!=="done").length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+        const pending=myPendingMutations().length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
         if(pending&&!await requestConfirmation({ title: "Sign out with pending changes?", body: `${pending} change${pending===1?" is":"s are"} still pending. The changes and local documents will stay on this phone.`, confirmLabel: "Sign out", danger: false }))break;
-        try{const previousIdentity=sessionIdentity();const result=await api("/api/v1/auth/signout",{method:"POST",body:"{}"});globalThis.google?.accounts?.id?.disableAutoSelect?.();clearApiCache(previousIdentity);state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed out. Local documents remain on this phone.");}catch(error){showToast(error.message,"alert");}break;
+        try{const previousIdentity=sessionIdentity();const result=await api("/api/v1/auth/signout",{method:"POST",body:"{}"});globalThis.google?.accounts?.id?.disableAutoSelect?.();nativePlugin("TriptoNative")?.googleSignOut?.().catch(()=>{});clearApiCache(previousIdentity);state.token=result.session.token;localStorage.setItem("tripto_token",state.token);await loadApp();showToast("Signed out. Local documents remain on this phone.");}catch(error){showToast(error.message,"alert");}break;
       }
       case "show-driver":
         state.selectedId = target.dataset.id || state.selectedId;
@@ -11492,6 +15296,14 @@
         );
         break;
       }
+      case "official-flight-status": {
+        const flight =
+          state.transport.find(
+            (row) => itemId(row) === String(target.dataset.id),
+          ) || selectedFlight();
+        openOfficialFlightStatus(flight);
+        break;
+      }
       case "toggle-flight-details":
         if (flightDetailsCloseTimer) {
           clearTimeout(flightDetailsCloseTimer);
@@ -11561,8 +15373,7 @@
         break;
       case "copy":
         if (target.dataset.value) {
-          await navigator.clipboard.writeText(target.dataset.value);
-          showToast("Copied.");
+          showToast((await copyText(target.dataset.value)) ? "Copied." : target.dataset.value);
         } else showToast("Value unavailable.");
         break;
       case "edit-note":
@@ -11635,10 +15446,12 @@
         if (!flight) return;
         const r = flightRoute(flight),
           text = `${flightNumber(flight)} · ${r.fromCode} → ${r.toCode} · ${formatDateTime(flightDeparture(flight), val(flight, "departure_timezone"))}`;
-        if (navigator.share) await navigator.share({ title: "Flight", text });
+        if (navigator.share) {
+          try { await navigator.share({ title: "Flight", text }); }
+          catch (error) { if (error?.name !== "AbortError") throw error; }
+        }
         else {
-          await navigator.clipboard.writeText(text);
-          showToast("Flight details copied.");
+          showToast((await copyText(text)) ? "Flight details copied." : text);
         }
         break;
       }
@@ -11652,14 +15465,17 @@
           catch (error) { if (error?.name !== "AbortError") throw error; }
         }
         else {
-          await navigator.clipboard.writeText(text);
-          showToast("Details copied.");
+          showToast((await copyText(text)) ? "Details copied." : text);
         }
         break;
       }
       case "recalculate-health": {
         if (PREVIEW_MODE) {
           showToast("Trip Health preview is current.");
+          break;
+        }
+        if (!navigator.onLine) {
+          showToast("Trip Health rechecks when you reconnect. The saved result is shown.");
           break;
         }
         try {
@@ -11677,22 +15493,66 @@
         break;
       }
       case "refresh-data":
+        if (!PREVIEW_MODE && !navigator.onLine) {
+          showToast("Connect to refresh. Showing saved trip data.");
+          break;
+        }
         state.refreshingOffline = true;
+        requestPersistentStorage();
         render();
         try {
-          if (!PREVIEW_MODE) await loadTripDetails();
-          showToast("Offline trip data refreshed.");
+          if (!PREVIEW_MODE) {
+            await syncPendingChanges();
+            await loadTripDetails();
+            await Promise.all([checkShellOffline(), checkStorageEstimate()]);
+          }
+          const missing = readyOfflineRows().filter((row) => !row.ready).length;
+          if (missing) showToastWithAction("Couldn't download for offline use.", "Retry", () => handleAction("refresh-data", { dataset: {} }));
+          else showToast("Offline trip data refreshed.");
         } finally {
           state.refreshingOffline = false;
           render();
         }
         break;
       case "fix-offline": {
+        requestPersistentStorage();
+        const missingData = readyOfflineRows().slice(0, 7).some((row) => !row.ready);
         const missingDocuments = documentRequirementRows().some(
           (row) => !row.ready,
         );
-        if (missingDocuments) route("documents");
-        else await loadApp();
+        if (missingData && !PREVIEW_MODE && !navigator.onLine) {
+          showToast("Couldn't download for offline use. Connect to the internet and try again.", "alert");
+          break;
+        }
+        if (missingData) {
+          await syncPendingChanges();
+          await loadApp();
+          await checkShellOffline();
+          if (readyOfflineRows().slice(0, 7).some((row) => !row.ready))
+            showToastWithAction("Couldn't download for offline use.", "Retry", () => handleAction("fix-offline", { dataset: {} }));
+          else if (missingDocuments) route("documents");
+          else showToast("Trip saved for offline use.");
+          render();
+        } else if (missingDocuments) route("documents");
+        break;
+      }
+      case "remove-offline-copy": {
+        const tripId = state.trip?.id;
+        if (!tripId) break;
+        if (myPendingMutations().some((row) => String(row.tripId) === String(tripId))) {
+          showToast("This trip has changes waiting to sync. Reconnect before removing its offline copy.", "alert");
+          break;
+        }
+        openConfirmDialog({
+          title: "Remove offline copy?",
+          body: "The saved copy of this trip is removed from this phone. The trip stays in your account and downloads again when you open it online. Documents stay on this phone; remove them in Documents.",
+          confirmLabel: "Remove offline copy",
+          onConfirm: () => {
+            tripDetailPaths().forEach((path) => { try { localStorage.removeItem(cacheKey(path)); } catch (_) {} });
+            showToast("Offline copy removed. The trip is still in your account.");
+            void checkStorageEstimate().then(render);
+          },
+        });
         break;
       }
       case "download-missing":
@@ -11714,7 +15574,8 @@
   }
   // Swipe-to-delete on trip rows + long-press-to-delete on the featured trip
   // cards. Both funnel into the existing owner-gated delete-trip action.
-  let swipeState = null, openSwipeRow = null, lpTimer = null, lpCard = null, lpStart = null, suppressClick = false;
+  const TRIP_SWIPE_DELETE = false;
+  let swipeState = null, openSwipeRow = null, lpTimer = null, lpCard = null, lpStart = null, suppressClick = false, suppressBackNav = false;
   function closeSwipeRow(except) {
     if (openSwipeRow && openSwipeRow !== except) { openSwipeRow.classList.remove("is-open"); openSwipeRow = null; }
   }
@@ -11734,7 +15595,9 @@
     // revealed Delete button lives inside the same wrap and needs the click).
     const targetWrap = event.target.closest?.("[data-swipe-row]");
     if (openSwipeRow && targetWrap !== openSwipeRow) closeSwipeRow(targetWrap || null);
-    if (wrap && handle) {
+    // Swipe-to-delete on trip rows was removed (2026-09-29); trips are deleted
+    // from Edit trip ("Delete this trip") or by long-pressing the row.
+    if (TRIP_SWIPE_DELETE && wrap && handle) {
       swipeState = { wrap, row: handle, startX: t.clientX, startY: t.clientY, base: wrap.classList.contains("is-open") ? -96 : 0, decided: false, horizontal: false, dx: wrap.classList.contains("is-open") ? -96 : 0 };
     }
     const booking = event.target.closest?.("[data-longpress-booking]");
@@ -11784,6 +15647,30 @@
   };
   app.addEventListener("touchend", endSwipe, { passive: true });
   app.addEventListener("touchcancel", endSwipe, { passive: true });
+  // Rule: on ANY screen, if the keyboard is open (a text field is focused), the
+  // FIRST tap on the back icon only dismisses the keyboard; a SECOND tap runs
+  // the real Back. We catch the tap at pointerdown — before the browser blurs
+  // the field — so we can blur it ourselves and swallow the click that follows.
+  function isEditableField(el) {
+    if (!el || el === document.body) return false;
+    if (el.isContentEditable) return true;
+    const tag = el.tagName;
+    if (tag === "TEXTAREA") return true;
+    if (tag === "INPUT") {
+      const type = (el.type || "text").toLowerCase();
+      return !["button", "submit", "reset", "checkbox", "radio", "range", "color", "file", "hidden", "image"].includes(type);
+    }
+    return false;
+  }
+  app.addEventListener("pointerdown", (event) => {
+    if (!event.target.closest?.('[data-action="back"]')) return;
+    if (!isEditableField(document.activeElement)) return;
+    try { document.activeElement.blur(); } catch (_) {}
+    suppressBackNav = true; // swallow the click this same tap will produce
+    // Safety net: if no click follows (drag-off, cancelled tap), don't leave the
+    // flag stuck and eat the next real Back.
+    setTimeout(() => { suppressBackNav = false; }, 600);
+  }, true);
   app.addEventListener("click", (event) => {
     if (suppressClick) { suppressClick = false; event.preventDefault(); event.stopPropagation(); return; }
     const swipeHandle = event.target.closest?.("[data-swipe-handle]");
@@ -11846,20 +15733,106 @@
       if (empty) empty.hidden = visible !== 0;
       return;
     }
+    const tfSearch=event.target.closest?.("[data-tax-free-search]");
+    if(tfSearch){
+      const locale=globalThis.TriptoI18n?.locale||"en",q=String(tfSearch.value||"").trim().toLocaleLowerCase(locale);
+      state.taxFreeSearch=tfSearch.value;
+      state.taxFreeCollapsed=false;
+      const results=app.querySelector("[data-tax-free-search-results]")||app.querySelector("#tax-free-country-results");
+      const rows=results?results.querySelectorAll(".place-option"):[];
+      const hasTrip=Array.from(rows).some(row=>row.dataset.taxFreeTrip==="1");
+      let visible=0;
+      rows.forEach(row=>{
+        const name=String(row.dataset.taxFreeName||""),code=String(row.dataset.country||"").toLocaleLowerCase(locale),inTrip=row.dataset.taxFreeTrip==="1",isSel=row.classList.contains("is-selected");
+        const match=q?(name.includes(q)||code.includes(q)):(!hasTrip||inTrip||isSel);
+        row.hidden=!match;if(match)visible+=1;
+      });
+      const emptyRow=results?.querySelector("[data-tax-free-empty]");
+      if(emptyRow)emptyRow.hidden=visible>0;
+      const clearBtn=app.querySelector("[data-tax-free-search-clear]");
+      if(clearBtn)clearBtn.hidden=!tfSearch.value;
+      return;
+    }
+    const taxGross=event.target.closest?.("[data-tax-free-gross]"),taxFee=event.target.closest?.("[data-tax-free-fee]");
+    if(taxGross||taxFee){if(taxGross)state.taxFreeGrossText=taxGross.value;if(taxFee)state.taxFreeFeeText=taxFee.value;const rule=state.taxFree?.rule,rates=rule?.rates||[],selected=rates.find(row=>Number(row.rate)===Number(state.taxFreeRate))||rates[0],gross=parseAmountInput(state.taxFreeGrossText),fee=parseAmountInput(state.taxFreeFeeText),tax=Number.isFinite(gross)&&gross>=0&&selected?(selected.priceIncludesTax===false?gross*Number(selected.rate)/100:gross*Number(selected.rate)/(100+Number(selected.rate))):null,after=tax==null?null:Math.max(0,tax-(Number.isFinite(fee)&&fee>0?fee:0)),currency=rule?.thresholds?.[0]?.currency||COUNTRY_CURRENCY[state.taxFreeCountry]||"EUR",money=value=>{if(value==null)return "—";try{return new Intl.NumberFormat(globalThis.TriptoI18n?.locale||"en",{style:"currency",currency,maximumFractionDigits:2}).format(value);}catch(_){return `${value.toFixed(2)} ${currency}`;}};const taxNode=app.querySelector("[data-tax-free-tax]"),afterNode=app.querySelector("[data-tax-free-after]");if(taxNode)taxNode.textContent=money(tax);if(afterNode)afterNode.textContent=money(after);return;}
     const input = event.target.closest?.("[data-currency-amount]");
     if (!input) return;
-    const currency = initCurrency(), amount = Math.max(0, Number(input.value) || 0);
+    const currency = initCurrency(), rawAmount = input.value;
+    // Comma is a permitted decimal separator (see the field pattern); normalize
+    // it so EU-keyboard entries like "12,50" don't collapse to 0.
+    const amount = rawAmount.trim() === "" ? 0 : Math.max(0, parseAmountInput(rawAmount) || 0);
     currency.amount = amount;
+    currency.amountText = rawAmount;
     saveCurrencyPreferences();
-    input.classList.toggle("is-long", String(input.value).length > 9);
+    input.classList.toggle("is-long", rawAmount.length > 9);
+    // Unparseable or negative text converts as 0; flag it instead of failing silently.
+    const parsedAmount = parseAmountInput(rawAmount);
+    input.setAttribute?.("aria-invalid", String(rawAmount.trim() !== "" && !(Number.isFinite(parsedAmount) && parsedAmount >= 0)));
+    app.querySelectorAll(".currency-preset").forEach((preset) => preset.classList.toggle("is-active", Number(preset.dataset.amount) === amount));
     const result = app.querySelector(".currency-result__amount"), note = app.querySelector(".currency-rate-note"), rate = currency.rate == null ? NaN : Number(currency.rate);
     if (result) {
       const converted = Number.isFinite(rate) ? amount * rate : null;
-      try { result.textContent = converted == null ? "—" : new Intl.NumberFormat("en-US", { style:"currency", currency:currency.to, maximumFractionDigits:2 }).format(converted); }
-      catch (_) { result.textContent = converted == null ? "—" : `${converted.toFixed(2)} ${currency.to}`; }
+      try {
+        if (converted == null) { result.textContent = "—"; }
+        else {
+          const loc = globalThis.TriptoI18n?.locale || "en";
+          const shown = new Intl.NumberFormat(loc, { style:"currency", currency:currency.to, currencyDisplay:"narrowSymbol", maximumFractionDigits:2 }).format(converted);
+          result.textContent = shown.includes(currency.to) ? new Intl.NumberFormat(loc, { minimumFractionDigits:2, maximumFractionDigits:2 }).format(converted) : shown;
+        }
+      }
+      catch (_) { result.textContent = converted == null ? "—" : converted.toFixed(2); }
       result.classList.toggle("is-long", result.textContent.length > 12);
     }
     if (note) note.textContent = Number.isFinite(rate) ? `1 ${currency.from} = ${rate.toFixed(rate < 1 ? 4 : 3)} ${currency.to}` : "Update to load this rate";
+  });
+  app.addEventListener("change",(event)=>{
+    const country=event.target.closest?.("[data-tax-free-country]");
+    if(country){state.taxFreeCountry=country.value;state.taxFreeRegion=null;state.taxFree=null;state.taxFreeRate=null;void ensureTaxFree();return;}
+    const rate=event.target.closest?.("[data-tax-free-rate]");
+    if(rate){state.taxFreeRate=Number(rate.value);render();}
+  });
+  // Select the whole amount on focus so a single Backspace clears the default
+  // "100" instead of leaving the caret stranded at the start (iOS number-field
+  // bug where the cursor lands before the first digit and delete does nothing).
+  app.addEventListener("focusin", (event) => {
+    const amountField = event.target.closest?.("[data-currency-amount]");
+    if (!amountField) return;
+    try { amountField.select(); } catch (_) {}
+    // Typing mode: the head card, currency pickers and footnote collapse while
+    // the keyboard is up so the amount AND the converted result both fit above it.
+    const journey = amountField.closest(".currency-journey");
+    if (journey) {
+      journey.classList.add("is-typing");
+      amountField.addEventListener("blur", () => journey.classList.remove("is-typing"), { once: true });
+      const main = amountField.closest("main");
+      if (main) main.scrollTop = 0;
+    }
+    // Bring the WHOLE converter card above the keyboard, not just the input —
+    // otherwise the "You get" row is left hidden under the keyboard. Works for
+    // both viewport models: when the frame shrinks (iOS) the visible bottom is
+    // the scroller bottom; when the keyboard just overlays (some webviews) we
+    // subtract --keyboard-offset so the target stays above it.
+    const card = amountField.closest(".currency-journey")?.querySelector(".currency-ticket") || amountField.closest(".currency-card");
+    const scroller = amountField.closest("main");
+    if (!card || !scroller) return;
+    const revealCard = () => {
+      if (document.activeElement !== amountField) return;
+      const cssNum = (name) => parseInt(getComputedStyle(document.documentElement).getPropertyValue(name), 10) || 0;
+      const kbOffset = cssNum("--keyboard-offset");
+      const frameH = cssNum("--app-viewport-height") || window.innerHeight;
+      const frameShrunk = frameH < window.innerHeight - 40;
+      const overlap = frameShrunk ? 0 : kbOffset;
+      const pad = 12;
+      const c = card.getBoundingClientRect(), area = scroller.getBoundingClientRect();
+      const visibleBottom = area.bottom - overlap - pad;
+      const delta = c.bottom > visibleBottom
+        ? c.bottom - visibleBottom
+        : (c.top < area.top + pad ? c.top - (area.top + pad) : 0);
+      if (delta) scroller.scrollBy({ top: delta, behavior: "auto" });
+    };
+    requestAnimationFrame(revealCard);
+    setTimeout(revealCard, 250);
+    setTimeout(revealCard, 500);
   });
   window.addEventListener(
     "pointerdown",
@@ -11868,16 +15841,78 @@
     },
     { capture: true },
   );
+  // Intercept every time field (and the <label> that forwards to it) to open the
+  // themed wheel sheet instead of the native UA popover. preventDefault stops the
+  // focus/label-forwarding that would otherwise trigger the native picker.
+  const timeFieldFor = (event) => {
+    const el = event.target.closest?.('input[type="time"], label');
+    if (!el) return null;
+    if (el.tagName === "INPUT") return el.disabled ? null : el;
+    const control = el.control || (el.htmlFor && document.getElementById(el.htmlFor));
+    return control?.matches?.('input[type="time"]') && !control.disabled ? control : null;
+  };
+  const timeFieldGuard = (event) => {
+    const input = timeFieldFor(event);
+    if (!input) return;
+    // Always block the native picker + focus/label-forwarding, but only OPEN the
+    // sheet on click (after pointerup). Opening on pointerdown created a
+    // full-screen backdrop under the finger, so the trailing click landed on that
+    // backdrop and instantly dismissed the sheet — the "flash and vanish" bug.
+    event.preventDefault();
+    if (event.type === "click") openTimeSheet(input);
+  };
+  document.addEventListener("pointerdown", timeFieldGuard, true);
+  document.addEventListener("click", timeFieldGuard, true);
+  // Same treatment for date fields: open the themed calendar sheet, never the UA
+  // popover.
+  const dateFieldFor = (event) => {
+    const el = event.target.closest?.('input[type="date"], label');
+    if (!el) return null;
+    if (el.tagName === "INPUT") return el.disabled ? null : el;
+    const control = el.control || (el.htmlFor && document.getElementById(el.htmlFor));
+    return control?.matches?.('input[type="date"]') && !control.disabled ? control : null;
+  };
+  const dateFieldGuard = (event) => {
+    const input = dateFieldFor(event);
+    if (!input) return;
+    event.preventDefault();
+    if (event.type === "click") openDateSheet(input);
+  };
+  document.addEventListener("pointerdown", dateFieldGuard, true);
+  document.addEventListener("click", dateFieldGuard, true);
   window.addEventListener("popstate", () => {
     if (document.getElementById("doc-viewer")) {
       closeDocumentViewer(true);
+      return;
+    }
+    // A back gesture while an overlay is open dismisses the overlay, not the
+    // screen beneath it. Re-push the current entry so the screen keeps its own
+    // history position, then close the overlay.
+    const modal = [...document.querySelectorAll(".time-sheet-backdrop,.date-sheet-backdrop,.discard-dialog-backdrop")].pop();
+    if (modal) {
+      history.pushState(
+        routeHistoryState(state.screen, state.selectedId, routeHistoryIndex()),
+        "",
+        routeUrl(state.screen, state.selectedId),
+      );
+      // Each of these closes itself on Escape (cancel / keep editing).
+      modal.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      return;
+    }
+    if (state.sheet || document.documentElement.classList.contains("place-search-open")) {
+      history.pushState(
+        routeHistoryState(state.screen, state.selectedId, routeHistoryIndex()),
+        "",
+        routeUrl(state.screen, state.selectedId),
+      );
+      dismissOpenOverlay();
       return;
     }
     const next = parseRoute();
     if (
       formHasMeaningfulChanges &&
       DIRTY_TASK_SCREENS.has(state.screen) &&
-      next.screen !== state.screen
+      (next.screen !== state.screen || String(resolveRouteId(next.screen, next.id) || next.id || "") !== String(state.selectedId || ""))
     ) {
       history.pushState(
         routeHistoryState(state.screen, state.selectedId, routeHistoryIndex()),
@@ -11908,7 +15943,13 @@
       return;
     }
     const nextId = next.screen === "timeline" ? null : resolvedId || next.id;
-    if (next.screen === "timeline") applyRouteTripSelection();
+    if (next.screen === "timeline" && applyRouteTripSelection()) {
+      if (PREVIEW_MODE) switchPreviewTrip();
+      else {
+        hydrateTripDetailsFromCache();
+        void loadTripDetails().then(render, () => {});
+      }
+    }
     scrollPositions.set(state.screen, window.scrollY);
     if (
       next.screen !== "flight" ||
@@ -11916,6 +15957,7 @@
     )
       state.flightDetailsOpen = false;
     if (!state.routeMotion) state.routeMotion = "back";
+    state.editingEntity = DIRTY_TASK_SCREENS.has(next.screen) ? history.state?.edit || null : null;
     state.screen = next.screen;
     state.selectedId = nextId;
     state.sheet = null;
@@ -11930,9 +15972,11 @@
       await resumeGoogleRedirectSession();
       return;
     }
-    await flushSmartImportQueue();
-    await flushChecklistQueue();
-    await flushCollectionsQueue();
+    // Reconnect flow: show Syncing, upload queued changes, then reload the
+    // trip (server re-runs Trip Brain, impacts and health; Ready Offline
+    // re-checks against the refreshed cache).
+    renderConnectionState();
+    await syncPendingChanges();
     loadApp();
   });
   window.addEventListener("offline", () => {
@@ -11944,9 +15988,20 @@
   // always after a bfcache restore, and otherwise only if we're stuck loading —
   // so a healthy tab-switch never churns the network. hydrateAppFromCache paints
   // cached data instantly, so this does not flash the skeleton when cache exists.
+  const FOREGROUND_REFRESH_MS = 15 * 60 * 1000;
   function revalidateOnReturn(force) {
     if (PREVIEW_MODE || googleRedirectExchangePromise) return;
-    if (!force && !state.loading && state.tripsLoaded) return;
+    if (!force && !state.loading && state.tripsLoaded) {
+      // Healthy return to the app: sync queued changes, and refresh trip data
+      // only when it is older than 15 minutes and no form is being edited.
+      if (!navigator.onLine) return;
+      if (myPendingMutations().length) {
+        void syncPendingChanges().then((touched) => { if (touched && state.trip) return loadTripDetails().then(render); }).catch(() => {});
+        return;
+      }
+      if (Date.now() - (Number(state.lastSyncedAt) || 0) > FOREGROUND_REFRESH_MS && state.screen !== "form" && !formHasMeaningfulChanges && !state.sheet) loadApp();
+      return;
+    }
     loadApp();
   }
   window.addEventListener("pageshow", (event) => {
@@ -11955,6 +16010,10 @@
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") revalidateOnReturn(false);
   });
+  // Timeline subtitles are localized at composition time (see tLabel/tCount), so a
+  // DOM-swap alone can't update them. Re-render when the active locale bundle
+  // loads or changes — covers the initial async bundle load and live switching.
+  document.addEventListener("tripto:localechange", () => { render(); });
   window.addEventListener("beforeunload", (event) => {
     if (!formHasMeaningfulChanges) return;
     event.preventDefault();
@@ -12065,7 +16124,7 @@
     }
   });
   syncVisualViewport();
-  if ("serviceWorker" in navigator && !PREVIEW_MODE)
+  if ("serviceWorker" in navigator && !PREVIEW_MODE && !NATIVE)
     window.addEventListener("load", () =>
       navigator.serviceWorker.register("/sw.js").catch((error) => console.error("Service worker registration failed", error)),
     );
@@ -12073,6 +16132,7 @@
     reload: loadApp,
     show: route,
     getState: () => state,
+    hasUnsavedChanges: () => formHasMeaningfulChanges,
   };
   const startupRoute = parseRoute();
   if (startupRoute.redirect || location.hash || history.state?.tripto !== true)
@@ -12081,6 +16141,10 @@
       "",
       routeUrl(startupRoute.screen, startupRoute.id),
     );
-  applyNightTheme();
+  applyTheme();
+  if (NATIVE) installNativeApp();
+  // A sync the app was killed in the middle of resumes from its saved rows.
+  recoverInterruptedPending();
+  state.pendingCount = myPendingMutations().length;
   resumeGoogleRedirectSession();
 })();

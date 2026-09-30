@@ -1,0 +1,23 @@
+{
+  "route": "checklist-form",
+  "path": "/before-you-go/new",
+  "screen": "form",
+  "locale": "de",
+  "image": "checklist-form-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Checkliste speichern\nREISE-ESSENTIAL\nEssential hinzufügen\nEintrag *\nGruppe *\nDokumente\nVor der Abreise\nKofferpacken\nPriorität *\nNormal\nWichtig\nKritisch",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Checkliste speichern",
+      "label": null
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

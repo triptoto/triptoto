@@ -1,0 +1,23 @@
+{
+  "route": "email",
+  "path": "/bookings/email-inbox",
+  "screen": "booking-email-inbox",
+  "locale": "es",
+  "image": "email-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Reenvía las confirmaciones a\ngo@tripto.to\n\nElige el viaje y confirma los detalles extraídos antes de añadir nada.\n\nInicia sesión para usar el correo de reservas\n\nGoogle verifica qué dirección de correo puede enviar confirmaciones.\n\nIniciar sesión con Google",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Iniciar sesión con Google",
+      "label": null,
+      "screen": "account"
+    }
+  ],
+  "dialogCount": 0
+}

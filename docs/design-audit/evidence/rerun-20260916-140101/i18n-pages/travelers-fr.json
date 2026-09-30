@@ -1,0 +1,35 @@
+{
+  "route": "travelers",
+  "path": "/travelers",
+  "screen": "travelers",
+  "locale": "fr",
+  "image": "travelers-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "A\nArthur\n3 réservations\n2 documents\nM\nMaya\n2 réservations\n1 document\nAjouter un voyageur",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "A\nArthur\n3 réservations\n2 documents",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "M\nMaya\n2 réservations\n1 document",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Ajouter un voyageur",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "dialogCount": 0
+}

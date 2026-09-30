@@ -1,5 +1,5 @@
 import type { AuthContext, Env } from '../types.ts';
-import { HttpError, enumValue, json, nowMs, optionalInteger, readJson, requireString, uuid } from '../http.ts';
+import { HttpError, enumValue, json, nowMs, optionalInteger, readJson, requireString, uuid, requireChanged } from '../http.ts';
 import { requireTripAccess } from '../access.ts';
 import { recordChangeEvent } from '../change-events.ts';
 import { validateJourney, type JourneyRole, type JourneyType } from '../../../../packages/journeys/src/index.ts';
@@ -44,7 +44,7 @@ export async function updateJourney(request:Request,env:Env,auth:AuthContext,tri
   const status=body.status===undefined?existing.status as typeof statuses[number]:enumValue(body.status,'status',statuses);
   const sequence=body.sequenceNo===undefined?Number(existing.sequence_no):optionalInteger(body.sequenceNo,'sequenceNo')??0;
   const now=nowMs();
-  await env.DB.prepare(`UPDATE journey_groups SET title=?,journey_type=?,status=?,sequence_no=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`).bind(title,type,status,sequence,now,journeyId,tripId,body.version).run();
+  requireChanged(await env.DB.prepare(`UPDATE journey_groups SET title=?,journey_type=?,status=?,sequence_no=?,updated_at=?,version=version+1 WHERE id=? AND trip_id=? AND version=? AND deleted_at IS NULL`).bind(title,type,status,sequence,now,journeyId,tripId,body.version).run());
   const journey=await env.DB.prepare(`SELECT * FROM journey_groups WHERE id=?`).bind(journeyId).first();
   await recordChangeEvent(env,tripId,'journey_group',journeyId,'journey_updated',existing,journey);
   return json({journey},{},request,env);

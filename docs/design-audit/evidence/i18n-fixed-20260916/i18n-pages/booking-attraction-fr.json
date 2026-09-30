@@ -1,0 +1,28 @@
+{
+  "route": "booking-attraction",
+  "path": "/bookings/new/attraction",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-attraction-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nAttraction\nEssentiels\nNom de l'attraction *\nDate *\nHeure locale Facultatif\nLieu Facultatif\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-attraction-fr-bottom.png"
+}

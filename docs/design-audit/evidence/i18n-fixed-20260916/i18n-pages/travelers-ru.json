@@ -1,0 +1,36 @@
+{
+  "route": "travelers",
+  "path": "/travelers",
+  "screen": "travelers",
+  "locale": "ru",
+  "image": "travelers-ru.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Добавить путешественника",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Назад",
+      "action": "back"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "",
+      "label": null,
+      "screen": "traveler",
+      "id": "traveler-2"
+    },
+    {
+      "text": "Добавить путешественника",
+      "label": null,
+      "action": "open-form"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

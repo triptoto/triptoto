@@ -1,0 +1,24 @@
+{
+  "route": "save-later",
+  "path": "/save-later",
+  "screen": "save-later",
+  "locale": "de",
+  "image": "save-later-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "FÜR SPÄTER SPEICHERN\nIdeen für „Rome 2026“ speichern\n\nEine laufende Liste möglicher Aktivitäten. Öffnen Sie eine, um sie einem Tagesplan hinzuzufügen.\n\nNoch keine Ideen\n\nSpeichern Sie Orte, Essen und Dinge, die Sie vielleicht unternehmen möchten. Planen Sie sie auf einen Tag, wann immer Sie bereit sind.\n\nIdee hinzufügen",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Idee hinzufügen",
+      "label": null,
+      "action": "add-save-later"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

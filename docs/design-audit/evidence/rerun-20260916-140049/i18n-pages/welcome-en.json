@@ -1,0 +1,23 @@
+{
+  "route": "welcome",
+  "path": "/home",
+  "screen": "home",
+  "locale": "en",
+  "image": "welcome-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "tripto.to\n\nTRAVEL FEELS LIGHTER HERE\n\nYour trip.\nBeautifully together.\n\nKeep every reservation, plan, and idea ready for the journey ahead.\n\nBookings, together\nFlights, stays, and confirmations\nA plan for every day\nKnow what is next, at a glance\nSave great ideas\nKeep them ready for later\nSign in with Google\nSee how it works\nPrivate by design.\nPrivacy\n·\nTerms\n·\nCookies\n·\nContact",
+  "buttons": [
+    {
+      "text": "Sign in with Google",
+      "label": "Sign in with Google",
+      "action": "preview-google"
+    },
+    {
+      "text": "See how it works",
+      "label": null,
+      "action": "open-first-run-how"
+    }
+  ],
+  "dialogCount": 0
+}

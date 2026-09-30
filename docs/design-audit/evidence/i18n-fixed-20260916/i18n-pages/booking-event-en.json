@@ -1,0 +1,28 @@
+{
+  "route": "booking-event",
+  "path": "/bookings/new/event",
+  "screen": "form",
+  "locale": "en",
+  "image": "booking-event-en.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Save\nMANUAL BOOKING\nEvent\nEssentials\nEvent name *\nDate *\nLocal time Optional\nVenue Optional\nTickets & Documents\n\nOptional · Stored on this device\n\nAdd files\nPDF, images, or passes · up to 10 MB each\n\nNo files selected. You can save the booking without one.\n\nMore Details",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Save",
+      "label": null
+    },
+    {
+      "text": "More Details",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-event-en-bottom.png"
+}

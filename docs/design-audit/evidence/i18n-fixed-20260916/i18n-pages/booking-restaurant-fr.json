@@ -1,0 +1,28 @@
+{
+  "route": "booking-restaurant",
+  "path": "/bookings/new/restaurant",
+  "screen": "form",
+  "locale": "fr",
+  "image": "booking-restaurant-fr.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Enregistrer\nRÉSERVATION MANUELLE\nRestaurant\nEssentiels\nNom du restaurant *\nDate de réservation *\nHeure locale Facultatif\nVoyageurs Facultatif\nBillets et documents\n\nFacultatif · Stocké sur cet appareil\n\nAjouter des fichiers\nPDF, images ou cartes · jusqu'à 10 Mo chacun\n\nAucun fichier sélectionné. Vous pouvez enregistrer la réservation sans fichier.\n\nPlus de détails",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Enregistrer",
+      "label": null
+    },
+    {
+      "text": "Plus de détails",
+      "label": null,
+      "action": "toggle-form-more"
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": "booking-restaurant-fr-bottom.png"
+}

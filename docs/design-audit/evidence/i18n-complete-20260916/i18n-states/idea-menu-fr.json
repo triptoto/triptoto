@@ -1,0 +1,86 @@
+{
+  "url": "/save-later",
+  "screen": "save-later",
+  "text": "À GARDER POUR PLUS TARD\nEnregistrer des idées pour « Rome 2026 »\n\nUne liste des choses que vous pourriez faire. Ouvrez-en une pour l'ajouter à un programme du jour.\n\nVisit the museum of contemporary art\nNon programmé\nAjouter une idée\nVisit the museum of contemporary art\nAjouter à un programme du jour\nChoisissez un jour et, si besoin, une heure\nModifier l'idée\nNom, adresse et notes\nSupprimer l'idée\nLe retirer de « À garder pour plus tard »",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [
+    {
+      "label": null,
+      "rect": {
+        "x": 0,
+        "y": 589.21875,
+        "width": 390,
+        "height": 254.78125,
+        "top": 589.21875,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Retour",
+      "action": "back"
+    },
+    {
+      "text": "Visit the museum of contemporary art\nNon programmé",
+      "label": null,
+      "action": "open-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Ajouter une idée",
+      "label": null,
+      "action": "add-save-later"
+    },
+    {
+      "text": "",
+      "label": "Fermer",
+      "action": "close-sheet"
+    },
+    {
+      "text": "Ajouter à un programme du jour\nChoisissez un jour et, si besoin, une heure",
+      "label": null,
+      "action": "idea-add-to-plan",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Modifier l'idée\nNom, adresse et notes",
+      "label": null,
+      "action": "edit-idea",
+      "id": "audit-idea"
+    },
+    {
+      "text": "Supprimer l'idée\nLe retirer de « À garder pour plus tard »",
+      "label": null,
+      "action": "delete-idea",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "fr",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]"
+  ],
+  "documentLang": "fr",
+  "visibleText": [
+    "À garder pour plus tard",
+    "À GARDER POUR PLUS TARD",
+    "Enregistrer des idées pour « Rome 2026 »",
+    "Une liste des choses que vous pourriez faire. Ouvrez-en une pour l'ajouter à un programme du jour.",
+    "Visit the museum of contemporary art",
+    "Non programmé",
+    "Ajouter une idée",
+    "Visit the museum of contemporary art",
+    "Ajouter à un programme du jour",
+    "Choisissez un jour et, si besoin, une heure",
+    "Modifier l'idée",
+    "Nom, adresse et notes",
+    "Supprimer l'idée",
+    "Le retirer de « À garder pour plus tard »"
+  ],
+  "errors": []
+}

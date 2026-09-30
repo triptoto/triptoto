@@ -1,0 +1,93 @@
+{
+  "url": "/plan-idea/visit-the-museum-of-contemporary-art-museum-culture",
+  "screen": "add-to-plan",
+  "text": "ZUM PLAN HINZUFÜGEN\nAdd Visit the museum of contemporary art\n\nWählen Sie einen Reisetag und optional eine Uhrzeit und fügen Sie ihn dann zum Tagesplan hinzu.\n\nTAG AUSWÄHLEN\nDO\nSEP 17\nFR\nSEP 18\nSA\nSEP 19\nSO\nSEP 20\nMON\nSEP 21\nTUE\nSEP 22\nWED\nSEP 23\nStartzeit\nOptional — für den Tagesplan verwendet\nZUM TAG HINZUFÜGEN\nZum Tagesplan hinzufügen\nPut it on SEP 17",
+  "scroll": [],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "DO\nSEP 17",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "FR\nSEP 18",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SA\nSEP 19",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "SO\nSEP 20",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "MON\nSEP 21",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "TUE\nSEP 22",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "WED\nSEP 23",
+      "label": null,
+      "action": "plan-pick-day"
+    },
+    {
+      "text": "Zum Tagesplan hinzufügen\nPut it on SEP 17",
+      "label": null,
+      "action": "plan-general",
+      "id": "audit-idea"
+    }
+  ],
+  "locale": "de",
+  "requestedScreen": "save-later",
+  "clicks": [
+    "[data-action=\"open-idea\"]",
+    "[data-action=\"idea-add-to-plan\"]"
+  ],
+  "documentLang": "de",
+  "visibleText": [
+    "Zum Plan hinzufügen",
+    "ZUM PLAN HINZUFÜGEN",
+    "Add Visit the museum of contemporary art",
+    "Wählen Sie einen Reisetag und optional eine Uhrzeit und fügen Sie ihn dann zum Tagesplan hinzu.",
+    "Tag auswählen",
+    "DO",
+    "SEP 17",
+    "FR",
+    "SEP 18",
+    "SA",
+    "SEP 19",
+    "SO",
+    "SEP 20",
+    "MON",
+    "SEP 21",
+    "TUE",
+    "SEP 22",
+    "WED",
+    "SEP 23",
+    "Startzeit",
+    "Optional — für den Tagesplan verwendet",
+    "Zum Tag hinzufügen",
+    "Zum Tagesplan hinzufügen",
+    "Put it on SEP 17"
+  ],
+  "errors": [
+    "screen mismatch",
+    "popup did not open"
+  ]
+}

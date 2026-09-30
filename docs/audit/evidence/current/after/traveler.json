@@ -1,0 +1,49 @@
+{
+  "url": "/travelers/arthur",
+  "screen": "traveler",
+  "text": "A\nArthur\n\nAdult\n\nEdit travelerRemove traveler\nAssignments\nFlight\nLY 383\nTrain\nFrecciarossa 9512\nTrain\nFrecciarossa 9551\nTravel details\nSEAT\n12A\nCABIN\nEconomy\nBAGGAGE\n1 checked\nTICKET\n114-1234567890\nDocuments\nLY 383 Boarding Pass\nReady offline\nFrecciarossa 9512 Tickets\nReady offline\nChecklist\nPassport\nDocuments\nSave boarding pass offline\nDocuments\nPack medication\nPacking",
+  "scroll": [
+    {
+      "class": "mobile-page",
+      "height": 776,
+      "scroll": 1155
+    }
+  ],
+  "overflow": false,
+  "dialogs": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Back",
+      "action": "back"
+    },
+    {
+      "text": "Edit traveler",
+      "label": null,
+      "action": "open-form",
+      "id": "traveler"
+    },
+    {
+      "text": "Remove traveler",
+      "label": null,
+      "action": "delete-traveler",
+      "id": "traveler"
+    },
+    {
+      "text": "LY 383 Boarding Pass\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "boarding"
+    },
+    {
+      "text": "Frecciarossa 9512 Tickets\nReady offline",
+      "label": null,
+      "action": "open-document",
+      "id": "train-ticket"
+    }
+  ],
+  "evidence": [
+    "traveler-top.png",
+    "traveler-scroll-0-0.png"
+  ]
+}

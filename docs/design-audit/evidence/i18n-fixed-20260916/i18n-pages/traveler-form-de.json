@@ -1,0 +1,23 @@
+{
+  "route": "traveler-form",
+  "path": "/travelers/new",
+  "screen": "form",
+  "locale": "de",
+  "image": "traveler-form-de.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Reisende Person speichern\nREISENDE:R\nReisende:n hinzufügen\nName *\nArt der:des Reisenden *\nErwachsene Person\nKind\nKleinkind",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Zurück",
+      "action": "back"
+    },
+    {
+      "text": "Reisende Person speichern",
+      "label": null
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}

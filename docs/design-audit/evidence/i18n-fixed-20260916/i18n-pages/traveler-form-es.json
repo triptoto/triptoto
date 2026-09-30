@@ -1,0 +1,23 @@
+{
+  "route": "traveler-form",
+  "path": "/travelers/new",
+  "screen": "form",
+  "locale": "es",
+  "image": "traveler-form-es.png",
+  "missingTranslations": [],
+  "errors": [],
+  "text": "Guardar viajero\nVIAJERO\nAñadir viajero\nNombre *\nTipo de viajero *\nAdulto\nNiño\nBebé",
+  "buttons": [
+    {
+      "text": "",
+      "label": "Atrás",
+      "action": "back"
+    },
+    {
+      "text": "Guardar viajero",
+      "label": null
+    }
+  ],
+  "dialogCount": 0,
+  "bottomImage": null
+}
