@@ -8841,7 +8841,8 @@
     const languageChoice = (id) => { const selected=(globalThis.TriptoI18n?.locale || "en")===id; const label=globalThis.TriptoI18n?.names?.[id] || id; return `<button type="button" class="language-pill${selected ? " is-selected" : ""}" data-action="set-locale" data-locale="${id}" role="radio" aria-checked="${selected}" aria-label="${esc(label)}" title="${esc(label)}">${id.toUpperCase()}${selected ? `<span class="language-pill__check" aria-hidden="true">${icon("check",13)}</span>` : ""}</button>`; };
     // Only English is offered for now — other locales are hidden until they are ready.
     const offeredLocales = (globalThis.TriptoI18n?.supported || ["en","de","fr","es","ru"]).filter((id) => id === "en");
-    const languagePicker = accountCard("Language", `<div class="language-pills" role="radiogroup" aria-label="Language">${offeredLocales.map(languageChoice).join("")}</div>`);
+    // A single-option picker is empty space; show the card once a second locale ships.
+    const languagePicker = offeredLocales.length < 2 ? "" : accountCard("Language", `<div class="language-pills" role="radiogroup" aria-label="Language">${offeredLocales.map(languageChoice).join("")}</div>`);
     const appearance = `${accountCard("Appearance", `<div class="ds-segmented appearance-toggle" role="radiogroup" aria-label="Theme">${themeChoice("studio", "Studio")}${themeChoice("night", "Night")}${themeChoice("day", "Day")}${themeChoice("ember", "Ember")}${themeChoice("mono", "Mono")}</div>`)}${languagePicker}`;
     const lifetimePlus = state.subscription?.status === "lifetime";
     const paidPlus = !!state.subscription?.active && !lifetimePlus;

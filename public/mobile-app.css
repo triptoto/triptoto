@@ -9300,3 +9300,23 @@ html[class] body .trips-app-bar .icon-button.trips-header-plus :is(svg,.ph,.ph-s
 .driver-address--coords strong{font-variant-numeric:tabular-nums}
 .timeline-empty--offline .timeline-empty__icon{color:var(--muted)}
 .sync-conflict-detail .mobile-secondary-action{margin-top:8px}
+/* v828 Account page theme QA */
+/* Day was the only theme without the shared Space Grotesk family. */
+html.theme-day{
+  --font-ui:"Space Grotesk","Noto Sans",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  --font:"Space Grotesk","Noto Sans",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  --font-title:"Space Grotesk","Noto Sans",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+}
+html.theme-day,
+html.theme-day body,
+html.theme-day *{
+  font-family:"Space Grotesk","Noto Sans",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;
+}
+html body .language-pill{min-height:44px}
+/* Flat themes round every box; the stat dividers must stay straight lines. */
+html body .account-page .account-trip-summary>div{border-radius:0!important}
+/* Studio: section labels and inactive theme options reach 4.5:1. */
+html.theme-studio:not(#_) body .account-page :is(.acct-card>h2,h2,.appearance-toggle button:not(.is-active)){color:#526072!important}
+/* Destructive rows keep a red danger treatment in Mono and Ember (>=4.5:1). */
+html.theme-mono:not(#_):not(#_) body .account-page .account-danger-row :is(.ds-flat-row__copy strong,.ds-pastel-icon,.ds-pastel-icon :is(.ph,.ph-svg,svg)){color:#b00020!important}
+html.theme-mono.theme-ember:not(#_):not(#_) body .account-page .account-danger-row :is(.ds-flat-row__copy strong,.ds-pastel-icon,.ds-pastel-icon :is(.ph,.ph-svg,svg)){color:#c2381f!important}
