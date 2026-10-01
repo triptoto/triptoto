@@ -10530,29 +10530,41 @@
     const mapHint = canShowTripMap()
       ? "See this trip's places on a map"
       : "Add 2+ places to map this trip";
-    const optionCard = (tone, iconName, title, sub, attr, badge = 0) =>
-      `<button type="button" class="trip-option-tile trip-option-tile--${esc(tone)}" ${attr}><span class="trip-option-tile__icon">${icon(iconName, 34)}</span>${badge ? `<span class="trip-option-tile__badge" aria-label="${badge} waiting">${badge > 9 ? "9+" : badge}</span>` : ""}<span class="trip-option-tile__label">${esc(title)}</span></button>`;
-    // Partner search tiles (flight / stay) reuse the affiliate destinations
-    // already used on the Account and trip-setup screens. They open externally.
-    const flightUrl = AVIASALES_AFFILIATE_URL;
+    // Monochrome layout (2026-10-02): every surface, glyph and divider comes from
+    // the theme's neutral tokens; there are no per-tool category colors.
+    const quickTile = (iconName, title, sub, attr) =>
+      `<button type="button" class="to-quick__item" ${attr}><span class="to-ico" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span></button>`;
+    const optionRow = (iconName, title, sub, attr) =>
+      `<button type="button" class="to-row" ${attr}><span class="to-ico" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18, "to-chev")}</button>`;
+    // Partner links reuse the affiliate destinations already used on the Account
+    // and trip-setup screens. They open externally.
     const stayDestLoc = (state.locations || []).find((location) => String(val(location, "type") || "") === "city");
     const stayDest = val(stayDestLoc, "city", "display_name") || state.trip.title || "";
     const stayStart = String(val(state.trip, "starts_on", "startsOn") || "");
     const stayEnd = String(val(state.trip, "ends_on", "endsOn") || "");
     const stayUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(stayDest)}${stayStart ? `&checkin=${encodeURIComponent(stayStart)}` : ""}${stayEnd ? `&checkout=${encodeURIComponent(stayEnd)}` : ""}`;
-    const partnerTile = (tone, iconName, title, href) =>
-      `<a class="trip-option-tile trip-option-tile--${esc(tone)} trip-option-tile--partner" href="${esc(href)}" target="_blank" rel="sponsored noopener noreferrer"><span class="trip-option-tile__icon">${icon(iconName, 34)}</span><span class="trip-option-tile__label">${esc(title)}</span></a>`;
+    const partnerRow = (iconName, title, sub, href) =>
+      `<a class="to-row" href="${esc(href)}" target="_blank" rel="sponsored noopener noreferrer"><span class="to-ico" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("external", 17, "to-chev")}</a>`;
     // Show unless the server kill-switch explicitly disables sharing. When the
-    // status hasn't loaded yet (guest trip / pending fetch) the card still
+    // status hasn't loaded yet (guest trip / pending fetch) the row still
     // appears; the collaboration screen handles sign-in and disabled states.
-    const collabCard = state.sharing?.enabled === false
+    const collabRow = state.sharing?.enabled === false
       ? ""
-      : optionCard("together", "users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`);
+      : optionRow("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`);
     const alerts = totalNotificationCount();
     const alertBadge = alerts ? `<span class="unread-badge" aria-hidden="true">${alerts > 9 ? "9+" : alerts}</span>` : "";
     // Edit trip lives in the timeline Menu; this page keeps only Alerts.
     const headerActions = `<button type="button" class="icon-button icon-button--badged" data-action="open-notifications" aria-label="${alerts ? `Alerts, ${alerts} update${alerts === 1 ? "" : "s"} waiting` : "Alerts"}" title="Alerts">${icon("bell", 24)}${alertBadge}</button>`;
-    const body = `<div class="acct-group trip-options-hero"><div class="acct-group__label"><h2>Your travel companion</h2></div><section class="trip-options-intro ds-grouped-card" aria-label="${esc(state.trip.title || "Your trip")}"><div class="trip-options-intro__id"><h1 title="${esc(state.trip.title || "Your trip")}">${esc(state.trip.title || "Your trip")}</h1><p>${esc(formatTripDates(state.trip))}</p></div></section></div><section class="trip-options-group" aria-labelledby="trip-options-tools"><h2 id="trip-options-tools">Travel tools</h2><div class="trip-tools-grid">${optionCard("weather", "weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${optionCard("spots", "pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionCard("currency", "currency", "Currency converter", "Convert trip costs offline", `data-action="open-currency"`)}${optionCard("tax-free", "customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${optionCard("documents", "document", "Docs", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${optionCard("map", "map", "Map", mapHint, `data-action="open-trip-map"`)}${collabCard}${optionCard("documents", "download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div></section><section class="trip-options-group" aria-labelledby="trip-options-help"><h2 id="trip-options-help">Need help?</h2><div class="trip-tools-grid">${optionCard("help", "help", "Help & FAQ", "Answers and support", `data-screen="help" aria-label="Help & FAQ"`)}${partnerTile("connect", "sim", "Travel eSIM", ESIM_AFFILIATE_URL)}${partnerTile("transfer", "car", "Book a transfer", TRANSFER_AFFILIATE_URL)}${partnerTile("flight", "flight", "Find a flight", AVIASALES_AFFILIATE_URL)}${partnerTile("stay", "bed", "Find a stay", stayUrl)}${partnerTile("plan", "map", "Things to do", ACTIVITIES_AFFILIATE_URL)}</div></section>`;
+    const title = state.trip.title || "Your trip";
+    const days = tripDayCount(state.trip);
+    const dates = formatTripDates(state.trip);
+    const meta = [dates, days ? `${days} day${days === 1 ? "" : "s"}` : ""].filter(Boolean).map((part) => `<span>${esc(part)}</span>`).join("");
+    const section = (id, heading, inner, extra = "") => `<section class="to-section" aria-labelledby="${id}"><h2 id="${id}">${heading}</h2>${inner}${extra}</section>`;
+    const body = `<section class="to-summary" aria-label="${esc(title)}"><p class="to-eyebrow">Trip options</p><h1 title="${esc(title)}">${esc(title)}</h1>${meta ? `<p class="to-summary__meta">${meta}</p>` : ""}</section>`
+      + section("to-essentials", "Essentials", `<div class="to-quick">${quickTile("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${quickTile("map", "Map", mapHint, `data-action="open-trip-map"`)}${quickTile("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${quickTile("currency", "Currency", "Convert trip costs offline", `data-action="open-currency"`)}</div>`)
+      + section("to-tools", "Tools", `<div class="to-list">${optionRow("pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionRow("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${collabRow}${optionRow("download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div>`)
+      + section("to-book", "Book for this trip", `<div class="to-list">${partnerRow("flight", "Find a flight", "Search flights", AVIASALES_AFFILIATE_URL)}${partnerRow("bed", "Find a stay", stayDest ? `Stays in ${stayDest}` : "Browse stays", stayUrl)}${partnerRow("car", "Book a transfer", "Airport and city rides", TRANSFER_AFFILIATE_URL)}${partnerRow("map", "Things to do", "Tours and activities", ACTIVITIES_AFFILIATE_URL)}${partnerRow("sim", "Travel eSIM", "Get connected before you land", ESIM_AFFILIATE_URL)}</div>`, `<p class="to-note">Partner links open in a new tab and may earn Tripto a commission at no extra cost.</p>`)
+      + section("to-support", "Support", `<div class="to-list">${optionRow("help", "Help & FAQ", "Answers and support", `data-screen="help" aria-label="Help & FAQ"`)}</div>`);
     return mobilePage("Trip options", body, "trip-options", headerActions, "trip-options-page");
   }
   // Tax Free-style tool head (Currency, Save Spots, Plan together): gradient

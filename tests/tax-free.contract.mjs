@@ -46,7 +46,7 @@ assert.match(app,/data-action="tax-free-airport"/);
 assert.match(css,/\.tax-free-page \.mobile-page/);
 assert.match(css,/\.tax-free-page \.mobile-page>\*\{flex-shrink:0\}/);
 assert.match(css,/\.tax-free-airport-card/);
-assert.match(css,/html\.theme-day body \.trip-options-page \.trip-option-tile--tax-free/);
+assert.match(app,/optionRow\("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`\)/);
 assert.match(api,/status:'unverified'/);
 assert.match(api,/tax_free_departure_points/);
 assert.match(api,/departurePoints/);

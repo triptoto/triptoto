@@ -46,11 +46,12 @@ for (const routeMarkup of [
   assert.ok(js.includes(routeMarkup), `route is not using the shared flat-row grammar: ${routeMarkup}`);
 }
 
-// Trip Options presents its tools as a compact icon-tile grid (Travel tools +
-// Need help), not the flat-row list. Edit/Alerts/Help live in the header.
-assert.match(css, /trip-options-page[^{]*trip-tools-grid\{[^}]*grid-template-columns:repeat\(5,1fr\)/);
-assert.match(css, /trip-options-page[^{]*trip-option-tile\{[^}]*background:var\(--surface\)/);
-assert.ok(js.includes('class="trip-option-tile trip-option-tile--'), 'Trip Options must render icon-grid tiles');
+// Trip Options (2026-10-02 redesign) is monochrome: a 2-up Essentials grid plus
+// grouped lists, all from neutral theme tokens. Alerts live in the header.
+assert.match(css, /trip-options-page \.to-quick\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+assert.match(css, /trip-options-page :is\(\.to-quick__item,\.to-list\)\{[^}]*background:var\(--card\)/);
+assert.match(css, /trip-options-page \.to-ico\{[^}]*background:var\(--surface\);color:var\(--ink\)/);
+assert.ok(js.includes('class="to-quick__item"') && js.includes('class="to-row"'), 'Trip Options must render the Essentials grid and grouped rows');
 // The Add-to-trip hub presents its choices as the same flat bordered icon grid.
 assert.match(css, /add-intent-fields\.add-intent-grid\{[^}]*display:grid/);
 assert.match(css, /html body \.add-intent-tile\{[^}]*background:var\(--card\)/);

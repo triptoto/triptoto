@@ -12,8 +12,8 @@ const routes = read("public/mobile-routes.js");
 // dedicated screen, and exposes both actions (Save here + My spots list).
 // ---------------------------------------------------------------------------
 assert(
-  app.includes('optionCard("spots", "pin", "Save Spots"') && app.includes('data-action="open-spots"'),
-  "Save Spots tile is missing from the travel-tools grid",
+  app.includes('optionRow("pin", "Save Spots"') && app.includes('data-action="open-spots"'),
+  "Save Spots row is missing from Trip options Tools",
 );
 assert(app.includes('case "spots": html = spotsScreen();'), "Save Spots screen is not routed");
 assert(routes.includes('spots: "/saved-spots"'), "Save Spots URL route is missing");
