@@ -1,4 +1,4 @@
-const CACHE='tripto-shell-product-v844-essentials-compact';
+const CACHE='tripto-shell-product-v845-options-accent-icons';
 // Locale bundles are hashless + immutable, so we version their query with the
 // deploy token (same one baked into index.html) and serve them by EXACT url via
 // the shell handler — a new token is a new url that bypasses the immutable HTTP

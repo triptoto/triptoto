@@ -9353,7 +9353,7 @@ html body .phone-app :is(.fd-row--doc .fd-row__text strong,.booking-document-row
 
 /* ============================================================
    Trip options — monochrome redesign (2026-10-02). One neutral palette from the
-   theme tokens: card surfaces, ink glyphs on a soft square, hairline dividers
+   theme tokens: card surfaces, accent glyphs on a soft accent square (the one color), hairline dividers
    mixed from --ink (Night's --line is transparent). No per-tool colors.
    ============================================================ */
 html body .phone-app .trip-options-page .mobile-page{display:grid;gap:28px;padding-top:10px}
@@ -9373,7 +9373,7 @@ html body .phone-app .trip-options-page .to-quick__item .to-copy small{font-size
 html body .phone-app .trip-options-page .to-list{display:grid;overflow:hidden}
 html body .phone-app .trip-options-page .to-row{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) 20px;align-items:center;gap:14px;width:100%;min-height:64px;margin:0;padding:12px 14px;border:0;border-radius:0;background:transparent;color:var(--ink);font:inherit;text-align:left;text-decoration:none;cursor:pointer}
 html body .phone-app .trip-options-page .to-row+.to-row::before{content:"";position:absolute;top:0;left:66px;right:0;height:1px;background:color-mix(in srgb,var(--ink) 9%,transparent)}
-html body .phone-app .trip-options-page .to-ico{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:var(--surface);color:var(--ink)}
+html body .phone-app .trip-options-page .to-ico{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--accent) 15%,var(--card));color:var(--accent)}
 html body .phone-app .trip-options-page .to-ico svg{width:20px;height:20px}
 html body .phone-app .trip-options-page .to-copy{display:grid;gap:2px;min-width:0}
 html body .phone-app .trip-options-page .to-copy strong{font-size:16px;font-weight:600;line-height:1.25;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
