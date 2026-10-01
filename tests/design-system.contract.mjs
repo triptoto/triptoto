@@ -46,11 +46,11 @@ for (const routeMarkup of [
   assert.ok(js.includes(routeMarkup), `route is not using the shared flat-row grammar: ${routeMarkup}`);
 }
 
-// Trip Options (2026-10-02 redesign) uses one color (accent icons) on neutral surfaces: a 2-up Essentials grid plus
+// Trip Options (2026-10-02 redesign) keeps neutral surfaces; only icons carry a per-tool hue: a 2-up Essentials grid plus
 // grouped lists, all from neutral theme tokens. Alerts live in the header.
 assert.match(css, /trip-options-page \.to-quick\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css, /trip-options-page :is\(\.to-quick__item,\.to-list\)\{[^}]*background:var\(--card\)/);
-assert.match(css, /trip-options-page \.to-ico\{[^}]*background:color-mix\(in srgb,var\(--accent\) 15%,var\(--card\)\);color:var\(--accent\)/);
+assert.match(css, /trip-options-page \.to-ico\{--to-c:var\(--accent\);[^}]*background:color-mix\(in srgb,var\(--to-c\) 16%,var\(--card\)\)/);
 assert.ok(js.includes('class="to-quick__item"') && js.includes('class="to-row"'), 'Trip Options must render the Essentials grid and grouped rows');
 // The Add-to-trip hub presents its choices as the same flat bordered icon grid.
 assert.match(css, /add-intent-fields\.add-intent-grid\{[^}]*display:grid/);

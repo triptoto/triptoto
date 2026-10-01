@@ -10531,11 +10531,11 @@
       ? "See this trip's places on a map"
       : "Add 2+ places to map this trip";
     // Monochrome layout (2026-10-02): every surface, glyph and divider comes from
-    // the theme's neutral tokens; there are no per-tool category colors.
+    // the theme's neutral tokens; only each tool's glyph carries its own hue.
     const quickTile = (iconName, title, sub, attr) =>
-      `<button type="button" class="to-quick__item" ${attr}><span class="to-ico" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span></button>`;
+      `<button type="button" class="to-quick__item" ${attr}><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span></button>`;
     const optionRow = (iconName, title, sub, attr) =>
-      `<button type="button" class="to-row" ${attr}><span class="to-ico" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18, "to-chev")}</button>`;
+      `<button type="button" class="to-row" ${attr}><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18, "to-chev")}</button>`;
     // Partner links reuse the affiliate destinations already used on the Account
     // and trip-setup screens. They open externally.
     const stayDestLoc = (state.locations || []).find((location) => String(val(location, "type") || "") === "city");
@@ -10544,7 +10544,7 @@
     const stayEnd = String(val(state.trip, "ends_on", "endsOn") || "");
     const stayUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(stayDest)}${stayStart ? `&checkin=${encodeURIComponent(stayStart)}` : ""}${stayEnd ? `&checkout=${encodeURIComponent(stayEnd)}` : ""}`;
     const partnerRow = (iconName, title, sub, href) =>
-      `<a class="to-row" href="${esc(href)}" target="_blank" rel="sponsored noopener noreferrer"><span class="to-ico" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("external", 17, "to-chev")}</a>`;
+      `<a class="to-row" href="${esc(href)}" target="_blank" rel="sponsored noopener noreferrer"><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("external", 17, "to-chev")}</a>`;
     // Show unless the server kill-switch explicitly disables sharing. When the
     // status hasn't loaded yet (guest trip / pending fetch) the row still
     // appears; the collaboration screen handles sign-in and disabled states.
