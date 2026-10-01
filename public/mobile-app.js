@@ -290,16 +290,22 @@
   // instance on each full render — the cause of icon pop-in and scroll lag.
   const ICON_SPRITE = "";
   const FILLED_ICON_IDS = new Set(["flight", "map", "route", "notifications", "checklist", "traveler"]);
-  const THEME_STORAGE_KEY = "tripto_theme_v3";
+  const THEME_STORAGE_KEY = "tripto_theme_v4";
+  // v3 is still written for the standalone legal pages. It also stored the old
+  // Studio default for everyone, so a v3 "studio" is treated as "no choice".
+  const LEGACY_THEME_STORAGE_KEY = "tripto_theme_v3";
   const THEME_IDS = new Set(["night", "day", "mono", "ember", "studio"]);
-  // Studio is the default look; Night, Day, Ember and Mono stay selectable in Account.
+  // Night is the default look; Studio, Day, Ember and Mono stay selectable in Account.
   function normalizeTheme(theme) {
-    return THEME_IDS.has(theme) ? theme : "studio";
+    return THEME_IDS.has(theme) ? theme : "night";
   }
   const LIGHT_THEMES = new Set(["day", "mono", "ember", "studio"]);
   const FLAT_THEMES = new Set(["mono", "ember"]);
   function loadStoredTheme() {
-    try { return normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY)); } catch (_) { return "studio"; }
+    try {
+      const legacy = localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+      return normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY) || (legacy === "studio" ? "" : legacy));
+    } catch (_) { return "night"; }
   }
   const state = {
     token: localStorage.getItem("tripto_token") || "",
@@ -949,7 +955,10 @@
   function applyTheme(theme) {
     const resolved = normalizeTheme(theme || state.theme);
     state.theme = resolved;
-    try { localStorage.setItem(THEME_STORAGE_KEY, resolved); } catch (_) {}
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, resolved);
+      localStorage.setItem(LEGACY_THEME_STORAGE_KEY, resolved);
+    } catch (_) {}
     const root = document.documentElement;
     const light = LIGHT_THEMES.has(resolved);
     root.classList.toggle("theme-beart", resolved === "night");
