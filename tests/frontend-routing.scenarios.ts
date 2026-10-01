@@ -12,6 +12,12 @@ const env = {
     async fetch(request: Request) {
       const path = new URL(request.url).pathname;
       requests.push(path);
+      // Mirror Cloudflare Assets: real files keep their type, a missing static
+      // file falls back to the SPA index.html (not_found_handling).
+      if (/\.(?:js|css|txt|xml|png)$/.test(path)) {
+        if (path.includes('missing')) return new Response('<html>/index.html</html>', { headers: { 'Content-Type': 'text/html' } });
+        return new Response(path, { headers: { 'Content-Type': path.endsWith('.js') ? 'text/javascript' : 'text/plain' } });
+      }
       return new Response(`<html>${path}</html>`, { headers: { 'Content-Type': 'text/html' } });
     },
   },
@@ -23,11 +29,15 @@ let response = await get('/');
 equal(response?.status, 200);
 equal(requests.at(-1), '/');
 
-for (const path of ['/landing', '/landing/', '/landing.html']) {
-  response = await get(path);
-  equal(response?.status, 200);
-  equal(requests.at(-1), '/landing.html');
-  equal(response?.headers.get('X-Robots-Tag'), null);
+response = await get('/landing');
+equal(response?.status, 200);
+equal(requests.at(-1), '/landing.html');
+equal(response?.headers.get('X-Robots-Tag'), null);
+// Duplicates of a public page answer 301 to the canonical path (no 200 copies).
+for (const [path, target] of [['/landing/', '/landing'], ['/landing.html', '/landing'], ['/privacy/', '/privacy'], ['/privacy.html', '/privacy']]) {
+  response = await frontendResponse(new Request(`https://tripto.to${path}`), env, path.replace(/\/+$/, ''));
+  equal(response?.status, 301);
+  equal(response?.headers.get('Location'), target);
 }
 
 response = await get('/privacy');
@@ -79,5 +89,11 @@ for (const path of clientPaths) {
 
 response = await get('/mobile-app.min.js');
 equal(requests.at(-1), '/mobile-app.min.js');
+equal(response?.status, 200);
+
+// A missing static file must be a real 404, never the SPA shell with 200.
+response = await get('/missing-image.png');
+equal(response?.status, 404);
+equal(response?.headers.get('X-Robots-Tag'), 'noindex, nofollow');
 
 console.log('Frontend public, private deep-link, static asset, HEAD, and unknown-route contracts passed.');

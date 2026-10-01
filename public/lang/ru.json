@@ -1,5 +1,5 @@
 {
-  "version": "v830-font-qa",
+  "version": "v832-indexnow-fallback",
   "locale": "ru",
   "messages": {
     "marketing.we_should_go_here_now_has_a": "«Надо съездить сюда». Теперь есть куда это записать.",

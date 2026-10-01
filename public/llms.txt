@@ -10,6 +10,7 @@
 - [Terms of Service](https://tripto.to/terms): The agreement for using tripto.to.
 - [Cookies & local storage](https://tripto.to/cookies): How tripto.to stores data on your device.
 - [Contact](https://tripto.to/contact): Get help with your account or a trip.
+- [Delete your account](https://tripto.to/delete-account): How to delete your account and trip data.
 
 ## Resources
 

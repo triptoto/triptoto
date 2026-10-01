@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://tripto.to/</loc></url>
-  <url><loc>https://tripto.to/landing</loc></url>
-  <url><loc>https://tripto.to/privacy</loc></url>
-  <url><loc>https://tripto.to/terms</loc></url>
-  <url><loc>https://tripto.to/cookies</loc></url>
-  <url><loc>https://tripto.to/contact</loc></url>
-  <url><loc>https://tripto.to/delete-account</loc></url>
+  <url><loc>https://tripto.to/</loc><lastmod>2026-10-01</lastmod></url>
+  <url><loc>https://tripto.to/landing</loc><lastmod>2026-10-01</lastmod></url>
+  <url><loc>https://tripto.to/privacy</loc><lastmod>2026-10-01</lastmod></url>
+  <url><loc>https://tripto.to/terms</loc><lastmod>2026-10-01</lastmod></url>
+  <url><loc>https://tripto.to/cookies</loc><lastmod>2026-10-01</lastmod></url>
+  <url><loc>https://tripto.to/contact</loc><lastmod>2026-10-01</lastmod></url>
+  <url><loc>https://tripto.to/delete-account</loc><lastmod>2026-10-01</lastmod></url>
 </urlset>

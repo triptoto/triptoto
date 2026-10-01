@@ -51,11 +51,8 @@ import { runScheduledTaxFreeSourceChecks } from './tax-free-monitor.ts';
 // "Malformed JSON: Unexpected token '<', "<!doctype "...". Importing the file
 // keeps public/ai-catalog.json as the single source of truth.
 import aiCatalog from '../../../public/ai-catalog.json' with { type: 'json' };
+import { APP_PATHS, PUBLIC_PAGES, applyIndexingPolicy, canonicalHostRedirect, indexNowStatus, isProductionHost, maybeRunIndexNow, nonProductionRobots, publicPathRedirect, runIndexNow, withSiteVerification } from './seo.ts';
 
-const APP_PATHS = [
-  /^\/(?:home|timeline|trips|add|day-plan|save-later|bookings|documents|ready-offline|trip-health|account|trip-map|weather|currency|tax-free|saved-spots|trip-options|esim|before-you-go|help|travelers|pending-changes|collaboration|plan-idea)(?:\/.*)?$/,
-  /^\/(?:flights|hotels|trains|plans|collections|join)(?:\/.*)?$/,
-];
 const STATIC_ASSET_PATH = /\.(?:css|js|json|xml|txt|webmanifest|svg|png|jpg|jpeg|webp|ico|map|ttf|otf|woff|woff2)$/i;
 
 // Content-Security-Policy for served HTML documents. Kept in the worker (not the
@@ -107,14 +104,17 @@ function assetLinksResponse(request: Request, env: Env): Response {
 export async function frontendResponse(request: Request, env: Env, path: string): Promise<Response | null> {
   if (!env.ASSETS || !['GET', 'HEAD'].includes(request.method)) return null;
   const url = new URL(request.url);
-  if (path === '/' || path === '/index.html') return withCsp(await env.ASSETS.fetch(request), request.method);
-  if (path === '/landing' || path === '/landing/' || path === '/landing.html') {
-    url.pathname = '/landing.html';
-    return withCsp(await env.ASSETS.fetch(new Request(url, request)), request.method);
+  const duplicate = publicPathRedirect(url, path);
+  if (duplicate) return duplicate;
+  if (path === '/' || path === '/index.html') {
+    const home = await env.ASSETS.fetch(request);
+    return withCsp(isProductionHost(url) && request.method === 'GET' ? await withSiteVerification(home, env) : home, request.method);
   }
   if (path === '/.well-known/assetlinks.json') return assetLinksResponse(request, env);
-  if (['/privacy', '/terms', '/cookies', '/contact', '/delete-account'].includes(path)) {
-    url.pathname = `${path}.html`;
+  if (path === '/robots.txt' && !isProductionHost(url)) return nonProductionRobots(request);
+  const publicFile = PUBLIC_PAGES.get(path);
+  if (publicFile) {
+    url.pathname = `/${publicFile}`;
     return withCsp(await env.ASSETS.fetch(new Request(url, request)), request.method);
   }
   if (path === '/ai-catalog.json') {
@@ -123,7 +123,12 @@ export async function frontendResponse(request: Request, env: Env, path: string)
       headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
     });
   }
-  if (STATIC_ASSET_PATH.test(path)) return env.ASSETS.fetch(request);
+  if (STATIC_ASSET_PATH.test(path)) {
+    // A missing file falls through to the SPA index.html (not_found_handling);
+    // a non-HTML URL answered with HTML is a soft 404, so return a real one.
+    const asset = await env.ASSETS.fetch(request);
+    if (!asset.headers.get('Content-Type')?.includes('text/html')) return asset;
+  }
   if (APP_PATHS.some((pattern) => pattern.test(path))) {
     url.pathname = '/index.html';
     const shell = await env.ASSETS.fetch(new Request(url, request));
@@ -145,7 +150,9 @@ export async function frontendResponse(request: Request, env: Env, path: string)
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx?: { waitUntil(promise: Promise<unknown>): void }): Promise<Response> {
+    const requestUrl = new URL(request.url);
+    maybeRunIndexNow(env, ctx);
     try {
       // Await the routed handler so a rejected handler promise (e.g. an HttpError
       // thrown inside a route) is caught here and converted to a JSON error,
@@ -153,7 +160,9 @@ export default {
       // A returned-but-not-awaited promise's rejection bypasses this try/catch.
       const response = await (async (): Promise<Response> => {
       if (request.method === 'OPTIONS') return corsPreflight(request, env);
-      const url = new URL(request.url);
+      const hostRedirect = canonicalHostRedirect(request, requestUrl);
+      if (hostRedirect) return hostRedirect;
+      const url = requestUrl;
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
       if ((request.method === 'GET' || request.method === 'HEAD') && path === '/health') {
@@ -197,6 +206,11 @@ export default {
       if (!path.startsWith('/api/')) {
         const frontend = await frontendResponse(request, env, path);
         if (frontend) return frontend;
+      }
+      if (request.method === 'GET' && path === '/api/v1/seo/indexnow') {
+        // Public, read-only: lists only canonical public URLs still to be submitted.
+        await enforcePublicRateLimit(request,env,{action:'seo_status',limit:60,windowMs:60*60*1000});
+        return json(await indexNowStatus(env), {}, request, env);
       }
       if (request.method === 'GET' && path === '/api/v1') return json({ service: 'tripto-api', version: 'v1', build: env.BETA_RELEASE || 'beta-candidate-1' }, {}, request, env);
       if (request.method === 'POST' && path === '/api/v1/session/guest') {
@@ -403,15 +417,15 @@ export default {
 
       return json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } }, { status: 404 }, request, env);
       })();
-      return ensureApiCors(response, request, env);
+      return applyIndexingPolicy(requestUrl, ensureApiCors(response, request, env));
     } catch (error) {
-      return errorResponse(error, request, env);
+      return applyIndexingPolicy(requestUrl, errorResponse(error, request, env));
     }
   },
   async email(message: InboundEmailMessage, env: Env): Promise<void> {
     await receiveBookingEmail(message, env);
   },
   async scheduled(_controller: unknown, env: Env): Promise<void> {
-    await Promise.allSettled([runScheduledLiveFlightRefresh(env),runScheduledTaxFreeSourceChecks(env),pruneExpiredUsageCounters(env)]);
+    await Promise.allSettled([runScheduledLiveFlightRefresh(env),runScheduledTaxFreeSourceChecks(env),pruneExpiredUsageCounters(env),runIndexNow(env)]);
   },
 };

@@ -45,6 +45,10 @@ export interface Env {
   DEMO_TOOLS_ENABLED?: string;
   DEMO_TOOLS_SECRET?: string;
   APP_BASE_URL?: string;
+  INDEXNOW_ENABLED?: string;
+  GOOGLE_SITE_VERIFICATION?: string;
+  BING_SITE_VERIFICATION?: string;
+  YANDEX_VERIFICATION?: string;
   BETA_RELEASE?: string;
   BETA_METRICS_ENABLED?: string;
   OPS_ENABLED?: string;

@@ -1,0 +1,24 @@
+{
+  "origin": "https://tripto.to",
+  "productionHost": "tripto.to",
+  "redirectHosts": ["www.tripto.to"],
+  "indexNowKey": "c48780e506599b0258a91df4de150c4a",
+  "indexNowEndpoints": ["https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow", "https://yandex.com/indexnow"],
+  "pages": [
+    { "path": "/", "file": "index.html" },
+    { "path": "/landing", "file": "landing.html" },
+    { "path": "/privacy", "file": "privacy.html" },
+    { "path": "/terms", "file": "terms.html" },
+    { "path": "/cookies", "file": "cookies.html" },
+    { "path": "/contact", "file": "contact.html" },
+    { "path": "/delete-account", "file": "delete-account.html" }
+  ],
+  "appRoutes": [
+    "home", "timeline", "trips", "add", "day-plan", "save-later", "bookings", "documents",
+    "ready-offline", "trip-health", "account", "trip-map", "weather", "currency", "tax-free",
+    "saved-spots", "trip-options", "esim", "before-you-go", "help", "travelers",
+    "pending-changes", "collaboration", "plan-idea", "flights", "hotels", "trains", "plans",
+    "collections", "join"
+  ],
+  "robotsDisallowExtra": ["/app"]
+}
