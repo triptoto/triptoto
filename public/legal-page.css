@@ -35,3 +35,13 @@ body{background:radial-gradient(700px 420px at 100% -10%,#ede9fe 0%,transparent 
 .legal-section{padding:18px 18px 10px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 24px -18px rgba(15,23,42,.28)}.legal-section h2{font-size:19px}.legal-section p,.legal-section li{font-size:15px}.legal-content{gap:12px}.legal-footer{border-top:0;padding-top:4px}
 .legal-section :is(.legal-data-card,.legal-callout){border:0;background:#faf9f7}
 .legal-shell .legal-section{border-radius:22px!important}
+
+/* Night is the default for the standalone pages too, matching the app; the
+   bootstrap swaps to the light Studio palette when the user picked a light theme. */
+html.theme-beart{color-scheme:dark;--paper:#0f1f29;--card:#22333d;--surface:#2b3f4a;--ink:#f1f5f9;--muted:#aeb9c8;--line:#2c3f4b;--accent:#f5a623;--accent-soft:#4d3d28;--activity-soft:#4d3d28;--font:"Space Grotesk","Noto Sans",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+html.theme-beart,html.theme-beart *{font-family:var(--font)!important}
+html.theme-beart .legal-shell .legal-hero{box-shadow:0 18px 40px -30px #000c}
+html.theme-beart .legal-shell .legal-meta span{color:#ffc15c}
+html.theme-beart .legal-contact-card a{background:var(--accent);color:#0f172a}
+html.theme-beart .legal-shell .legal-menu-link>span{background:#f5a62324;color:var(--accent)}
+html.theme-beart .legal-section :is(.legal-data-card,.legal-callout){background:var(--surface)}

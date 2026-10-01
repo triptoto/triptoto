@@ -24,13 +24,14 @@ assert.match(terms, /<link rel="canonical" href="https:\/\/tripto\.to\/terms">/)
 assert.match(cookies, /<link rel="canonical" href="https:\/\/tripto\.to\/cookies">/);
 assert.match(contact, /<link rel="canonical" href="https:\/\/tripto\.to\/contact">/);
 for (const legal of [privacy, terms, cookies, contact]) {
-  assert.match(legal, /<meta name="color-scheme" content="light">/);
+  assert.match(legal, /<html lang="en" class="theme-beart">/);
+  assert.match(legal, /<meta name="color-scheme" content="dark">/);
   assert.match(legal, /tripto_theme_v3/);
   assert.match(legal, /theme-day/);
   assert.match(legal, /theme===\"mono\"/);
   assert.match(legal, /theme-mono/);
   assert.match(legal, /fonts\.googleapis\.com\/css2\?family=Noto\+Sans/);
-  assert.match(legal, /legal-page\.css\?v=legal-pages-v8-round/);
+  assert.match(legal, /legal-page\.css\?v=legal-pages-v10-night/);
 }
 assert.match(legalCss, /--font:"Noto Sans"/);
 assert.match(legalCss, /font-family:"Space Grotesk"/);

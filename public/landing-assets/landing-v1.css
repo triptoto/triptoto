@@ -83,13 +83,13 @@ h2{font-weight:650}.benefit h3{font-weight:600}
 .shared-visual{border-color:var(--line)}.shared-visual p{color:var(--muted)}
 .initials span{border-color:var(--card);color:var(--accent-ink);font-weight:650;background:#a0e8c9}.initials span:first-child{background:#f6c96e}.initials span:last-child{background:#d0bafa}
 .shared-visual>.icon{color:var(--accent)}
-.questions{border-top-color:var(--line)}
+.questions{border-top:0}
 .faq-list{border-top:0;display:grid;gap:10px}
 details{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0 20px}
 summary span{color:var(--accent-hi);background:var(--soft);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:20px}
 details>p{padding-right:0}
-.final-cta{background:radial-gradient(600px 300px at 80% 0%,#f5a62324,transparent 70%),var(--deep);border:1px solid var(--line);border-radius:28px;color:var(--ink)}
-.final-cta .eyebrow{color:var(--muted)}
+/* Final CTA: amber glow from the top, a faint dot grid fading out, a warm gradient hairline border and a glowing button; the journey line becomes a solid amber-to-slate route. */.final-cta{isolation:isolate;background:radial-gradient(520px 260px at 50% -6%,#f5a62338,transparent 72%),radial-gradient(420px 240px at 100% 100%,#6ea8ff1c,transparent 70%),linear-gradient(180deg,var(--card),var(--deep)) padding-box,linear-gradient(160deg,#f5a62399,var(--line) 38%,var(--line) 70%,#6ea8ff55) border-box;border:1px solid transparent;border-radius:32px;color:var(--ink);box-shadow:0 40px 90px -40px #000c}.final-cta:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle,#ffffff14 1px,transparent 1.4px) 0 0/22px 22px;-webkit-mask:radial-gradient(70% 80% at 50% 30%,#000,transparent);mask:radial-gradient(70% 80% at 50% 30%,#000,transparent);pointer-events:none}.final-cta .button{box-shadow:0 14px 34px -12px #f5a623b3}.final-cta .button:hover{transform:translateY(-1px)}.final-cta .eyebrow{display:inline-flex;padding:7px 14px;border-radius:999px;background:#f5a6231a;color:var(--accent-hi)!important}.final-cta .journey-line i{border-top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--accent))}.final-cta .journey-line i:last-of-type{background:linear-gradient(90deg,var(--accent),transparent)}.final-cta .journey-line .icon{width:34px;height:34px;padding:8px;border-radius:50%;background:#f5a62324;box-shadow:0 0 0 6px #f5a6230d}
+
 .final-cta .serif{color:var(--accent)!important}
 .final-cta .button{background:var(--accent);color:var(--accent-ink)}.final-cta .button:hover{background:var(--accent-hi)}
 .journey-line{color:var(--muted)}.journey-line i{border-top-color:var(--line-strong)}.journey-line .icon{color:var(--accent)}
