@@ -9346,3 +9346,7 @@ html body .account-page .account-profile-signin p{margin:var(--space-1) 0 0;font
 html body .account-page .account-profile-signin .signin-error{margin:0}
 .account-profile-signin #google-signin-button{min-height:44px}
 #google-signin-button,#google-signin-button iframe{color-scheme:light}
+
+/* Long document file names stop at two lines everywhere they are listed
+   (booking and flight/stay detail rows); opening the document shows it in full. */
+html body .phone-app :is(.fd-row--doc .fd-row__text strong,.booking-document-row__open strong){display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden!important;white-space:normal!important;overflow-wrap:anywhere;text-overflow:clip}
