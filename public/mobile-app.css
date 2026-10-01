@@ -6634,9 +6634,9 @@ html body .account-page .account-avatar{
   flex:0 0 62px;width:62px;height:62px;
   border-radius:20px;
   font-size:26px;font-weight:var(--weight-bold);
-  background:linear-gradient(140deg,var(--activity-soft),color-mix(in srgb,var(--activity-soft) 68%,var(--card)));
+  background:var(--activity-soft);
   color:var(--accent);
-  box-shadow:0 8px 20px color-mix(in srgb,var(--ink) 14%,transparent);
+  box-shadow:none;
 }
 html body .account-page .account-profile__id{align-self:center}
 html body .phone-app>.account-page>.mobile-page .account-profile h1{
