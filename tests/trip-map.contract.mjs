@@ -70,10 +70,19 @@ assert(app.includes('function openMaps(')&&app.includes('https://www.google.com/
 assert(!app.includes('maps.googleapis.com')&&!index.includes('maps.googleapis.com'),'embedded/paid Google Maps SDK must not be loaded — URL scheme only');
 // CSP: the free MapLibre SDK (jsDelivr) and keyless OpenFreeMap tiles are the
 // only new hosts. No paid map SDK (Google/Mapbox) is ever allowed.
-assert(!headers.includes('maps.googleapis.com')&&!headers.includes('mapbox'),'CSP must not add a paid map SDK host (Google/Mapbox)');
-assert(headers.includes('https://cdn.jsdelivr.net')&&headers.includes('https://tiles.openfreemap.org'),'CSP must allow the MapLibre SDK (jsDelivr) and OpenFreeMap tiles');
-assert(headers.includes('worker-src')&&headers.includes('blob:'),'MapLibre needs worker-src blob: in the CSP');
-assert(headers.includes('https://scripts.stay22.com')&&headers.includes('https://widgets.stay22.com'),'stay22 map widget hosts must stay allow-listed in the CSP (REL-002: keep the map widget)');
+// The CSP is served by the worker (CONTENT_SECURITY_POLICY in apps/worker/src/index.ts;
+// it outgrew Cloudflare's _headers line limit), so assert the real policy per directive.
+const cspSource=workerIndex.slice(workerIndex.indexOf('const CONTENT_SECURITY_POLICY'),workerIndex.indexOf("].join('; ')",workerIndex.indexOf('const CONTENT_SECURITY_POLICY')));
+const csp=Object.fromEntries([...cspSource.matchAll(/"([a-z-]+) ([^"]*)"/g)].map(m=>[m[1],m[2].split(/\s+/)]));
+const cspAll=Object.values(csp).flat().join(' ');
+assert(Object.keys(csp).length>=8&&csp['default-src'],'worker CONTENT_SECURITY_POLICY could not be read');
+assert(!headers.includes('Content-Security-Policy'),'CSP must be defined once (worker), not duplicated in _headers');
+assert(!cspAll.includes('maps.googleapis.com')&&!cspAll.includes('mapbox'),'CSP must not add a paid map SDK host (Google/Mapbox)');
+assert(csp['script-src']?.includes('https://cdn.jsdelivr.net'),'CSP script-src must allow the MapLibre SDK script (jsDelivr)');
+assert(csp['style-src']?.includes('https://cdn.jsdelivr.net'),'CSP style-src must allow the MapLibre stylesheet (jsDelivr) or map controls render unstyled');
+assert(csp['connect-src']?.includes('https://tiles.openfreemap.org')&&csp['img-src']?.includes('https://tiles.openfreemap.org'),'CSP must allow OpenFreeMap tiles (connect-src + img-src)');
+assert(csp['worker-src']?.includes('blob:'),'MapLibre needs worker-src blob: in the CSP');
+assert(csp['script-src']?.includes('https://scripts.stay22.com')&&csp['frame-src']?.includes('https://widgets.stay22.com'),'stay22 map widget hosts must stay allow-listed in the CSP (REL-002: keep the map widget)');
 
 // --- Route wiring ---------------------------------------------------------
 const routeContext={};runInNewContext(routeSource,routeContext);const router=routeContext.TriptoRoutes;

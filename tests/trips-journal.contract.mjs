@@ -8,9 +8,12 @@ const context = { icon: () => '', state: { trips: [], tripFilter: 'all' },
   formatTripDates: trip => trip.starts_on || 'Dates not set',
   tripSharedBadge: trip => trip.is_shared ? 'Shared · View only' : '',
   tripMarkIcon: () => 'trips', bottomNav: () => '<nav class="bottom-nav"></nav>',
-  mobileAlert: () => '' };
+  mobileAlert: () => '', pageHelpButton: () => '' };
 runInNewContext(app.slice(app.indexOf("  const dateFormatters"), app.indexOf("  const API =")),context);
-runInNewContext(app.slice(app.indexOf('  function tripBucket('), app.indexOf('  function meaningfulBookingStatus(')), context);
+// todayISO() is the single canonical "today" used by tripBucket and the journal
+// helpers; evaluate the real one (not a stub) so midnight/UTC behaviour is tested.
+assert(app.indexOf('  function todayISO(') > 0 && app.indexOf('  function todayISO(') < app.indexOf('  function tripBucket('), 'todayISO must be defined with the trip-bucket helpers');
+runInNewContext(app.slice(app.indexOf('  function todayISO('), app.indexOf('  function meaningfulBookingStatus(')), context);
 const today = new Date().toISOString().slice(0,10);
 const iso = offset => new Date(Date.parse(today) + offset * 86400000).toISOString().slice(0,10);
 const trip = (id, from, to, lifecycle_state = 'upcoming') => ({id, title:id, starts_on:iso(from), ends_on:iso(to), lifecycle_state});

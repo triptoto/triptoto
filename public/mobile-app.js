@@ -4549,7 +4549,7 @@
         reject({ code: "unsupported" });
         return;
       }
-      // Single fix only — no watchPosition, no background tracking. maximumAge:0
+      // Single fix only — no continuous or background tracking. maximumAge:0
       // forces a fresh reading so a stale cached fix is never saved as "here".
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         enableHighAccuracy: true,

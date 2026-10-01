@@ -91,7 +91,12 @@ assert(clientRoutes.indexOf('/collections\\/new\\/')<clientRoutes.indexOf("for (
 assert(!app.includes('function planningScreen()')&&!app.includes('case "planning":')&&app.includes('case "collection": html = collectionScreen();')&&app.includes('case "collection-form": html = collectionFormScreen();')&&app.includes('case "stop-form": html = stopFormScreen();'),'retired Planning overview remains or collection screens are missing');
 
 // --- Offline-first: mutations queue and a dedicated flusher replays them ---
-assert(app.includes('function flushCollectionsQueue')&&app.includes('await flushCollectionsQueue();'),'offline queue flusher for collections missing/not wired to online');
+// Since the v827 offline-first client, every flusher runs through the shared
+// syncPendingChanges(), which the online handler awaits before reloading.
+const syncFn=app.slice(app.indexOf('function syncPendingChanges()'),app.indexOf('async function loadApp()'));
+const onlineHandler=app.slice(app.indexOf('window.addEventListener("online"'),app.indexOf('window.addEventListener("offline"'));
+assert(app.includes('function flushCollectionsQueue')&&/flushPendingKind\("collection"/.test(app)&&/Promise\.allSettled\(\[[^\]]*flushCollectionsQueue\(\)/.test(syncFn)&&onlineHandler.includes('await syncPendingChanges();'),'offline queue flusher for collections missing/not wired to online');
+for(const op of ['create','add-stop','reorder','status'])assert(app.includes(`queuePendingMutation({ kind: "collection", op: "${op}"`)&&app.includes(`row.op === "${op}"`),`offline collection op not queued and replayed: ${op}`);
 assert(app.includes('queuePendingMutation({ kind: "collection"'),'collection mutations must queue offline');
 
 // --- Dedup: re-linking the same idea into a neighborhood is idempotent ---

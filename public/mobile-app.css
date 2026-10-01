@@ -8536,11 +8536,12 @@ html.theme-studio body .phone-app .smart-import-file input[type=file]{background
 html.theme-studio body .phone-app .smart-import-file input[type=file]::file-selector-button{background:linear-gradient(145deg,#a78bfa,var(--accent))!important;color:#fff!important;border:0!important;border-radius:12px!important;font:inherit;font-weight:600;padding:10px 16px;margin-right:12px;cursor:pointer}
 
 /* Studio: plan (collection) stops use white number cards; the next stop is a
-   purple gradient tile with a purple halo (was amber halo on slate tiles). */
-html.theme-studio body .collection-page .mini-stop__marker{background:var(--card)!important;border:1px solid var(--line);color:var(--ink);box-shadow:0 6px 14px -12px rgba(23,21,31,.35)}
-html.theme-studio body .collection-page :is(.mini-stop--next,.mini-stop--active) .mini-stop__marker{background:linear-gradient(145deg,#a78bfa,var(--accent))!important;border-color:transparent;color:#fff;box-shadow:0 8px 18px -10px var(--accent)}
+   solid accent tile. Numbered markers stay flat, use theme tokens only (no shadow), per the
+   collections contract; only the rail dot carries the halo. */
+html.theme-studio body .collection-page .mini-stop__marker{background:var(--card)!important;border:1px solid var(--line);color:var(--ink)}
+html.theme-studio body .collection-page :is(.mini-stop--next,.mini-stop--active) .mini-stop__marker{background:var(--accent)!important;border-color:transparent;color:var(--accent-ink)}
 html.theme-studio body .collection-page :is(.mini-stop--next,.mini-stop--active) .mini-stop__dot{background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,var(--paper))}
-html.theme-studio body .collection-page .mini-stop--past .mini-stop__marker{color:#059669;border-color:color-mix(in srgb,#059669 30%,var(--line))}
+html.theme-studio body .collection-page .mini-stop--past .mini-stop__marker{color:var(--green);border-color:color-mix(in srgb,var(--green) 30%,var(--line))}
 html.theme-studio body .collection-page .collection-count{background:color-mix(in srgb,var(--accent) 12%,var(--card));color:var(--accent)}
 
 /* Studio: Weather uses white bordered cards; the current hour / today tile is
