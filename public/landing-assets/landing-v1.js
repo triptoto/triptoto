@@ -27,10 +27,4 @@
   checklist.forEach(input => input.addEventListener('change', () => {
     document.querySelector('.check-progress').textContent = `${checklist.filter(item => item.checked).length} of ${checklist.length} ready`;
   }));
-  const language = document.querySelector('.landing-language');
-  if (language && window.TriptoI18n) {
-    language.value = TriptoI18n.locale;
-    language.addEventListener('change', () => TriptoI18n.setLocale(language.value));
-    document.addEventListener('tripto:localechange', () => { language.value = TriptoI18n.locale; });
-  }
 })();
