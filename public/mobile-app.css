@@ -9364,9 +9364,12 @@ html body .phone-app .trip-options-page .to-summary__meta{display:flex;flex-wrap
 html body .phone-app .trip-options-page .to-summary__meta span+span::before{content:"";display:inline-block;width:3px;height:3px;margin:0 10px 0 0;border-radius:50%;background:currentColor;vertical-align:middle;opacity:.7}
 html body .phone-app .trip-options-page .to-section{display:grid;gap:10px}
 html body .phone-app .trip-options-page .to-section h2{margin:0;padding:0 4px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-html body .phone-app .trip-options-page .to-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html body .phone-app .trip-options-page .to-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 html body .phone-app .trip-options-page :is(.to-quick__item,.to-list){border:1px solid color-mix(in srgb,var(--ink) 9%,transparent);border-radius:18px;background:var(--card);box-shadow:none}
-html body .phone-app .trip-options-page .to-quick__item{display:grid;align-content:space-between;gap:20px;min-height:118px;margin:0;padding:14px;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+html body .phone-app .trip-options-page .to-quick__item{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:10px;min-height:64px;margin:0;padding:10px 12px;border-radius:16px;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+html body .phone-app .trip-options-page .to-quick__item .to-ico{width:34px;height:34px;border-radius:10px}
+html body .phone-app .trip-options-page .to-quick__item .to-copy strong{font-size:15px}
+html body .phone-app .trip-options-page .to-quick__item .to-copy small{font-size:12px}
 html body .phone-app .trip-options-page .to-list{display:grid;overflow:hidden}
 html body .phone-app .trip-options-page .to-row{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) 20px;align-items:center;gap:14px;width:100%;min-height:64px;margin:0;padding:12px 14px;border:0;border-radius:0;background:transparent;color:var(--ink);font:inherit;text-align:left;text-decoration:none;cursor:pointer}
 html body .phone-app .trip-options-page .to-row+.to-row::before{content:"";position:absolute;top:0;left:66px;right:0;height:1px;background:color-mix(in srgb,var(--ink) 9%,transparent)}
