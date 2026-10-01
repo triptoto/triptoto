@@ -8875,7 +8875,7 @@
       ${accountCard("Travel essentials", `${[partnerRow("flight","Find a flight","Search flights and hotels",AVIASALES_AFFILIATE_URL,"flight"),partnerRow("bed","Find a place to stay","Browse stays on Booking.com","https://www.booking.com/","stay"),partnerRow("sim","Travel eSIM","Get connected before you land",ESIM_AFFILIATE_URL,"activity")].join("")}<p class="account-partner-disclosure">Partner links may earn Tripto a commission at no extra cost.</p>`)}
       ${appearance}
       ${accountCard("Help & support", [row("info","Take the tour","Get to know Tripto","","open-first-run-how"),row("info","Help, privacy & terms","Support and legal information","","open-help"),...(NATIVE?[]:[row("refresh","Check for updates","Reload the newest version of the app","","force-update")])].join(""))}
-      ${accountCard("Privacy & data", [row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data","food"),...(mode==="account"?[row("warning","Delete my account","Permanently removes your server account and trips","","delete-account","food")]:[])].join(""))}
+      ${accountCard("Privacy & data", [row("trash","Remove local data","Clears files and cached trips from this phone only","","remove-local-data","food"),mode==="account"?row("warning","Delete my account","Permanently removes your server account and trips","","delete-account","food"):row("warning","Delete guest data","Permanently removes this device's trips from the server","","delete-account","food")].join(""))}
       <div class="account-footer-brand"><button class="account-brand" data-screen="home" aria-label="Open welcome screen">tripto<span>.</span>to</button></div></main></section></div>`;
   }
 
@@ -15219,12 +15219,18 @@
         try {
           const preview=await api("/api/v1/account/deletion-preview");
           const trips=Number(val(preview?.deletion||preview,"ownedTrips","owned_trips")||0);
-          if(!await requestConfirmation({ title: "Delete your account?", body: `Permanently delete your account and ${trips} server trip${trips===1?"":"s"}? This cannot be undone.`, confirmLabel: "Delete account", confirmationText: "DELETE" })) break;
+          // Guests have no account, but their trips still live on the server under
+          // this device's guest session; the same endpoint erases them.
+          const guest=(preview?.deletion||preview)?.mode==="guest";
+          const tripsLabel=`${trips} server trip${trips===1?"":"s"}`;
+          if(!await requestConfirmation(guest
+            ? { title: "Delete guest data?", body: `Permanently delete ${tripsLabel} saved for this device as a guest? This cannot be undone.`, confirmLabel: "Delete data", confirmationText: "DELETE" }
+            : { title: "Delete your account?", body: `Permanently delete your account and ${tripsLabel}? This cannot be undone.`, confirmLabel: "Delete account", confirmationText: "DELETE" })) break;
           await api("/api/v1/account",{method:"DELETE",body:JSON.stringify({confirm:"DELETE"})});
           await clearLocalDeviceData();
           nativePlugin("TriptoNative")?.googleSignOut?.().catch(()=>{});
           localStorage.removeItem("tripto_token"); state.token=""; state.trip=null; state.trips=[];
-          await loadApp(); showToast("Your account and server data were deleted.");
+          await loadApp(); showToast(guest ? "Your guest trips and server data were deleted." : "Your account and server data were deleted.");
         } catch (error) { showToast(error.message,"alert"); }
         break;
       }
