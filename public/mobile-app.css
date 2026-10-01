@@ -9320,3 +9320,5 @@ html.theme-studio:not(#_) body .account-page :is(.acct-card>h2,h2,.appearance-to
 /* Destructive rows keep a red danger treatment in Mono and Ember (>=4.5:1). */
 html.theme-mono:not(#_):not(#_) body .account-page .account-danger-row :is(.ds-flat-row__copy strong,.ds-pastel-icon,.ds-pastel-icon :is(.ph,.ph-svg,svg)){color:#b00020!important}
 html.theme-mono.theme-ember:not(#_):not(#_) body .account-page .account-danger-row :is(.ds-flat-row__copy strong,.ds-pastel-icon,.ds-pastel-icon :is(.ph,.ph-svg,svg)){color:#c2381f!important}
+/* Space Grotesk tops out at 700; <b> defaults to "bolder" (900) and was clamped. */
+html body .form-field>span>b{font-weight:700}
