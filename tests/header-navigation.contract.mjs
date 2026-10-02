@@ -24,6 +24,9 @@ const ctx = vm.createContext({
   collectionConfig: () => ({ label: 'Neighborhood', stop: 'place' }),
   canEditCurrentTrip: () => ctx.state.trip?.role !== 'viewer',
   totalNotificationCount: () => 0,
+  // The menu's current-trip card reads trip dates; formatting is covered elsewhere.
+  tripDayCount: () => 0,
+  formatTripDates: () => '',
   // The "?" About-this-page button is covered by page-help.contract.mjs.
   pageHelpButton: () => '',
 });

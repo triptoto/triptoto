@@ -5987,26 +5987,45 @@
   }
   function navigationSheet() {
     // Options moved to the bottom FAB stack, so it is no longer a menu entry;
-    // To-Do List lives in Trip options.
-    // The menu is one compact grouped list: icon · title · chevron.
-    const entries = [
-      ["trips", "trips", "All trips"],
-      ["account", "user", "Account"],
-    ];
+    // To-Do List lives in Trip options. Layout: current-trip card, then
+    // labelled groups of compact rows (tinted icon · title · chevron).
+    const chev = `<span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 16)}</span>`;
+    const tile = (tone, glyph) => `<span class="nav-menu-item__icon nav-tone--${tone}">${glyph}</span>`;
+    const group = (label, rows, tag = "div", attrs = "") => rows ? `<div class="nav-group"><p class="nav-group__label">${label}</p><${tag} class="nav-menu"${attrs}>${rows}</${tag}></div>` : "";
     const notifUnread = state.trip ? totalNotificationCount() : 0;
+    const notifCount = notifUnread ? `<span class="nav-menu-item__count">${notifUnread > 9 ? "9+" : notifUnread}</span>` : "";
     const notifItem = state.trip
-      ? `<button type="button" class="nav-menu-item nav-menu-item--notifications" data-action="open-notifications"><span class="nav-menu-item__icon">${icon("bell", 22)}${notifUnread ? `<span class="nav-menu-item__badge">${notifUnread > 9 ? "9+" : notifUnread}</span>` : ""}</span><span class="nav-menu-item__text"><strong>Notifications</strong></span><span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`
+      ? `<button type="button" class="nav-menu-item nav-menu-item--notifications" data-action="open-notifications">${tile("notifications", icon("bell", 20))}<span class="nav-menu-item__text"><strong>Notifications</strong></span>${notifCount}${chev}</button>`
       : "";
     // On the timeline the trip itself is the current page, so the menu offers
     // a direct Edit trip shortcut (same handler as the Trip options button).
     const editTripItem = state.screen === "timeline" && state.trip && canManageCurrentTrip()
-      ? `<button type="button" class="nav-menu-item nav-menu-item--edit-trip" data-action="edit-trip"><span class="nav-menu-item__icon">${icon("edit", 22)}</span><span class="nav-menu-item__text"><strong>Edit trip</strong></span><span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 18)}</span></button>`
+      ? `<button type="button" class="nav-menu-item nav-menu-item--edit-trip" data-action="edit-trip">${tile("edit", icon("edit", 20))}<span class="nav-menu-item__text"><strong>Edit trip</strong></span>${chev}</button>`
       : "";
-    const items = entries.map(([screen, glyph, label]) =>
-      `<a class="nav-menu-item nav-menu-item--${screen}" href="${esc(routeUrl(screen))}" data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}><span class="nav-menu-item__icon">${icon(glyph, 22)}</span><span class="nav-menu-item__text"><strong>${esc(label)}</strong></span><span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 18)}</span></a>`,
-    ).join("");
-    return bottomSheet("navigation", "Menu", `<div id="navigation-menu"><nav class="nav-menu" aria-label="Primary navigation">${notifItem}${editTripItem}${items}</nav>${bookingNavigationActions()}${collectionNavigationActions()}</div>`);
+    const accountName = state.account?.user?.display_name || state.account?.user?.displayName || "";
+    const initials = accountName.split(/\s+/).map((x) => x[0] || "").join("").slice(0, 2).toUpperCase();
+    const entries = [
+      ["trips", "trips", "All trips"],
+      ["account", "user", "Account"],
+    ];
+    const items = entries.map(([screen, glyph, label]) => {
+      const mark = screen === "account" && initials
+        ? `<span class="nav-menu-item__icon nav-menu-item__avatar" aria-hidden="true">${esc(initials)}</span>`
+        : tile(screen, icon(glyph, 20));
+      const sub = screen === "account" && accountName ? `<small>${esc(accountName)}</small>` : "";
+      return `<a class="nav-menu-item nav-menu-item--${screen}" href="${esc(routeUrl(screen))}" data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}>${mark}<span class="nav-menu-item__text"><strong>${esc(label)}</strong>${sub}</span>${chev}</a>`;
+    }).join("");
+    const trip = state.trip;
+    const tripDays = trip ? tripDayCount(trip) : 0;
+    const tripMeta = trip ? [formatTripDates(trip), tripDays ? `${tripDays} day${tripDays === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ") : "";
+    const tripCard = trip
+      ? `<div class="nav-trip"><span class="nav-trip__mark" aria-hidden="true">${icon("flight", 20)}</span><div class="nav-trip__copy"><small>Current trip</small><strong title="${esc(trip.title || "Your trip")}">${esc(trip.title || "Your trip")}</strong>${tripMeta ? `<span>${esc(tripMeta)}</span>` : ""}</div></div>`
+      : "";
+    const tripGroup = group("This trip", `${notifItem}${editTripItem}`);
+    const mainGroup = group("General", items, "nav", ' aria-label="Primary navigation"');
+    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${tripCard}${tripGroup}${bookingNavigationActions()}${collectionNavigationActions()}${mainGroup}</div>`);
   }
+
   // Header notification bell. Opens the Notifications sheet, which merges the
   // trip's /changes feed (imports, added stops, time markers, documents…) with
   // any forwarded bookings still awaiting review. The badge counts unread
