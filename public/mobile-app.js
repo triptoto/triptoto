@@ -1561,6 +1561,14 @@
     const label = collectionConfig(collection.collection_type)?.label || "Plan";
     return `<section class="collection-navigation-actions" aria-label="Plan actions">${sheetActionList(sheetActionRow("edit-collection", "edit", `Edit ${label}`, ` data-id="${esc(collection.id)}"`))}</section>`;
   }
+  // Document counter shown next to every Documents label and entry point.
+  function docCount(count) {
+    const n = Number(count) || 0;
+    return `<span class="doc-count" aria-label="${n} document${n === 1 ? "" : "s"}">${n}</span>`;
+  }
+  function bookingDocCount(id) {
+    return id ? (state.localDocs || []).filter((document) => String(document.relatedBookingId || "") === String(id)).length : 0;
+  }
   function linkedBookingDocuments(item) {
     const id = itemId(item || {});
     if (!id) return [];
@@ -1571,7 +1579,7 @@
   function linkedBookingDocumentRows(item) {
     const documents = linkedBookingDocuments(item);
     if (!documents.length) return "";
-    return `<section class="booking-documents" aria-labelledby="booking-documents-title"><h2 id="booking-documents-title">Tickets &amp; Documents</h2><div class="booking-documents__list">${documents
+    return `<section class="booking-documents" aria-labelledby="booking-documents-title"><h2 id="booking-documents-title">Tickets &amp; Documents ${docCount(documents.length)}</h2><div class="booking-documents__list">${documents
       .map((document) => {
         const ready = document.integrity === "verified";
         return `<div class="booking-document-row"><button type="button" class="booking-document-row__open" data-action="open-document" data-id="${esc(document.id)}"><span class="booking-document-row__icon">${icon(document.type === "boarding_pass" ? "qr" : "document", 20)}</span><span><strong>${esc(document.name || docTypeLabel(document.type))}</strong><small>${ready ? "Ready offline" : statusText(document.integrity || "checking")}</small></span></button><button type="button" class="booking-document-row__remove" data-action="remove-document" data-id="${esc(document.id)}" aria-label="Remove ${esc(document.name || "document")}">${icon("trash", 18)}</button></div>`;
@@ -3694,7 +3702,7 @@
       .join("");
   }
   function fdAddRow(id = "") {
-    return `<button type="button" class="fd-row fd-row--button" data-action="add-document"${id ? ` data-id="${esc(id)}"` : ""}>${fdRowIcon("plus")}${fdRowText("Add document")}<span class="fd-row__chev">${icon("chevron", 18)}</span></button>`;
+    return `<button type="button" class="fd-row fd-row--button" data-action="add-document"${id ? ` data-id="${esc(id)}"` : ""}>${fdRowIcon("plus")}<span class="fd-row__text"><strong>Add document${docCount(bookingDocCount(id))}</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`;
   }
   function fdList(rows, label = "Booking details and documents") {
     const body = rows.filter(Boolean).join("");
@@ -7171,7 +7179,7 @@
         .join(""),
       directionsRow = fdButtonRow("navigation", "Directions", "directions-flight", `data-id="${esc(itemId(flight))}"`, "", "chevron", "fd-row--compact"),
       officialStatusRow = fdButtonRow("globe", "Official flight status", "official-flight-status", `data-id="${esc(itemId(flight))}"`, "Check on the airline’s own site", "chevron", "fd-row--compact"),
-      addRow = `<button type="button" class="fd-row fd-row--button fd-row--compact" data-action="add-document" data-id="${esc(itemId(flight))}"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add document</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`,
+      addRow = `<button type="button" class="fd-row fd-row--button fd-row--compact" data-action="add-document" data-id="${esc(itemId(flight))}"><span class="fd-row__icon">${icon("plus", 20)}</span><span class="fd-row__text"><strong>Add document${docCount(linkedDocs.length)}</strong></span><span class="fd-row__chev">${icon("chevron", 18)}</span></button>`,
       liveEnabled = Number(val(flight, "live_data_enabled")) === 1,
       liveControls = state.liveFlights?.available
         ? `<button type="button" class="fd-row fd-row--button fd-row--with-meta" data-action="toggle-live-flight" data-id="${esc(itemId(flight))}" aria-pressed="${liveEnabled}"><span class="fd-row__icon">${icon("plane", 20)}</span><span class="fd-row__text"><strong>Live flight status</strong><small>${liveEnabled ? "On · beta" : "Off"}</small></span><span class="fd-row__chev">${icon(liveEnabled ? "chevronUp" : "chevron", 18)}</span></button>${liveEnabled ? fdButtonRow("refresh", "Refresh now", "refresh-live-flight", `data-id="${esc(itemId(flight))}"`, "", "chevron", "fd-row--compact") : ""}`
@@ -7320,9 +7328,9 @@
     const count = state.localDocs.length;
     const subline = count ? `${verified} of ${count} ready offline on this phone` : "Keep tickets and passes on this phone for offline access";
     const savedSection = count
-      ? `<section class="mobile-group documents-saved"><h2>On this phone (${count})</h2><p class="documents-local-note">${icon("warning", 14)} These files are saved on this phone only. They are not backed up to your account and are removed if you clear this browser's data or switch devices. Keep the originals in your email.</p><div class="document-list ds-grouped-card ds-grouped-card--list">${rows}</div></section>`
+      ? `<section class="mobile-group documents-saved"><h2>On this phone</h2><p class="documents-local-note">${icon("warning", 14)} These files are saved on this phone only. They are not backed up to your account and are removed if you clear this browser's data or switch devices. Keep the originals in your email.</p><div class="document-list ds-grouped-card ds-grouped-card--list">${rows}</div></section>`
       : `<div class="documents-empty"><span class="documents-empty__icon">${icon("document", 30)}</span><strong>Nothing saved yet</strong><p>Add a boarding pass, ticket, or confirmation above and it'll stay ready offline on this phone. Files stay on this phone only and aren't backed up to your account.</p></div>`;
-    return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Travel documents</h1><p>${subline}</p></div></header><section class="documents-add">${documentAddForm()}</section>${savedSection}`, "bookings", "", "documents-screen");
+    return mobilePage("Documents", `<header class="screen-intro"><span class="screen-intro__icon">${icon("document", 26)}</span><div><h1>Travel documents ${docCount(count)}</h1><p>${subline}</p></div></header><section class="documents-add">${documentAddForm()}</section>${savedSection}`, "bookings", "", "documents-screen");
   }
 
   function mobilePage(title, body, active = "trips", right = "", extraClass = "") {
@@ -8644,7 +8652,7 @@
         for (const [key, label, ic] of CAT) {
           const items = bucket[key];
           if (!items || !items.length) continue;
-          body += `<section class="cl-group"><h2 class="cl-group__head">${icon(ic, 16)} <span>${label}</span></h2><ul class="cl-list ds-grouped-card ds-grouped-card--list" aria-label="${label}">${items.map(rowHtml).join("")}</ul></section>`;
+          body += `<section class="cl-group"><h2 class="cl-group__head">${icon(ic, 16)} <span>${label}</span>${key === "documents" ? docCount(items.length) : ""}</h2><ul class="cl-list ds-grouped-card ds-grouped-card--list" aria-label="${label}">${items.map(rowHtml).join("")}</ul></section>`;
         }
       }
       body += `<div class="cl-essentials-actions">${essentialsBtn("Add travel essentials")}${hasEssentials ? removeEssentialsBtn : ""}</div>`;
@@ -8733,7 +8741,7 @@
     const traveler = state.travelers.find((t)=>String(t.id)===String(state.selectedId));
     if (!traveler) return missingDetailScreen("Traveler unavailable", "This traveler is not available.");
     const details = state.bookingDetails.filter((d)=>String(val(d,"traveler_id"))===String(traveler.id)), docs = state.localDocs.filter((d)=>d.travelerIds?.includes(String(traveler.id))), assigned = bookingRows().filter(({item})=>String(val(item,"traveler_ids")||"").split(",").includes(String(traveler.id))), checklist = state.checklist.filter((item)=>String(val(item,"traveler_id"))===String(traveler.id));
-    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button>${canEditCurrentTrip() ? `<button class="text-action text-action--danger" data-action="delete-traveler" data-id="${esc(traveler.id)}">Remove traveler</button>` : ""}</section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list ds-grouped-card ds-grouped-card--list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(timelineIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist ds-grouped-card ds-grouped-card--list">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
+    return mobilePage("Traveler", `<section class="traveler-profile"><span class="traveler-avatar traveler-avatar--large">${esc(String(val(traveler,"display_name")||"T").slice(0,1).toUpperCase())}</span><h1>${esc(val(traveler,"display_name")||"Traveler")}</h1><p>${esc(statusText(val(traveler,"traveler_type")||"Traveler"))}</p><button class="text-action" data-action="open-form" data-form="traveler" data-id="${esc(traveler.id)}">Edit traveler</button>${canEditCurrentTrip() ? `<button class="text-action text-action--danger" data-action="delete-traveler" data-id="${esc(traveler.id)}">Remove traveler</button>` : ""}</section><section class="mobile-group"><h2>Assignments</h2><div class="detail-list ds-grouped-card ds-grouped-card--list">${assigned.map(({kind,item})=>`<div class="detail-row"><span>${icon(timelineIcon(kind),20)}</span><span><small>${esc(statusText(kind))}</small><strong>${esc(val(item,"title","property_name")||"Booking")}</strong></span></div>`).join("") || `<p class="muted-copy">No assigned bookings.</p>`}</div></section><section class="mobile-group"><h2>Travel details</h2><div class="fact-grid">${details.flatMap((d)=>[["Seat",val(d,"seat")],["Cabin",val(d,"cabin_class")],["Baggage",val(d,"checked_bags") != null ? `${d.checked_bags} checked` : null],["Ticket",val(d,"ticket_number")]]).filter(([,v])=>v).map(([k,v])=>`<div><span>${k}</span><strong>${esc(v)}</strong></div>`).join("") || `<p class="muted-copy">No traveler-specific booking facts saved.</p>`}</div></section><section class="mobile-group"><h2>Documents ${docCount(docs.length)}</h2><div class="travel-list ds-grouped-card ds-grouped-card--list">${docs.map((d)=>`<button class="travel-row" data-action="open-document" data-id="${esc(d.id)}"><span class="travel-row__icon">${icon("document",20)}</span><span class="travel-row__body"><strong>${esc(d.name)}</strong><small>${d.integrity==="verified"?"Ready offline":statusText(d.integrity)}</small></span>${icon("chevron",18)}</button>`).join("") || `<p class="muted-copy">No traveler-specific documents.</p>`}</div></section><section class="mobile-group"><h2>Checklist</h2><div class="traveler-checklist ds-grouped-card ds-grouped-card--list">${checklist.map((item)=>`<div class="traveler-checklist__row ${val(item,"completed")?"is-complete":""}">${icon(val(item,"completed")?"check":"clock",18)}<span><strong>${esc(val(item,"title")||"Travel essential")}</strong><small>${esc(statusText(val(item,"category")||"packing"))}</small></span></div>`).join("") || `<p class="muted-copy">No traveler-specific essentials.</p>`}</div></section>`, "account");
   }
   function importScreen() {
     // No AI guessing. You review every field before it is added.
@@ -9910,7 +9918,7 @@
   }
   function manualAttachmentsSection(kind, scope) {
     const key = manualAttachmentKey(scope);
-    return `<section class="manual-attachments" aria-labelledby="manual-attachments-title"><header><span>${icon("document", 20)}</span><div><h2 id="manual-attachments-title">Tickets &amp; Documents</h2><p>Optional · Stored on this device</p></div></header><label class="manual-attachments__picker" for="form-manualAttachments"><span class="manual-attachments__picker-icon">${icon("plus", 20)}</span><span class="manual-attachments__picker-copy"><strong>Add files</strong><small>PDF, images, or passes · up to 10 MB each</small></span><input class="sr-only" id="form-manualAttachments" name="manualAttachments" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pkpass" multiple data-manual-attachments data-scope="${esc(key)}"></label><div class="manual-attachments__list" data-manual-attachment-list data-scope="${esc(key)}" aria-live="polite">${manualAttachmentRows(scope)}</div></section>`;
+    return `<section class="manual-attachments" aria-labelledby="manual-attachments-title"><header><span>${icon("document", 20)}</span><div><h2 id="manual-attachments-title">Tickets &amp; Documents <span data-manual-attachment-count>${docCount(cachedManualAttachment(scope)?.files?.length || 0)}</span></h2><p>Optional · Stored on this device</p></div></header><label class="manual-attachments__picker" for="form-manualAttachments"><span class="manual-attachments__picker-icon">${icon("plus", 20)}</span><span class="manual-attachments__picker-copy"><strong>Add files</strong><small>PDF, images, or passes · up to 10 MB each</small></span><input class="sr-only" id="form-manualAttachments" name="manualAttachments" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pkpass" multiple data-manual-attachments data-scope="${esc(key)}"></label><div class="manual-attachments__list" data-manual-attachment-list data-scope="${esc(key)}" aria-live="polite">${manualAttachmentRows(scope)}</div></section>`;
   }
   async function refreshManualAttachmentPanel(form, hydrate = false) {
     const scope = form?.dataset.attachmentScope;
@@ -9919,6 +9927,8 @@
     const record = hydrate ? await listManualAttachments(scope) : cachedManualAttachment(scope);
     if (document.contains(form)) {
       panel.innerHTML = manualAttachmentRows(scope);
+      const counter = form.querySelector("[data-manual-attachment-count]");
+      if (counter) counter.innerHTML = docCount(record?.files?.length || 0);
       if (hydrate && record?.files?.length) {
         form.dataset.hasStagedAttachments = "true";
         formHasMeaningfulChanges = true;
@@ -10307,7 +10317,7 @@
     // --- (D) Documents index (safe labels only — never files/URLs/tokens) -
     const docs = (state.documents || []).filter((d) => !val(d, "deleted_at", "deletedAt"));
     if (docs.length) {
-      blocks.push({ type: "sectionhead", text: "Documents in this trip" });
+      blocks.push({ type: "sectionhead", text: `Documents in this trip (${docs.length})` });
       const DOC_TYPES = { boarding_pass: "Boarding pass", hotel_confirmation: "Hotel confirmation", ticket: "Ticket", passport: "Identity document", other: "Document" };
       for (const d of docs) {
         const typeLabel = DOC_TYPES[String(val(d, "type") || "other")] || "Document";
@@ -10551,10 +10561,10 @@
       : "Add a place to map this trip";
     // Monochrome layout (2026-10-02): every surface, glyph and divider comes from
     // the theme's neutral tokens; only each tool's glyph carries its own hue.
-    const quickTile = (iconName, title, sub, attr) =>
-      `<button type="button" class="to-quick__item" ${attr}><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span></button>`;
-    const optionRow = (iconName, title, sub, attr) =>
-      `<button type="button" class="to-row" ${attr}><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18, "to-chev")}</button>`;
+    const quickTile = (iconName, title, sub, attr, count = "") =>
+      `<button type="button" class="to-quick__item" ${attr}><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}${count}</strong><small>${esc(sub)}</small></span></button>`;
+    const optionRow = (iconName, title, sub, attr, count = "") =>
+      `<button type="button" class="to-row" ${attr}><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}${count}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18, "to-chev")}</button>`;
     // Partner links reuse the affiliate destinations already used on the Account
     // and trip-setup screens. They open externally.
     const stayDestLoc = (state.locations || []).find((location) => String(val(location, "type") || "") === "city");
@@ -10570,7 +10580,8 @@
     // Plan together takes the fourth Essentials tile; when sharing is switched
     // off server-side, Documents takes that tile instead of a Tools row.
     const sharingOn = state.sharing?.enabled !== false;
-    const docsArgs = ["document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`];
+    const docsTotal = (state.localDocs || []).length;
+    const docsArgs = ["document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents, ${docsTotal} saved"`, docCount(docsTotal)];
     const collabTile = sharingOn
       ? quickTile("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
       : quickTile(...docsArgs);

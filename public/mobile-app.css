@@ -9370,3 +9370,7 @@ html body .phone-app .country-guide-page .cg-status b{font-size:12px;font-weight
 html body .phone-app .country-guide-page .cg-sources{display:grid;gap:6px;margin:0;padding:0;list-style:none;font-size:13px}
 html body .phone-app .country-guide-page .cg-sources a{color:var(--ink);font-weight:500}
 html body .phone-app .country-guide-page .cg-sources small{color:var(--muted)}
+/* v865 document counters: one pill next to every Documents label */
+.doc-count{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink,#fff);font-size:12px;font-weight:700;line-height:1;vertical-align:middle;font-variant-numeric:tabular-nums;flex:none}
+.cl-group__head .doc-count{margin-left:4px}
+html.theme-mono .doc-count{background:var(--ink);color:var(--surface);border-radius:0}
