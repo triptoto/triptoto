@@ -13858,7 +13858,10 @@
   // them out to stop deleted items (single or the whole essentials set) from
   // flashing away and then reappearing before the deferred delete lands.
   const pendingChecklistDeletes = new Set();
-  function deleteChecklistItem(id) {
+  async function deleteChecklistItem(id) {
+    const item = state.checklist.find((row) => String(row.id) === String(id));
+    if (!item) return;
+    if (!await requestConfirmation({ title: "Delete this item?", body: `“${item.title || "Item"}” will be removed from the checklist.`, confirmLabel: "Delete" })) return;
     const idx = state.checklist.findIndex((row) => String(row.id) === String(id));
     if (idx < 0) return;
     const [removed] = state.checklist.splice(idx, 1);
@@ -13918,10 +13921,13 @@
     }
   }
   // Remove every curated "travel essential" in one action, with a single undo.
-  function removeEssentials() {
+  async function removeEssentials() {
     if (!state.trip || state.loadingEssentials) return;
+    const count = (state.checklist || []).filter((row) => row.__essential).length;
+    if (!count) { showToast("No travel essentials to remove."); return; }
+    if (!await requestConfirmation({ title: "Remove travel essentials?", body: `${count} travel essential${count === 1 ? "" : "s"} will be removed from the checklist.`, confirmLabel: "Remove" })) return;
     const snapshot = (state.checklist || []).map((row, i) => ({ row, i })).filter((e) => e.row.__essential);
-    if (!snapshot.length) { showToast("No travel essentials to remove."); return; }
+    if (!snapshot.length) return;
     const ids = new Set(snapshot.map((e) => String(e.row.id)));
     const removedRows = snapshot.map((e) => e.row);
     ids.forEach((id) => pendingChecklistDeletes.add(id));
@@ -14203,7 +14209,7 @@
         cancelEditChecklistItem();
         break;
       case "delete-checklist":
-        deleteChecklistItem(target.dataset.id);
+        await deleteChecklistItem(target.dataset.id);
         break;
       case "add-checklist-suggested":
         await addChecklistItem(target.dataset.title);
@@ -14212,7 +14218,7 @@
         await loadEssentials();
         break;
       case "remove-essentials":
-        removeEssentials();
+        await removeEssentials();
         break;
       case "toast-action":
         {
