@@ -916,7 +916,7 @@
     const symbol = weight === "fill" && FILLED_ICON_IDS.has(canonical)
       ? `${canonical}--fill`
       : canonical;
-    return `<svg aria-hidden="true" focusable="false" class="app-icon ph-svg${extra ? ` ${extra}` : ""}" width="${px}" height="${px}" viewBox="0 0 256 256" fill="currentColor" style="--icon-size:${px}px"><use href="${ICON_SPRITE}#${symbol}"></use></svg>`;
+    return `<svg aria-hidden="true" focusable="false" class="app-icon ph-svg${extra ? ` ${extra}` : ""}" data-icon="${canonical}" width="${px}" height="${px}" viewBox="0 0 256 256" fill="currentColor" style="--icon-size:${px}px"><use href="${ICON_SPRITE}#${symbol}"></use></svg>`;
   }
   function esc(value) {
     return String(value ?? "").replace(
