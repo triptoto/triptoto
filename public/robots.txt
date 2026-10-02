@@ -12,6 +12,7 @@ Disallow: /before-you-go
 Disallow: /bookings
 Disallow: /collaboration
 Disallow: /collections
+Disallow: /country-guide
 Disallow: /currency
 Disallow: /day-plan
 Disallow: /documents

@@ -1807,7 +1807,7 @@
     home: "trips", trips: "timeline", timeline: "trips", bookings: "timeline", flight: "timeline", hotel: "timeline",
     train: "timeline", plan: "timeline", documents: "trip-options", ready: "timeline",
     health: "timeline", account: "trips", collaboration: "trip-options",
-    "trip-options": "timeline", "tax-free": "trip-options", travelers: "account", traveler: "travelers", checklist: "timeline",
+    "trip-options": "timeline", "tax-free": "trip-options", "country-guide": "trip-options", travelers: "account", traveler: "travelers", checklist: "timeline",
     import: "add-booking", "import-review": "import", "import-history": "import",
     "booking-email-inbox": "bookings", sync: "trip-options", join: "trips",
     collection: "timeline", "collection-form": "day-plan", "stop-form": "collection", "collection-stop": "collection",
@@ -2259,10 +2259,12 @@
     ["SEK", "Swedish krona"], ["SGD", "Singapore dollar"], ["THB", "Thai baht"],
     ["TRY", "Turkish lira"], ["USD", "US dollar"], ["ZAR", "South African rand"],
   ]);
-  const COUNTRY_CURRENCY = Object.freeze({
-    AT:"EUR",BE:"EUR",BG:"EUR",HR:"EUR",CY:"EUR",EE:"EUR",FI:"EUR",FR:"EUR",DE:"EUR",GR:"EUR",IE:"EUR",IT:"EUR",LV:"EUR",LT:"EUR",LU:"EUR",MT:"EUR",NL:"EUR",PT:"EUR",SK:"EUR",SI:"EUR",ES:"EUR",
-    AU:"AUD",CA:"CAD",CH:"CHF",CN:"CNY",CZ:"CZK",DK:"DKK",GB:"GBP",HK:"HKD",HU:"HUF",IL:"ILS",IN:"INR",IS:"ISK",JP:"JPY",KR:"KRW",MX:"MXN",NO:"NOK",NZ:"NZD",PL:"PLN",RO:"RON",RU:"RUB",SE:"SEK",SG:"SGD",TH:"THB",TR:"TRY",US:"USD",ZA:"ZAR",
-  });
+  // Country facts come from the shared Country Guide dataset (public/country-guide.js);
+  // the app never keeps its own per-country copy. travelCurrency() limits the
+  // answer to the converter's supported list.
+  const countryGuide = () => globalThis.TriptoCountryGuide || null;
+  function countryCurrency(code) { return countryGuide()?.primaryCurrency(String(code || "").toUpperCase()) || null; }
+  function travelCurrency(code) { const currency = countryCurrency(code); return currency && TRAVEL_CURRENCIES.some(([c]) => c === currency) ? currency : null; }
   // ISO 3166-1 alpha-2 territories. The selector always exposes the complete
   // list; verified rules are a deliberately smaller, clearly labelled subset.
   const TAX_FREE_COUNTRIES = Object.freeze("AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW".split(" "));
@@ -2360,13 +2362,13 @@
     const region = [globalThis.TriptoI18n?.locale, navigator.language, ...(navigator.languages || [])]
       .map((locale) => String(locale || "").match(/[-_]([A-Za-z]{2})\b/)?.[1]?.toUpperCase())
       .find(Boolean);
-    return COUNTRY_CURRENCY[region] || "USD";
+    return travelCurrency(region) || "USD";
   }
   function destinationCurrency() {
     const locations = state.locations || [];
     for (const location of locations) {
       const code = String(val(location, "country_code", "countryCode") || "").toUpperCase();
-      if (COUNTRY_CURRENCY[code]) return COUNTRY_CURRENCY[code];
+      if (travelCurrency(code)) return travelCurrency(code);
     }
     const context = `${state.trip?.title || ""} ${locations.map((location) => `${val(location,"city") || ""} ${val(location,"display_name") || ""} ${val(location,"timezone") || ""}`).join(" ")}`.toLowerCase();
     const hints = [["rome","EUR"],["italy","EUR"],["europe/rome","EUR"],["paris","EUR"],["france","EUR"],["london","GBP"],["tokyo","JPY"],["japan","JPY"],["tel aviv","ILS"],["jerusalem","ILS"],["israel","ILS"],["new york","USD"],["united states","USD"],["sydney","AUD"],["australia","AUD"],["singapore","SGD"],["bangkok","THB"],["istanbul","TRY"]];
@@ -5723,6 +5725,10 @@
       can: ["Convert any amount between two currencies.", "Swap the direction with one tap.", "Use quick amounts like 10, 50, 100 or 500."],
       how: ["Choose the From and To currencies.", "Type an amount or tap a quick amount.", "Tap Update to refresh the rate when you are online."],
       know: ["Rates work offline once they have been saved.", "Rates are for reference only; banks and card providers may add fees."] },
+    "country-guide": { title: "About Country Guide", intro: "Practical facts for every country and territory, saved on your phone.",
+      can: ["See the money, languages, time, driving side and calling code of a country.", "Find the numbers your phone treats as emergency calls.", "Choose your home country to see what changes for you."],
+      how: ["Pick a country from your trip or choose any country.", "Set your home country once; Tripto never guesses it.", "Open More for date formats, units and other details."],
+      know: ["Plug and voltage data is not available yet.", "Rules change, so check official local guidance before you travel."] },
     "tax-free": { title: "About Tax Free", intro: "A friendly guide to getting sales tax (VAT) back on shopping abroad.",
       can: ["See whether a country offers tax refunds to visitors.", "Check the tax rate, minimum spend and how much you might get back.", "Learn what to do in the shop, at the airport and by when."],
       how: ["Pick a country from your trip or search for any country.", "Open the sections to read the details step by step.", "Tap “Update information” to check for newer rules."],
@@ -10580,7 +10586,7 @@
     const section = (id, heading, inner, extra = "") => `<section class="to-section" aria-labelledby="${id}"><h2 id="${id}">${heading}</h2>${inner}${extra}</section>`;
     const body = `<section class="to-summary" aria-label="${esc(title)}"><p class="to-eyebrow">Trip options</p><h1 title="${esc(title)}">${esc(title)}</h1>${meta ? `<p class="to-summary__meta">${meta}</p>` : ""}</section>`
       + section("to-essentials", "Essentials", `<div class="to-quick">${quickTile("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${quickTile("map", "Map", mapHint, `data-action="open-trip-map"`)}${collabTile}${quickTile("currency", "Currency", "Convert trip costs offline", `data-action="open-currency"`)}</div>`)
-      + section("to-tools", "Tools", `<div class="to-list">${optionRow("checklist", "To-Do List", "Packing list & tasks", `data-screen="checklist" aria-label="To-Do List"`)}${docsRow}${optionRow("pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionRow("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${optionRow("download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div>`)
+      + section("to-tools", "Tools", `<div class="to-list">${optionRow("checklist", "To-Do List", "Packing list & tasks", `data-screen="checklist" aria-label="To-Do List"`)}${docsRow}${optionRow("pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionRow("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${optionRow("globe", "Country Guide", "Money, driving, time and emergency numbers", `data-action="open-country-guide"`)}${optionRow("download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div>`)
       + section("to-book", "Book for this trip", `<div class="to-list">${partnerRow("flight", "Find a flight", "Search flights", AVIASALES_AFFILIATE_URL)}${partnerRow("bed", "Find a stay", stayDest ? `Stays in ${stayDest}` : "Browse stays", stayUrl)}${partnerRow("car", "Book a transfer", "Airport and city rides", TRANSFER_AFFILIATE_URL)}${partnerRow("tour", "Things to do", "Tours and activities", ACTIVITIES_AFFILIATE_URL)}${partnerRow("sim", "Travel eSIM", "Get connected before you land", ESIM_AFFILIATE_URL)}</div>`, `<p class="to-note">Partner links open in a new tab and may earn Tripto a commission at no extra cost.</p>`)
       + section("to-support", "Support", `<div class="to-list">${optionRow("help", "Help & FAQ", "Answers and support", `data-screen="help" aria-label="Help & FAQ"`)}</div>`);
     return mobilePage("Trip options", body, "trip-options", headerActions, "trip-options-page");
@@ -10737,7 +10743,7 @@
     }).join("");
     return `<section class="tax-free-airports" aria-labelledby="tax-free-airports-title"><div class="tax-free-card-head"><span>${icon("plane",24)}</span><div><h2 id="tax-free-airports-title">${esc(tfCopy("airportGuide"))}</h2><p>${esc(tfCopy("airportGuideBody"))}</p></div></div>${airportTabs}<div class="tax-free-airport-title"><div><b>${esc(active)}</b><h3>${esc(airport.locationName)}</h3></div>${airport.city?`<span>${esc(airport.city)}</span>`:""}</div><div class="tax-free-airport-list">${cards}</div></section>`;
   }
-  function taxFreeCalculator(rule){const rates=rule?.rates||[];if(!rates.length)return "";const selected=rates.find(row=>Number(row.rate)===Number(state.taxFreeRate))||rates[0];if(state.taxFreeRate==null)state.taxFreeRate=selected.rate;const gross=parseAmountInput(state.taxFreeGrossText),fee=parseAmountInput(state.taxFreeFeeText),tax=Number.isFinite(gross)&&gross>=0?(selected.priceIncludesTax===false?gross*Number(selected.rate)/100:gross*Number(selected.rate)/(100+Number(selected.rate))):null,after=tax==null?null:Math.max(0,tax-(Number.isFinite(fee)&&fee>0?fee:0));const currency=rule.thresholds?.[0]?.currency||COUNTRY_CURRENCY[state.taxFreeCountry]||"EUR",money=value=>{if(value==null)return "—";try{return new Intl.NumberFormat(globalThis.TriptoI18n?.locale||"en",{style:"currency",currency,maximumFractionDigits:2}).format(value);}catch(_){return `${value.toFixed(2)} ${currency}`;}};return `<section class="tax-free-calculator" aria-labelledby="tax-free-calc-title"><div class="tax-free-card-head"><span>${icon("currency",24)}</span><div><h2 id="tax-free-calc-title">${esc(tfCopy("calculator"))}</h2><p>${esc(tfCopy("privacy"))}</p></div></div><div class="tax-free-calc-grid"><label><span>${esc(tfCopy("gross"))}</span><input inputmode="decimal" autocomplete="off" data-tax-free-gross value="${esc(state.taxFreeGrossText)}" placeholder="0.00"></label><label><span>${esc(tfCopy("rate"))}</span><select data-tax-free-rate>${rates.map(row=>`<option value="${row.rate}"${Number(row.rate)===Number(selected.rate)?" selected":""}>${esc(row.category)} · ${row.rate}%</option>`).join("")}</select></label><label><span>${esc(tfCopy("fee"))}</span><input inputmode="decimal" autocomplete="off" data-tax-free-fee value="${esc(state.taxFreeFeeText)}" placeholder="0.00"></label></div><div class="tax-free-result"><div><span>${esc(tfCopy("taxAmount"))}</span><strong data-tax-free-tax>${esc(money(tax))}</strong></div>${String(state.taxFreeFeeText||"").trim()?`<div><span>${esc(tfCopy("afterFee"))}</span><strong data-tax-free-after>${esc(money(after))}</strong></div>`:""}</div><p class="tax-free-calc-note">${icon("info",16)} ${esc(tfCopy("calcNote"))}</p>${rates.length>1?`<p class="tax-free-mixed">${esc(tfCopy("mixed"))}</p>`:""}</section>`;}
+  function taxFreeCalculator(rule){const rates=rule?.rates||[];if(!rates.length)return "";const selected=rates.find(row=>Number(row.rate)===Number(state.taxFreeRate))||rates[0];if(state.taxFreeRate==null)state.taxFreeRate=selected.rate;const gross=parseAmountInput(state.taxFreeGrossText),fee=parseAmountInput(state.taxFreeFeeText),tax=Number.isFinite(gross)&&gross>=0?(selected.priceIncludesTax===false?gross*Number(selected.rate)/100:gross*Number(selected.rate)/(100+Number(selected.rate))):null,after=tax==null?null:Math.max(0,tax-(Number.isFinite(fee)&&fee>0?fee:0));const currency=rule.thresholds?.[0]?.currency||countryCurrency(state.taxFreeCountry)||"EUR",money=value=>{if(value==null)return "—";try{return new Intl.NumberFormat(globalThis.TriptoI18n?.locale||"en",{style:"currency",currency,maximumFractionDigits:2}).format(value);}catch(_){return `${value.toFixed(2)} ${currency}`;}};return `<section class="tax-free-calculator" aria-labelledby="tax-free-calc-title"><div class="tax-free-card-head"><span>${icon("currency",24)}</span><div><h2 id="tax-free-calc-title">${esc(tfCopy("calculator"))}</h2><p>${esc(tfCopy("privacy"))}</p></div></div><div class="tax-free-calc-grid"><label><span>${esc(tfCopy("gross"))}</span><input inputmode="decimal" autocomplete="off" data-tax-free-gross value="${esc(state.taxFreeGrossText)}" placeholder="0.00"></label><label><span>${esc(tfCopy("rate"))}</span><select data-tax-free-rate>${rates.map(row=>`<option value="${row.rate}"${Number(row.rate)===Number(selected.rate)?" selected":""}>${esc(row.category)} · ${row.rate}%</option>`).join("")}</select></label><label><span>${esc(tfCopy("fee"))}</span><input inputmode="decimal" autocomplete="off" data-tax-free-fee value="${esc(state.taxFreeFeeText)}" placeholder="0.00"></label></div><div class="tax-free-result"><div><span>${esc(tfCopy("taxAmount"))}</span><strong data-tax-free-tax>${esc(money(tax))}</strong></div>${String(state.taxFreeFeeText||"").trim()?`<div><span>${esc(tfCopy("afterFee"))}</span><strong data-tax-free-after>${esc(money(after))}</strong></div>`:""}</div><p class="tax-free-calc-note">${icon("info",16)} ${esc(tfCopy("calcNote"))}</p>${rates.length>1?`<p class="tax-free-mixed">${esc(tfCopy("mixed"))}</p>`:""}</section>`;}
   function taxFreeGuideStatus(guide,data){
     const mapped={AVAILABLE:"verified_available",AVAILABLE_LIMITED:"partial",PILOT:"partial",ROLLOUT:"partial",LEGAL_FRAMEWORK_VERIFY_OPERATIONAL:"partial",NO_SCHEME_CONFIRMED:"verified_unavailable",NO_GENERAL_VAT_GST:"verified_unavailable",NOT_APPLICABLE:"verified_unavailable",VERIFY_LOCAL_RULES:"unverified"};
     return taxFreeStatus(mapped[guide?.refundStatus]||data?.status);
@@ -10789,6 +10795,157 @@
     const error=state.taxFreeError?`<p class="tax-free-error" role="status">${esc(state.taxFreeError)}</p>`:"";
     const content=`${selectors}<article class="tax-free-guide-hero"><div class="tax-free-guide-hero__top"><span class="tax-free-status tax-free-status--${status.key}">${esc(status.label)}</span><span class="tax-free-guide-hero__date">${esc(guide?.lastVerifiedAt||"")}</span></div><p class="tax-free-guide-eyebrow">${esc(tfCopy("guideTitle"))}</p><h1>${esc(country)}</h1><p class="tax-free-guide-summary">${esc(summary)}</p><div class="tax-free-guide-refund"><div><span>${esc(tfCopy("refundPotential"))}</span><strong>${esc(refund.amount)}</strong><small>${esc(refund.note)}</small></div><span class="tax-free-guide-refund__icon">${icon("currency",28)}</span></div><div class="tax-free-guide-facts">${quickFacts.map(fact=>`<div><span>${esc(fact.label)}</span><strong>${esc(fact.value)}</strong></div>`).join("")}</div></article>${future}${how}${journey}${sourceSection}<p class="tax-free-guide-caution">${icon("info",16)} <span>${esc(guide?.refundStatus==="VERIFY_LOCAL_RULES"?tfCopy("checkLocal"):tfCopy("dataCaution"))}</span></p>${state.offline?`<p class="tax-free-offline">${icon("offline",16)} ${esc(tfCopy("offline"))}</p>`:""}${refresh}${error}<section class="tax-free-about">${icon("info",18)}<div><h2>${esc(tfCopy("aboutTitle"))}</h2><p>${esc(tfCopy("aboutBody"))}</p></div></section>`;
     return mobilePage(tfCopy("title"),content,"trip-options","","tax-free-page tax-free-page--guide");
+  }
+  // ===== Country Guide =====
+  // Offline facts for every ISO 3166-1 country from the shared dataset
+  // (packages/country-guide → public/country-guide.js). The home country is only
+  // ever the traveler's explicit choice: never inferred from GPS, IP, language
+  // or the trip's origin.
+  const HOME_COUNTRY_KEY = "tripto_home_country_v1";
+  function homeCountry() {
+    try { const code = String(localStorage.getItem(HOME_COUNTRY_KEY) || ""); return countryGuide()?.getCountry(code) ? code : ""; } catch (_) { return ""; }
+  }
+  function setHomeCountry(code) {
+    try { if (code) localStorage.setItem(HOME_COUNTRY_KEY, code); else localStorage.removeItem(HOME_COUNTRY_KEY); } catch (_) {}
+  }
+  function guideLocale() { return globalThis.TriptoI18n?.locale || "en"; }
+  function guideCountryName(code) { return countryGuide()?.countryName(code, guideLocale()) || code; }
+  function guideDisplayName(type, code) { try { return new Intl.DisplayNames([guideLocale(), "en"], { type, fallback: "none" }).of(code) || code; } catch (_) { return code; } }
+  function guideLocalDay(when, zone) {
+    if (!when) return null;
+    try { return new Intl.DateTimeFormat("en-CA", { timeZone: zone || "UTC", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(when)); }
+    catch (_) { return new Date(when).toISOString().slice(0, 10); }
+  }
+  // Trip countries from structured data only (location country codes, dated by
+  // the bookings that use them). Airports, stations and ports count as transit.
+  function tripGuideCountries() {
+    const guide = countryGuide();
+    if (!guide || !state.trip) return [];
+    const TRANSIT = new Set(["airport", "station", "port"]);
+    const visit = (loc, start, end) => ({ iso2: val(loc, "country_code", "countryCode"), start, end, transit: TRANSIT.has(String(val(loc, "type") || "").toLowerCase()) });
+    const visits = [];
+    for (const ref of mappableBookingRefs()) {
+      const loc = locationById(ref.locId);
+      if (!loc) continue;
+      if (ref.role === "stay") visits.push(visit(loc, val(ref.item, "check_in_date") || null, val(ref.item, "check_out_date") || null));
+      else { const day = guideLocalDay(ref.when, ref.zone); visits.push(visit(loc, day, day)); }
+    }
+    for (const loc of state.locations || []) visits.push(visit(loc, null, null));
+    return guide.resolveTripCountries(visits);
+  }
+  // Destination zone for comparisons: the trip's own location zone inside that
+  // country when there is one, otherwise the country's single zone.
+  function guideDestinationZone(code) {
+    const zones = countryGuide()?.getCountry(code)?.time?.timeZones || [];
+    const fromTrip = (state.locations || []).map((loc) => String(val(loc, "country_code", "countryCode") || "").toUpperCase() === code ? val(loc, "timezone") : null).find((zone) => zone && zones.includes(zone));
+    return fromTrip || (zones.length === 1 ? zones[0] : null);
+  }
+  // Home zone: the chosen country's single zone, or this device's zone when it
+  // is one of the chosen country's zones. Never used to pick the country.
+  function guideHomeZone(code) {
+    const zones = countryGuide()?.getCountry(code)?.time?.timeZones || [];
+    if (zones.length === 1) return zones[0];
+    let device = "";
+    try { device = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (_) {}
+    return zones.includes(device) ? device : null;
+  }
+  const CG_UNITS = Object.freeze({ left: "Left", right: "Right", "km/h": "km/h", mph: "mph", kilometer: "Kilometres", mile: "Miles", celsius: "Celsius (°C)", fahrenheit: "Fahrenheit (°F)", kilogram: "Kilograms", pound: "Pounds", "12h": "12-hour (3:00 PM)", "24h": "24-hour (15:00)", mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday", metric: "Metric", US: "US customary", UK: "Imperial (UK)" });
+  const CG_DIFF_LABELS = Object.freeze({ currency: "Money", driving: "Driving side", speed: "Speed limits", distance: "Road distances", temperature: "Temperature", weight: "Weight", date: "Date format", clock: "Clock", weekStart: "Week starts", decimal: "Decimal mark", calling: "Calling code", power: "Plugs", time: "Time" });
+  const cgUnit = (value) => CG_UNITS[value] || value;
+  function cgMinutes(minutes) {
+    const abs = Math.abs(minutes), h = Math.floor(abs / 60), m = abs % 60;
+    const span = `${h ? `${h} h` : ""}${h && m ? " " : ""}${m ? `${m} min` : ""}`;
+    return `${span} ${minutes > 0 ? "ahead of" : "behind"} home`;
+  }
+  function cgDiffValue(diff, side) {
+    const value = diff[side];
+    if (diff.id === "currency") return `${value} · ${guideDisplayName("currency", value)}`;
+    if (diff.id === "calling") return `+${value}`;
+    if (diff.id === "decimal") return value === "," ? "Comma (1,5)" : value === "." ? "Point (1.5)" : value;
+    if (diff.id === "power") return `Type ${value}`;
+    return cgUnit(value);
+  }
+  function cgDayRange(entry) {
+    if (!entry.start) return "";
+    if (!entry.end || entry.end === entry.start) return formatDateOnly(entry.start);
+    return formatDateRange(entry.start, entry.end);
+  }
+  function countryGuideScreen() {
+    const guide = countryGuide();
+    if (!guide) return mobilePage("Country Guide", `<section class="cg-card"><p class="cg-empty">The country guide could not load on this device. Reload Tripto to try again.</p></section>`, "trip-options", "", "trip-options-page country-guide-page");
+    const tripCountries = tripGuideCountries();
+    if (!state.countryGuideCountry || !guide.getCountry(state.countryGuideCountry)) state.countryGuideCountry = tripCountries[0]?.iso2 || homeCountry() || "";
+    const code = state.countryGuideCountry;
+    const home = homeCountry();
+    const sortedCodes = guide.listCountryCodes().map((cc) => [cc, guideCountryName(cc)]).sort((a, b) => a[1].localeCompare(b[1], guideLocale()));
+    const options = (selected, empty) => `<option value="">${esc(empty)}</option>${sortedCodes.map(([cc, name]) => `<option value="${cc}"${cc === selected ? " selected" : ""}>${esc(`${guide.flagEmoji(cc)} ${name}`)}</option>`).join("")}`;
+    const chips = tripCountries.length > 1 || (tripCountries.length === 1 && tripCountries[0].iso2 !== code)
+      ? `<div class="cg-chips" role="group" aria-label="Countries on this trip">${tripCountries.map((entry) => `<button type="button" class="cg-chip${entry.iso2 === code ? " is-active" : ""}" data-action="country-guide-pick" data-country="${entry.iso2}" aria-pressed="${entry.iso2 === code}"><span aria-hidden="true">${guide.flagEmoji(entry.iso2)}</span><span><strong>${esc(guideCountryName(entry.iso2))}</strong>${cgDayRange(entry) ? `<small>${esc(cgDayRange(entry))}</small>` : ""}</span></button>`).join("")}</div>`
+      : "";
+    const picker = `<section class="cg-card cg-picker">${toolHead("globe", "Country Guide", code ? esc(guideCountryName(code)) : "Choose a country", esc(tripCountries.length ? "Countries come from the places in this trip." : "Pick any country or territory."))}${chips}<label class="cg-field"><span>Country</span><select data-country-guide-country aria-label="Country">${options(code, "Choose a country")}</select></label><label class="cg-field"><span>Your home country</span><select data-country-guide-home aria-label="Your home country">${options(home, "Not set")}</select></label><p class="cg-hint">Only used to show what changes for you. Tripto never guesses it.</p></section>`;
+    if (!code) return mobilePage("Country Guide", picker, "trip-options", "", "trip-options-page country-guide-page");
+    const country = guide.getCountry(code);
+    const fact = (label, value, extra = "") => value ? `<div class="cg-fact"><dt>${esc(label)}</dt><dd>${value}${extra}</dd></div>` : "";
+    const list = (items) => items.filter(Boolean).join(", ");
+    const languages = list([...(country.language?.officialLanguages || []), ...(country.language?.widelyUsedLanguages || [])].filter((lang, i, all) => all.indexOf(lang) === i).map((lang) => guideDisplayName("language", lang)));
+    const currencies = (country.currency?.currencies || []).map((cur) => `${cur} · ${guideDisplayName("currency", cur)}`);
+    const zones = country.time?.timeZones || [];
+    const nowIn = (zone) => { try { return new Intl.DateTimeFormat(guideLocale(), { timeZone: zone, hour: "numeric", minute: "2-digit" }).format(new Date()); } catch (_) { return ""; } };
+    const zoneText = zones.length === 1 ? `${esc(zones[0].replace(/_/g, " "))}${nowIn(zones[0]) ? ` <small>now ${esc(nowIn(zones[0]))}</small>` : ""}` : zones.length ? `${zones.length} time zones <small>check the zone for each stop</small>` : "";
+    const calling = (country.telecom?.callingCodes || []).map((cc) => `+${cc}`).join(", ");
+    const shared = guide.sharedCallingCodeCountries(code);
+    const emergency = country.emergency?.numbers || [];
+    const emergencyHtml = emergency.length ? `<span class="cg-tel">${emergency.map((num) => `<a href="tel:${esc(num)}">${esc(num)}</a>`).join("")}</span>` : "";
+    const good = [
+      fact("Currency", esc(currencies.join(", "))),
+      fact("Languages", esc(languages)),
+      fact("Time", zoneText),
+      fact("Driving side", country.driving ? esc(cgUnit(country.driving.drivingSide)) : ""),
+      fact("Speed limits", country.measurements?.roadSpeedUnit ? esc(cgUnit(country.measurements.roadSpeedUnit)) : ""),
+      fact("Calling code", esc(calling), shared.length ? ` <small>shared with ${shared.length} other ${shared.length === 1 ? "country" : "countries"}</small>` : ""),
+      fact("Plugs and voltage", country.electricity ? esc(`Type ${country.electricity.plugTypes.join(", ")} · ${country.electricity.voltage.join("/")} V · ${country.electricity.frequency.join("/")} Hz`) : `<span class="cg-na">Not available yet</span>`),
+    ].join("");
+    const emergencySection = `<section class="to-section" aria-labelledby="cg-sos"><h2 id="cg-sos">Emergency numbers</h2><div class="cg-card">${emergencyHtml || `<p class="cg-empty">No emergency numbers in Tripto's data for this place.</p>`}<p class="cg-hint">${emergency.length ? "Numbers your phone network treats as emergency calls. Check official local guidance for which service each one reaches." : "Check official local guidance before you travel."}</p></div></section>`;
+    let changes = "";
+    if (home && home !== code) {
+      const diffs = guide.compareCountries(home, code, { homeZone: guideHomeZone(home), destinationZone: guideDestinationZone(code) });
+      const rows = diffs.map((diff) => diff.id === "time"
+        ? `<div class="cg-diff"><strong>${CG_DIFF_LABELS.time}</strong><span>${esc(cgMinutes(diff.minutes))}</span></div>`
+        : `<div class="cg-diff"><strong>${esc(CG_DIFF_LABELS[diff.id] || diff.id)}</strong><span>${esc(cgDiffValue(diff, "destination"))}<small>at home: ${esc(cgDiffValue(diff, "home"))}</small></span></div>`).join("");
+      const powerUnknown = guide.comparePowerCompatibility(home, code).result === "unknown";
+      changes = `<section class="to-section" aria-labelledby="cg-changes"><h2 id="cg-changes">What changes for you</h2><div class="cg-card">${rows || `<p class="cg-empty">Nothing in Tripto's data differs from ${esc(guideCountryName(home))}.</p>`}${powerUnknown ? `<p class="cg-hint">Plug compatibility is not checked yet: Tripto has no verified plug data.</p>` : ""}</div></section>`;
+    }
+    const formats = country.formats;
+    const measures = country.measurements;
+    const localNames = (country.identity.localNames || []).map((entry) => entry.name).filter((name) => name !== guideCountryName(code));
+    const more = [
+      fact("Capital", esc(country.identity.capital || "")),
+      fact("Region", esc([country.identity.subregion, country.identity.region].filter(Boolean).map((m49) => guideDisplayName("region", m49)).find((name) => !/^\d+$/.test(name)) || "")),
+      fact("Local name", esc(localNames.join(", "))),
+      fact("Date format", esc(formats?.dateFormat || "")),
+      fact("Clock", esc(guide.clockPreference(code) ? cgUnit(guide.clockPreference(code)) : "")),
+      fact("Week starts", esc(formats ? cgUnit(formats.firstDayOfWeek) : "")),
+      fact("Numbers", formats ? esc(`1${formats.groupingSeparator}234${formats.decimalSeparator}5`) : ""),
+      fact("Measurement", esc(measures ? cgUnit(measures.measurementSystem) : "")),
+      fact("Distances", esc(measures?.distanceUnit ? cgUnit(measures.distanceUnit) : "")),
+      fact("Temperature", esc(measures?.temperatureUnit ? cgUnit(measures.temperatureUnit) : "")),
+      fact("Weight", esc(measures?.weightUnit ? cgUnit(measures.weightUnit) : "")),
+      fact("Internet domain", esc(country.identity.internetTld || "")),
+    ].join("");
+    const linkRow = (iconName, title, sub, attr) => `<button type="button" class="to-row" ${attr}><span class="to-ico to-ico--${iconName}" aria-hidden="true">${icon(iconName, 20)}</span><span class="to-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span>${icon("chevron", 18, "to-chev")}</button>`;
+    const tools = `<div class="to-list">${linkRow("currency", "Currency", "Convert prices offline", `data-action="open-currency"`)}${linkRow("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${linkRow("map", "Map", "This trip's places", `data-action="open-trip-map"`)}<a class="to-row" href="${esc(ESIM_AFFILIATE_URL)}" target="_blank" rel="sponsored noopener noreferrer"><span class="to-ico to-ico--sim" aria-hidden="true">${icon("sim", 20)}</span><span class="to-copy"><strong>Travel eSIM</strong><small>Partner link, opens in a new tab</small></span>${icon("external", 17, "to-chev")}</a></div>`;
+    const STATUS = { verified: "Verified", stable_source: "Standard source", needs_review: "Needs review", unavailable: "Not available" };
+    const statusRows = ["currency", "time", "formats", "driving", "emergency", "electricity"].map((group) => `<span><b>${esc({ formats: "Formats", currency: "Currency", time: "Time", driving: "Driving", emergency: "Emergency", electricity: "Plugs" }[group])}</b>${esc(STATUS[guide.groupStatus(code, group)] || "")}</span>`).join("");
+    const sources = guide.sources.map((source) => `<li><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)}</a> <small>${esc([source.version, source.license].filter(Boolean).join(" · "))}</small></li>`).join("");
+    const about = `<section class="to-section" aria-labelledby="cg-about"><h2 id="cg-about">About this data</h2><div class="cg-card"><div class="cg-status">${statusRows}</div><p class="cg-hint">Saved on this phone, works offline. Data version ${esc(guide.datasetVersion)}, last reviewed ${esc(guide.lastReviewedAt)}. Rules change: check official sources before you travel.</p><ul class="cg-sources">${sources}</ul></div></section>`;
+    const body = picker
+      + `<section class="to-section" aria-labelledby="cg-good"><h2 id="cg-good">Good to know</h2><dl class="cg-card cg-facts">${good}</dl></section>`
+      + changes
+      + emergencySection
+      + `<section class="to-section" aria-labelledby="cg-more-h"><h2 id="cg-more-h">More</h2><details class="cg-card cg-more"><summary>Formats, units and more</summary><dl class="cg-facts">${more}</dl></details></section>`
+      + `<section class="to-section" aria-labelledby="cg-tools"><h2 id="cg-tools">Related tools</h2>${tools}</section>`
+      + about;
+    return mobilePage("Country Guide", body, "trip-options", "", "trip-options-page country-guide-page");
   }
   // ===== Free trip collaboration (owner / editor / viewer) =====
   // Collaboration is free for every signed-in account — there is no paid gate.
@@ -12153,6 +12310,7 @@
       case "spots": html = spotsScreen(); break;
         case "currency": html = currencyScreen(); break;
         case "tax-free": html = taxFreeScreen(); break;
+        case "country-guide": html = countryGuideScreen(); break;
         case "trip-options": html = tripOptionsScreen(); break;
         case "collaboration": html = collaborationScreen(); break;
         case "join": html = joinScreen(); break;
@@ -13732,6 +13890,20 @@
   // "essential" across reloads (the server stores no marker of its own).
   const ESSENTIAL_TITLES = new Set(TRIP_ESSENTIALS.map((e) => e.title.trim().toLowerCase()));
   function isEssentialTitle(title) { return ESSENTIAL_TITLES.has(String(title || "").trim().toLowerCase()); }
+  // Country-specific preparation from the shared Country Guide comparison. Only
+  // when the traveler has chosen a home country; the same rules feed the guide.
+  function countryPrepEssentials() {
+    const guide = countryGuide(), home = homeCountry();
+    if (!guide || !home) return [];
+    const codes = tripGuideCountries().map((entry) => entry.iso2);
+    const names = (list) => list.map(guideCountryName).join(", ");
+    const sideOf = (cc) => guide.getCountry(cc)?.driving?.drivingSide;
+    return guide.preparationNotes(home, codes).map((note) => {
+      if (note.id === "power-adapter") return { title: `Plug adapter for ${names(note.countries)}`, category: "packing", priority: "medium" };
+      if (note.id === "voltage-check") return { title: `Check device voltage for ${names(note.countries)}`, category: "packing", priority: "high" };
+      return { title: `Driving on the ${sideOf(note.countries[0])} in ${names(note.countries)}`, category: "before_you_leave", priority: "medium" };
+    });
+  }
   async function loadEssentials() {
     if (!state.trip || state.loadingEssentials) return;
     const existing = new Set(
@@ -13739,7 +13911,7 @@
         .filter((r) => !val(r, "deleted_at", "deletedAt"))
         .map((r) => String(val(r, "title") || "").trim().toLowerCase()),
     );
-    const toAdd = TRIP_ESSENTIALS.filter((e) => !existing.has(e.title.toLowerCase()));
+    const toAdd = [...TRIP_ESSENTIALS, ...countryPrepEssentials()].filter((e) => !existing.has(e.title.toLowerCase()));
     if (!toAdd.length) { showToast("Your travel essentials are already on the list."); return; }
     state.loadingEssentials = true;
     renderChecklist();
@@ -14346,6 +14518,15 @@
       case "open-tax-free":
         closeSheet();
         route("tax-free");
+        break;
+      case "open-country-guide":
+        closeSheet();
+        state.countryGuideCountry = "";
+        route("country-guide");
+        break;
+      case "country-guide-pick":
+        state.countryGuideCountry = target.dataset.country || "";
+        render();
         break;
       case "open-spots":
         closeSheet();
@@ -15812,7 +15993,7 @@
       return;
     }
     const taxGross=event.target.closest?.("[data-tax-free-gross]"),taxFee=event.target.closest?.("[data-tax-free-fee]");
-    if(taxGross||taxFee){if(taxGross)state.taxFreeGrossText=taxGross.value;if(taxFee)state.taxFreeFeeText=taxFee.value;const rule=state.taxFree?.rule,rates=rule?.rates||[],selected=rates.find(row=>Number(row.rate)===Number(state.taxFreeRate))||rates[0],gross=parseAmountInput(state.taxFreeGrossText),fee=parseAmountInput(state.taxFreeFeeText),tax=Number.isFinite(gross)&&gross>=0&&selected?(selected.priceIncludesTax===false?gross*Number(selected.rate)/100:gross*Number(selected.rate)/(100+Number(selected.rate))):null,after=tax==null?null:Math.max(0,tax-(Number.isFinite(fee)&&fee>0?fee:0)),currency=rule?.thresholds?.[0]?.currency||COUNTRY_CURRENCY[state.taxFreeCountry]||"EUR",money=value=>{if(value==null)return "—";try{return new Intl.NumberFormat(globalThis.TriptoI18n?.locale||"en",{style:"currency",currency,maximumFractionDigits:2}).format(value);}catch(_){return `${value.toFixed(2)} ${currency}`;}};const taxNode=app.querySelector("[data-tax-free-tax]"),afterNode=app.querySelector("[data-tax-free-after]");if(taxNode)taxNode.textContent=money(tax);if(afterNode)afterNode.textContent=money(after);return;}
+    if(taxGross||taxFee){if(taxGross)state.taxFreeGrossText=taxGross.value;if(taxFee)state.taxFreeFeeText=taxFee.value;const rule=state.taxFree?.rule,rates=rule?.rates||[],selected=rates.find(row=>Number(row.rate)===Number(state.taxFreeRate))||rates[0],gross=parseAmountInput(state.taxFreeGrossText),fee=parseAmountInput(state.taxFreeFeeText),tax=Number.isFinite(gross)&&gross>=0&&selected?(selected.priceIncludesTax===false?gross*Number(selected.rate)/100:gross*Number(selected.rate)/(100+Number(selected.rate))):null,after=tax==null?null:Math.max(0,tax-(Number.isFinite(fee)&&fee>0?fee:0)),currency=rule?.thresholds?.[0]?.currency||countryCurrency(state.taxFreeCountry)||"EUR",money=value=>{if(value==null)return "—";try{return new Intl.NumberFormat(globalThis.TriptoI18n?.locale||"en",{style:"currency",currency,maximumFractionDigits:2}).format(value);}catch(_){return `${value.toFixed(2)} ${currency}`;}};const taxNode=app.querySelector("[data-tax-free-tax]"),afterNode=app.querySelector("[data-tax-free-after]");if(taxNode)taxNode.textContent=money(tax);if(afterNode)afterNode.textContent=money(after);return;}
     const input = event.target.closest?.("[data-currency-amount]");
     if (!input) return;
     const currency = initCurrency(), rawAmount = input.value;
@@ -15844,6 +16025,10 @@
     if (note) note.textContent = Number.isFinite(rate) ? `1 ${currency.from} = ${rate.toFixed(rate < 1 ? 4 : 3)} ${currency.to}` : "Update to load this rate";
   });
   app.addEventListener("change",(event)=>{
+    const guideCountry=event.target.closest?.("[data-country-guide-country]");
+    if(guideCountry){state.countryGuideCountry=guideCountry.value;render();return;}
+    const guideHome=event.target.closest?.("[data-country-guide-home]");
+    if(guideHome){setHomeCountry(guideHome.value);render();return;}
     const country=event.target.closest?.("[data-tax-free-country]");
     if(country){state.taxFreeCountry=country.value;state.taxFreeRegion=null;state.taxFree=null;state.taxFreeRate=null;void ensureTaxFree();return;}
     const rate=event.target.closest?.("[data-tax-free-rate]");

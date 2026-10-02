@@ -1,0 +1,4 @@
+{
+  "note": "Reviewed corrections applied by scripts/update-country-guide.mjs after normalization. Every entry needs iso2, field (group.field), value (null removes the value), reason, source and verifiedAt. Never edit countries.generated.json directly.",
+  "overrides": []
+}

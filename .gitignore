@@ -14,3 +14,6 @@ keystore.properties
 # Local-only: D1 dumps (user data) and tool state
 backups/
 .qoder/
+
+# Country Guide upstream source cache (scripts/update-country-guide.mjs)
+.cache/

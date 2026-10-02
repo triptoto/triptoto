@@ -20,6 +20,7 @@
     spots: "/saved-spots",
     currency: "/currency",
     "tax-free": "/tax-free",
+    "country-guide": "/country-guide",
     "trip-options": "/trip-options",
     checklist: "/before-you-go",
     help: "/help",

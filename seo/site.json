@@ -15,7 +15,7 @@
   "legacyRedirects": { "/landing": "/" },
   "appRoutes": [
     "welcome", "home", "timeline", "trips", "add", "day-plan", "save-later", "bookings",
-    "documents", "ready-offline", "trip-health", "account", "trip-map", "weather", "currency", "tax-free",
+    "documents", "ready-offline", "trip-health", "account", "trip-map", "weather", "currency", "tax-free", "country-guide",
     "saved-spots", "trip-options", "esim", "before-you-go", "help", "travelers", "pending-changes", "collaboration",
     "plan-idea", "flights", "hotels", "trains", "plans", "collections", "join"
   ],

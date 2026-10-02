@@ -1,4 +1,4 @@
-const CACHE='tripto-shell-product-v863-save-idea-hue';
+const CACHE='tripto-shell-product-v864-country-guide';
 // Locale bundles are hashless + immutable, so we version their query with the
 // deploy token (same one baked into index.html) and serve them by EXACT url via
 // the shell handler — a new token is a new url that bypasses the immutable HTTP
@@ -14,10 +14,10 @@ const PLACES_PATHS=new Set(['/places-provider.js','/places-search-worker.js','/d
 // index.html), which misses cache and fetches fresh. This is the freshness the
 // old `ignoreSearch` cache-first lacked — without the per-launch network wait
 // that the network-first workaround imposed.
-const SHELL_PATHS=new Set(['/mobile-app.min.css','/mobile-app.min.js','/mobile-routes.js','/mobile-trip-rules.js','/shell-update.js','/canonical-host.js','/google-auth-client.js','/manual-booking-attachments.js','/i18n.js','/legal-navigation.js','/legal-navigation.css','/legal-page.css','/lang/source-map.json','/lang/patterns.json','/lang/en.json','/lang/de.json','/lang/fr.json','/lang/es.json','/lang/ru.json']);
+const SHELL_PATHS=new Set(['/mobile-app.min.css','/mobile-app.min.js','/country-guide.js','/mobile-routes.js','/mobile-trip-rules.js','/shell-update.js','/canonical-host.js','/google-auth-client.js','/manual-booking-attachments.js','/i18n.js','/legal-navigation.js','/legal-navigation.css','/legal-page.css','/lang/source-map.json','/lang/patterns.json','/lang/en.json','/lang/de.json','/lang/fr.json','/lang/es.json','/lang/ru.json']);
 // Essential shell — must cache atomically before the worker takes over so we
 // never activate a half-broken shell.
-const CORE=['/','/index.html','/shell-update.js','/canonical-host.js','/mobile-routes.js','/legal-navigation.css','/legal-navigation.js','/mobile-trip-rules.js','/mobile-app.min.css','/google-auth-client.js','/i18n.js','/manual-booking-attachments.js','/mobile-app.min.js','/manifest.webmanifest'];
+const CORE=['/','/index.html','/shell-update.js','/canonical-host.js','/mobile-routes.js','/legal-navigation.css','/legal-navigation.js','/mobile-trip-rules.js','/mobile-app.min.css','/google-auth-client.js','/i18n.js','/manual-booking-attachments.js','/country-guide.js','/mobile-app.min.js','/manifest.webmanifest'];
 // Nice-to-have assets (icons, images, favicons). Cached best-effort so a single
 // slow/missing extra never blocks or fails the update on flaky mobile networks.
 const EXTRA=['/app','/icons/tripto-system.svg','/assets/google-g.svg','/assets/trips-bg.jpg','/assets/trips-banner-dark.png','/assets/trips-banner-day.png','/favicon.svg','/favicon-mask.svg','/favicon-32.png','/favicon-16.png','/apple-touch-icon.png','/icon-192.png','/icon-512.png',

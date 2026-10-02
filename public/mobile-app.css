@@ -9336,3 +9336,37 @@ html:not(#_):not(#_):not(#_) body .phone-app .trips-fab svg :is(use,path){stroke
 html.theme-beart:not(#_):not(#_):not(#_):not(#_) body .add-intent-tile--booking .add-intent-tile__icon{--ic:#3b82f6}
 html.theme-beart:not(#_):not(#_):not(#_):not(#_) body .add-intent-tile--plan .add-intent-tile__icon{--ic:#8b5cf6}
 html.theme-beart:not(#_):not(#_):not(#_):not(#_) body .add-intent-tile--later .add-intent-tile__icon{--ic:#f43f5e}
+/* v864 Country Guide: reuses the Trip options section/row parts (the page also
+   carries .trip-options-page); only the fact lists, chips and pickers are new. */
+html body .phone-app .trip-options-page .to-ico--globe{--to-c:#d946ef}
+html body .phone-app .country-guide-page .mobile-page{display:grid;gap:22px}
+html body .phone-app .country-guide-page .cg-card{display:grid;gap:12px;margin:0;padding:14px;border-radius:16px;background:var(--card);color:var(--ink)}
+html body .phone-app .country-guide-page .cg-picker .tax-free-picker__head{margin:0}
+html body .phone-app .country-guide-page .cg-field{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-field select{width:100%;min-height:46px;padding:0 12px;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:12px;background:var(--surface,var(--card));color:var(--ink);font:inherit;font-size:16px}
+html body .phone-app .country-guide-page .cg-hint{margin:0;font-size:12px;line-height:1.45;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-empty{margin:0;font-size:14px;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-chips{display:flex;flex-wrap:wrap;gap:8px}
+html body .phone-app .country-guide-page .cg-chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 12px;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:12px;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+html body .phone-app .country-guide-page .cg-chip>span:last-child{display:grid;gap:1px}
+html body .phone-app .country-guide-page .cg-chip strong{font-size:14px;font-weight:600}
+html body .phone-app .country-guide-page .cg-chip small{font-size:12px;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-chip.is-active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--card))}
+html body .phone-app .country-guide-page .cg-facts{display:grid;gap:0;margin:0}
+html body .phone-app .country-guide-page .cg-fact{display:grid;grid-template-columns:minmax(96px,38%) minmax(0,1fr);gap:12px;padding:10px 0}
+html body .phone-app .country-guide-page .cg-fact dt{font-size:13px;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-fact dd{display:grid;gap:2px;margin:0;font-size:15px;font-weight:500;overflow-wrap:anywhere}
+html body .phone-app .country-guide-page :is(.cg-fact dd,.cg-diff span) small{font-size:12px;font-weight:400;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-na{color:var(--muted);font-weight:400}
+html body .phone-app .country-guide-page .cg-diff{display:grid;grid-template-columns:minmax(96px,38%) minmax(0,1fr);gap:12px}
+html body .phone-app .country-guide-page .cg-diff strong{font-size:13px;font-weight:500;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-diff span{display:grid;gap:2px;font-size:15px;font-weight:600}
+html body .phone-app .country-guide-page .cg-tel{display:flex;flex-wrap:wrap;gap:8px}
+html body .phone-app .country-guide-page .cg-tel a{display:inline-grid;place-items:center;min-width:64px;min-height:44px;padding:0 14px;border-radius:12px;background:color-mix(in srgb,#ef4444 14%,var(--card));color:color-mix(in srgb,#ef4444 80%,var(--ink));font-size:18px;font-weight:700;text-decoration:none}
+html body .phone-app .country-guide-page .cg-more summary{min-height:28px;font-size:15px;font-weight:600;cursor:pointer}
+html body .phone-app .country-guide-page .cg-status{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;font-size:13px}
+html body .phone-app .country-guide-page .cg-status span{display:grid;gap:1px;color:var(--ink)}
+html body .phone-app .country-guide-page .cg-status b{font-size:12px;font-weight:500;color:var(--muted)}
+html body .phone-app .country-guide-page .cg-sources{display:grid;gap:6px;margin:0;padding:0;list-style:none;font-size:13px}
+html body .phone-app .country-guide-page .cg-sources a{color:var(--ink);font-weight:500}
+html body .phone-app .country-guide-page .cg-sources small{color:var(--muted)}
