@@ -9309,3 +9309,4 @@ html:not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking
 html:not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking-navigation-actions,.collection-navigation-actions) .sheet-action-row__copy strong{font-size:15px!important;font-weight:600!important}
 html:not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking-navigation-actions,.collection-navigation-actions) .sheet-action-row__copy small{display:none!important}
 html:not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking-navigation-actions,.collection-navigation-actions) .sheet-action-row__chev{opacity:.6}
+html body .phone-app .trip-options-page .to-ico--checklist{--to-c:#84cc16}

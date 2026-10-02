@@ -5986,11 +5986,11 @@
     return `<div class="fab-stack">${optionsFab}${addFab}</div>`;
   }
   function navigationSheet() {
-    // Options moved to the bottom FAB stack, so it is no longer a menu entry.
+    // Options moved to the bottom FAB stack, so it is no longer a menu entry;
+    // To-Do List lives in Trip options.
     // The menu is one compact grouped list: icon · title · chevron.
     const entries = [
       ["trips", "trips", "All trips"],
-      ["checklist", "checklist", "To-Do List"],
       ["account", "user", "Account"],
     ];
     const notifUnread = state.trip ? totalNotificationCount() : 0;
@@ -10549,9 +10549,14 @@
     // Show unless the server kill-switch explicitly disables sharing. When the
     // status hasn't loaded yet (guest trip / pending fetch) the row still
     // appears; the collaboration screen handles sign-in and disabled states.
-    const collabRow = state.sharing?.enabled === false
-      ? ""
-      : optionRow("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`);
+    // Plan together takes the fourth Essentials tile; when sharing is switched
+    // off server-side, Documents takes that tile instead of a Tools row.
+    const sharingOn = state.sharing?.enabled !== false;
+    const docsArgs = ["document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`];
+    const collabTile = sharingOn
+      ? quickTile("users", "Plan together", collabMenuHint(), `data-action="open-collaboration"`)
+      : quickTile(...docsArgs);
+    const docsRow = sharingOn ? optionRow(...docsArgs) : "";
     const alerts = totalNotificationCount();
     const alertBadge = alerts ? `<span class="unread-badge" aria-hidden="true">${alerts > 9 ? "9+" : alerts}</span>` : "";
     // Edit trip lives in the timeline Menu; this page keeps only Alerts.
@@ -10562,8 +10567,8 @@
     const meta = [dates, days ? `${days} day${days === 1 ? "" : "s"}` : ""].filter(Boolean).map((part) => `<span>${esc(part)}</span>`).join("");
     const section = (id, heading, inner, extra = "") => `<section class="to-section" aria-labelledby="${id}"><h2 id="${id}">${heading}</h2>${inner}${extra}</section>`;
     const body = `<section class="to-summary" aria-label="${esc(title)}"><p class="to-eyebrow">Trip options</p><h1 title="${esc(title)}">${esc(title)}</h1>${meta ? `<p class="to-summary__meta">${meta}</p>` : ""}</section>`
-      + section("to-essentials", "Essentials", `<div class="to-quick">${quickTile("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${quickTile("map", "Map", mapHint, `data-action="open-trip-map"`)}${quickTile("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${quickTile("currency", "Currency", "Convert trip costs offline", `data-action="open-currency"`)}</div>`)
-      + section("to-tools", "Tools", `<div class="to-list">${optionRow("pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionRow("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${collabRow}${optionRow("download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div>`)
+      + section("to-essentials", "Essentials", `<div class="to-quick">${quickTile("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${quickTile("map", "Map", mapHint, `data-action="open-trip-map"`)}${collabTile}${quickTile("currency", "Currency", "Convert trip costs offline", `data-action="open-currency"`)}</div>`)
+      + section("to-tools", "Tools", `<div class="to-list">${optionRow("checklist", "To-Do List", "Packing list & tasks", `data-screen="checklist" aria-label="To-Do List"`)}${docsRow}${optionRow("pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionRow("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${optionRow("download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div>`)
       + section("to-book", "Book for this trip", `<div class="to-list">${partnerRow("flight", "Find a flight", "Search flights", AVIASALES_AFFILIATE_URL)}${partnerRow("bed", "Find a stay", stayDest ? `Stays in ${stayDest}` : "Browse stays", stayUrl)}${partnerRow("car", "Book a transfer", "Airport and city rides", TRANSFER_AFFILIATE_URL)}${partnerRow("tour", "Things to do", "Tours and activities", ACTIVITIES_AFFILIATE_URL)}${partnerRow("sim", "Travel eSIM", "Get connected before you land", ESIM_AFFILIATE_URL)}</div>`, `<p class="to-note">Partner links open in a new tab and may earn Tripto a commission at no extra cost.</p>`)
       + section("to-support", "Support", `<div class="to-list">${optionRow("help", "Help & FAQ", "Answers and support", `data-screen="help" aria-label="Help & FAQ"`)}</div>`);
     return mobilePage("Trip options", body, "trip-options", headerActions, "trip-options-page");

@@ -5,7 +5,10 @@ const app=read('public/mobile-app.js'),css=read('public/mobile-app.css'),routes=
 
 // ---- Current approved primary navigation ----
 const nav=app.slice(app.indexOf('function navigationSheet('),app.indexOf('function totalNotificationCount('));
-for(const item of ['["trips", "trips", "All trips"','["checklist", "checklist", "To-Do List"','["account", "user", "Account"'])assert(nav.includes(item),`approved navigation item missing: ${item}`);
+for(const item of ['["trips", "trips", "All trips"','["account", "user", "Account"'])assert(nav.includes(item),`approved navigation item missing: ${item}`);
+assert(!nav.includes('"To-Do List"'),'To-Do List moved to Trip options and must not be a menu entry');
+const tripOptionsFn=app.slice(app.indexOf('function tripOptionsScreen('),app.indexOf('function tripOptionsScreen(')+9000);
+assert(tripOptionsFn.includes('optionRow("checklist", "To-Do List"'),'Trip options must link to the To-Do List');
 assert(!nav.includes('"trip-options"'),'Trip Options moved to the FAB and must not be a menu entry');
 assert(!nav.includes('"help"'),'Help must remain contextual');
 

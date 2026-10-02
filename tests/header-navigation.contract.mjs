@@ -32,8 +32,8 @@ ctx.routeUrl = (screen, id) => ctx.TriptoRoutes.pathFor(screen, id);
 vm.runInContext(get('HeaderNavigation', 'screenAddFab', 'navigationSheet', 'bookingNavigationActions', 'collectionNavigationActions', 'appBar', 'bottomSheet', 'sheetActionRow', 'sheetActionLink', 'sheetActionList', 'tripsPageHeader', 'selectedFlight', 'selectedStay', 'selectedTrain', 'selectedPlan', 'val', 'itemId'), ctx);
 ctx.isCancelled = () => false;
 const html = ctx.navigationSheet();
-assert.deepEqual([...html.matchAll(/href="([^"]+)"/g)].map(match => match[1]), ['/trips', '/before-you-go', '/account']);
-assert.equal((html.match(/<a /g) || []).length, 3, 'The menu has exactly three destinations');
+assert.deepEqual([...html.matchAll(/href="([^"]+)"/g)].map(match => match[1]), ['/trips', '/account']);
+assert.equal((html.match(/<a /g) || []).length, 2, 'The menu has exactly two destinations (To-Do List lives in Trip options)');
 assert.match(html, /data-screen="account" aria-current="page"/);
 assert.equal(ctx.HeaderNavigation(), '', 'Account is a focused destination and must not carry global header actions');
 for (const screen of ['timeline']) {
@@ -98,7 +98,7 @@ for (const role of ['owner', 'editor']) {
     assert.match(menu, /data-action="edit-collection" data-id="neighborhood-1"/);
     assert.match(menu, /Edit Neighborhood/);
     assert.doesNotMatch(menu, /data-action="delete-/);
-    assert.equal((menu.match(/<a /g) || []).length, 3);
+    assert.equal((menu.match(/<a /g) || []).length, 2);
   }
 }
 ctx.state.selectedId = 'missing';
