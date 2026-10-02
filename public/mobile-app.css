@@ -9313,7 +9313,6 @@ html body .phone-app .trip-options-page .to-ico--checklist{--to-c:#84cc16}
 /* v860 Menu redesign: labelled groups, tinted icon tiles,
    avatar for Account and a count pill for Notifications. */
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation #navigation-menu{display:grid;gap:18px}
-html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip__mark :is(svg,.ph-svg){width:22px;height:22px;color:inherit!important}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-group{display:grid;gap:7px}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-group__label{margin:0 6px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-menu{gap:2px!important;padding:4px!important;border-radius:16px!important;background:var(--card)!important;border:0!important}
@@ -9330,3 +9329,5 @@ html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-menu-item:not(:has(.nav-menu-item__count)) .nav-menu-item__chev{grid-column:4}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking-navigation-actions,.collection-navigation-actions){margin:0!important}
 html.theme-mono:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.nav-menu-item__icon,.nav-menu-item__count){background:var(--surface)!important;color:var(--ink)!important;border-radius:0!important}
+/* v862 FAB glyphs (+, Trip options, create trip): regular weight, no faux-bold stroke. */
+html:not(#_):not(#_):not(#_) body .phone-app .trips-fab svg :is(use,path){stroke:none!important;stroke-width:0!important}
