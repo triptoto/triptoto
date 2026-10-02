@@ -11821,8 +11821,7 @@
     // One flat list — no category headers (Getting there / around / Stay / …);
     // rows keep their definition order.
     const groupedCategories = `<div class="day-plan-list ds-grouped-card ds-grouped-card--list">${bookable.map(typeRow).join("")}</div>`;
-    const secondary = (ic,title,copy,action) => `<button type="button" class="manual-add-secondary" data-action="${action}"><span>${icon(ic,20)}</span><span><strong>${esc(title)}</strong><small>${esc(copy)}</small></span>${icon("chevron",18)}</button>`;
-    return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>For travel you've already reserved. To plan what to see and do, use Day Plan.</p></section><div class="manual-add-groups">${groupedCategories}</div><section class="manual-add-other" aria-labelledby="manual-add-other-title"><h2 id="manual-add-other-title">Already have a confirmation?</h2>${secondary("document","Upload a file","Review a ticket or confirmation","open-upload-booking")}${FORWARD_EMAIL_ENABLED ? secondary("mail","Forward an email","Send it to go@tripto.to","open-forward-booking") : ""}</section>`, "v2-add-booking manual-add-page day-plan-page");
+    return focusedTaskPage(`Add a booking`, `<section class="day-plan-intro"><span>ADD A BOOKING</span><h1>Add a booking</h1><p>For travel you've already reserved. To plan what to see and do, use Day Plan.</p></section><div class="manual-add-groups">${groupedCategories}</div>`, "v2-add-booking manual-add-page day-plan-page");
   }
   function manualBookingSheet() {
     const options = Object.entries(MANUAL_BOOKING_TYPES).filter(([type]) => !BOOKING_PICKER_HIDDEN.has(type));
@@ -13858,10 +13857,7 @@
   // them out to stop deleted items (single or the whole essentials set) from
   // flashing away and then reappearing before the deferred delete lands.
   const pendingChecklistDeletes = new Set();
-  async function deleteChecklistItem(id) {
-    const item = state.checklist.find((row) => String(row.id) === String(id));
-    if (!item) return;
-    if (!await requestConfirmation({ title: "Delete this item?", body: `“${item.title || "Item"}” will be removed from the checklist.`, confirmLabel: "Delete" })) return;
+  function deleteChecklistItem(id) {
     const idx = state.checklist.findIndex((row) => String(row.id) === String(id));
     if (idx < 0) return;
     const [removed] = state.checklist.splice(idx, 1);
@@ -13921,13 +13917,10 @@
     }
   }
   // Remove every curated "travel essential" in one action, with a single undo.
-  async function removeEssentials() {
+  function removeEssentials() {
     if (!state.trip || state.loadingEssentials) return;
-    const count = (state.checklist || []).filter((row) => row.__essential).length;
-    if (!count) { showToast("No travel essentials to remove."); return; }
-    if (!await requestConfirmation({ title: "Remove travel essentials?", body: `${count} travel essential${count === 1 ? "" : "s"} will be removed from the checklist.`, confirmLabel: "Remove" })) return;
     const snapshot = (state.checklist || []).map((row, i) => ({ row, i })).filter((e) => e.row.__essential);
-    if (!snapshot.length) return;
+    if (!snapshot.length) { showToast("No travel essentials to remove."); return; }
     const ids = new Set(snapshot.map((e) => String(e.row.id)));
     const removedRows = snapshot.map((e) => e.row);
     ids.forEach((id) => pendingChecklistDeletes.add(id));
@@ -14209,7 +14202,7 @@
         cancelEditChecklistItem();
         break;
       case "delete-checklist":
-        await deleteChecklistItem(target.dataset.id);
+        deleteChecklistItem(target.dataset.id);
         break;
       case "add-checklist-suggested":
         await addChecklistItem(target.dataset.title);
@@ -14218,7 +14211,7 @@
         await loadEssentials();
         break;
       case "remove-essentials":
-        await removeEssentials();
+        removeEssentials();
         break;
       case "toast-action":
         {
