@@ -5987,8 +5987,7 @@
   }
   function navigationSheet() {
     // Options moved to the bottom FAB stack, so it is no longer a menu entry;
-    // To-Do List lives in Trip options. Layout: current-trip card, then
-    // labelled groups of compact rows (tinted icon · title · chevron).
+    // To-Do List lives in Trip options. Layout: labelled groups of compact rows (tinted icon · title · chevron).
     const chev = `<span class="nav-menu-item__chev" aria-hidden="true">${icon("chevron", 16)}</span>`;
     const tile = (tone, glyph) => `<span class="nav-menu-item__icon nav-tone--${tone}">${glyph}</span>`;
     const group = (label, rows, tag = "div", attrs = "") => rows ? `<div class="nav-group"><p class="nav-group__label">${label}</p><${tag} class="nav-menu"${attrs}>${rows}</${tag}></div>` : "";
@@ -6015,15 +6014,9 @@
       const sub = screen === "account" && accountName ? `<small>${esc(accountName)}</small>` : "";
       return `<a class="nav-menu-item nav-menu-item--${screen}" href="${esc(routeUrl(screen))}" data-screen="${screen}"${state.screen === screen ? ' aria-current="page"' : ""}>${mark}<span class="nav-menu-item__text"><strong>${esc(label)}</strong>${sub}</span>${chev}</a>`;
     }).join("");
-    const trip = state.trip;
-    const tripDays = trip ? tripDayCount(trip) : 0;
-    const tripMeta = trip ? [formatTripDates(trip), tripDays ? `${tripDays} day${tripDays === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ") : "";
-    const tripCard = trip
-      ? `<div class="nav-trip"><span class="nav-trip__mark" aria-hidden="true">${icon("flight", 20)}</span><div class="nav-trip__copy"><small>Current trip</small><strong title="${esc(trip.title || "Your trip")}">${esc(trip.title || "Your trip")}</strong>${tripMeta ? `<span>${esc(tripMeta)}</span>` : ""}</div></div>`
-      : "";
     const tripGroup = group("This trip", `${notifItem}${editTripItem}`);
     const mainGroup = group("General", items, "nav", ' aria-label="Primary navigation"');
-    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${tripCard}${tripGroup}${bookingNavigationActions()}${collectionNavigationActions()}${mainGroup}</div>`);
+    return bottomSheet("navigation", "Menu", `<div id="navigation-menu">${tripGroup}${bookingNavigationActions()}${collectionNavigationActions()}${mainGroup}</div>`);
   }
 
   // Header notification bell. Opens the Notifications sheet, which merges the

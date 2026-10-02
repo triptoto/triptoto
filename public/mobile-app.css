@@ -9310,16 +9310,10 @@ html:not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking
 html:not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking-navigation-actions,.collection-navigation-actions) .sheet-action-row__copy small{display:none!important}
 html:not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking-navigation-actions,.collection-navigation-actions) .sheet-action-row__chev{opacity:.6}
 html body .phone-app .trip-options-page .to-ico--checklist{--to-c:#84cc16}
-/* v860 Menu redesign: current-trip card, labelled groups, tinted icon tiles,
+/* v860 Menu redesign: labelled groups, tinted icon tiles,
    avatar for Account and a count pill for Notifications. */
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation #navigation-menu{display:grid;gap:18px}
-html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:12px;padding:14px;border-radius:18px;background:color-mix(in srgb,var(--accent) 12%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
-html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip__mark{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:var(--accent);color:var(--accent-ink,#fff)}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip__mark :is(svg,.ph-svg){width:22px;height:22px;color:inherit!important}
-html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip__copy{display:grid;gap:1px;min-width:0}
-html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip__copy small{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip__copy strong{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.25;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip__copy span{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-group{display:grid;gap:7px}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-group__label{margin:0 6px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-menu{gap:2px!important;padding:4px!important;border-radius:16px!important;background:var(--card)!important;border:0!important}
@@ -9335,5 +9329,4 @@ html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-menu-item__count{display:grid;place-items:center;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink,#fff);font-size:12px;font-weight:700}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-menu-item:not(:has(.nav-menu-item__count)) .nav-menu-item__chev{grid-column:4}
 html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.booking-navigation-actions,.collection-navigation-actions){margin:0!important}
-html.theme-mono:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.nav-menu-item__icon,.nav-trip__mark,.nav-menu-item__count){background:var(--surface)!important;color:var(--ink)!important;border-radius:0!important}
-html.theme-mono:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation .nav-trip{background:var(--card);border-color:var(--line);border-radius:0}
+html.theme-mono:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.nav-menu-item__icon,.nav-menu-item__count){background:var(--surface)!important;color:var(--ink)!important;border-radius:0!important}
