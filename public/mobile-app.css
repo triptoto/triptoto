@@ -9331,3 +9331,8 @@ html:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(
 html.theme-mono:not(#_):not(#_):not(#_):not(#_):not(#_) body .bottom-sheet--navigation :is(.nav-menu-item__icon,.nav-menu-item__count){background:var(--surface)!important;color:var(--ink)!important;border-radius:0!important}
 /* v862 FAB glyphs (+, Trip options, create trip): regular weight, no faux-bold stroke. */
 html:not(#_):not(#_):not(#_) body .phone-app .trips-fab svg :is(use,path){stroke:none!important;stroke-width:0!important}
+/* v863 Night Add sheet: each intent gets its own hue (ticket and heart icons
+   both mapped to pink, so Add a booking and Save an idea looked the same). */
+html.theme-beart:not(#_):not(#_):not(#_):not(#_) body .add-intent-tile--booking .add-intent-tile__icon{--ic:#3b82f6}
+html.theme-beart:not(#_):not(#_):not(#_):not(#_) body .add-intent-tile--plan .add-intent-tile__icon{--ic:#8b5cf6}
+html.theme-beart:not(#_):not(#_):not(#_):not(#_) body .add-intent-tile--later .add-intent-tile__icon{--ic:#f43f5e}
