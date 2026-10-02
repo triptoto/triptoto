@@ -36,5 +36,6 @@ Disallow: /trip-map
 Disallow: /trip-options
 Disallow: /trips
 Disallow: /weather
+Disallow: /welcome
 
 Sitemap: https://tripto.to/sitemap.xml

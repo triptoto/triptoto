@@ -26,12 +26,18 @@ export function canonicalHostRedirect(request: Request, url: URL): Response | nu
   return new Response(null, { status, headers: { Location: `${site.origin}${url.pathname}${url.search}`, 'Cache-Control': 'public, max-age=3600' } });
 }
 
-// /landing/, /landing.html, /privacy/ ... are duplicates of the canonical path.
-// /index.html keeps answering 200 (the service worker precaches it) and carries
-// the canonical link to /.
+// /privacy/, /terms.html ... are duplicates of the canonical path. Retired public
+// paths (legacyRedirects, e.g. /landing now that the landing page is the home
+// page) and their file/trailing-slash forms move to their new path.
+// /index.html keeps answering 200 (the service worker precaches it as the app
+// shell) and carries the canonical link to /.
+const LEGACY_REDIRECTS = new Map<string, string>(Object.entries((site as { legacyRedirects?: Record<string, string> }).legacyRedirects ?? {}));
 export function publicPathRedirect(url: URL, path: string): Response | null {
   let target: string | null = null;
-  if (PUBLIC_PAGES.has(path) && path !== '/' && url.pathname !== path) target = path;
+  const homeFile = PUBLIC_PAGES.get('/');
+  if (LEGACY_REDIRECTS.has(path)) target = LEGACY_REDIRECTS.get(path)!;
+  else if (homeFile && url.pathname === `/${homeFile}`) target = '/';
+  else if (PUBLIC_PAGES.has(path) && path !== '/' && url.pathname !== path) target = path;
   else target = site.pages.find((page) => page.path !== '/' && url.pathname === `/${page.file}`)?.path ?? null;
   if (!target) return null;
   return new Response(null, { status: 301, headers: { Location: `${target}${url.search}`, 'Cache-Control': 'public, max-age=3600' } });

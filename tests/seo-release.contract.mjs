@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 
 const read = (name) => readFileSync(new URL(`../public/${name}`, import.meta.url), "utf8");
 const index = read("index.html");
+const landing = read("landing.html");
 const privacy = read("privacy.html");
 const terms = read("terms.html");
 const cookies = read("cookies.html");
@@ -13,9 +14,13 @@ const robots = read("robots.txt");
 const sitemap = read("sitemap.xml");
 const manifest = JSON.parse(read("manifest.webmanifest"));
 
-assert.match(index, /<link rel="canonical" href="https:\/\/tripto\.to\/">/);
-assert.match(index, /<meta name="robots" content="index, follow">/);
-assert.match(index, /application\/ld\+json/);
+// The landing page is the indexable home page (/); the app shell is noindex.
+assert.match(landing, /<link rel="canonical" href="https:\/\/tripto\.to\/">/);
+assert.match(landing, /<meta name="robots" content="index, follow">/);
+assert.match(landing, /application\/ld\+json/);
+assert.match(index, /<meta name="robots" content="noindex, nofollow">/);
+assert.doesNotMatch(index, /application\/ld\+json/);
+assert.equal(manifest.start_url, "/trips");
 assert.match(index, /fonts\.googleapis\.com\/css2\?family=Noto\+Sans/);
 assert.match(index, /fonts\.gstatic\.com/);
 assert.match(index, /--paper:#f6f4f1/);

@@ -8,7 +8,8 @@ pages discoverable and makes private data impossible to index.
 
 | Field | Used for |
 | --- | --- |
-| `pages[]` (`path`, `file`) | Worker routing of public pages, sitemap, IndexNow, `seo:check` |
+| `pages[]` (`path`, `file`) | Worker routing of public pages, sitemap, IndexNow, `seo:check` (`/` is `landing.html`) |
+| `legacyRedirects` | Retired public paths that 301 to their new path (`/landing` → `/`) |
 | `appRoutes[]` | Worker app-shell routes (`APP_PATHS`, served with `X-Robots-Tag: noindex`) and robots.txt `Disallow` lines |
 | `robotsDisallowExtra[]` | Extra robots.txt `Disallow` lines |
 | `origin`, `productionHost`, `redirectHosts` | Canonical host, www → apex redirect, non-production noindex |
@@ -24,9 +25,9 @@ hashing.
 
 | Class | Routes | Treatment |
 | --- | --- | --- |
-| A public, indexable | `/`, `/landing`, `/privacy`, `/terms`, `/cookies`, `/contact`, `/delete-account` | 200, `index, follow`, canonical, OG/Twitter, in sitemap, IndexNow |
-| B public, noindex | `/404.html` (any unknown URL → real 404), `/index.html` (200 for the service worker, canonical → `/`) | 404 + noindex / canonical |
-| C private | every `appRoutes` path and its sub-paths (`/trips/...`, `/join/<token>`, `/documents/...`) | app shell, `X-Robots-Tag: noindex, nofollow`, robots `Disallow` |
+| A public, indexable | `/` (the landing page), `/privacy`, `/terms`, `/cookies`, `/contact`, `/delete-account` | 200, `index, follow`, canonical, OG/Twitter, in sitemap, IndexNow |
+| B public, noindex | `/404.html` (any unknown URL → real 404), `/index.html` (the app shell, 200 for the service worker, canonical → `/`) | 404 + noindex / canonical |
+| C private | every `appRoutes` path and its sub-paths (`/welcome` sign-in page, `/trips/...`, `/join/<token>`, `/documents/...`) | app shell, `X-Robots-Tag: noindex, nofollow`, robots `Disallow` |
 | D admin | `/api/v1/internal/...` | auth-gated API, noindex |
 | E API | `/api/...`, `/health` | JSON, noindex. Deliberately **not** disallowed: blocking `/api/` makes Googlebot render `/` as "Trip data could not load" |
 
@@ -34,8 +35,8 @@ hashing.
 
 - `www.tripto.to` and `http://tripto.to` → one 301 (308 for non-GET) to
   `https://tripto.to` with the same path and query. No chains, no loops.
-- `/landing/`, `/landing.html`, `/privacy/` and similar duplicates → 301 to the
-  canonical path.
+- `/landing`, `/landing/`, `/landing.html`, `/privacy/` and similar duplicates → 301
+  to the canonical path.
 - A missing static file (`.png`, `.txt`, ...) returns a real 404, not the SPA
   shell with 200.
 - On non-production hosts (`*.workers.dev`, preview, local), every response gets
@@ -48,7 +49,7 @@ hashing.
 
 ## Structured data
 
-The only JSON-LD is on `/`: WebSite, Organization and WebApplication with a free
+The only JSON-LD is on `/` (`landing.html`): WebSite, Organization and WebApplication with a free
 `Offer` (price 0, because the core app is free). There are no ratings, reviews or
 paid prices. Keep it truthful: `seo:check` rejects `aggregateRating`, reviews and
 non-zero prices.

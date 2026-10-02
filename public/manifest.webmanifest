@@ -2,7 +2,7 @@
   "id": "/",
   "name": "tripto.to Travel Companion",
   "short_name": "tripto.to",
-  "start_url": "/",
+  "start_url": "/trips",
   "scope": "/",
   "display": "standalone",
   "background_color": "#F6F4F1",

@@ -1120,9 +1120,8 @@
   }
   function routeUrl(screen, id = null) {
     const routeId = screen === "timeline" && !id ? state.trip?.id || null : id;
-    // Keep the public shell at its canonical root URL on first load. Internal
-    // navigation still has its own /home route, while /, /app, and
-    // /index.html remain equivalent entry points for search and bookmarks.
+    // Keep the shell at its entry URL on first load (the Android app loads it
+    // from /). On the web / is the landing page and the welcome page is /welcome.
     if (screen === "home" && !routeId && ["/", "/app", "/index.html"].includes(location.pathname))
       return `/${location.search || ""}`;
     return routes?.urlFor(screen, readableRouteId(screen, routeId), location.search) || "/timeline";
@@ -11971,7 +11970,9 @@
       : "tripto.to is a calm, private travel companion for organizing bookings and plans on one timeline.";
     document.title = seoPageTitle();
     setSeoMeta('meta[name="description"]', description);
-    setSeoMeta('meta[name="robots"]', privateRoute ? "noindex, nofollow" : "index, follow");
+    // The indexable home page is the landing page at /; every app-shell view,
+    // including the welcome (sign-in) page, stays out of search results.
+    setSeoMeta('meta[name="robots"]', "noindex, nofollow");
     setSeoMeta('meta[property="og:title"]', document.title);
     setSeoMeta('meta[property="og:description"]', description);
     setSeoMeta('meta[property="og:url"]', `${location.origin}${location.pathname}`);

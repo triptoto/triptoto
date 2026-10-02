@@ -161,9 +161,8 @@ check("hreflang: only for real locales, reciprocal; html lang set", () => {
 });
 check("crawlable without JS: h1 + links to public pages", () => {
   for (const page of pages) {
-    const html = page.path === "/" ? page.html.match(/<noscript>\s*<main[\s\S]*?<\/noscript>/)?.[0] || "" : page.html;
-    must(/<h1[\s>]/.test(html), `${page.path}: no h1 in static HTML`);
-    must(/href="\/(?:landing|privacy|terms|cookies|contact)"/.test(html), `${page.path}: no static links to public pages`);
+    must(/<h1[\s>]/.test(page.html), `${page.path}: no h1 in static HTML`);
+    must(/href="\/(?:privacy|terms|cookies|contact)?"/.test(page.html), `${page.path}: no static links to public pages`);
   }
 });
 check("internal links resolve (no broken/soft-404 links)", async () => {
@@ -196,17 +195,21 @@ check("www -> apex and http -> https: single 301, no loop", async () => {
   const post = await serve("https://www.tripto.to/api/v1/session/guest", { method: "POST" });
   must(post.status === 308, `www POST -> ${post.status} (want 308)`);
 });
-check("duplicate paths 301 to canonical; /index.html canonical to /", async () => {
-  for (const [from, to] of [["/landing/", "/landing"], ["/landing.html", "/landing"], ["/privacy/", "/privacy"], ["/terms.html", "/terms"], ["/delete-account/", "/delete-account"]]) {
+check("duplicate + retired paths 301 to canonical; /index.html canonical to /", async () => {
+  for (const [from, to] of [["/landing", "/"], ["/landing/", "/"], ["/landing.html", "/"], ["/privacy/", "/privacy"], ["/terms.html", "/terms"], ["/delete-account/", "/delete-account"]]) {
     const response = await serve(ORIGIN + from);
     must(response.status === 301 && response.headers.get("Location") === to, `${from} -> ${response.status} ${response.headers.get("Location")}`);
   }
   const index = await serve(`${ORIGIN}/index.html`);
   must(index.status === 200 && (await index.text()).includes(`<link rel="canonical" href="${ORIGIN}/">`), "/index.html must stay 200 with canonical /");
+  const home = await (await serve(`${ORIGIN}/`)).text();
+  must(home === read(SEO_SITE.pages.find((page) => page.path === "/").file), "/ must serve the landing page");
+  const welcome = await serve(`${ORIGIN}/welcome`);
+  must(welcome.status === 200 && (await welcome.text()) === read("index.html"), "/welcome must serve the app shell");
 });
 check("non-production hosts (workers.dev, preview) are noindex", async () => {
   for (const host of ["https://tripto-api.travelinkme.workers.dev", "https://tripto-api-preview.travelinkme.workers.dev", "http://localhost:8787"]) {
-    for (const path of ["/", "/landing", "/privacy", "/sitemap.xml", "/trips"]) {
+    for (const path of ["/", "/welcome", "/privacy", "/sitemap.xml", "/trips"]) {
       const response = await serve(host + path);
       must(response.headers.get("X-Robots-Tag") === NOINDEX, `${host}${path} not noindex`);
     }
@@ -226,8 +229,8 @@ check("IndexNow key file served at /<key>.txt", async () => {
   must((await response.text()).trim() === key, "key file content mismatch");
 });
 check("IndexNow never submits private, preview or foreign URLs", () => {
-  const candidates = [`${ORIGIN}/`, `${ORIGIN}/trips/abc`, `${ORIGIN}/join/token`, `${ORIGIN}/api/v1/trips`, "https://tripto-api.travelinkme.workers.dev/landing", "https://www.tripto.to/landing", "https://evil.example/", `${ORIGIN}/landing`, `${ORIGIN}/landing`];
-  must(JSON.stringify(submittableUrls(candidates)) === JSON.stringify([`${ORIGIN}/`, `${ORIGIN}/landing`]), `filter returned ${submittableUrls(candidates)}`);
+  const candidates = [`${ORIGIN}/`, `${ORIGIN}/trips/abc`, `${ORIGIN}/join/token`, `${ORIGIN}/api/v1/trips`, "https://tripto-api.travelinkme.workers.dev/privacy", "https://www.tripto.to/privacy", "https://evil.example/", `${ORIGIN}/landing`, `${ORIGIN}/privacy`, `${ORIGIN}/privacy`];
+  must(JSON.stringify(submittableUrls(candidates)) === JSON.stringify([`${ORIGIN}/`, `${ORIGIN}/privacy`]), `filter returned ${submittableUrls(candidates)}`);
   const body = indexNowRequestBody(manifest.pages.map((page) => page.url));
   must(body.host === "tripto.to" && body.keyLocation === `${ORIGIN}/${SEO_SITE.indexNowKey}.txt` && body.urlList.length === pages.length, "bad request body");
 });

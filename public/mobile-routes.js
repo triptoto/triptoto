@@ -2,7 +2,8 @@
   "use strict";
 
   const STATIC_PATHS = Object.freeze({
-    home: "/home",
+    // The welcome (sign-in) page. tripto.to/ itself is the public landing page.
+    home: "/welcome",
     timeline: "/timeline",
     trips: "/trips",
     "add-trip": "/add",
@@ -90,6 +91,8 @@
     const path = normalizePath(pathname);
     if (["/", "/app", "/index.html"].includes(path))
       return { screen: "home", id: null };
+    // The welcome page used to live at /home; keep old links working.
+    if (path === "/home") return { screen: "home", id: null, redirect: true };
 
     // Local Guide was retired from the product. Keep old bookmarks useful by
     // taking travelers to the current Trip Options page and canonicalizing the

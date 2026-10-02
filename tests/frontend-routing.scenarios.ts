@@ -25,16 +25,22 @@ const env = {
 
 const get = (path: string, method = 'GET') => frontendResponse(new Request(`https://tripto.to${path}`, { method }), env, path);
 
+// The landing page is the home page; the retired /landing path moves to /.
 let response = await get('/');
-equal(response?.status, 200);
-equal(requests.at(-1), '/');
-
-response = await get('/landing');
 equal(response?.status, 200);
 equal(requests.at(-1), '/landing.html');
 equal(response?.headers.get('X-Robots-Tag'), null);
+
+response = await get('/index.html');
+equal(response?.status, 200);
+equal(requests.at(-1), '/index.html');
+
+response = await get('/welcome');
+equal(response?.status, 200);
+equal(requests.at(-1), '/index.html');
+equal(response?.headers.get('X-Robots-Tag'), 'noindex, nofollow');
 // Duplicates of a public page answer 301 to the canonical path (no 200 copies).
-for (const [path, target] of [['/landing/', '/landing'], ['/landing.html', '/landing'], ['/privacy/', '/privacy'], ['/privacy.html', '/privacy']]) {
+for (const [path, target] of [['/landing', '/'], ['/landing/', '/'], ['/landing.html', '/'], ['/privacy/', '/privacy'], ['/privacy.html', '/privacy']]) {
   response = await frontendResponse(new Request(`https://tripto.to${path}`), env, path.replace(/\/+$/, ''));
   equal(response?.status, 301);
   equal(response?.headers.get('Location'), target);

@@ -106,10 +106,14 @@ export async function frontendResponse(request: Request, env: Env, path: string)
   const url = new URL(request.url);
   const duplicate = publicPathRedirect(url, path);
   if (duplicate) return duplicate;
-  if (path === '/' || path === '/index.html') {
-    const home = await env.ASSETS.fetch(request);
+  // The landing page is the home page; the app shell (index.html) lives on the
+  // app routes (/welcome is the sign-in page) and stays reachable as /index.html.
+  if (path === '/') {
+    url.pathname = `/${PUBLIC_PAGES.get('/')}`;
+    const home = await env.ASSETS.fetch(new Request(url, request));
     return withCsp(isProductionHost(url) && request.method === 'GET' ? await withSiteVerification(home, env) : home, request.method);
   }
+  if (path === '/index.html') return withCsp(await env.ASSETS.fetch(request), request.method);
   if (path === '/.well-known/assetlinks.json') return assetLinksResponse(request, env);
   if (path === '/robots.txt' && !isProductionHost(url)) return nonProductionRobots(request);
   const publicFile = PUBLIC_PAGES.get(path);

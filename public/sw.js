@@ -1,4 +1,4 @@
-const CACHE='tripto-shell-product-v849-qa-fix-all';
+const CACHE='tripto-shell-product-v850-landing-home';
 // Locale bundles are hashless + immutable, so we version their query with the
 // deploy token (same one baked into index.html) and serve them by EXACT url via
 // the shell handler — a new token is a new url that bypasses the immutable HTTP
@@ -91,7 +91,9 @@ self.addEventListener('fetch',event=>{
   }
 
   if(request.mode==='navigate'){
-    const isMobileShell=['/','/app','/index.html'].includes(url.pathname);
+    // / is the public landing page, not the app shell; caching it under
+    // /index.html would replace the offline app with the landing page.
+    const isMobileShell=['/app','/index.html'].includes(url.pathname);
     const navigationCacheKey=isMobileShell?'/index.html':url.pathname;
     event.respondWith((async()=>{
       try{

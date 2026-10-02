@@ -4,44 +4,38 @@
     {
       "path": "/",
       "url": "https://tripto.to/",
-      "hash": "72a80df5d4aec6e2",
-      "lastmod": "2026-10-01"
-    },
-    {
-      "path": "/landing",
-      "url": "https://tripto.to/landing",
-      "hash": "ea3062df5178e962",
-      "lastmod": "2026-10-01"
+      "hash": "ecae5aa9eba4bc19",
+      "lastmod": "2026-10-02"
     },
     {
       "path": "/privacy",
       "url": "https://tripto.to/privacy",
-      "hash": "6eaf8256f5212de9",
-      "lastmod": "2026-10-01"
+      "hash": "e4c3e4b7f671ab4b",
+      "lastmod": "2026-10-02"
     },
     {
       "path": "/terms",
       "url": "https://tripto.to/terms",
-      "hash": "e89f6a9497a660a7",
-      "lastmod": "2026-10-01"
+      "hash": "ac73555932d419dc",
+      "lastmod": "2026-10-02"
     },
     {
       "path": "/cookies",
       "url": "https://tripto.to/cookies",
-      "hash": "900a089aa7971bbf",
-      "lastmod": "2026-10-01"
+      "hash": "cb5aba080f4d4a74",
+      "lastmod": "2026-10-02"
     },
     {
       "path": "/contact",
       "url": "https://tripto.to/contact",
-      "hash": "3b2f0bfacf23c7bb",
-      "lastmod": "2026-10-01"
+      "hash": "929f07b840bc50a4",
+      "lastmod": "2026-10-02"
     },
     {
       "path": "/delete-account",
       "url": "https://tripto.to/delete-account",
-      "hash": "8e7fd948e6cca4c1",
-      "lastmod": "2026-10-01"
+      "hash": "369b0510c60ecb5f",
+      "lastmod": "2026-10-02"
     }
   ]
 }
