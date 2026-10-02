@@ -1629,35 +1629,35 @@ html body .spots-screen .app-bar .icon-button.spots-add-btn:disabled{opacity:1}
 .plan-option--cta[disabled]:active{transform:none}
 /* Trip options — a full-page companion to Add New Booking. */
 .trip-options-page .mobile-page{display:grid;gap:24px;padding-top:18px;padding-bottom:calc(104px + env(safe-area-inset-bottom))}
-.trip-options-intro{padding-bottom:2px}
-.trip-options-intro>span{display:block;color:var(--accent);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-wider);text-transform:uppercase}
-.trip-options-intro h1{margin:7px 0 8px;color:var(--ink);font-size:var(--type-screen);font-weight:var(--weight-bold);line-height:1.08;letter-spacing:-.035em}
-.trip-options-intro__flag{font-style:normal;letter-spacing:var(--tracking-normal)}
-.trip-options-intro p{max-width:37ch;margin:0;color:var(--muted);font-size:var(--type-meta);font-weight:var(--weight-regular);line-height:var(--leading-relaxed)}
-.trip-options-group{display:grid;gap:9px}
-.trip-options-group>h2{margin:0;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-wide);text-transform:uppercase}
-.trip-options-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.trip-option-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;min-height:126px;padding:14px 38px 14px 14px;border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--ink);text-align:left;box-shadow:none;transition:border-color .16s var(--ease),background .16s var(--ease),transform .16s var(--ease)}
-.trip-option-card:active{border-color:var(--accent)}
-.trip-option-card:active{transform:none}
-.trip-option-card:focus-visible{outline:3px solid var(--blue-soft);outline-offset:2px;border-color:var(--accent)}
-.trip-option-card__icon{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--flight-soft);color:var(--icon)}
-.trip-option-card--currency .trip-option-card__icon{background:var(--stay-soft)}
-.trip-option-card--guide .trip-option-card__icon{background:var(--food-soft)}
-.trip-option-card--map .trip-option-card__icon{background:var(--activity-soft)}
-.trip-option-card--connect .trip-option-card__icon{background:var(--food-soft)}
-.trip-option-card--alerts .trip-option-card__icon{background:var(--food-soft)}
-.trip-option-card--together .trip-option-card__icon{background:var(--activity-soft)}
-.trip-option-card--imports .trip-option-card__icon{background:var(--flight-soft)}
-.trip-option-card--documents .trip-option-card__icon{background:var(--stay-soft)}
-.trip-option-card--edit .trip-option-card__icon{background:var(--activity-soft)}
-.trip-option-card--help .trip-option-card__icon{background:var(--surface)}
-.trip-option-card__copy{display:grid;gap:3px;min-width:0}
-.trip-option-card__copy strong{font-size:15px;font-weight:var(--weight-semibold);line-height:var(--leading-compact)}
-.trip-option-card__copy small{display:-webkit-box;overflow:hidden;color:var(--muted);font-size:var(--type-label);font-weight:var(--weight-regular);line-height:var(--leading-heading);-webkit-box-orient:vertical;-webkit-line-clamp:2}
-.trip-option-card__chevron{position:absolute;top:16px;right:13px;color:var(--muted-soft)}
-.trip-option-card__badge{position:absolute;top:12px;right:34px;display:grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:600}
-@media(max-width:374px){.trip-options-page .mobile-page{gap:21px;padding-inline:16px}.trip-options-grid{gap:8px}.trip-option-card{min-height:120px;padding:12px 34px 12px 12px}.trip-option-card__icon{width:38px;height:38px}.trip-option-card__copy strong{font-size:var(--type-body-small)}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media(max-width:374px){.trip-options-page .mobile-page{gap:21px;padding-inline:16px}}
 .mobile-form{padding-bottom:calc(84px + var(--keyboard-offset) + env(safe-area-inset-bottom))}.form-section{padding:2px 0 18px}.form-fields,.quick-primary-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 10px;align-items:start}.form-fields--date-time,.form-fields--activity-time{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.form-fields--date-time>.form-field,.form-fields--activity-time>.form-field{min-width:0}.form-fields--date-time input,.form-fields--date-time select,.form-fields--activity-time input,.form-fields--activity-time select{min-width:0;max-width:100%;width:100%;-webkit-min-logical-width:0;-webkit-appearance:none;appearance:none;text-align:left}.form-field{position:relative;display:grid;gap:7px;min-width:0}.form-field--wide{grid-column:1/-1}.form-field>span,.sheet-field>label,.quick-travelers legend{color:var(--muted);font-size:var(--type-label);font-weight:500}.form-field b{color:var(--red)}
 .form-field input,.form-field select,.form-field textarea,.sheet-field input,.sheet-field select,.review-card input,.review-card select{width:100%;min-height:50px;padding:0 13px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);color:var(--navy);outline:none}.form-field textarea{min-height:100px;padding-block:12px;resize:vertical}.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,18,21,.1)}
 /* Native iOS date/time inputs otherwise size to their intrinsic locale width
@@ -2376,7 +2376,7 @@ html .fd-stay__nights{background:var(--red-soft);color:var(--accent)}
 /* Icon tiles: soft rounded-square (squircle) tiles everywhere, matching the
    ribbon timeline and the "Where are you going?" hero. Colour comes from each
    selector's own background rule above; here we only unify shape + flatten. */
-.row-icon,.travel-row__icon,.document-row__icon,.trip-row__mark,.info-icon,.detail-row>span:first-child,.hotel-info-row__icon,.hotel-address-row__icon,.timeline-empty__icon,.empty-mobile-icon,.mobile-empty__icon,.plan-hero__icon,.screen-intro__icon,.offline-summary-icon,.health-shield,.essentials-summary>span,.sync-summary>span,.v2-choice>span:first-child,.date-range-trigger__icon,.quick-trip-context__icon,.review-summary>span,.forward-booking-address>span,.smart-import-intro>span,.health-good,.health-warning,.health-info,.info-icon.green,.info-icon.purple,.currency-hero__icon,.trip-card__mark,.hotel-map-panel__marker,.manual-add-card__icon,.manual-add-secondary>span:first-child,.trip-option-card__icon,.first-run-how-list__icon,.manual-attachments__picker-icon,.add-intent-row__icon,.day-plan-row__icon,.trip-map__row-icon{
+.row-icon,.travel-row__icon,.document-row__icon,.trip-row__mark,.info-icon,.detail-row>span:first-child,.hotel-info-row__icon,.hotel-address-row__icon,.timeline-empty__icon,.empty-mobile-icon,.mobile-empty__icon,.plan-hero__icon,.screen-intro__icon,.offline-summary-icon,.health-shield,.essentials-summary>span,.sync-summary>span,.v2-choice>span:first-child,.date-range-trigger__icon,.quick-trip-context__icon,.review-summary>span,.forward-booking-address>span,.smart-import-intro>span,.health-good,.health-warning,.health-info,.info-icon.green,.info-icon.purple,.currency-hero__icon,.trip-card__mark,.hotel-map-panel__marker,.manual-add-card__icon,.manual-add-secondary>span:first-child,.first-run-how-list__icon,.manual-attachments__picker-icon,.add-intent-row__icon,.day-plan-row__icon,.trip-map__row-icon{
   border-radius:30% !important;box-shadow:none !important
 }
 /* Keep the main-timeline node markers circular like the journey stepper dots. */
@@ -3981,38 +3981,37 @@ html body .account-page .acct-card--plus .account-plus-row{background:transparen
 
 /* Trip options: everyday tools first, quieter utility rows below. */
 html .trip-options-page .mobile-page{gap:13px;padding:6px 16px calc(108px + env(safe-area-inset-bottom))}
-html .trip-options-page .trip-options-intro{padding:0}
-html .trip-options-page .trip-options-intro>span{font-size:var(--type-label);font-weight:500;letter-spacing:var(--tracking-wide);color:var(--accent);text-transform:uppercase}
-html .trip-options-page .trip-options-intro h1{margin:4px 0 3px;font-size:21px;line-height:1.12;font-weight:var(--weight-bold);letter-spacing:-.035em;overflow-wrap:anywhere}
-html .trip-options-page .trip-options-intro p{font-size:13px;line-height:var(--leading-title);color:var(--muted)}
-html .trip-options-page .trip-options-group{gap:10px}
-html .trip-options-page .trip-options-group>h2{font-size:13px;font-weight:500;line-height:var(--leading-normal);color:var(--ink);letter-spacing:var(--tracking-normal);text-transform:none}
-html .trip-options-page .trip-options-grid{gap:12px}
-html .trip-options-page .trip-option-card{display:grid;grid-template-columns:minmax(0,1fr) 18px;align-content:start;gap:14px 8px;min-height:140px;padding:16px;border:0;border-radius:18px;background:var(--flight-soft);box-shadow:none}
-html .trip-options-page .trip-option-card__icon{grid-column:1;display:grid;place-items:start;width:26px;height:26px;border-radius:0;background:transparent;color:var(--ink)}
-html .trip-options-page .trip-option-card__copy{grid-column:1 / -1;gap:5px}
-html .trip-options-page .trip-option-card__copy strong{font-size:var(--type-body);font-weight:500;line-height:var(--leading-heading);overflow-wrap:anywhere}
-html .trip-options-page .trip-option-card__copy small{display:block;overflow:visible;font-size:var(--type-body-small);line-height:var(--leading-normal);font-weight:400;color:var(--muted);-webkit-line-clamp:unset}
-html .trip-options-page .trip-option-card__chevron{position:static;grid-column:2;grid-row:1;align-self:center;color:var(--muted)}
-html .trip-options-page .trip-option-card--currency{background:var(--stay-soft)}
-html .trip-options-page .trip-option-card--map{background:var(--activity-soft)}
-html .trip-options-page .trip-option-card--connect{background:var(--transfer-soft)}
-html .trip-options-page .trip-option-card--together{background:var(--activity-soft)}
-html .trip-options-page .trip-options-group[aria-labelledby="trip-options-tools"] .trip-options-grid,
-html .trip-options-page .trip-options-group[aria-labelledby="trip-options-manage"] .trip-options-grid{grid-template-columns:1fr;gap:0}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card{grid-template-columns:44px minmax(0,1fr) 18px;align-items:center;align-content:center;gap:12px;min-height:78px;padding:12px 0;border-radius:0;border-bottom:1px solid var(--line);background:transparent}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card:last-child{border-bottom:0}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card__icon{grid-column:1;grid-row:1;place-items:center;width:44px;height:48px;border-radius:14px;background:var(--flight-soft)}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card__copy{grid-column:2;grid-row:1;gap:3px}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card__copy strong{font-weight:400}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card__chevron{grid-column:3;grid-row:1}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card--alerts .trip-option-card__icon{background:var(--transfer-soft)}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card--together .trip-option-card__icon,html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card--edit .trip-option-card__icon{background:var(--activity-soft)}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card--documents .trip-option-card__icon{background:var(--stay-soft)}
-html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card--help .trip-option-card__icon{background:var(--surface)}
-html .trip-options-page .trip-option-card__badge{top:6px;left:28px;right:auto;min-width:20px;height:20px;padding:0 5px;font-size:var(--type-label);font-weight:500;background:var(--accent);color:var(--accent-ink);border:2px solid var(--paper)}
-html .trip-options-page .trip-option-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-@media(max-width:359px){html .trip-options-page .mobile-page{padding-inline:16px}html .trip-options-page .trip-options-grid{gap:10px}html .trip-options-page .trip-option-card{padding:14px;min-height:140px}html .trip-options-page .trip-options-group:not([aria-labelledby="trip-options-plan"]) .trip-option-card{gap:10px}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media(max-width:359px){html .trip-options-page .mobile-page{padding-inline:16px}}
 
 /* Timeline day selector matches the Trips segmented control. */
 html .timeline-screen--ribbon .timeline-days{gap:4px;margin:20px 0 20px;padding:6px;border:0;border-radius:16px;background:var(--surface);scroll-padding-inline:4px}
@@ -4427,61 +4426,61 @@ html body .mobile-group>h2{margin:0 0 var(--space-2);padding:0;color:var(--ink);
 html body .mobile-list,html body .travel-list,html body .document-list,html body .detail-list,html body .list-stack{display:grid;min-width:0}
 
 /* Navigation and planning rows use one flat grammar. */
-html body .trip-options-page .trip-options-group{display:grid;gap:6px}
-html body .trip-options-page .trip-options-group>h2{margin:0;padding:0;color:var(--muted);font-size:11px;font-weight:var(--weight-semibold);letter-spacing:var(--tracking-wider);text-transform:uppercase}
-html body .trip-options-page .trip-options-grid{display:grid!important;grid-template-columns:1fr!important;gap:0!important}
-html body .trip-options-page .trip-option-card{display:grid!important;grid-template-columns:40px minmax(0,1fr) 20px!important;align-items:center!important;gap:var(--space-3)!important;min-height:var(--row-height)!important;padding:var(--space-3) 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
-html body .trip-options-page .trip-option-card:last-child{border-bottom:0!important}
-html body .trip-options-page .trip-option-card__icon{grid-column:1!important;grid-row:1!important;width:40px!important;height:40px!important;border-radius:var(--radius-control)!important;background:transparent!important}
-html body .trip-options-page .trip-option-card__copy{grid-column:2!important;grid-row:1!important;display:grid!important;gap:3px!important;min-width:0!important}
-html body .trip-options-page .trip-option-card__copy strong{font-size:var(--type-body)!important;font-weight:var(--weight-semibold)!important;line-height:1.25!important}
-html body .trip-options-page .trip-option-card__copy small{display:block!important;overflow:visible!important;color:var(--muted)!important;font-size:var(--type-meta)!important;line-height:1.35!important;white-space:normal!important;text-overflow:clip!important;overflow-wrap:anywhere}
-html body .trip-options-page .trip-option-card__chevron{position:static!important;grid-column:3!important;grid-row:1!important;justify-self:end!important;color:var(--muted-soft)!important}
-html body .trip-options-page .trip-option-card__badge{top:6px!important;left:18px!important;right:auto!important;border:2px solid var(--paper)!important;box-shadow:none!important}
-html body .trip-options-page .trip-options-intro{padding:0 0 12px}
-html body .trip-options-page .trip-options-intro h1{display:flex;align-items:center;gap:10px;margin:8px 0 6px;font-size:26px;font-weight:var(--weight-bold);line-height:1.08;letter-spacing:var(--tracking-snug)}
-html body .trip-options-page .trip-options-intro__flag{font-size:30px;line-height:var(--leading-none)}
-html body .trip-options-page .trip-options-intro p{margin:0;color:var(--muted);font-size:15px;font-weight:var(--weight-medium);line-height:var(--leading-normal)}
-html body .trip-options-page .trip-options-intro>span{display:block;color:var(--accent);font-size:11px;font-weight:var(--weight-semibold);letter-spacing:.16em;text-transform:uppercase}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Compact one-screen layout: the travel companion must fit a single viewport
    without scrolling. Shrink the section gaps, tile rows, and icons so all three
    groups (Travel tools / Manage trip / Need help?) sit on one page. */
 html body .trip-options-page.screen>.mobile-page{align-content:start;gap:var(--space-5);padding-top:12px;padding-bottom:calc(var(--space-4) + env(safe-area-inset-bottom));overflow:hidden}
-html body .trip-options-page .trip-options-group{gap:4px}
-html body .trip-options-page .trip-options-group>h2{margin:0}
+
+
 html body .trip-options-page .trip-tools-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-auto-rows:minmax(70px,auto);gap:6px}
-html body .trip-options-page .trip-option-tile{position:relative;display:grid;justify-items:center;align-content:center;gap:5px;padding:7px 4px;min-height:74px;border:0;border-radius:var(--radius-regular);background:var(--surface);color:var(--ink);text-align:center;transition:transform .16s var(--ease),border-color .16s var(--ease),background .16s var(--ease)}
-html body .trip-options-page .trip-option-tile__icon{--tile-ic:var(--accent);display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--tile-ic);transition:border-color .16s var(--ease),background .16s var(--ease)}
-html body .trip-options-page .trip-option-tile:hover .trip-option-tile__icon,html body .trip-options-page .trip-option-tile[aria-current="page"] .trip-option-tile__icon{border-color:var(--tile-ic)}
-html body .trip-options-page .trip-option-tile__icon svg,html body .trip-options-page .trip-option-tile__icon .ph-svg{width:24px;height:24px}
-html body .trip-options-page .trip-option-tile--weather .trip-option-tile__icon{--tile-ic:#4f9df0}
-html body .trip-options-page .trip-option-tile--currency .trip-option-tile__icon{--tile-ic:#2fce87}
-html body .trip-options-page .trip-option-tile--spots .trip-option-tile__icon{--tile-ic:#e0b341}
-html body .trip-options-page .trip-option-tile--together .trip-option-tile__icon{--tile-ic:#a07cf5}
-html body .trip-options-page .trip-option-tile--connect .trip-option-tile__icon{--tile-ic:#22cfe0}
-html body .trip-options-page .trip-option-tile--map .trip-option-tile__icon{--tile-ic:#ff8a4d}
-html body .trip-options-page .trip-option-tile--documents .trip-option-tile__icon{--tile-ic:#6f83f5}
-html body .trip-options-page .trip-option-tile--edit .trip-option-tile__icon{--tile-ic:#f5b833}
-html body .trip-options-page .trip-option-tile--alerts .trip-option-tile__icon{--tile-ic:#ff6b78}
-html body .trip-options-page .trip-option-tile--imports .trip-option-tile__icon{--tile-ic:#8791f5}
-html body .trip-options-page .trip-option-tile--help .trip-option-tile__icon{--tile-ic:#9aa8bd}
-html body .trip-options-page .trip-option-tile--flight .trip-option-tile__icon{--tile-ic:#4f9df0}
-html body .trip-options-page .trip-option-tile--stay .trip-option-tile__icon{--tile-ic:#f5b833}
-html body .trip-options-page .trip-option-tile__label{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:clamp(9.5px,2.7vw,var(--type-label));font-weight:var(--weight-regular);line-height:var(--leading-compact);letter-spacing:var(--tracking-slight);color:var(--ink);overflow-wrap:break-word;word-break:normal;hyphens:none}
-html body .trip-options-page .trip-option-tile__badge{position:absolute;top:8px;right:8px;display:grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:var(--radius-pill);background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:600}
-html body .trip-options-page .trip-option-tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-regular)}
-html body .trip-options-page .trip-option-tile:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--surface),#fff 6%)}
-html body .trip-options-page .trip-option-tile:active{border-color:var(--accent);background:color-mix(in srgb,var(--surface),#fff 9%)}
-html body .trip-options-page .trip-tools-grid .trip-option-tile{background:transparent}
-html body .trip-options-page .trip-tools-grid .trip-option-tile__icon{--tile-ic:var(--accent);color:var(--accent)}
-html body .trip-options-page .trip-tools-grid .trip-option-tile:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)}
-html body .trip-options-page .trip-tools-grid .trip-option-tile:active{background:color-mix(in srgb,var(--accent) 15%,transparent)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Each section gets its own icon accent so the three groups read as distinct
    (Travel tools = blue, Manage trip = amber, Need help? = green). Applied to
    both themes below (night here, day in the .theme-day block). */
-html body .trip-options-page .trip-options-group[aria-labelledby="trip-options-tools"] .trip-tools-grid .trip-option-tile__icon{--tile-ic:var(--accent);color:var(--accent)}
-html body .trip-options-page .trip-options-group[aria-labelledby="trip-options-manage"] .trip-tools-grid .trip-option-tile__icon{--tile-ic:var(--green);color:var(--green)}
-html body .trip-options-page .trip-options-group[aria-labelledby="trip-options-help"] .trip-tools-grid .trip-option-tile__icon{--tile-ic:var(--red);color:var(--red)}
+
+
+
 html body .bottom-sheet.compact-sheet .nav-grid--add{grid-template-columns:repeat(2,1fr)}
 @media(max-width:359px){html body .trip-options-page .trip-tools-grid{grid-template-columns:repeat(5,1fr);gap:6px}}
 
@@ -4625,7 +4624,7 @@ html body .collection-form-screen .collection-schedule .form-field{margin-top:va
 
 /* Intentional exceptions: the bottom sheet, FAB and picker overlays need depth
    to separate from the page. Everything else is explicitly shadow-free. */
-html body .trip-option-card,html body .add-intent-row,html body .day-plan-row,html body .save-later-row,html body .planning-row,html body .planning-add-card,html body .travel-row,html body .document-row,html body .booking-card,html body .info-card,html body .health-card,html body .cl-row,html body .fd-row{box-shadow:none!important}
+html body .add-intent-row,html body .day-plan-row,html body .save-later-row,html body .planning-row,html body .planning-add-card,html body .travel-row,html body .document-row,html body .booking-card,html body .info-card,html body .health-card,html body .cl-row,html body .fd-row{box-shadow:none!important}
 @media(prefers-reduced-motion:reduce){html body .ds-loading-state__mark{animation:none}}
 @media(max-width:374px){
   html body .phone-app>.screen>.mobile-page,html body .phone-app>.screen>.focused-page{padding-inline:var(--space-4)}
@@ -6219,42 +6218,23 @@ html.theme-day body .form-save-bar .mobile-primary-action{background:var(--accen
 /* Remaining Day-only entry points, utilities, and sheets share the exact
    timeline palette.  No page gets an independent blue, green, purple, or red
    treatment in light mode. */
-html.theme-day body .add-intent-tile--booking .add-intent-tile__icon,
-html.theme-day body .welcome-thread .welcome-feature--bookings .row-icon,
-html.theme-day body .help-page .help-quickstart__head>span,
-html.theme-day body .help-page .faq-section--c0 .faq-section__icon,
-html.theme-day body .trip-options-page .trip-option-tile--weather .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-option-tile--imports .trip-option-tile__icon{
+html.theme-day body .add-intent-tile--booking .add-intent-tile__icon,html.theme-day body .welcome-thread .welcome-feature--bookings .row-icon,html.theme-day body .help-page .help-quickstart__head>span,html.theme-day body .help-page .faq-section--c0 .faq-section__icon{
   background:var(--flight-soft)!important;color:var(--indigo)!important;--tile-ic:var(--indigo)!important;
 }
-html.theme-day body .add-intent-tile--plan .add-intent-tile__icon,
-html.theme-day body .welcome-thread .welcome-feature--plans .row-icon,
-html.theme-day body .help-page .help-intro__icon,
-html.theme-day body .help-page .faq-section--c4 .faq-section__icon,
-html.theme-day body .trip-options-page .trip-option-tile--together .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-option-tile--connect .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-option-tile--spots .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-option-tile--documents .trip-option-tile__icon{
+html.theme-day body .add-intent-tile--plan .add-intent-tile__icon,html.theme-day body .welcome-thread .welcome-feature--plans .row-icon,html.theme-day body .help-page .help-intro__icon,html.theme-day body .help-page .faq-section--c4 .faq-section__icon{
   background:var(--activity-soft)!important;color:var(--accent)!important;--tile-ic:var(--accent)!important;
 }
-html.theme-day body .add-intent-tile--later .add-intent-tile__icon,
-html.theme-day body .welcome-thread .welcome-feature--ideas .row-icon,
-html.theme-day body .help-page .faq-section--c3 .faq-section__icon,
-html.theme-day body .trip-options-page .trip-option-tile--alerts .trip-option-tile__icon{
+html.theme-day body .add-intent-tile--later .add-intent-tile__icon,html.theme-day body .welcome-thread .welcome-feature--ideas .row-icon,html.theme-day body .help-page .faq-section--c3 .faq-section__icon{
   background:var(--food-soft)!important;color:var(--red)!important;--tile-ic:var(--red)!important;
 }
-html.theme-day body .help-page .help-support__icon,
-html.theme-day body .help-page .faq-section--c1 .faq-section__icon,
-html.theme-day body .trip-options-page .trip-option-tile--currency .trip-option-tile__icon{
+html.theme-day body .help-page .help-support__icon,html.theme-day body .help-page .faq-section--c1 .faq-section__icon{
   background:var(--stay-soft)!important;color:var(--green)!important;--tile-ic:var(--green)!important;
 }
-html.theme-day body .help-page .faq-section--c2 .faq-section__icon,
-html.theme-day body .trip-options-page .trip-option-tile--map .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-option-tile--edit .trip-option-tile__icon{
+html.theme-day body .help-page .faq-section--c2 .faq-section__icon{
   background:var(--transfer-soft)!important;color:var(--amber)!important;--tile-ic:var(--amber)!important;
 }
-html.theme-day body .trip-options-page .trip-option-tile--help .trip-option-tile__icon{background:var(--surface)!important;color:var(--muted)!important;--tile-ic:var(--muted)!important}
-html.theme-day body :is(.add-intent-tile__icon,.welcome-thread .row-icon,.help-page .help-intro__icon,.help-page .help-quickstart__head>span,.help-page .help-support__icon,.help-page .faq-section__icon,.trip-options-page .trip-option-tile__icon) :is(.ph,.ph-svg,svg){color:currentColor!important}
+
+html.theme-day body :is(.add-intent-tile__icon,.welcome-thread .row-icon,.help-page .help-intro__icon,.help-page .help-quickstart__head>span,.help-page .help-support__icon,.help-page .faq-section__icon) :is(.ph,.ph-svg,svg){color:currentColor!important}
 
 html.theme-day body .bottom-sheet.compact-sheet .nav-grid__tile[data-screen="trips"] .nav-grid__icon,
 html.theme-day body .bottom-sheet.compact-sheet .nav-grid__tile[data-screen="trip-options"] .nav-grid__icon{color:var(--accent)!important}
@@ -6299,39 +6279,16 @@ html.theme-day body .range-picker__apply{background:var(--accent)!important;colo
    glyphs can stay compact. This preserves a calm four-column scan and avoids
    wasting a large icon tile inside an already colored action surface. */
 html.theme-day body .trip-options-page .trip-tools-grid{grid-auto-rows:96px!important;gap:10px!important}
-html.theme-day body .trip-options-page .trip-option-tile{min-height:96px!important;gap:6px!important;padding:12px 8px!important}
-html.theme-day body .trip-options-page .trip-option-tile__icon{
-  width:32px!important;height:32px!important;padding:0!important;
-  border-radius:10px!important;box-sizing:border-box!important;
-}
-html.theme-day body .trip-options-page .trip-option-tile__icon :is(svg,.ph,.ph-svg){width:32px!important;height:32px!important}
-html.theme-day body .trip-options-page .trip-option-tile__label{font-size:12px!important;line-height:1.18!important;font-weight:var(--weight-regular)!important}
+
+
+
+
 
 /* Divider-free interface ----------------------------------------------------
    Rows remain grouped through spacing, surfaces, and icon tiles.  This removes
    the repeated horizontal rules from every app page and bottom sheet while
    deliberately preserving vertical timeline rails and card outlines. */
-html body .phone-app :is(
-  .app-bar,.bottom-nav,.form-save-bar,.timeline-context,.timeline-days,
-  .weather-note,.wx-block,.currency-update-row,.currency-divider,
-  .collab-member,.collab-invite,.collab-benefit,.document-row-wrap,
-  .import-history-item,.simple-row,.travel-row,.document-row,.trip-row,
-  .detail-row,.booking-card,.hotel-info-row,.hotel-address-row,.sheet-option,
-  .trip-context,.flight-more-content dl>div,.info-card,.account-card,
-  .traveler-profile,.v2-choice,.quick-trip-context,.first-run-how-list li,
-  .checklist-row,.traveler-checklist__row,.manual-attachment-row,
-  .booking-document-row,.trip-group+.trip-group,.home-summary-module,
-  .health-card,.recovery-card,.review-card,.manual-route-card,.manual-attachments,
-  .booking-documents,.booking-email-list,.booking-email-row,.form-more,
-  .manual-add-other,.manual-add-secondary,.faq-row,.journal-days,
-  .live-flight-controls,.ds-flat-row,.ds-progress-summary,.trip-option-card,
-  .day-plan-row,.save-later-row,.save-later-empty-state,.planning-row,
-  .trips-empty,.trip-list-row-wrap,.trip-setup-ready__hero,.esim-offer,
-  .esim-feature,.esim-steps li,.dark-detail .fd-list--detail .fd-row,
-  .dark-detail .fd-list--detail .fd-panel,.dark-detail .fd-list--detail .fd-panel dl>div,
-  .collection-form-page .form-field input,.collection-form-page .form-field select,
-  .collection-form-page .form-field textarea,.ds-form-field input,.driver-address
-){border-top-width:0!important;border-bottom-width:0!important}
+html body .phone-app :is(.app-bar,.bottom-nav,.form-save-bar,.timeline-context,.timeline-days,.weather-note,.wx-block,.currency-update-row,.currency-divider,.collab-member,.collab-invite,.collab-benefit,.document-row-wrap,.import-history-item,.simple-row,.travel-row,.document-row,.trip-row,.detail-row,.booking-card,.hotel-info-row,.hotel-address-row,.sheet-option,.trip-context,.flight-more-content dl>div,.info-card,.account-card,.traveler-profile,.v2-choice,.quick-trip-context,.first-run-how-list li,.checklist-row,.traveler-checklist__row,.manual-attachment-row,.booking-document-row,.trip-group+.trip-group,.home-summary-module,.health-card,.recovery-card,.review-card,.manual-route-card,.manual-attachments,.booking-documents,.booking-email-list,.booking-email-row,.form-more,.manual-add-other,.manual-add-secondary,.faq-row,.journal-days,.live-flight-controls,.ds-flat-row,.ds-progress-summary,.day-plan-row,.save-later-row,.save-later-empty-state,.planning-row,.trips-empty,.trip-list-row-wrap,.trip-setup-ready__hero,.esim-offer,.esim-feature,.esim-steps li,.dark-detail .fd-list--detail .fd-row,.dark-detail .fd-list--detail .fd-panel,.dark-detail .fd-list--detail .fd-panel dl>div,.collection-form-page .form-field input,.collection-form-page .form-field select,.collection-form-page .form-field textarea,.ds-form-field input,.driver-address){border-top-width:0!important;border-bottom-width:0!important}
 html body .phone-app hr{display:none!important}
 
 /* Trips use real country flags as their destination mark. They are never
@@ -6356,42 +6313,39 @@ html.theme-day body .dark-detail .booking-document-row{border-color:var(--line)!
 /* Day Trip Options uses the same category surface from edge to edge.  The
    color belongs to the action itself, not only to a small icon floating in a
    neutral card. Night keeps its quieter neutral cards with colored icons. */
-html.theme-day body .trip-options-page .trip-option-tile{border-width:0!important;border-style:solid!important}
-html.theme-day body .trip-options-page .trip-option-tile__icon{background:transparent!important}
-html.theme-day body .trip-options-page :is(.trip-option-tile--weather,.trip-option-tile--imports){background:var(--flight-soft)!important;border-color:color-mix(in srgb,var(--indigo) 38%,var(--flight-soft))!important}
-html.theme-day body .trip-options-page :is(.trip-option-tile--weather,.trip-option-tile--imports) .trip-option-tile__icon{color:var(--indigo)!important;--tile-ic:var(--indigo)!important}
-html.theme-day body .trip-options-page .trip-option-tile--currency{background:var(--stay-soft)!important;border-color:color-mix(in srgb,var(--green) 38%,var(--stay-soft))!important}
-html.theme-day body .trip-options-page .trip-option-tile--currency .trip-option-tile__icon{color:var(--green)!important;--tile-ic:var(--green)!important}
-html.theme-day body .trip-options-page :is(.trip-option-tile--together,.trip-option-tile--connect,.trip-option-tile--documents){background:var(--activity-soft)!important;border-color:color-mix(in srgb,var(--accent) 38%,var(--activity-soft))!important}
-html.theme-day body .trip-options-page :is(.trip-option-tile--together,.trip-option-tile--connect,.trip-option-tile--documents) .trip-option-tile__icon{color:var(--accent)!important;--tile-ic:var(--accent)!important}
-html.theme-day body .trip-options-page :is(.trip-option-tile--map,.trip-option-tile--edit){background:var(--transfer-soft)!important;border-color:color-mix(in srgb,var(--amber) 38%,var(--transfer-soft))!important}
-html.theme-day body .trip-options-page :is(.trip-option-tile--map,.trip-option-tile--edit) .trip-option-tile__icon{color:var(--amber)!important;--tile-ic:var(--amber)!important}
-html.theme-day body .trip-options-page .trip-option-tile--alerts{background:var(--food-soft)!important;border-color:color-mix(in srgb,var(--red) 38%,var(--food-soft))!important}
-html.theme-day body .trip-options-page .trip-option-tile--alerts .trip-option-tile__icon{color:var(--red)!important;--tile-ic:var(--red)!important}
-html.theme-day body .trip-options-page .trip-option-tile--help{background:var(--activity-soft)!important;border-color:color-mix(in srgb,var(--accent) 38%,var(--activity-soft))!important}
-html.theme-day body .trip-options-page .trip-option-tile--help .trip-option-tile__icon{background:transparent!important;color:var(--accent)!important;--tile-ic:var(--accent)!important}
-html.theme-day body .trip-options-page .trip-option-tile--flight{background:var(--flight-soft)!important;border-color:color-mix(in srgb,var(--indigo) 38%,var(--flight-soft))!important}
-html.theme-day body .trip-options-page .trip-option-tile--flight .trip-option-tile__icon{background:transparent!important;color:var(--indigo)!important;--tile-ic:var(--indigo)!important}
-html.theme-day body .trip-options-page .trip-option-tile--stay{background:var(--transfer-soft)!important;border-color:color-mix(in srgb,var(--amber) 38%,var(--transfer-soft))!important}
-html.theme-day body .trip-options-page .trip-option-tile--stay .trip-option-tile__icon{background:transparent!important;color:var(--amber)!important;--tile-ic:var(--amber)!important}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Day Trip Options now mirrors the Menu grid: neutral transparent tiles with a
    single amber accent glyph, no category surfaces or borders and the same large
    icon as the Menu. This override follows the pastel rules above so it wins
    without disturbing the shared add-intent / welcome / help selectors. */
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile{background:transparent!important;border-width:0!important}
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile__icon{background:transparent!important;color:var(--accent)!important;--tile-ic:var(--accent)!important;width:auto!important;height:auto!important;padding:0!important;border-radius:0!important}
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile__icon :is(svg,.ph,.ph-svg){width:32px!important;height:32px!important;color:var(--accent)!important}
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)!important}
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile:active{background:color-mix(in srgb,var(--accent) 15%,transparent)!important}
+
+
+
+
+
 /* Day theme: same per-section icon accents (overrides the accent-forcing rules
    above, including the svg color). */
-html.theme-day body .trip-options-page .trip-options-group[aria-labelledby="trip-options-tools"] .trip-tools-grid .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-options-group[aria-labelledby="trip-options-tools"] .trip-tools-grid .trip-option-tile__icon :is(svg,.ph,.ph-svg){color:var(--accent)!important;--tile-ic:var(--accent)!important}
-html.theme-day body .trip-options-page .trip-options-group[aria-labelledby="trip-options-manage"] .trip-tools-grid .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-options-group[aria-labelledby="trip-options-manage"] .trip-tools-grid .trip-option-tile__icon :is(svg,.ph,.ph-svg){color:var(--green)!important;--tile-ic:var(--green)!important}
-html.theme-day body .trip-options-page .trip-options-group[aria-labelledby="trip-options-help"] .trip-tools-grid .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-options-group[aria-labelledby="trip-options-help"] .trip-tools-grid .trip-option-tile__icon :is(svg,.ph,.ph-svg){color:var(--red)!important;--tile-ic:var(--red)!important}
+
+
+
 
 /* Help center: search first, then compact tappable answers.  The old treatment
    stacked several large framed cards and relied on row dividers, which made a
@@ -6448,9 +6402,8 @@ html body .subscription-hero__icon{background:color-mix(in srgb,#d89b14 18%,var(
    tools into a single row. The page may scroll when labels need more room. */
 html body .trip-options-page.screen>.mobile-page{overflow:visible}
 html body .trip-options-page .trip-tools-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:auto}
-html body .trip-options-page .trip-option-tile{min-height:108px;padding:12px 7px}
-html body .trip-options-page .trip-option-tile__label,
-html.theme-day body .trip-options-page .trip-option-tile__label{display:block;-webkit-line-clamp:unset;overflow:visible;font-size:13px!important;font-weight:var(--weight-semibold)!important;line-height:1.3!important;hyphens:auto;overflow-wrap:anywhere}
+
+
 @media(max-width:359px){html body .trip-options-page .trip-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 html body .currency-screen .currency-line__label,
@@ -6469,8 +6422,7 @@ html body .subscription-plan em{font-size:var(--type-label);line-height:var(--le
 html body .welcome-thread .first-run-eyebrow,
 html body .welcome-private-note{font-size:var(--type-label)}
 html body .welcome-thread .welcome-v2__footer{font-size:var(--type-label)}
-html body .trip-options-page .trip-options-group>h2,
-html body .trip-options-page .trip-options-intro>span{font-size:var(--type-label)}
+
 html body .map-title small,html body .map-day small,
 html body .map-sheet__head span,html body .map-sheet__head small{font-size:var(--type-label)}
 html body .help-intro>span{font-size:12px!important}
@@ -6504,65 +6456,23 @@ html.theme-day body .trip-options-page .trip-tools-grid{
   gap:8px!important;
   align-items:stretch;
 }
-html body .trip-options-page .trip-tools-grid .trip-option-tile,
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile{
-  display:grid!important;
-  grid-template-columns:34px minmax(0,1fr)!important;
-  grid-template-rows:auto!important;
-  align-content:center!important;
-  align-items:center!important;
-  justify-items:stretch!important;
-  gap:9px!important;
-  min-height:56px!important;
-  padding:8px 10px!important;
-  border:1px solid var(--line)!important;
-  border-radius:12px!important;
-  background:var(--surface)!important;
-  text-align:left!important;
-}
-html body .trip-options-page .trip-tools-grid .trip-option-tile__icon,
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile__icon{
-  box-sizing:border-box!important;
-  width:34px!important;
-  height:34px!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:10px!important;
-  background:transparent!important;
-}
-html body .trip-options-page .trip-tools-grid .trip-option-tile__icon :is(svg,.ph,.ph-svg),
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile__icon :is(svg,.ph,.ph-svg){
-  width:20px!important;
-  height:20px!important;
-}
-html body .trip-options-page .trip-tools-grid .trip-option-tile__label,
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile__label{
-  width:auto!important;
-  font-size:15.5px!important;
-  font-weight:var(--weight-medium)!important;
-  line-height:1.2!important;
-  text-align:left!important;
-  hyphens:none!important;
-  overflow-wrap:normal!important;
-  word-break:normal!important;
-}
+
+
+
+
 @media(max-width:479px){
   html[lang="de"] body .trip-options-page .trip-tools-grid{
     grid-template-columns:minmax(0,1fr)!important;
   }
 }
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile{
-  background:var(--surface)!important;
-}
-html body .trip-options-page .trip-tools-grid .trip-option-tile:is(:hover,:active,[aria-current="page"]),
-html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile:is(:hover,:active,[aria-current="page"]){border-color:var(--accent)!important}
-html body .trip-options-page .trip-options-group{gap:8px!important}
-html body .trip-options-page .trip-options-groups{gap:16px!important}
+
+
+
+
 @media(max-width:359px){
   html body .trip-options-page .trip-tools-grid,
   html.theme-day body .trip-options-page .trip-tools-grid{grid-template-columns:minmax(0,1fr)!important}
-  html body .trip-options-page .trip-tools-grid .trip-option-tile,
-  html.theme-day body .trip-options-page .trip-tools-grid .trip-option-tile{min-height:68px!important}
+  
 }
 
 /* ============================================================
@@ -6579,12 +6489,7 @@ html body .trip-options-page .trip-options-groups{gap:16px!important}
    ============================================================ */
 
 /* (A) Section labels -> Account label language */
-html body .mobile-group>h2,
-html body .wx-block__title,
-html body .plan-panel__section>h2,
-html body .ds-section-header,
-html body .trip-options-group>h2,
-html body .form-more>summary{
+html body .mobile-group>h2,html body .wx-block__title,html body .plan-panel__section>h2,html body .ds-section-header,html body .form-more>summary{
   color:var(--muted);
   font-size:var(--type-meta);
   font-weight:var(--weight-semibold);
@@ -6707,26 +6612,13 @@ html body .trips-screen .trip-list-group__count{
    echoing the Account profile header. The tool tiles below are
    contract-locked and unchanged.
    ============================================================ */
-html body .trip-options-page .trip-options-hero{display:flex;flex-direction:column;gap:var(--space-2)}
-html body .trip-options-page .trip-options-hero .acct-group__label{padding:0 var(--space-3)}
-html body .trip-options-page .trip-options-hero .acct-group__label h2{
-  margin:0;color:var(--muted);font-size:var(--type-meta);font-weight:var(--weight-semibold);
-  letter-spacing:.01em;line-height:var(--leading-compact);text-transform:none;
-}
-html body .trip-options-page .trip-options-intro{
-  display:block;
-  /* Borderless flush hero — reads as a page heading, not a boxed input.
-     Aligned to the "Your travel companion" label padding above it. */
-  padding:2px var(--space-3) 0;border:0;border-radius:0;background:transparent;box-shadow:none;
-}
-html body .trip-options-page .trip-options-intro__id{min-width:0}
-html body .trip-options-page .trip-options-intro h1{
-  display:block;margin:0;font-size:26px;font-weight:var(--weight-bold);
-  line-height:var(--leading-tight);letter-spacing:var(--tracking-tight);overflow-wrap:anywhere;
-}
-html body .trip-options-page .trip-options-intro p{
-  margin:6px 0 0;color:var(--muted);font-size:var(--type-body);font-weight:var(--weight-medium);line-height:var(--leading-normal);
-}
+
+
+
+
+
+
+
 
 /* ============================================================
    Secondary-screen page titles -> one calm Account scale (v574)
@@ -7037,10 +6929,7 @@ html.theme-mono body .dark-detail .fd-card__head .fd-flight .ph-svg{
 }
 
 /* 2. Bare glyphs look small once the bubble is gone — enlarge for mono. */
-html.theme-mono body :is(
-  .journey-marker,.day-plan-row__icon,.ds-flat-row__icon,.add-intent-row__icon,
-  .trip-option-tile__icon,.trip-map__row-icon,.notif-item__icon,.info-icon
-){--icon-scale:1.28}
+html.theme-mono body :is(.journey-marker,.day-plan-row__icon,.ds-flat-row__icon,.add-intent-row__icon,.trip-map__row-icon,.notif-item__icon,.info-icon){--icon-scale:1.28}
 
 /* 3. On/off toggle: distinct grey (off) vs black (on) in monochrome. */
 html.theme-mono .round-trip-toggle__track{background:#9a9a9a!important}
@@ -7055,12 +6944,11 @@ html.theme-mono :is(
 html.theme-mono .notif-item.is-unread{background:#efefef!important}
 
 /* 5. Partner "NEED HELP?" tiles are links — drop the underline. */
-html.theme-mono a.trip-option-tile,
-html.theme-mono .trip-option-tile--partner{text-decoration:none!important}
+
 
 /* Tax Free uses the same layout in every theme. Theme tokens change colour,
    never spacing, hierarchy or interaction. */
-.trip-options-page .trip-option-tile--tax-free .trip-option-tile__icon{--tile-ic:#39d6a0;color:var(--tile-ic)}
+
 .tax-free-page .mobile-page{display:flex;flex-direction:column;gap:16px;padding-bottom:calc(32px + env(safe-area-inset-bottom))}
 .tax-free-page .mobile-page>*{flex-shrink:0}
 .tax-free-page--simple .mobile-page{gap:18px;max-width:600px;margin:0 auto}
@@ -7206,8 +7094,8 @@ html.theme-mono :is(.tax-free-picker,.tax-free-picker__icon,.tax-free-picker__fi
 .tax-free-provenance{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.tax-free-provenance>div{display:grid;gap:4px;padding:10px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}.tax-free-provenance span{color:var(--muted);font-size:10px;line-height:1.25}.tax-free-provenance strong{color:var(--ink);font-size:11px}
 .tax-free-disclaimer{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
 .tax-free-refresh,.tax-free-search{width:100%;min-height:48px;border:1px solid var(--accent);border-radius:15px;background:transparent;color:var(--accent);font:inherit;font-weight:var(--weight-bold);display:flex;align-items:center;justify-content:center;gap:8px}.tax-free-search{text-decoration:none;box-sizing:border-box}.tax-free-refresh:disabled{opacity:.6}
-html.theme-day body .trip-options-page .trip-option-tile--tax-free{background:var(--stay-soft)!important;border-color:color-mix(in srgb,var(--green) 38%,var(--stay-soft))!important}
-html.theme-day body .trip-options-page .trip-option-tile--tax-free .trip-option-tile__icon{color:var(--green)!important;--tile-ic:var(--green)!important}
+
+
 html.theme-mono .tax-free-airports,html.theme-mono .tax-free-world-coverage,html.theme-mono .tax-free-research,html.theme-mono .tax-free-research>a,html.theme-mono .tax-free-airport-card,html.theme-mono .tax-free-airport-tabs button,html.theme-mono .tax-free-airport-card__icon,html.theme-mono .tax-free-airport-facts>div,html.theme-mono .tax-free-airport-baggage{border-radius:0!important}
 html.theme-mono .tax-free-airport-card__icon{background:transparent;color:#000}
 @media(max-width:360px){.tax-free-provenance{grid-template-columns:1fr}.tax-free-calc-grid,.tax-free-result,.tax-free-airport-facts{grid-template-columns:1fr}.tax-free-calc-grid label:first-child{grid-column:auto}.tax-free-hero{padding:16px}.tax-free-airports{padding:14px}.tax-free-airport-title{align-items:flex-start}.tax-free-airport-title>span{display:none}.tax-free-world-coverage{grid-template-columns:auto minmax(0,1fr)}.tax-free-world-coverage__stats{grid-column:2;justify-items:start;text-align:left}}
@@ -7339,19 +7227,9 @@ html.theme-mono .timeline-day-tab--active .timeline-day-tab__date{color:#fff!imp
    The effective theme-day !important block leaves them rounded + gray-filled
    (reads as the colourful theme). Equal specificity + later in source + !important
    so this wins: square corners, white card, gray hairline, black glyph/selected. */
-html.theme-mono body .trip-options-page .trip-tools-grid .trip-option-tile{
-  border-radius:0!important;
-  background:var(--card)!important;
-  border-color:var(--line)!important;
-}
-html.theme-mono body .trip-options-page .trip-tools-grid .trip-option-tile:is(:hover,:active,[aria-current="page"]){
-  border-color:#000!important;
-  background:#f5f5f5!important;
-}
-html.theme-mono body .trip-options-page .trip-tools-grid .trip-option-tile__icon,
-html.theme-mono body .trip-options-page .trip-tools-grid .trip-option-tile__icon :is(svg,.ph,.ph-svg){
-  color:#000!important;
-}
+
+
+
 
 /* Mono: detail-page hero cards use the neutral light card surface (no dark
    header, no category tint) so every detail page reads as a clean light page. */
@@ -7449,7 +7327,7 @@ html.theme-mono body :is(.collab-invite__icon,.collab-benefit__icon){color:var(-
 /* Add-screen intent tiles — blue/purple/red icon fills. */
 html.theme-mono body .add-intent-tile__icon{background:var(--surface)!important;color:var(--ink)!important}
 /* Trip Options tile icons — 12 colored --tile-ic values. */
-html.theme-mono body .trip-options-page .trip-option-tile__icon{--tile-ic:var(--accent)!important}
+
 /* Full-screen date/destination picker accent — blue. */
 html.theme-mono body .full-screen-picker{--picker-accent:var(--accent)!important;--picker-tint:var(--activity-soft)!important}
 /* Tripto Plus card pastel icon — purple. */
@@ -8377,22 +8255,15 @@ html.theme-studio body .fab{
    as unfinished on the warm canvas, so they become white cards too. */
 html.theme-studio body .trips-ed-list.ds-grouped-card{border:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important}
 html.theme-studio body .trips-screen .trip-list-row-wrap .trip-list-row.trips-ed-row{border:1px solid var(--line)!important;box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 24px -18px rgba(15,23,42,.28)}
-html.theme-studio body .trip-options-intro.ds-grouped-card.ds-grouped-card{
-  background:var(--card)!important;
-  border:1px solid var(--line)!important;
-  border-radius:20px!important;
-  padding:16px 18px!important;
-  box-shadow:var(--shadow-card)!important;
-}
-html.theme-studio body .trip-options-page .trip-tools-grid .trip-option-tile.trip-option-tile,
+
 html.theme-studio body :is(.tax-free-picker,.tax-free-guide-hero,.tax-free-guide-section,.tax-free-guide-sources,.tax-free-about,.wx-places,.help-link,.manual-attachments__picker,.round-trip-toggle,.date-range-trigger){
   background:var(--card)!important;
   border:1px solid var(--line)!important;
   border-width:1px!important;
   box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 24px -18px rgba(15,23,42,.28)!important;
 }
-html.theme-studio body .trip-options-page .trip-tools-grid .trip-option-tile.trip-option-tile{border-radius:16px!important}
-html.theme-studio body :is(.trip-option-tile,.trip-option-tile *){text-decoration:none!important}
+
+
 html.theme-studio body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select,.cl-add__input){background:var(--card)!important}
 
 /* Studio purple on the timeline chrome: the active day tab and the weather
@@ -8558,16 +8429,16 @@ html.theme-studio body .phone-app .weather-empty>span:first-child :is(.ph,.ph-sv
 
 /* Studio: every Trip options tile icon is a vivid gradient tile with a white
    glyph (per-tool colour; partner/other tiles default to the purple accent). */
-html.theme-studio body .phone-app .trip-option-tile__icon{display:grid!important;place-items:center;width:38px!important;height:38px!important;flex:0 0 38px;border-radius:12px!important;background:linear-gradient(145deg,#a78bfa,#7c3aed)!important;color:#fff!important;box-shadow:0 8px 16px -10px #7c3aed!important}
-html.theme-studio body .phone-app .trip-option-tile__icon :is(.ph,.ph-svg,svg,.app-icon){width:21px!important;height:21px!important;color:#fff!important}
-html.theme-studio body .phone-app .trip-option-tile--weather .trip-option-tile__icon{background:linear-gradient(145deg,#60a5fa,#2563eb)!important;box-shadow:0 8px 16px -10px #2563eb!important}
-html.theme-studio body .phone-app .trip-option-tile--spots .trip-option-tile__icon{background:linear-gradient(145deg,#f472b6,#db2777)!important;box-shadow:0 8px 16px -10px #db2777!important}
-html.theme-studio body .phone-app .trip-option-tile--currency .trip-option-tile__icon{background:linear-gradient(145deg,#34d399,#059669)!important;box-shadow:0 8px 16px -10px #059669!important}
-html.theme-studio body .phone-app .trip-option-tile--tax-free .trip-option-tile__icon{background:linear-gradient(145deg,#fbbf24,#ea580c)!important;box-shadow:0 8px 16px -10px #ea580c!important}
-html.theme-studio body .phone-app .trip-option-tile--documents .trip-option-tile__icon{background:linear-gradient(145deg,#a78bfa,#7c3aed)!important;box-shadow:0 8px 16px -10px #7c3aed!important}
-html.theme-studio body .phone-app .trip-option-tile--map .trip-option-tile__icon{background:linear-gradient(145deg,#2dd4bf,#0d9488)!important;box-shadow:0 8px 16px -10px #0d9488!important}
-html.theme-studio body .phone-app .trip-option-tile--together .trip-option-tile__icon{background:linear-gradient(145deg,#fb7185,#e11d48)!important;box-shadow:0 8px 16px -10px #e11d48!important}
-html.theme-studio body .phone-app .trip-option-tile--help .trip-option-tile__icon{background:linear-gradient(145deg,#818cf8,#4f46e5)!important;box-shadow:0 8px 16px -10px #4f46e5!important}
+
+
+
+
+
+
+
+
+
+
 
 /* Studio: Tax Free fact boxes, Export PDF trip summary and Help quick-start
    steps are white bordered cards (were cream / grey / pastel panels). */
@@ -8578,21 +8449,21 @@ html.theme-studio body .phone-app .help-steps>li>span{background:linear-gradient
 /* Studio v771: the v770 tile rules lost to older theme-day glyph-colour and
    partner-tile rules (glyphs stayed purple/red, partner tiles had no tile).
    Higher-specificity selectors: every tile = gradient + white glyph. */
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile .trip-option-tile__icon{display:grid!important;place-items:center!important;width:38px!important;height:38px!important;padding:0!important;border:0!important;border-radius:12px!important;background:linear-gradient(145deg,#a78bfa,#7c3aed)!important;color:#fff!important;--tile-ic:#fff!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile .trip-option-tile__icon :is(.ph,.ph-svg,svg,.app-icon){width:21px!important;height:21px!important;color:#fff!important;--tile-ic:#fff!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--weather .trip-option-tile__icon{background:linear-gradient(145deg,#60a5fa,#2563eb)!important;box-shadow:0 8px 16px -10px #2563eb!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--spots .trip-option-tile__icon{background:linear-gradient(145deg,#f472b6,#db2777)!important;box-shadow:0 8px 16px -10px #db2777!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--currency .trip-option-tile__icon{background:linear-gradient(145deg,#34d399,#059669)!important;box-shadow:0 8px 16px -10px #059669!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--tax-free .trip-option-tile__icon{background:linear-gradient(145deg,#fbbf24,#ea580c)!important;box-shadow:0 8px 16px -10px #ea580c!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--documents .trip-option-tile__icon{background:linear-gradient(145deg,#a78bfa,#7c3aed)!important;box-shadow:0 8px 16px -10px #7c3aed!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--map .trip-option-tile__icon{background:linear-gradient(145deg,#2dd4bf,#0d9488)!important;box-shadow:0 8px 16px -10px #0d9488!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--together .trip-option-tile__icon{background:linear-gradient(145deg,#fb7185,#e11d48)!important;box-shadow:0 8px 16px -10px #e11d48!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--help .trip-option-tile__icon{background:linear-gradient(145deg,#818cf8,#4f46e5)!important;box-shadow:0 8px 16px -10px #4f46e5!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--connect .trip-option-tile__icon{background:linear-gradient(145deg,#22d3ee,#0891b2)!important;box-shadow:0 8px 16px -10px #0891b2!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--transfer .trip-option-tile__icon{background:linear-gradient(145deg,#94a3b8,#475569)!important;box-shadow:0 8px 16px -10px #475569!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--flight .trip-option-tile__icon{background:linear-gradient(145deg,#38bdf8,#0284c7)!important;box-shadow:0 8px 16px -10px #0284c7!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--stay .trip-option-tile__icon{background:linear-gradient(145deg,#fb923c,#ea580c)!important;box-shadow:0 8px 16px -10px #ea580c!important}
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile--plan .trip-option-tile__icon{background:linear-gradient(145deg,#4ade80,#16a34a)!important;box-shadow:0 8px 16px -10px #16a34a!important}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Studio v771: booking-detail rows use soft tinted tiles (accent 12% + accent
    glyph, no drop shadow / inset highlight, which rendered as a doubled edge
@@ -8649,9 +8520,9 @@ html body .phone-app .currency-journey.is-typing .currency-ticket{padding-bottom
 /* One card design everywhere (Studio, 2026-09-29): white, hairline border, the
    Tax Free shadow. Section cards 22px radius, compact tiles/rows 18px. Tinted
    result/refund cards become plain cards; inner highlight boxes are paper. */
-html.theme-studio.theme-studio body .phone-app :is(.trip-options-intro,.weather-empty,.wx-hero,.spots-intro,.spot-empty,.tool-head,.tool-card,.tax-free-picker,.currency-route__currency,.currency-card,.currency-ticket,.tax-free-guide-hero,.tax-free-guide-section,.tax-free-guide-sources,.tax-free-about,.tax-free-calculator,.collab-hero,.collab-benefits,.collab-signin,.document-list,.fd-card,.fd-list,.trips-hero,.account-profile-card,.acct-card,.help-quickstart,.help-support),html.theme-studio.theme-studio body .phone-app :is(.trip-option-tile,.trip-list-row,.help-link,.doc-picker-row,.wx-places,.spot-card,.faq-section){background:var(--card)!important;background-image:none!important;border:1px solid var(--line)!important;box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 24px -18px rgba(15,23,42,.28)!important}
-html.theme-studio.theme-studio body .phone-app :is(.trip-options-intro,.weather-empty,.wx-hero,.spots-intro,.spot-empty,.tool-head,.tool-card,.tax-free-picker,.currency-route__currency,.currency-card,.currency-ticket,.tax-free-guide-hero,.tax-free-guide-section,.tax-free-guide-sources,.tax-free-about,.tax-free-calculator,.collab-hero,.collab-benefits,.collab-signin,.document-list,.fd-card,.fd-list,.trips-hero,.account-profile-card,.acct-card,.help-quickstart,.help-support){border-radius:22px!important}
-html.theme-studio.theme-studio body .phone-app :is(.trip-option-tile,.trip-list-row,.help-link,.doc-picker-row,.wx-places,.spot-card,.faq-section){border-radius:18px!important}
+html.theme-studio.theme-studio body .phone-app :is(.weather-empty,.wx-hero,.spots-intro,.spot-empty,.tool-head,.tool-card,.tax-free-picker,.currency-route__currency,.currency-card,.currency-ticket,.tax-free-guide-hero,.tax-free-guide-section,.tax-free-guide-sources,.tax-free-about,.tax-free-calculator,.collab-hero,.collab-benefits,.collab-signin,.document-list,.fd-card,.fd-list,.trips-hero,.account-profile-card,.acct-card,.help-quickstart,.help-support),html.theme-studio.theme-studio body .phone-app :is(.trip-list-row,.help-link,.doc-picker-row,.wx-places,.spot-card,.faq-section){background:var(--card)!important;background-image:none!important;border:1px solid var(--line)!important;box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 24px -18px rgba(15,23,42,.28)!important}
+html.theme-studio.theme-studio body .phone-app :is(.weather-empty,.wx-hero,.spots-intro,.spot-empty,.tool-head,.tool-card,.tax-free-picker,.currency-route__currency,.currency-card,.currency-ticket,.tax-free-guide-hero,.tax-free-guide-section,.tax-free-guide-sources,.tax-free-about,.tax-free-calculator,.collab-hero,.collab-benefits,.collab-signin,.document-list,.fd-card,.fd-list,.trips-hero,.account-profile-card,.acct-card,.help-quickstart,.help-support){border-radius:22px!important}
+html.theme-studio.theme-studio body .phone-app :is(.trip-list-row,.help-link,.doc-picker-row,.wx-places,.spot-card,.faq-section){border-radius:18px!important}
 html.theme-studio.theme-studio body .phone-app .weather-empty,html.theme-studio.theme-studio body .phone-app .wx-hero{background-image:none!important}
 html.theme-studio.theme-studio body .phone-app .currency-ticket .currency-ticket__head{background:transparent!important}
 html.theme-studio.theme-studio body .phone-app .currency-ticket .currency-ticket__footer{background:transparent!important;border-top:1px solid var(--line)!important}
@@ -8659,11 +8530,11 @@ html.theme-studio.theme-studio body .phone-app .currency-ticket .currency-ticket
 html.theme-studio.theme-studio body .phone-app .tax-free-guide-refund{background:#faf9f7!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:16px!important}
 html.theme-studio.theme-studio body .phone-app .tax-free-guide-facts>*{border-radius:16px!important;box-shadow:none!important;background:#faf9f7!important}
 
-html.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile{border-radius:18px!important}
+
 
 /* Trip options icons: plain ink glyphs, no colored tiles (user, 2026-09-29, v795;
    replaces the blue/green group tiles). */
-html.theme-studio.theme-studio.theme-studio body .phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile .trip-option-tile__icon{background:none!important;box-shadow:none!important}
+
 
 /* Header Save pill: reset the UA outset button border (2026-09-29, v777). */
 html body .phone-app .app-bar .app-bar-save.app-bar-save{border:0!important;box-shadow:0 8px 16px -12px var(--accent)!important;-webkit-appearance:none;appearance:none}
@@ -8732,8 +8603,8 @@ html body .bottom-sheet .spot-mode__option.is-active{background:var(--card);bord
 html body .bottom-sheet .spot-mode__option.is-active .app-icon{color:var(--accent)}
 html body .bottom-sheet .spot-mode__option:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* v795 Trip options: plain ink icons, no colored icon tiles (all themes) */
-html:not(#_) body .phone-app.phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile .trip-option-tile__icon{background:none!important;background-image:none!important;box-shadow:none!important;border:0!important;color:var(--ink)!important;width:30px!important;min-width:30px!important;height:30px!important}
-html:not(#_) body .phone-app.phone-app .trip-options-page .trip-options-group .trip-tools-grid .trip-option-tile.trip-option-tile .trip-option-tile__icon :is(.ph,.ph-svg,.app-icon){color:var(--ink)!important;filter:none!important}
+
+
 /* v796 Sheet action rows: icon tile was wider than its 28px grid column and touched the label */
 html:not(#_) body .bottom-sheet .fd-row{grid-template-columns:40px minmax(0,1fr) auto!important;column-gap:14px!important;min-height:56px}
 html:not(#_) body .bottom-sheet .fd-row .fd-row__icon{width:40px!important;height:40px!important;min-width:40px!important}
@@ -8780,17 +8651,17 @@ html.theme-studio:not(#_) body .phone-app .journey-marker{background:transparent
 html.theme-studio:not(#_) body .phone-app .journey-marker svg{stroke:currentColor!important;stroke-width:7px!important;stroke-linejoin:round;paint-order:stroke;overflow:visible}
 html.theme-studio:not(#_) body .phone-app .journey-marker svg :is(use,path){stroke:currentColor!important;stroke-width:7px!important}
 /* v803: Studio outlined icon style everywhere incl. sheets/popups (transparent, 2px category border, bold colored glyph). Base list is :where() so variant colors win. */
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)){background:transparent!important;background-image:none!important;border:2px solid currentColor!important;box-shadow:none!important;color:var(--accent)!important;filter:none!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)) :is(.ph,.ph-svg,.app-icon,svg,use,path){color:inherit!important;fill:currentColor!important;filter:none!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)) svg{stroke:currentColor!important;stroke-width:7px!important;stroke-linejoin:round;paint-order:stroke;overflow:visible}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)) svg :is(use,path){stroke:currentColor!important;stroke-width:7px!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is(.fd-row__icon:not(.fd-row__icon--warn)){color:var(--detail-accent,var(--accent))!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--flight"],[class*="--blue"],[class*="--trips"],.map-pin--transport,.map-pin--flight){color:#2b6cff!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--stay"],[class*="--hotel"],[class*="--checklist"],.document-row__icon.green,.help-support__icon,.collab-member__icon){color:#0f9d6b!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--food"],[class*="--dining"],[class*="--restaurant"],[class*="--coral"],[class*="--account"],[class*="--danger"],[class*="--evening"]){color:#e11d48!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--transfer"],[class*="--taxi"],[class*="--car"],[class*="--train"],[class*="--ferry"],[class*="--cruise"],[class*="--trip-options"],.fd-row__icon--warn,.map-pin--transport){color:#b45309!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is(.ds-pastel-icon--neutral,.welcome-companion__route-icon--quiet){color:var(--ink,#111)!important}
-html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-option-card__icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is(.document-row__icon.purple){color:#7c3aed!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)){background:transparent!important;background-image:none!important;border:2px solid currentColor!important;box-shadow:none!important;color:var(--accent)!important;filter:none!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)) :is(.ph,.ph-svg,.app-icon,svg,use,path){color:inherit!important;fill:currentColor!important;filter:none!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)) svg{stroke:currentColor!important;stroke-width:7px!important;stroke-linejoin:round;paint-order:stroke;overflow:visible}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)) svg :is(use,path){stroke:currentColor!important;stroke-width:7px!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is(.fd-row__icon:not(.fd-row__icon--warn)){color:var(--detail-accent,var(--accent))!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--flight"],[class*="--blue"],[class*="--trips"],.map-pin--transport,.map-pin--flight){color:#2b6cff!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--stay"],[class*="--hotel"],[class*="--checklist"],.document-row__icon.green,.help-support__icon,.collab-member__icon){color:#0f9d6b!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--food"],[class*="--dining"],[class*="--restaurant"],[class*="--coral"],[class*="--account"],[class*="--danger"],[class*="--evening"]){color:#e11d48!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is([class*="--transfer"],[class*="--taxi"],[class*="--car"],[class*="--train"],[class*="--ferry"],[class*="--cruise"],[class*="--trip-options"],.fd-row__icon--warn,.map-pin--transport){color:#b45309!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is(.ds-pastel-icon--neutral,.welcome-companion__route-icon--quiet){color:var(--ink,#111)!important}
+html.theme-studio:not(#_):not(#_) body :where(.fd-row__icon,.screen-intro__icon,.doc-picker-row__icon,.document-row__icon,.tax-free-picker__icon,.place-option__kind,.tax-free-guide-refund__icon,.help-intro__icon,.help-quickstart__head>span:first-child,.faq-section__icon,.help-support__icon,.ds-pastel-icon,.trips-hero__go,.subscription-hero__icon,.sync-summary>span:first-child,.spot-card__mark,.wx-hero__refresh,.faq-q__toggle,.currency-swap,.currency-refresh,.account-shortcut__icon,.add-intent-row__icon,.add-intent-tile__icon,.booking-email-row__icon,.cl-empty-hero__icon,.collab-benefit__icon,.collab-empty__icon,.collab-hero__icon,.collab-invite__icon,.collab-member__icon,.currency-hero__icon,.currency-meta__icon,.date-range-trigger__icon,.day-plan-no-dates__icon,.doc-staged__icon,.documents-empty__icon,.ds-empty-state__icon,.ds-error-state__icon,.empty-mobile-icon,.esim-feature__icon,.esim-hero__icon,.first-run-how-list__icon,.header-icon,.hotel-address-row__icon,.hotel-info-row__icon,.info-icon,.manual-add-card__icon,.manual-attachments__picker-icon,.mobile-empty__icon,.nav-grid__icon,.nav-item__icon,.nav-menu-item__icon,.nav-menu-row__icon,.nav-menu-tile__icon,.notif-item__icon,.offline-summary-icon,.plan-hero__icon,.plan-option__icon,.plan-time-row__icon,.planning-row__icon,.quick-trip-context__icon,.row-icon,.save-later-row__mark,.share-role__icon,.spot-detected__mark,.spot-empty__add-icon,.tax-free-airport-card__icon,.tax-free-hero__icon,.timeline-empty__icon,.transfer-hero__icon,.travel-row__icon,.trip-celebration__mark,.trip-list-row__mark:not(.trip-list-row__mark--flag),.trip-map__hero-icon,.trip-map__row-icon,.trip-setup-tool__icon,.trips-empty__icon,.welcome-companion__piece-icon,.welcome-companion__route-icon,.trip-create-destination__head>span:first-child,.form-intro>span:first-child,.booking-document-row__icon,.manual-attachment-row__icon,.ds-choice-tile__icon,.tool-card__icon,.planning-add-card__icon,.wx-hero__icon:has(svg)):is(.document-row__icon.purple){color:#7c3aed!important}
 html.theme-studio:not(#_) body .fd-card__head .fd-flight>svg{background:transparent!important;border:2px solid currentColor!important;box-shadow:none!important;color:var(--detail-accent,var(--accent))!important;stroke:currentColor!important;stroke-width:7px!important;paint-order:stroke}
 html.theme-studio:not(#_) body .fd-card__head .fd-flight>svg use{color:inherit!important;fill:currentColor!important;stroke:currentColor!important;stroke-width:7px!important}
 html.theme-studio:not(#_) body .ds-flat-row__icon:has(>.ds-pastel-icon){background:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important}
@@ -8819,7 +8690,7 @@ html.theme-beart body .phone-app .first-run-screen.welcome-thread.welcome-editor
 html.theme-beart.first-run-open,html.theme-beart.first-run-open body,html.theme-beart.first-run-open .phone-app{background:var(--paper)!important}
 html.theme-beart body .phone-app .first-run-screen.welcome-thread.welcome-editorial :is(.welcome-companion__label,.welcome-companion__pieces article,.welcome-companion__route-icon--quiet){background:var(--card)!important;border-color:var(--line-strong)!important;box-shadow:none!important}
 html.theme-beart:not(#_) body .bottom-sheet.bottom-sheet--first-run-how{--wl-paper:var(--card);--wl-ink:var(--ink);--wl-muted:var(--muted);background:var(--card)!important;color:var(--ink)!important}
-html body a.trip-option-tile,html body a.trip-option-tile:hover,html body a.fd-row{text-decoration:none!important}
+html body a.fd-row{text-decoration:none!important}
 html.theme-beart:not(#_) body :is(.subscription-plan,.currency-picker-option).is-selected{background:color-mix(in srgb,var(--accent) 16%,var(--card))!important;border-color:var(--accent)!important;color:var(--ink)!important}
 /* v805 `.place-empty{display:grid}` beat the [hidden] attribute, so "No results
    found" showed under the tax-free list even with matches. */
@@ -9373,7 +9244,7 @@ html body .phone-app .trip-options-page .to-list{display:grid;overflow:hidden}
 html body .phone-app .trip-options-page .to-row{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) 20px;align-items:center;gap:14px;width:100%;min-height:64px;margin:0;padding:12px 14px;border:0;border-radius:0;background:transparent;color:var(--ink);font:inherit;text-align:left;text-decoration:none;cursor:pointer}
 html body .phone-app .trip-options-page .to-ico{--to-c:var(--accent);display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--to-c) 16%,var(--card));color:color-mix(in srgb,var(--to-c) 82%,var(--ink))}
 /* One hue per tool, on the icon only; mixing with --ink lightens it on dark themes and deepens it on light ones. Mono stays black-and-white. */
-html body .phone-app .trip-options-page .to-ico--weather{--to-c:#0ea5e9}html body .phone-app .trip-options-page .to-ico--map{--to-c:#10b981}html body .phone-app .trip-options-page .to-ico--document{--to-c:#8b5cf6}html body .phone-app .trip-options-page .to-ico--currency{--to-c:#f59e0b}html body .phone-app .trip-options-page .to-ico--pin{--to-c:#f43f5e}html body .phone-app .trip-options-page .to-ico--customs{--to-c:#14b8a6}html body .phone-app .trip-options-page .to-ico--users{--to-c:#6366f1}html body .phone-app .trip-options-page .to-ico--download{--to-c:#64748b}html body .phone-app .trip-options-page .to-ico--flight{--to-c:#3b82f6}html body .phone-app .trip-options-page .to-ico--bed{--to-c:#a855f7}html body .phone-app .trip-options-page .to-ico--car{--to-c:#f97316}html body .phone-app .trip-options-page .to-ico--sim{--to-c:#06b6d4}html body .phone-app .trip-options-page .to-ico--help{--to-c:#94a3b8}
+html body .phone-app .trip-options-page .to-ico--weather{--to-c:#0ea5e9}html body .phone-app .trip-options-page .to-ico--map{--to-c:#10b981}html body .phone-app .trip-options-page .to-ico--tour{--to-c:#ec4899}html body .phone-app .trip-options-page .to-ico--document{--to-c:#8b5cf6}html body .phone-app .trip-options-page .to-ico--currency{--to-c:#f59e0b}html body .phone-app .trip-options-page .to-ico--pin{--to-c:#f43f5e}html body .phone-app .trip-options-page .to-ico--customs{--to-c:#14b8a6}html body .phone-app .trip-options-page .to-ico--users{--to-c:#6366f1}html body .phone-app .trip-options-page .to-ico--download{--to-c:#64748b}html body .phone-app .trip-options-page .to-ico--flight{--to-c:#3b82f6}html body .phone-app .trip-options-page .to-ico--bed{--to-c:#a855f7}html body .phone-app .trip-options-page .to-ico--car{--to-c:#f97316}html body .phone-app .trip-options-page .to-ico--sim{--to-c:#06b6d4}html body .phone-app .trip-options-page .to-ico--help{--to-c:#94a3b8}
 html.theme-mono:not(.theme-ember) body .phone-app .trip-options-page .to-ico{--to-c:var(--ink)!important;background:var(--surface)}
 html body .phone-app .trip-options-page .to-ico svg{width:20px;height:20px}
 html body .phone-app .trip-options-page .to-copy{display:grid;gap:2px;min-width:0}

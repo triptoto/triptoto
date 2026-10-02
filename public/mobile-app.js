@@ -10565,7 +10565,7 @@
     const body = `<section class="to-summary" aria-label="${esc(title)}"><p class="to-eyebrow">Trip options</p><h1 title="${esc(title)}">${esc(title)}</h1>${meta ? `<p class="to-summary__meta">${meta}</p>` : ""}</section>`
       + section("to-essentials", "Essentials", `<div class="to-quick">${quickTile("weather", "Weather", "Forecast for your destination", `data-action="open-weather"`)}${quickTile("map", "Map", mapHint, `data-action="open-trip-map"`)}${quickTile("document", "Documents", "Tickets and confirmations", `data-screen="documents" aria-label="Tickets and documents"`)}${quickTile("currency", "Currency", "Convert trip costs offline", `data-action="open-currency"`)}</div>`)
       + section("to-tools", "Tools", `<div class="to-list">${optionRow("pin", "Save Spots", "Save a place and route back", `data-action="open-spots"`)}${optionRow("customs", "Tax Free", "Tourist tax refund", `data-action="open-tax-free"`)}${collabRow}${optionRow("download", "Export PDF", "Save your itinerary to print or share", `data-action="export-pdf"`)}</div>`)
-      + section("to-book", "Book for this trip", `<div class="to-list">${partnerRow("flight", "Find a flight", "Search flights", AVIASALES_AFFILIATE_URL)}${partnerRow("bed", "Find a stay", stayDest ? `Stays in ${stayDest}` : "Browse stays", stayUrl)}${partnerRow("car", "Book a transfer", "Airport and city rides", TRANSFER_AFFILIATE_URL)}${partnerRow("map", "Things to do", "Tours and activities", ACTIVITIES_AFFILIATE_URL)}${partnerRow("sim", "Travel eSIM", "Get connected before you land", ESIM_AFFILIATE_URL)}</div>`, `<p class="to-note">Partner links open in a new tab and may earn Tripto a commission at no extra cost.</p>`)
+      + section("to-book", "Book for this trip", `<div class="to-list">${partnerRow("flight", "Find a flight", "Search flights", AVIASALES_AFFILIATE_URL)}${partnerRow("bed", "Find a stay", stayDest ? `Stays in ${stayDest}` : "Browse stays", stayUrl)}${partnerRow("car", "Book a transfer", "Airport and city rides", TRANSFER_AFFILIATE_URL)}${partnerRow("tour", "Things to do", "Tours and activities", ACTIVITIES_AFFILIATE_URL)}${partnerRow("sim", "Travel eSIM", "Get connected before you land", ESIM_AFFILIATE_URL)}</div>`, `<p class="to-note">Partner links open in a new tab and may earn Tripto a commission at no extra cost.</p>`)
       + section("to-support", "Support", `<div class="to-list">${optionRow("help", "Help & FAQ", "Answers and support", `data-screen="help" aria-label="Help & FAQ"`)}</div>`);
     return mobilePage("Trip options", body, "trip-options", headerActions, "trip-options-page");
   }
@@ -15237,9 +15237,12 @@
           // this device's guest session; the same endpoint erases them.
           const guest=(preview?.deletion||preview)?.mode==="guest";
           const tripsLabel=`${trips} server trip${trips===1?"":"s"}`;
+          // Deleting also wipes this phone, so unsynced edits are lost too; say so.
+          const pending=myPendingMutations().length+Number(val(state.syncStatus,"pendingOperations","pending_operations")||0);
+          const pendingNote=pending?` ${pending} unsynced change${pending===1?"":"s"} on this phone will also be lost.`:"";
           if(!await requestConfirmation(guest
-            ? { title: "Delete guest data?", body: `Permanently delete ${tripsLabel} saved for this device as a guest? This cannot be undone.`, confirmLabel: "Delete data", confirmationText: "DELETE" }
-            : { title: "Delete your account?", body: `Permanently delete your account and ${tripsLabel}? This cannot be undone.`, confirmLabel: "Delete account", confirmationText: "DELETE" })) break;
+            ? { title: "Delete guest data?", body: `Permanently delete ${tripsLabel} saved for this device as a guest? This cannot be undone.${pendingNote}`, confirmLabel: "Delete data", confirmationText: "DELETE" }
+            : { title: "Delete your account?", body: `Permanently delete your account and ${tripsLabel}? This cannot be undone.${pendingNote}`, confirmLabel: "Delete account", confirmationText: "DELETE" })) break;
           await api("/api/v1/account",{method:"DELETE",body:JSON.stringify({confirm:"DELETE"})});
           await clearLocalDeviceData();
           nativePlugin("TriptoNative")?.googleSignOut?.().catch(()=>{});
