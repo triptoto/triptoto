@@ -5706,7 +5706,7 @@
       know: ["Ideas without a day stay in Save for Later and do not clutter your timeline.", "Menu has Edit trip, your To-Do List and All trips."] },
     "trip-options": { title: "About Trip options", intro: "All the handy tools for this trip in one place.",
       can: ["Check the weather, convert currency and read tax-free refund guides.", "Keep documents, save spots and see your trip on a map.", "Invite people with Plan together or export the trip as a PDF.", "Find flights, stays, transfers, eSIMs and things to do through partner links."],
-      how: ["Tap a tile to open that tool.", "Tap the bell to see trip alerts."],
+      how: ["Tap a tool to open it.", "Tap the bell to see trip alerts."],
       know: ["The map unlocks once your trip has at least two places with a location.", "Partner links open outside the app and may earn Tripto a commission at no extra cost to you."] },
     "trip-map": { title: "About the trip map", intro: "See every place on your trip on one live map, and get directions with a single tap.",
       can: ["Show the whole trip or one day at a time with the day chips.", "Turn the route line, saved places and your location on or off in Map layers.", "Get directions to any place from the list below the map."],
@@ -7605,6 +7605,8 @@
   // guest mode, so signed-in users never see it flash during load.
   function guestAccountBanner() {
     if (state.account?.mode !== "guest") return "";
+    // The banner points at Google sign-in; without it there is nothing to offer.
+    if (!state.account?.providers?.some((provider) => provider.provider === "google" && provider.enabled)) return "";
     return `<aside class="guest-banner" role="note" aria-label="Guest mode"><span class="guest-banner__icon" aria-hidden="true">${icon("traveler", 20)}</span><p class="guest-banner__text">You’re using Tripto as a guest — sign in to keep your trips.</p><button type="button" class="guest-banner__action" data-screen="account">Sign in</button></aside>`;
   }
   function tripListScreen() {
@@ -8861,7 +8863,7 @@
     const offeredLocales = (globalThis.TriptoI18n?.supported || ["en","de","fr","es","ru"]).filter((id) => id === "en");
     // A single-option picker is empty space; show the card once a second locale ships.
     const languagePicker = offeredLocales.length < 2 ? "" : accountCard("Language", `<div class="language-pills" role="radiogroup" aria-label="Language">${offeredLocales.map(languageChoice).join("")}</div>`);
-    const appearance = `${accountCard("Appearance", `<div class="ds-segmented appearance-toggle" role="radiogroup" aria-label="Theme">${themeChoice("studio", "Studio")}${themeChoice("night", "Night")}${themeChoice("day", "Day")}${themeChoice("ember", "Ember")}${themeChoice("mono", "Mono")}</div>`)}${languagePicker}`;
+    const appearance = `${accountCard("Appearance", `<div class="ds-segmented appearance-toggle" role="radiogroup" aria-label="Theme">${themeChoice("night", "Night")}${themeChoice("studio", "Studio")}${themeChoice("day", "Day")}${themeChoice("ember", "Ember")}${themeChoice("mono", "Mono")}</div>`)}${languagePicker}`;
     const lifetimePlus = state.subscription?.status === "lifetime";
     const paidPlus = !!state.subscription?.active && !lifetimePlus;
     const plusRow = state.subscription?.active
@@ -8869,7 +8871,7 @@
       : row("crown", "Unlock Tripto Plus", NATIVE ? "Unlimited trips" : "Unlimited trips · Cancel anytime", "", "open-subscription", "activity", "account-plus-row");
     const plusRows = [plusRow, ...(!NATIVE && paidPlus && state.subscription?.customerPortalUrl ? [row("external", "Manage or cancel subscription", "Open your secure billing portal", "", "manage-subscription", "activity")] : [])];
     return `<div class="phone-app"><section class="screen mobile-v1-screen account-page">${appBar("Account")}<main class="account-section mobile-page">
-      <section class="account-profile-card ds-grouped-card${authBlock ? " account-profile-card--guest" : ""}" aria-label="Your profile"><div class="account-profile"><span class="account-avatar" aria-hidden="true">${esc(initials)}</span><div class="account-profile__id"><h1 title="${esc(name)}">${esc(name)}</h1><p class="account-meta" title="${mode === "account" ? esc(identityEmail) : "Guest profile"}">${mode === "account" ? esc(identityEmail) : "Guest profile"}</p></div>${mode === "account" ? `<button type="button" class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div><div class="account-trip-summary">${tripCounts.map(({label,count}) => `<div><strong>${count}</strong><span>${label}</span></div>`).join("")}</div>${authBlock}</section>
+      <section class="account-profile-card ds-grouped-card" aria-label="Your profile"><div class="account-profile"><span class="account-avatar" aria-hidden="true">${esc(initials)}</span><div class="account-profile__id"><h1 title="${esc(name)}">${esc(name)}</h1><p class="account-meta" title="${mode === "account" ? esc(identityEmail) : "Guest profile"}">${mode === "account" ? esc(identityEmail) : "Guest profile"}</p></div>${mode === "account" ? `<button type="button" class="account-signout-btn" data-action="sign-out">Sign out</button>` : ""}</div><div class="account-trip-summary">${tripCounts.map(({label,count}) => `<div><strong>${count}</strong><span>${label}</span></div>`).join("")}</div>${authBlock}</section>
       ${accountCard("Tripto Plus", plusRows.join(""), "", "View all", "acct-card--plus")}
       ${accountCard("Your trips", [row("trips","All trips",`${state.trips.length} planned`,"trips","","stay"),row("plus","New trip","Start planning a new trip","","create-trip","activity"),...(FORWARD_EMAIL_ENABLED ? [row("mail","Email Inbox",mode === "account" ? pendingEmails?`${pendingEmails} waiting for review`:"Forward to go@tripto.to" : "Sign in to verify a sender","booking-email-inbox","","flight")] : []),...(pending?[row("refresh","Pending changes",`${pending} waiting for review or sync`,"sync")]:[])].join(""))}
       ${accountCard("Travel essentials", `${[partnerRow("flight","Find a flight","Search flights and hotels",AVIASALES_AFFILIATE_URL,"flight"),partnerRow("bed","Find a place to stay","Browse stays on Booking.com","https://www.booking.com/","stay"),partnerRow("sim","Travel eSIM","Get connected before you land",ESIM_AFFILIATE_URL,"activity")].join("")}<p class="account-partner-disclosure">Partner links may earn Tripto a commission at no extra cost.</p>`)}
@@ -10529,7 +10531,7 @@
     if (!state.trip) return missingDetailScreen("Trip options", "Select a trip to see its tools and settings.");
     const mapHint = canShowTripMap()
       ? "See this trip's places on a map"
-      : "Add 2+ places to map this trip";
+      : "Add a place to map this trip";
     // Monochrome layout (2026-10-02): every surface, glyph and divider comes from
     // the theme's neutral tokens; only each tool's glyph carries its own hue.
     const quickTile = (iconName, title, sub, attr) =>
