@@ -21,6 +21,7 @@
     currency: "/currency",
     "tax-free": "/tax-free",
     "country-guide": "/country-guide",
+    "flight-compensation": "/flight-compensation",
     "trip-options": "/trip-options",
     checklist: "/before-you-go",
     help: "/help",

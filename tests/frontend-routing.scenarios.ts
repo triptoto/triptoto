@@ -69,6 +69,11 @@ equal(response?.status, 200);
 equal(await response?.text(), '');
 equal(response?.headers.get('X-Robots-Tag'), 'noindex, nofollow');
 
+response = await get('/flight-compensation');
+equal(response?.status, 200);
+equal(requests.at(-1), '/index.html');
+equal(response?.headers.get('X-Robots-Tag'), 'noindex, nofollow');
+
 response = await get('/esim');
 equal(response?.status, 200);
 equal(requests.at(-1), '/index.html');

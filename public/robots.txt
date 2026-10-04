@@ -17,6 +17,7 @@ Disallow: /currency
 Disallow: /day-plan
 Disallow: /documents
 Disallow: /esim
+Disallow: /flight-compensation
 Disallow: /flights
 Disallow: /help
 Disallow: /home

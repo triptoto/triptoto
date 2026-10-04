@@ -9374,3 +9374,46 @@ html body .phone-app .country-guide-page .cg-sources small{color:var(--muted)}
 .doc-count{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink,#fff);font-size:12px;font-weight:700;line-height:1;vertical-align:middle;font-variant-numeric:tabular-nums;flex:none}
 .cl-group__head .doc-count{margin-left:4px}
 html.theme-mono .doc-count{background:var(--ink);color:var(--surface);border-radius:0}
+/* Flight compensation (/flight-compensation). Reuses the Trip options page
+   parts (.to-summary, .to-section, .to-list, .to-row, .to-ico, .to-note); only
+   the case grid, info cards, step numbers, fee list and CTA block are new.
+   Geometry is identical in every theme; colours come from theme tokens. */
+html body .phone-app .flight-comp-page .mobile-page{gap:22px}
+html body .phone-app .flight-comp-page .to-ico--shield{--to-c:#ef4444}
+html body .phone-app .trip-options-page .to-ico--shield{--to-c:#ef4444}
+html body .phone-app .flight-comp-page .fc-hero h1{display:block;-webkit-line-clamp:unset;overflow:visible;font-size:26px;line-height:1.2;overflow-wrap:break-word;hyphens:auto}
+html body .phone-app .flight-comp-page .fc-lede{margin:8px 0 0;font-size:15px;line-height:1.45;color:var(--muted)}
+html body .phone-app .flight-comp-page .fc-cases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
+html body .phone-app .flight-comp-page .fc-case{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:10px;min-height:60px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--ink) 9%,transparent);border-radius:16px;background:var(--card);color:var(--ink)}
+html body .phone-app .flight-comp-page .fc-case .to-ico{width:34px;height:34px;border-radius:10px}
+html body .phone-app .flight-comp-page .fc-case strong{font-size:14px;font-weight:600;line-height:1.25;overflow-wrap:break-word;hyphens:auto;min-width:0}
+html body .phone-app .flight-comp-page .fc-card{display:grid;gap:10px;margin:0;padding:14px;border:1px solid color-mix(in srgb,var(--ink) 9%,transparent);border-radius:18px;background:var(--card);color:var(--ink)}
+html body .phone-app .flight-comp-page .fc-card p{margin:0;font-size:14px;line-height:1.45}
+html body .phone-app .flight-comp-page .fc-rules ul{display:grid;gap:6px;margin:0;padding:0 0 0 18px;font-size:13px;line-height:1.45;color:var(--muted)}
+html body .phone-app .flight-comp-page .fc-amount{grid-template-columns:38px minmax(0,1fr);align-items:start;gap:14px}
+html body .phone-app .flight-comp-page .fc-amount>div{display:grid;gap:6px;min-width:0}
+html body .phone-app .flight-comp-page .fc-amount h2{margin:0;font-size:20px;font-weight:700;line-height:1.25;color:var(--ink);overflow-wrap:break-word}
+html body .phone-app .flight-comp-page .fc-muted{color:var(--muted)}
+html body .phone-app .flight-comp-page .fc-steps{margin:0;padding:0;list-style:none}
+html body .phone-app .flight-comp-page .fc-step{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:start;gap:14px;padding:12px 14px}
+html body .phone-app .flight-comp-page .fc-step__n{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+html body .phone-app .flight-comp-page .fc-step .to-copy :is(strong,small),
+html body .phone-app .flight-comp-page .to-row .to-copy strong{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word}
+html body .phone-app .flight-comp-page .fc-step .to-copy small{font-size:13px;line-height:1.4}
+html body .phone-app .flight-comp-page .fc-fees{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+html body .phone-app .flight-comp-page .fc-fees li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;align-items:start;font-size:14px;line-height:1.45}
+html body .phone-app .flight-comp-page .fc-fees li svg{width:18px;height:18px;margin-top:1px;color:var(--muted)}
+html body .phone-app .flight-comp-page .fc-action{display:grid;gap:10px}
+html body .phone-app .flight-comp-page .fc-cta{margin:0;min-height:max(48px,var(--button-primary-height));gap:8px;text-align:center}
+html body .phone-app .flight-comp-page .fc-cta span{overflow-wrap:break-word}
+html body .phone-app .flight-comp-page .fc-cta svg{width:18px;height:18px;flex:none}
+html body .phone-app .flight-comp-page .fc-cta:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+html body .phone-app .flight-comp-page .fc-cta.is-offline{opacity:.6}
+html body .phone-app .flight-comp-page .fc-hint{margin:0;padding:0 4px;font-size:12px;text-align:center;color:var(--muted)}
+html body .phone-app .flight-comp-page .fc-offline{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:start;margin:0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--ink) 6%,var(--card));font-size:13px;line-height:1.4;color:var(--ink)}
+html body .phone-app .flight-comp-page .fc-offline svg{width:18px;height:18px}
+html body .phone-app .flight-comp-page .fc-disclosure{margin-top:4px}
+html.theme-flat body .phone-app .flight-comp-page :is(.fc-case,.fc-card,.fc-case .to-ico,.fc-offline){border-radius:4px}
+html.theme-mono:not(.theme-ember) body .phone-app .flight-comp-page .fc-step__n{color:var(--ink)}
+@media(max-width:359px){html body .phone-app .flight-comp-page .fc-cases{grid-template-columns:minmax(0,1fr)}html body .phone-app .flight-comp-page .fc-hero h1{font-size:24px}}
+@media(prefers-reduced-motion:reduce){html body .phone-app .flight-comp-page *{transition:none!important;animation:none!important}}
