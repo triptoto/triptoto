@@ -3,7 +3,7 @@ const js=fs.readFileSync('public/mobile-app.js','utf8'),css=fs.readFileSync('pub
 const properties=new Map();let windowScrolls=0;
 const viewport={height:340,offsetTop:64,scale:1};
 const context=vm.createContext({window:{innerHeight:740,pageYOffset:90,visualViewport:viewport,scrollTo:()=>windowScrolls++},document:{documentElement:{style:{setProperty:(k,v)=>properties.set(k,v)}}},keepFocusedFieldVisible:()=>{},applyKeyboardState:()=>{}});
-vm.runInContext('let lastObscured=-1,keyboardOpen=false;'+js.slice(js.indexOf('  function syncVisualViewport()'),js.indexOf('  function bindDynamic()')),context);
+vm.runInContext('let lastObscured=-1,keyboardOpen=false,lastFrameHeight="",lastFrameOffset="";'+js.slice(js.indexOf('  function syncVisualViewport()'),js.indexOf('  function bindDynamic()')),context);
 context.syncVisualViewport();assert.equal(properties.get('--app-viewport-offset'),'64px');assert.equal(properties.get('--app-viewport-height'),'340px');assert.equal(windowScrolls,0,'No competing document scroll while Safari pans');
 viewport.offsetTop=110;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-offset'),'110px');
 viewport.scale=2;viewport.offsetTop=180;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-offset'),'110px','Pinch zoom remains native');

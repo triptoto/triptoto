@@ -6,7 +6,7 @@ const properties=new Map();
 let focused=0;
 const viewport={height:664,offsetTop:0,scale:1};
 const context=vm.createContext({window:{innerHeight:664,visualViewport:viewport},document:{documentElement:{style:{setProperty:(k,v)=>properties.set(k,v)}}},keepFocusedFieldVisible:()=>focused++,applyKeyboardState:()=>{}});
-vm.runInContext('let lastObscured=-1,keyboardOpen=false;'+source.slice(source.indexOf('  function syncVisualViewport()'),source.indexOf('  function bindDynamic()')),context);
+vm.runInContext('let lastObscured=-1,keyboardOpen=false,lastFrameHeight="",lastFrameOffset="";'+source.slice(source.indexOf('  function syncVisualViewport()'),source.indexOf('  function bindDynamic()')),context);
 context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'664px');
 viewport.height=350;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'350px');assert.equal(focused,1);
 viewport.height=175;viewport.scale=2;context.syncVisualViewport();assert.equal(properties.get('--app-viewport-height'),'350px','Pinch zoom must not resize the app layout');

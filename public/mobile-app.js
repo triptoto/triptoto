@@ -13038,7 +13038,7 @@
       if(delta)scroller.scrollBy({top:delta,behavior:"auto"});
     });
   }
-  let keyboardOpen = false, fieldFocused = false, lastObscured = -1;
+  let keyboardOpen = false, fieldFocused = false, lastObscured = -1, lastFrameHeight = "", lastFrameOffset = "";
   const KEYBOARD_FIELD_SELECTOR = "input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]),select,textarea";
   function applyKeyboardState() {
     document.documentElement.classList.toggle("keyboard-open", keyboardOpen || fieldFocused);
@@ -13056,23 +13056,40 @@
     // Use the visible area for the app frame, including the software keyboard.
     // Pinch zoom keeps its native behavior instead of relaying out the page.
     if (!viewport || Math.abs(viewport.scale - 1) < 0.01) {
-      document.documentElement.style.setProperty(
-        "--app-viewport-height", `${Math.round(viewport?.height || window.innerHeight)}px`,
-      );
+      const frameHeight = `${Math.round(viewport?.height || window.innerHeight)}px`,
+        frameOffset = `${Math.max(0, Math.round(viewport?.offsetTop || 0))}px`;
+      if (frameHeight !== lastFrameHeight) {
+        lastFrameHeight = frameHeight;
+        document.documentElement.style.setProperty("--app-viewport-height", frameHeight);
+      }
       // iOS Safari can offset the visual viewport below the layout viewport
       // (top address bar, toolbar animation). The pinned frame is anchored to
       // the layout top, so without this compensation its header renders behind
       // the browser chrome. Shift the frame down by the offset so it always
       // tracks the visible area.
-      document.documentElement.style.setProperty(
-        "--app-viewport-offset", `${Math.max(0, Math.round(viewport?.offsetTop || 0))}px`,
-      );
-
+      if (frameOffset !== lastFrameOffset) {
+        lastFrameOffset = frameOffset;
+        document.documentElement.style.setProperty("--app-viewport-offset", frameOffset);
+      }
     }
     const open = obscured > 80;
     if (open && !keyboardOpen) keepFocusedFieldVisible();
     keyboardOpen = open;
     applyKeyboardState();
+  }
+  // iOS Safari fires visualViewport events before the keyboard / toolbar
+  // animation settles (or not at all for the final pan), leaving a stale
+  // offset: header hidden under the address bar, gap above the keyboard.
+  // Re-sync every frame for a short window after any trigger.
+  let viewportSettleUntil = 0, viewportSettleFrame = 0;
+  function settleVisualViewport(ms = 1000) {
+    viewportSettleUntil = Math.max(viewportSettleUntil, performance.now() + ms);
+    if (viewportSettleFrame) return;
+    const tick = () => {
+      syncVisualViewport();
+      viewportSettleFrame = performance.now() < viewportSettleUntil ? requestAnimationFrame(tick) : 0;
+    };
+    viewportSettleFrame = requestAnimationFrame(tick);
   }
   function bindDynamic() {
     syncLiveMapScreen();
@@ -16324,9 +16341,10 @@
     event.preventDefault();
     event.returnValue = "";
   });
-  window.visualViewport?.addEventListener("resize", syncVisualViewport);
-  window.visualViewport?.addEventListener("scroll", syncVisualViewport);
-  window.addEventListener("resize", syncVisualViewport);
+  const onViewportChange = () => { syncVisualViewport(); settleVisualViewport(); };
+  window.visualViewport?.addEventListener("resize", onViewportChange);
+  window.visualViewport?.addEventListener("scroll", onViewportChange);
+  window.addEventListener("resize", onViewportChange);
   // The app frame is pinned and content scrolls inside <main>, so the window
   // itself must never scroll. iOS Safari still scrolls the LAYOUT viewport to
   // reveal a focused field (even with overflow:hidden), which drags the pinned
@@ -16334,12 +16352,16 @@
   // that animation, so keep the window snapped to 0 continuously while a field is
   // focused / the keyboard is up — that's the only time iOS forces this scroll.
   window.addEventListener("scroll", () => {
-    if ((fieldFocused || keyboardOpen) && window.pageYOffset !== 0) window.scrollTo(0, 0);
+    if ((fieldFocused || keyboardOpen) && window.pageYOffset !== 0) {
+      window.scrollTo(0, 0);
+      settleVisualViewport();
+    }
   }, { passive: true });
   document.addEventListener("focusin", (event) => {
     if (event.target?.matches?.(KEYBOARD_FIELD_SELECTOR)) {
       fieldFocused = true;
       applyKeyboardState();
+      settleVisualViewport(1200);
       setTimeout(keepFocusedFieldVisible, 80);
       // Undo any layout-viewport scroll iOS performs to reveal the field, which
       // would otherwise pull the pinned header behind the top browser chrome.
@@ -16347,6 +16369,7 @@
     }
   });
   document.addEventListener("focusout", () => {
+    settleVisualViewport(1200);
     setTimeout(() => {
       fieldFocused = Boolean(
         document.activeElement?.matches?.(KEYBOARD_FIELD_SELECTOR),
